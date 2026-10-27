@@ -41,6 +41,7 @@ import requests
 from loguru import logger
 from pydantic import BaseModel, ConfigDict, Field
 from urllib3.exceptions import ReadTimeoutError
+from urllib3.util.retry import Retry
 
 from opendata.data.raw_response_cache import (
     CachedRawResponse,
@@ -52,12 +53,20 @@ from opendata.data.request_budget import (
     RequestAuthorizationError,
     RequestBudgetError,
     RequestExecutionScope,
+    RequestOperation,
     RequestRedirectError,
+    SourceAttemptBinding,
     authorize_request,
     check_scope_liveness,
     current_request_scopes,
     reserve_scoped_attempt,
     scoped_host_slot,
+)
+from opendata.data.source_attempt_gate import (
+    AttemptReservation,
+    ReservationStatus,
+    SourceAttemptGate,
+    TransportAttempt,
 )
 
 if TYPE_CHECKING:
@@ -432,6 +441,7 @@ class GovernedHttpClient:
         time_fn: Callable[[], float] | None = None,
         jitter_fn: Callable[[], float] | None = None,
         raw_response_cache: RawResponseCache | None = None,
+        source_attempt_gate: SourceAttemptGate | None = None,
     ) -> None:
         """Initialize the client with injectable seams.
 
@@ -444,8 +454,13 @@ class GovernedHttpClient:
             jitter_fn: Random jitter source for retry backoff.
             raw_response_cache: Explicit cache seam; when omitted, the
                 process cache is used only if its application setting is enabled.
+            source_attempt_gate: Optional persistent gate for every physical
+                scoped transport attempt. It is never selected from configuration
+                or injected into the shared singleton implicitly.
         """
         self._config = config if config is not None else HttpClientConfig()
+        if source_attempt_gate is not None and type(source_attempt_gate) is not SourceAttemptGate:
+            raise TypeError("source_attempt_gate must be a SourceAttemptGate or None")
         self._session_override = session
         self._thread_local = threading.local()
         self._injected_session_lock = threading.Lock()
@@ -453,6 +468,7 @@ class GovernedHttpClient:
         self._time = time_fn if time_fn is not None else time.monotonic
         self._jitter = jitter_fn if jitter_fn is not None else self._default_jitter
         self._raw_response_cache_override = raw_response_cache
+        self._source_attempt_gate = source_attempt_gate
         self._buckets: dict[str, TokenBucket] = {}
         self._breakers: dict[str, _BreakerState] = {}
         self._semaphores: dict[str, threading.BoundedSemaphore] = {}
@@ -487,6 +503,8 @@ class GovernedHttpClient:
         Raises:
             ValueError: If the URL has no host.
             TypeError: If ``use_cache`` is not a bool.
+            RequestAuthorizationError: If active trusted scopes, transport, or the
+                optional persistent gate reject the request.
             HttpFetchError: On terminal, classified failure.
         """
         if type(use_cache) is not bool:
@@ -614,6 +632,8 @@ class GovernedHttpClient:
         Raises:
             ValueError: If the URL has no host.
             TypeError: If ``use_cache`` is not a bool.
+            RequestAuthorizationError: If active trusted scopes, transport, or the
+                optional persistent gate reject the request.
             HttpFetchError: On terminal, classified failure.
         """
         result = self._request(
@@ -658,6 +678,12 @@ class GovernedHttpClient:
         host = self._require_host(url)
         scopes = current_request_scopes()
         scoped = bool(scopes)
+        if self._source_attempt_gate is not None:
+            self._validate_source_attempt_scopes(scopes)
+        elif any(scope.source_attempt_binding is not None for scope in scopes):
+            raise RequestAuthorizationError(
+                "source attempt binding requires a configured durable gate"
+            )
         if scoped:
             self._validate_scoped_url(url, host)
             authorize_request(scopes, source, host)
@@ -667,6 +693,8 @@ class GovernedHttpClient:
                 self._validate_scoped_session(session)
             else:
                 self._validate_bounded_session(session)
+            if self._source_attempt_gate is not None:
+                self._validate_attempt_gated_session(session)
         elif body_limit is not None:
             self._validate_bounded_session(self._get_session())
         is_get = method_upper == "GET"
@@ -674,7 +702,11 @@ class GovernedHttpClient:
         request_id = uuid.uuid4().hex
         request_started = self._time() if deadline is not None else 0.0
         raw_cache: RawResponseCache | None = None
-        if use_cache and body_limit is None:
+        if (
+            use_cache
+            and body_limit is None
+            and not (self._source_attempt_gate is not None and scoped)
+        ):
             raw_cache = self._raw_response_cache_override
             if raw_cache is None and is_get:
                 raw_cache = get_configured_raw_response_cache()
@@ -822,6 +854,11 @@ class GovernedHttpClient:
         transport_started = False
         response: requests.Response | None = None
         streamed_body: bytes | None = None
+
+        def mark_transport_started() -> None:
+            nonlocal transport_started
+            transport_started = True
+
         try:
             if scopes:
                 check_scope_liveness(scopes)
@@ -853,7 +890,6 @@ class GovernedHttpClient:
                         check_scope_liveness(scopes)
                         self._check_deadline(deadline)
                         request_timeout = self._remaining_timeout(timeout, deadline)
-                        transport_started = True
                         response = self._send(
                             method,
                             url,
@@ -864,6 +900,10 @@ class GovernedHttpClient:
                             scopes=scopes,
                             source=source,
                             host=host,
+                            request_id=request_id,
+                            attempt_no=attempt,
+                            deadline=deadline,
+                            on_transport_start=mark_transport_started,
                             stream=body_limit is not None,
                         )
                         if self._should_read_bounded_response(response, body_limit):
@@ -877,7 +917,6 @@ class GovernedHttpClient:
                 with self._request_semaphore(host, deadline):
                     self._check_deadline(deadline)
                     request_timeout = self._remaining_timeout(timeout, deadline)
-                    transport_started = True
                     response = self._send(
                         method,
                         url,
@@ -886,6 +925,10 @@ class GovernedHttpClient:
                         request_timeout,
                         json_body,
                         stream=body_limit is not None,
+                        request_id=request_id,
+                        attempt_no=attempt,
+                        deadline=deadline,
+                        on_transport_start=mark_transport_started,
                     )
                     if self._should_read_bounded_response(response, body_limit):
                         streamed_body = self._read_bounded_response(
@@ -1210,9 +1253,13 @@ class GovernedHttpClient:
         timeout: float | tuple[float, float] | None,
         json_body: Mapping[str, Any] | None,
         *,
+        request_id: str,
+        attempt_no: int,
+        on_transport_start: Callable[[], None],
         scopes: tuple[RequestExecutionScope, ...] = (),
         source: str = "unspecified",
         host: str = "",
+        deadline: float | None = None,
         stream: bool = False,
     ) -> requests.Response:
         """Send one request through the session with governance kwargs."""
@@ -1232,6 +1279,8 @@ class GovernedHttpClient:
             "timeout": request_timeout,
             "proxies": self._config.proxies,
         }
+        if self._source_attempt_gate is not None:
+            request_kwargs.update({"verify": True, "cert": None, "proxies": {}})
         if scopes or stream:
             request_kwargs["allow_redirects"] = False
         if scopes:
@@ -1250,12 +1299,159 @@ class GovernedHttpClient:
             if scopes:
                 check_scope_liveness(scopes)
                 reserve_scoped_attempt(scopes, source, host)
+                if self._source_attempt_gate is not None:
+                    self._reserve_source_attempt(
+                        scopes,
+                        source=source,
+                        host=host,
+                        request_id=request_id,
+                        attempt_no=attempt_no,
+                    )
+                    check_scope_liveness(scopes)
+            self._check_deadline(deadline)
+            if deadline is not None:
+                request_kwargs["timeout"] = self._remaining_timeout(request_timeout, deadline)
+                self._check_deadline(deadline)
+            if scopes and self._source_attempt_gate is not None:
+                check_scope_liveness(scopes)
+            on_transport_start()
             return session.request(method, url, **request_kwargs)
 
         if self._session_override is not None:
             with self._injected_session_lock:
                 return send()
         return send()
+
+    def _reserve_source_attempt(
+        self,
+        scopes: tuple[RequestExecutionScope, ...],
+        *,
+        source: str,
+        host: str,
+        request_id: str,
+        attempt_no: int,
+    ) -> None:
+        """Persist one-use authorization immediately before a physical send.
+
+        The local budget is reserved by the caller first. Gate failures and
+        ambiguous commit results are converted to a non-retryable authorization
+        error, so no transport or retry can reuse an uncertain reservation.
+        """
+        gate = self._source_attempt_gate
+        if gate is None:  # pragma: no cover - guarded by the caller
+            raise RequestAuthorizationError("source attempt gate is not configured")
+        try:
+            binding, canonical_model, operation = self._validated_source_attempt_scope(scopes)
+            attempt = TransportAttempt(
+                attempt_id=uuid.uuid4().hex,
+                request_id=request_id,
+                attempt_no=attempt_no,
+                grant_id=binding.grant_id,
+                expected_revision=binding.expected_revision,
+                source=source,
+                canonical_model=canonical_model,
+                operation=operation.value,
+                principal_scope=binding.principal_scope,
+                host=host,
+                run_key=binding.run_key,
+            )
+            reservation = gate.reserve_attempt(attempt)
+        except Exception:
+            raise RequestAuthorizationError(
+                "source attempt gate did not authorize transport"
+            ) from None
+        if (
+            type(reservation) is not AttemptReservation
+            or reservation.status is not ReservationStatus.RESERVED_NEW
+        ):
+            raise RequestAuthorizationError("source attempt gate did not authorize transport")
+
+    @staticmethod
+    def _validate_source_attempt_scopes(
+        scopes: tuple[RequestExecutionScope, ...],
+    ) -> None:
+        """Require one exact trusted source binding across all active scopes."""
+        GovernedHttpClient._validated_source_attempt_scope(scopes)
+
+    @staticmethod
+    def _validated_source_attempt_scope(
+        scopes: tuple[RequestExecutionScope, ...],
+    ) -> tuple[SourceAttemptBinding, str, RequestOperation]:
+        """Return the shared binding and identity after validating every scope."""
+        if not scopes:
+            raise RequestAuthorizationError(
+                "source attempt gate requires consistent trusted request scopes"
+            )
+        first = scopes[0]
+        binding = first.source_attempt_binding
+        source = first.source
+        canonical_model = first.canonical_model
+        operation = first.operation
+        if (
+            type(binding) is not SourceAttemptBinding
+            or type(source) is not str
+            or not source
+            or source != source.strip()
+            or type(canonical_model) is not str
+            or not canonical_model
+            or canonical_model != canonical_model.strip()
+            or type(operation) is not RequestOperation
+        ):
+            raise RequestAuthorizationError(
+                "source attempt gate requires consistent trusted request scopes"
+            )
+        for scope in scopes:
+            if (
+                scope.source != source
+                or scope.canonical_model != canonical_model
+                or scope.operation is not operation
+                or type(scope.source_attempt_binding) is not SourceAttemptBinding
+                or scope.source_attempt_binding != binding
+            ):
+                raise RequestAuthorizationError(
+                    "source attempt gate requires consistent trusted request scopes"
+                )
+        return binding, canonical_model, operation
+
+    def _validate_attempt_gated_session(self, session: object) -> None:
+        """Reject custom session or adapter code that could hide extra sends."""
+        self._validate_bounded_session(session)
+        if not isinstance(session, requests.Session) or type(session) is not requests.Session:
+            raise RequestAuthorizationError(
+                "source attempt gate requires the standard Requests transport"
+            )
+        if session.trust_env is not False:
+            raise RequestAuthorizationError(
+                "source attempt gate requires Requests environment trust to be disabled"
+            )
+        if (
+            session.verify is not True
+            or session.cert is not None
+            or type(session.proxies) is not dict
+            or session.proxies
+            or self._config.proxies
+        ):
+            raise RequestAuthorizationError(
+                "source attempt gate requires TLS verification, no proxies or client certificates"
+            )
+        for method_name in _BOUNDED_SESSION_METHODS:
+            if method_name in session.__dict__:
+                raise RequestAuthorizationError(
+                    "source attempt gate rejects overridden Requests methods"
+                )
+        for adapter in session.adapters.values():
+            if type(adapter) is not requests.adapters.HTTPAdapter or "send" in adapter.__dict__:
+                raise RequestAuthorizationError(
+                    "source attempt gate rejects custom transport adapters"
+                )
+            retries = getattr(adapter, "max_retries", None)
+            if type(retries) is not Retry or any(
+                getattr(retries, attribute, None) not in (None, 0, False)
+                for attribute in ("total", "connect", "read", "redirect", "status", "other")
+            ):
+                raise RequestAdapterRetryError(
+                    "source attempt gate requires Requests adapters with retries disabled"
+                )
 
     def _get_session(self) -> requests.Session:
         """Return the injected session or a per-thread reusable session."""
