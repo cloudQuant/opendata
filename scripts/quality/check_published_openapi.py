@@ -20,7 +20,7 @@ BASELINE_PATHS = {
 # intentionally has no mode that generates or replaces a baseline from the candidate.
 BASELINE_SHA256 = {
     "v1": "2b738ff5ab2d2aa8a2603c908a05256a1b8b7522f72aa5a699ba963d4271bf74",
-    "v2": "b5ef23a6d2c0910a900d886832ee2650d1cbbd3baf98816551eb07a655e612aa",
+    "v2": "86b7dd1982e6d50e477b67742e13258c32922436d4867e5d55333a1ac115a9e5",
 }
 _HTTP_METHODS = frozenset({"get", "post", "put", "patch", "delete", "options", "head"})
 _DOC_SCHEMA_KEYS = frozenset({"title", "description", "examples", "example"})
@@ -489,6 +489,10 @@ def _compare_operation(
     for key in sorted((set(old) | set(new)) - special):
         if key not in old or key not in new:
             _add_issue(issues, f"{path}.{key}", "operation contract field was added or removed")
+        elif key == "parameters" and _allowed_coverage_publication_parameter(
+            path, old[key], new[key]
+        ):
+            continue
         else:
             _compare_exact(
                 baseline, candidate, old[key], new[key], f"{path}.{key}", issues, visited
@@ -514,6 +518,38 @@ def _compare_operation(
             )
     for code in new_responses.keys() - old_responses.keys():
         _add_issue(issues, f"{path}.responses.{code}", "new response status requires review")
+
+
+def _allowed_coverage_publication_parameter(path: str, old: object, new: object) -> bool:
+    """Allow only the optional publication pin on the exact v2 coverage route."""
+    if path != "/api/v2/datasets/{dataset_id}/coverage.get":
+        return False
+    if not isinstance(old, list) or not isinstance(new, list) or len(new) != len(old) + 1:
+        return False
+    expected = {
+        "in": "query",
+        "name": "publication_id",
+        "required": False,
+        "schema": {
+            "anyOf": [
+                {"maxLength": 32, "minLength": 32, "type": "string"},
+                {"type": "null"},
+            ],
+            "title": "Publication Id",
+        },
+    }
+    additions = [
+        item
+        for item in new
+        if isinstance(item, Mapping)
+        and item.get("name") == "publication_id"
+        and item.get("in") == "query"
+    ]
+    if len(additions) != 1 or _canonical(additions[0]) != _canonical(expected):
+        return False
+    retained = list(new)
+    retained.remove(additions[0])
+    return _canonical(retained) == _canonical(old)
 
 
 def compare_contracts(

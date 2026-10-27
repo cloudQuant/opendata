@@ -13,10 +13,11 @@ import math
 import os
 import threading
 from collections.abc import Callable, Coroutine, Mapping
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 from uuid import uuid4
+from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from fastapi.exceptions import RequestValidationError
@@ -46,6 +47,12 @@ from opendata.data.capture_selection import (
     selection_profile,
     validate_selector_pair,
 )
+from opendata.data.coverage_evidence_registry import (
+    CoverageEvidenceConfigurationError,
+    DatasetCoverageEvidence,
+    DatasetCoverageEvidenceRegistry,
+    load_dataset_coverage_evidence_registry,
+)
 from opendata.data.dataset_contract_registry import (
     DatasetContractRegistry,
     canonical_sha256,
@@ -60,8 +67,26 @@ from opendata.data.platform_contracts import (
     RecordKind,
     TemporalSemantics,
 )
+from opendata.data.providers.ths.index_daily_publication import (
+    INDEX_SOURCE_ID,
+    INDEX_SYMBOL_BY_DATASET_ID,
+    build_index_daily_contract,
+)
+from opendata.pipeline.coverage_service import (
+    CoverageQuery,
+    InstrumentCoverageService,
+    InstrumentHistoryCoverageReport,
+    PublicationCoverageScope,
+    PublicationObservations,
+)
+from opendata.pipeline.history_coverage import CoverageStatus
 from opendata.pipeline.publication_store import (
+    MAX_COVERAGE_RECORDS,
     MAX_PAGE_SIZE,
+    CoverageObservationLimitError,
+    CoverageRecordIntegrityError,
+    CoverageRecordSet,
+    CoverageSnapshotConsistencyError,
     PageSizeLimitError,
     PublicationContractConflictError,
     PublicationRecord,
@@ -80,6 +105,7 @@ if TYPE_CHECKING:
 
 MAX_RESPONSE_BYTES = 8 * 1024 * 1024
 MAX_CATALOG_ITEMS = 10_000
+CoverageRegistryLoader = Callable[[], DatasetCoverageEvidenceRegistry]
 _ATEMPORAL_TABLE_BUSINESS_DATE_SEMANTICS = (
     "null for atemporal table records; not a historical business date"
 )
@@ -576,6 +602,25 @@ def get_dataset_contracts() -> DatasetContractRegistry:
         ) from None
 
 
+def get_dataset_coverage_evidence_registry() -> DatasetCoverageEvidenceRegistry:
+    """Load optional exact-pinned coverage evidence from an operator-owned file."""
+    path = _server_setting("PUBLISHED_DATASET_COVERAGE_EVIDENCE_FILE")
+    if path is None or not path.strip():
+        return DatasetCoverageEvidenceRegistry.empty()
+    try:
+        return load_dataset_coverage_evidence_registry(path)
+    except CoverageEvidenceConfigurationError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Published data service is unavailable",
+        ) from None
+
+
+def get_dataset_coverage_evidence_registry_loader() -> CoverageRegistryLoader:
+    """Return a lazy evidence loader so authorization runs before file access."""
+    return get_dataset_coverage_evidence_registry
+
+
 def _server_setting(name: str) -> str | None:
     """Read one operator setting from the process environment or configured env file."""
     configured = os.environ.get(name)
@@ -885,14 +930,19 @@ async def get_dataset_coverage(
     grants: DatasetGrantRegistry = Depends(get_dataset_grants),
     contracts: DatasetContractRegistry = Depends(get_dataset_contracts),
     store: PublicationStore = Depends(get_publication_store),
+    evidence_registry_loader: CoverageRegistryLoader = Depends(
+        get_dataset_coverage_evidence_registry_loader
+    ),
     start_date: date | None = Query(default=None),
     end_date: date | None = Query(default=None),
+    publication_id: str | None = Query(default=None, min_length=32, max_length=32),
 ) -> Response:
-    """Return UNKNOWN until independent dataset-specific coverage evidence exists."""
-    _reject_unknown_query(request, {"start_date", "end_date"})
+    """Return evidence-bound coverage for an exact, pinned single-index series."""
+    _reject_unknown_query(request, {"start_date", "end_date", "publication_id"})
+    _validate_hex_id(publication_id, "publication_id")
     context = _require_access(principal, dataset_id, "coverage.read", grants)
-    publication = await _current_publication(store, dataset_id)
-    _require_source_match(context, publication)
+    evidence_registry = evidence_registry_loader()
+    publication = await _publication_for_request(store, dataset_id, publication_id, context)
     contract, contract_hash = _resolve_contract(contracts, context, publication)
     if (start_date is None) != (end_date is None):
         raise _http_problem(422, "invalid_request", "Provide both range endpoints or neither")
@@ -906,18 +956,170 @@ async def get_dataset_coverage(
             "unsupported_time_semantics",
             "Coverage date ranges are only supported for business_date datasets",
         )
-    requested: dict[str, object] | None = None
-    if start_date is not None and end_date is not None:
-        requested = {"start": start_date.isoformat(), "end": end_date.isoformat()}
-    coverage: dict[str, object] = {
-        "status": "unknown",
-        "scope": "unknown",
-        "requested": requested,
-        "observed": None,
-        "missing_ranges": [],
-        "evidence_refs": [],
-        "limitation": "No independently verified coverage evidence is registered for this dataset.",
-    }
+    evidence = evidence_registry.resolve(
+        dataset_id, publication.source_id, publication.publication_id
+    )
+    requested = _coverage_requested_range(start_date, end_date)
+    if evidence is None:
+        coverage = _unknown_coverage(
+            requested,
+            "No independently verified coverage evidence is registered for this exact publication.",
+        )
+    elif evidence.visible_record_set is None:
+        coverage = _unknown_coverage(
+            requested,
+            "Schema 1 coverage evidence does not pin the complete visible publication record set.",
+            evidence_sha256=evidence.evidence_sha256,
+        )
+    elif evidence.visible_record_set.contract_sha256 != contract_hash:
+        coverage = _unknown_coverage(
+            requested,
+            "The operator record-set pin does not match the published contract.",
+            evidence_sha256=evidence.evidence_sha256,
+        )
+    elif not _is_trusted_single_index_contract(contract, evidence):
+        coverage = _unknown_coverage(
+            requested,
+            "The published contract or instrument identity is outside the trusted single-index "
+            "coverage scope.",
+            evidence_sha256=evidence.evidence_sha256,
+        )
+    else:
+        lifecycle = evidence.instrument_registry.resolve(
+            dataset_id,
+            publication.source_id,
+            evidence.instrument_identifier,
+        ).lifecycle
+        query_start = start_date or lifecycle.known_start_date or evidence.publication_scope_start
+        query_end = end_date or evidence.publication_scope_end_exclusive
+        requested = _coverage_requested_range(query_start, query_end)
+        today = _shanghai_business_date()
+        latest_allowed_end = _latest_coverage_end_exclusive(today)
+        if (
+            query_start > today
+            or query_end > latest_allowed_end
+            or lifecycle.status_as_of > today
+            or evidence.publication_scope_start > today
+            or evidence.publication_scope_end_exclusive > latest_allowed_end
+        ):
+            return _success_response(
+                {
+                    "dataset_id": dataset_id,
+                    "publication_id": publication.publication_id,
+                    "contract_sha256": contract_hash,
+                    "coverage": _unknown_coverage(
+                        requested,
+                        "Future lifecycle status, scan scope, or requested business dates cannot "
+                        "establish historical coverage.",
+                        evidence_sha256=evidence.evidence_sha256,
+                    ),
+                }
+            )
+        try:
+            query = CoverageQuery(
+                dataset_id=dataset_id,
+                source_id=publication.source_id,
+                instrument_identifier=evidence.instrument_identifier,
+                start=query_start,
+                end_exclusive=query_end,
+            )
+        except (TypeError, ValueError):
+            coverage = _unknown_coverage(
+                requested,
+                "Registered lifecycle and publication scope do not define a valid coverage "
+                "interval.",
+                evidence_sha256=evidence.evidence_sha256,
+            )
+        else:
+            try:
+                record_set = await asyncio.to_thread(
+                    store.read_coverage_record_set,
+                    dataset_id,
+                    publication.publication_id,
+                    contract_sha256=contract_hash,
+                    limit=MAX_COVERAGE_RECORDS,
+                )
+            except (
+                CoverageObservationLimitError,
+                CoverageRecordIntegrityError,
+                CoverageSnapshotConsistencyError,
+            ):
+                coverage = _unknown_coverage(
+                    requested,
+                    "The pinned publication record set could not be verified completely; no "
+                    "truncated or inconsistent result was evaluated.",
+                    evidence_sha256=evidence.evidence_sha256,
+                )
+            else:
+                if record_set is None:
+                    raise _service_unavailable()
+                if not _coverage_record_set_matches_pin(
+                    record_set, publication, evidence, contract_hash
+                ):
+                    coverage = _unknown_coverage(
+                        requested,
+                        "The complete visible record set does not match the prior operator pin.",
+                        evidence_sha256=evidence.evidence_sha256,
+                    )
+                elif not _coverage_facts_match_single_index(contract, evidence, record_set.records):
+                    coverage = _unknown_coverage(
+                        requested,
+                        "The pinned publication contains malformed facts or a symbol outside "
+                        "the single-index scope.",
+                        evidence_sha256=evidence.evidence_sha256,
+                    )
+                else:
+                    observed_dates = tuple(
+                        record.business_date
+                        for record in record_set.records
+                        if record.business_date is not None
+                    )
+                    if any(
+                        day < evidence.publication_scope_start
+                        or day >= evidence.publication_scope_end_exclusive
+                        or day > today
+                        or day == date.max
+                        for day in observed_dates
+                    ):
+                        coverage = _unknown_coverage(
+                            requested,
+                            "The pinned publication contains observations outside its "
+                            "independently evidenced scan scope.",
+                            evidence_sha256=evidence.evidence_sha256,
+                        )
+                        return _success_response(
+                            {
+                                "dataset_id": dataset_id,
+                                "publication_id": publication.publication_id,
+                                "contract_sha256": contract_hash,
+                                "coverage": coverage,
+                            }
+                        )
+                    publication_observations = PublicationObservations(
+                        dataset_id=dataset_id,
+                        source_id=publication.source_id,
+                        instrument_id=evidence.instrument_identifier,
+                        publication_id=publication.publication_id,
+                        publication_version=str(publication.sequence),
+                        evidence_ref=f"publication:{publication.publication_id}",
+                        scope=PublicationCoverageScope.BUSINESS_HISTORY,
+                        observed_dates=tuple(day for day in observed_dates if day is not None),
+                        scope_start=evidence.publication_scope_start,
+                        scope_end_exclusive=evidence.publication_scope_end_exclusive,
+                        scope_evidence_ref=evidence.publication_scope_evidence_ref,
+                    )
+                    report = InstrumentCoverageService(evidence.instrument_registry).evaluate(
+                        query,
+                        calendar=evidence.calendar,
+                        publication=publication_observations,
+                    )
+                    coverage = _coverage_from_report(
+                        report,
+                        requested,
+                        observed_dates=tuple(day for day in observed_dates if day is not None),
+                        evidence_sha256=evidence.evidence_sha256,
+                        record_set=record_set,
+                    )
     return _success_response(
         {
             "dataset_id": dataset_id,
@@ -938,6 +1140,192 @@ async def _current_publication(store: PublicationStore, dataset_id: str) -> Publ
     if publication is None or publication.dataset_id != dataset_id:
         raise _service_unavailable()
     return publication
+
+
+def _coverage_requested_range(
+    start: date | None, end_exclusive: date | None
+) -> dict[str, object] | None:
+    """Serialize one optional half-open date range for the v2 coverage response."""
+    if start is None or end_exclusive is None:
+        return None
+    return {"start": start.isoformat(), "end": end_exclusive.isoformat()}
+
+
+def _shanghai_business_date() -> date:
+    """Return today's date in the market's declared Asia/Shanghai business timezone."""
+    return datetime.now(ZoneInfo("Asia/Shanghai")).date()
+
+
+def _latest_coverage_end_exclusive(today: date) -> date:
+    """Allow today's observations in a half-open scan window without overflowing date.max."""
+    try:
+        return today + timedelta(days=1)
+    except OverflowError:
+        return date.max
+
+
+def _unknown_coverage(
+    requested: dict[str, object] | None,
+    limitation: str,
+    *,
+    evidence_sha256: str | None = None,
+) -> dict[str, object]:
+    """Build a fail-closed response when evidence cannot support evaluation."""
+    evidence_refs = (
+        [f"operator-attestation-sha256:{evidence_sha256}"] if evidence_sha256 is not None else []
+    )
+    return {
+        "status": "unknown",
+        "scope": "unknown",
+        "requested": requested,
+        "observed": None,
+        "missing_ranges": [],
+        "evidence_refs": evidence_refs,
+        "limitation": limitation,
+    }
+
+
+def _is_trusted_single_index_contract(
+    contract: DatasetContract, evidence: DatasetCoverageEvidence
+) -> bool:
+    """Require the exact whitelisted THS single-symbol contract before scanning."""
+    expected_symbol = INDEX_SYMBOL_BY_DATASET_ID.get(contract.dataset_id)
+    if (
+        expected_symbol is None
+        or evidence.dataset_id != contract.dataset_id
+        or evidence.source_id != INDEX_SOURCE_ID
+        or evidence.instrument_identifier != expected_symbol
+        or contract.source.source_id != INDEX_SOURCE_ID
+    ):
+        return False
+    try:
+        trusted_contract = build_index_daily_contract(expected_symbol)
+        return canonical_sha256(contract) == canonical_sha256(trusted_contract)
+    except (TypeError, ValueError):
+        return False
+
+
+def _coverage_facts_match_single_index(
+    contract: DatasetContract,
+    evidence: DatasetCoverageEvidence,
+    records: tuple[PublishedRecord, ...],
+) -> bool:
+    """Validate every visible fact and require the complete whitelisted symbol scope."""
+    try:
+        _validate_published_records(contract, records)
+    except HTTPException:
+        return False
+    return all(
+        record.business_date is not None
+        and record.payload.get("symbol") == evidence.instrument_identifier
+        for record in records
+    )
+
+
+def _coverage_record_set_matches_pin(
+    record_set: CoverageRecordSet,
+    publication: PublicationRecord,
+    evidence: DatasetCoverageEvidence,
+    contract_sha256: str,
+) -> bool:
+    """Require exact agreement among sidecar, contract, publication, and verified scan."""
+    pin = evidence.visible_record_set
+    if pin is None:
+        return False
+    return (
+        record_set.dataset_id == publication.dataset_id == evidence.dataset_id
+        and record_set.source_id == publication.source_id == evidence.source_id
+        and record_set.publication_id == publication.publication_id == evidence.publication_id
+        and record_set.publication_sequence == publication.sequence == pin.publication_sequence
+        and record_set.schema_version == publication.schema_version
+        and record_set.semantic_version == publication.semantic_version
+        and record_set.unit == publication.unit
+        and record_set.adjustment_basis == publication.adjustment_basis
+        and record_set.contract_sha256 == contract_sha256 == pin.contract_sha256
+        and record_set.algorithm == pin.algorithm
+        and record_set.sha256 == pin.sha256
+        and record_set.record_count == pin.record_count == len(record_set.records)
+    )
+
+
+def _coverage_from_report(
+    report: InstrumentHistoryCoverageReport,
+    requested: dict[str, object] | None,
+    *,
+    observed_dates: tuple[date, ...],
+    evidence_sha256: str,
+    record_set: CoverageRecordSet,
+) -> dict[str, object]:
+    """Map an instrument-history report into the stable v2 coverage DTO."""
+    coverage_report = report.coverage
+    status = report.status
+    observed_dates = tuple(
+        day
+        for day in observed_dates
+        if report.requested_start <= day < report.requested_end_exclusive
+    )
+    observed_range: dict[str, str] | None = None
+    if observed_dates:
+        observed_range = {
+            "start": min(observed_dates).isoformat(),
+            "end": (max(observed_dates) + timedelta(days=1)).isoformat(),
+        }
+    missing_dates = tuple(
+        sorted(
+            set(
+                coverage_report.head_gaps
+                + coverage_report.interior_gaps
+                + coverage_report.tail_gaps
+            )
+        )
+    )
+    missing_ranges = _coalesce_daily_gaps(missing_dates)
+    limitation = None
+    if status is not CoverageStatus.COMPLETE:
+        reasons = report.reasons or coverage_report.reasons
+        limitation = " ".join(reasons)[:1024] or "Coverage evidence is incomplete."
+    evidence_refs = [
+        report.registry_evidence_ref,
+        report.lifecycle_status_evidence_ref,
+        report.start_evidence_ref,
+        report.calendar_evidence_ref,
+        report.publication_evidence_ref,
+        report.publication_scope_evidence_ref,
+        f"operator-attestation-sha256:{evidence_sha256}",
+        f"{record_set.algorithm}:sha256:{record_set.sha256}",
+        f"publication-sequence:{record_set.publication_sequence}",
+        f"visible-record-count:{record_set.record_count}",
+        f"contract-sha256:{record_set.contract_sha256}",
+    ]
+    return {
+        "status": status.value.lower(),
+        "scope": (
+            "not_applicable" if status is CoverageStatus.NOT_APPLICABLE else "business_history"
+        ),
+        "requested": requested,
+        "observed": observed_range,
+        "missing_ranges": missing_ranges,
+        "evidence_refs": list(dict.fromkeys(ref for ref in evidence_refs if ref is not None)),
+        "limitation": limitation,
+    }
+
+
+def _coalesce_daily_gaps(values: tuple[date, ...]) -> list[dict[str, str]]:
+    """Combine adjacent missing calendar dates into half-open response ranges."""
+    if not values:
+        return []
+    ranges: list[dict[str, str]] = []
+    start = previous = values[0]
+    for day in values[1:]:
+        if day == previous + timedelta(days=1):
+            previous = day
+            continue
+        ranges.append(
+            {"start": start.isoformat(), "end": (previous + timedelta(days=1)).isoformat()}
+        )
+        start = previous = day
+    ranges.append({"start": start.isoformat(), "end": (previous + timedelta(days=1)).isoformat()})
+    return ranges
 
 
 async def _publication_for_request(
@@ -1591,6 +1979,8 @@ __all__ = [
     "create_snapshot",
     "get_dataset",
     "get_dataset_coverage",
+    "get_dataset_coverage_evidence_registry",
+    "get_dataset_coverage_evidence_registry_loader",
     "get_dataset_contracts",
     "get_dataset_grants",
     "get_dataset_records",

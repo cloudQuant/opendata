@@ -16,6 +16,7 @@ import json
 import math
 import re
 from collections.abc import Iterable, Mapping
+from contextlib import suppress
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Any
@@ -43,8 +44,8 @@ from sqlalchemy import (
     update,
 )
 from sqlalchemy.dialects.mysql import MEDIUMTEXT, VARCHAR
-from sqlalchemy.engine import Connection, Engine, RowMapping
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.engine import Connection, Engine, RootTransaction, RowMapping
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from opendata.data.capture_selection import (
     InstrumentCaptureSelection,
@@ -61,6 +62,11 @@ MAX_BUSINESS_KEY_LENGTH = 512
 MAX_PAGE_SIZE = 1_000
 MAX_PUBLICATION_RECORDS = 100_000
 MAX_SNAPSHOT_RECORDS = 100_000
+MAX_COVERAGE_RECORDS = 100_000
+MAX_COVERAGE_SCAN_BYTES = 64 * 1024 * 1024
+VISIBLE_RECORD_SET_ALGORITHM = "visible-record-set-v1"
+VISIBLE_RECORD_SET_SORT = "business-date-null-last-date-key:utf8-lex-v1"
+VISIBLE_RECORD_HASH_ALGORITHM = "normalize-records-canonical-v1"
 MAX_RECORD_BYTES = 256 * 1024
 MAX_BATCH_BYTES = 64 * 1024 * 1024
 MAX_METADATA_BYTES = 256 * 1024
@@ -342,6 +348,25 @@ class PublishedRecord:
 
 
 @dataclass(frozen=True, slots=True)
+class CoverageRecordSet:
+    """A verified, complete visible row set at one immutable publication pin."""
+
+    dataset_id: str
+    source_id: str
+    publication_id: str
+    publication_sequence: int
+    schema_version: str
+    semantic_version: str
+    unit: str
+    adjustment_basis: str
+    contract_sha256: str
+    algorithm: str
+    sha256: str
+    record_count: int
+    records: tuple[PublishedRecord, ...]
+
+
+@dataclass(frozen=True, slots=True)
 class PublishedPage:
     """Stable page of published records and the next signed cursor, if any."""
 
@@ -372,6 +397,18 @@ class PageSizeLimitError(ValueError):
 
 class SnapshotSizeLimitError(ValueError):
     """Raised when a fixed snapshot would require hashing too many visible rows."""
+
+
+class CoverageObservationLimitError(ValueError):
+    """Raised instead of returning a truncated publication coverage scan."""
+
+
+class CoverageRecordIntegrityError(ValueError):
+    """Raised when a persisted publication row set fails integrity verification."""
+
+
+class CoverageSnapshotConsistencyError(ValueError):
+    """Raised when the database cannot provide a stable publication read snapshot."""
 
 
 def publish_in_connection(
@@ -698,6 +735,299 @@ class PublicationStore:
             )
         return _publication_from_row(row) if row is not None else None
 
+    def read_coverage_records(
+        self,
+        dataset_id: str,
+        publication_id: str,
+        *,
+        limit: int = MAX_COVERAGE_RECORDS,
+    ) -> tuple[PublishedRecord, ...] | None:
+        """Read every visible fact at an exact publication pin for coverage.
+
+        The query resolves the latest business-key revision at the pinned
+        publication sequence, excludes tombstones only after ranking, and
+        includes null business dates so callers can reject malformed time
+        series. It never creates a persisted or in-memory snapshot and never
+        returns a truncated scan.
+        """
+        dataset = _identifier(dataset_id, "dataset_id")
+        publication_key = _hex_identifier(publication_id, "publication_id")
+        row_limit = _page_limit(limit, "limit", max_value=MAX_COVERAGE_RECORDS)
+        with self._engine.connect() as connection:
+            publication_row = (
+                connection.execute(
+                    select(PUBLICATIONS).where(
+                        PUBLICATIONS.c.dataset_id == dataset,
+                        PUBLICATIONS.c.publication_id == publication_key,
+                    )
+                )
+                .mappings()
+                .first()
+            )
+            if publication_row is None:
+                return None
+            ranked = _ranked_visible_facts_for(
+                dataset,
+                publication_row["sequence"],
+            )
+            statement = (
+                select(ranked)
+                .where(ranked.c.row_number == 1, ranked.c.is_deleted.is_(False))
+                .order_by(
+                    case((ranked.c.business_date.is_(None), 1), else_=0),
+                    ranked.c.business_date,
+                    ranked.c.business_key,
+                )
+                .limit(row_limit + 1)
+            )
+            result = connection.execute(
+                statement.execution_options(stream_results=True, yield_per=_READ_YIELD_PER)
+            ).mappings()
+            rows: list[RowMapping] = []
+            total_bytes = 0
+            try:
+                for item in result:
+                    if len(rows) >= row_limit:
+                        raise CoverageObservationLimitError(
+                            f"coverage scan exceeds the {row_limit:,}-record limit"
+                        )
+                    total_bytes += len(item["business_key"].encode("utf-8"))
+                    total_bytes += len(item["record_json"].encode("utf-8"))
+                    if total_bytes > MAX_COVERAGE_SCAN_BYTES:
+                        raise CoverageObservationLimitError(
+                            "coverage scan exceeds the 64 MiB byte limit"
+                        )
+                    rows.append(item)
+            finally:
+                result.close()
+        return tuple(_published_record_from_row(item) for item in rows)
+
+    def read_coverage_record_set(
+        self,
+        dataset_id: str,
+        publication_id: str,
+        *,
+        contract_sha256: str,
+        limit: int = MAX_COVERAGE_RECORDS,
+    ) -> CoverageRecordSet | None:
+        """Verify and read the full visible row set at one stable publication pin.
+
+        The returned digest is a versioned, externally pinnable description of
+        the complete visible set. This method never creates or updates a pin:
+        callers must compare the result with an independently trusted pin.
+        Publication metadata and fact rows are read in one repeatable snapshot;
+        each stored row hash is recomputed with the publication normalizer
+        before it contributes to the full-set digest.
+        """
+        dataset = _identifier(dataset_id, "dataset_id")
+        publication_key = _hex_identifier(publication_id, "publication_id")
+        contract_hash = _sha256_value(contract_sha256, "contract_sha256")
+        row_limit = _page_limit(limit, "limit", max_value=MAX_COVERAGE_RECORDS)
+
+        with self._engine.connect() as connection:
+            transaction = _begin_coverage_read_transaction(connection)
+            try:
+                if connection.dialect.name == "mysql":
+                    _require_transactional_coverage_tables(connection)
+                publication_row = (
+                    connection.execute(
+                        select(PUBLICATIONS).where(
+                            PUBLICATIONS.c.dataset_id == dataset,
+                            PUBLICATIONS.c.publication_id == publication_key,
+                        )
+                    )
+                    .mappings()
+                    .first()
+                )
+                if publication_row is None:
+                    coverage_set = None
+                else:
+                    coverage_set = self._read_verified_coverage_set_in_transaction(
+                        connection,
+                        publication_row,
+                        dataset=dataset,
+                        publication_key=publication_key,
+                        contract_hash=contract_hash,
+                        row_limit=row_limit,
+                    )
+            except (CoverageObservationLimitError, CoverageRecordIntegrityError):
+                _rollback_coverage_read(transaction)
+                raise
+            except CoverageSnapshotConsistencyError:
+                _rollback_coverage_read(transaction)
+                raise
+            except Exception as exc:
+                _rollback_coverage_read(transaction)
+                if isinstance(exc, SQLAlchemyError):
+                    raise CoverageSnapshotConsistencyError(
+                        "publication rows could not be read in one stable database snapshot"
+                    ) from exc
+                raise CoverageRecordIntegrityError(
+                    "publication metadata or visible records could not be verified"
+                ) from exc
+            try:
+                transaction.commit()
+            except Exception as exc:
+                if isinstance(exc, SQLAlchemyError):
+                    raise CoverageSnapshotConsistencyError(
+                        "publication snapshot could not be committed consistently"
+                    ) from exc
+                raise
+            return coverage_set
+
+    def _read_verified_coverage_set_in_transaction(
+        self,
+        connection: Connection,
+        publication_row: RowMapping,
+        *,
+        dataset: str,
+        publication_key: str,
+        contract_hash: str,
+        row_limit: int,
+    ) -> CoverageRecordSet:
+        """Verify the selected publication and visible rows inside its read txn."""
+        try:
+            for name in ("quality_json", "provenance_json", "watermark_json"):
+                value = publication_row[name]
+                if value is not None:
+                    if not isinstance(value, str) or len(value) > MAX_METADATA_BYTES:
+                        raise CoverageRecordIntegrityError(
+                            f"stored publication {name} exceeds its metadata bound"
+                        )
+                    if len(value.encode("utf-8")) > MAX_METADATA_BYTES:
+                        raise CoverageRecordIntegrityError(
+                            f"stored publication {name} exceeds its metadata byte bound"
+                        )
+            publication = _publication_from_row(publication_row)
+            if (
+                publication.dataset_id != dataset
+                or publication.publication_id != publication_key
+                or type(publication.sequence) is not int
+                or publication.sequence < 1
+            ):
+                raise CoverageRecordIntegrityError("publication identity is inconsistent")
+            _identifier(publication.source_id, "publication.source_id")
+            _label(publication.schema_version, "publication.schema_version", 64)
+            _label(publication.semantic_version, "publication.semantic_version", 64)
+            _label(publication.unit, "publication.unit", 128)
+            _label(publication.adjustment_basis, "publication.adjustment_basis", 128)
+            if not isinstance(publication.provenance, Mapping):
+                raise CoverageRecordIntegrityError("publication provenance is not an object")
+            if (
+                _json_object(
+                    publication.provenance,
+                    "stored publication provenance",
+                    MAX_METADATA_BYTES,
+                )
+                != publication_row["provenance_json"]
+            ):
+                raise CoverageRecordIntegrityError(
+                    "stored publication provenance is not canonically encoded"
+                )
+            stored_contract_hash = publication.provenance.get("contract_sha256")
+            if (
+                not isinstance(stored_contract_hash, str)
+                or _sha256_value(stored_contract_hash, "publication.contract_sha256")
+                != contract_hash
+            ):
+                raise CoverageRecordIntegrityError(
+                    "publication contract hash does not match the independent pin"
+                )
+
+            key_collation = "C" if connection.dialect.name == "postgresql" else None
+            ranked = _ranked_visible_facts_for(
+                dataset,
+                publication.sequence,
+                business_key_collation=key_collation,
+            )
+            fact_publication = PUBLICATIONS.alias("od_coverage_fact_publication")
+            statement = (
+                select(
+                    ranked,
+                    fact_publication.c.publication_id.label("fact_publication_id"),
+                    fact_publication.c.dataset_id.label("fact_publication_dataset_id"),
+                    fact_publication.c.sequence.label("fact_publication_sequence"),
+                    fact_publication.c.source_id.label("fact_publication_source_id"),
+                    fact_publication.c.schema_version.label("fact_publication_schema_version"),
+                    fact_publication.c.semantic_version.label("fact_publication_semantic_version"),
+                    fact_publication.c.unit.label("fact_publication_unit"),
+                    fact_publication.c.adjustment_basis.label("fact_publication_adjustment_basis"),
+                    fact_publication.c.provenance_json.label("fact_publication_provenance_json"),
+                )
+                .select_from(
+                    ranked.outerjoin(
+                        fact_publication,
+                        fact_publication.c.publication_id == ranked.c.publication_id,
+                    )
+                )
+                .where(ranked.c.row_number == 1, ranked.c.is_deleted.is_(False))
+                .order_by(
+                    case((ranked.c.business_date.is_(None), 1), else_=0),
+                    ranked.c.business_date,
+                    ranked.c.business_key,
+                )
+                .limit(row_limit + 1)
+            )
+            result = connection.execute(
+                statement.execution_options(stream_results=True, yield_per=_READ_YIELD_PER)
+            ).mappings()
+            records: list[PublishedRecord] = []
+            total_bytes = 0
+            try:
+                for row in result:
+                    if len(records) >= row_limit:
+                        raise CoverageObservationLimitError(
+                            f"coverage scan exceeds the {row_limit:,}-record limit"
+                        )
+                    row_bytes = _coverage_record_storage_size(row)
+                    total_bytes += row_bytes
+                    if total_bytes > MAX_COVERAGE_SCAN_BYTES:
+                        raise CoverageObservationLimitError(
+                            "coverage scan exceeds the 64 MiB byte limit"
+                        )
+                    records.append(
+                        _verified_coverage_record(
+                            row,
+                            dataset=dataset,
+                            max_sequence=publication.sequence,
+                            publication=publication,
+                        )
+                    )
+            finally:
+                result.close()
+
+            records.sort(key=_coverage_record_sort_key)
+            for previous, current in zip(records, records[1:], strict=False):
+                if previous.business_key == current.business_key:
+                    raise CoverageRecordIntegrityError(
+                        "visible publication contains duplicate business keys"
+                    )
+            row_count = len(records)
+            digest = _visible_record_set_sha256(publication, contract_hash, records)
+            return CoverageRecordSet(
+                dataset_id=publication.dataset_id,
+                source_id=publication.source_id,
+                publication_id=publication.publication_id,
+                publication_sequence=publication.sequence,
+                schema_version=publication.schema_version,
+                semantic_version=publication.semantic_version,
+                unit=publication.unit,
+                adjustment_basis=publication.adjustment_basis,
+                contract_sha256=contract_hash,
+                algorithm=VISIBLE_RECORD_SET_ALGORITHM,
+                sha256=digest,
+                record_count=row_count,
+                records=tuple(records),
+            )
+        except (CoverageObservationLimitError, CoverageRecordIntegrityError):
+            raise
+        except SQLAlchemyError:
+            raise
+        except Exception as exc:
+            raise CoverageRecordIntegrityError(
+                "publication metadata or a visible record is malformed"
+            ) from exc
+
     def create_snapshot(
         self,
         dataset_id: str,
@@ -1010,9 +1340,34 @@ def _ranked_visible_facts(snapshot: SnapshotRecord) -> Subquery:
         snapshot.capture_id,
         error_type=SnapshotError,
     )
+    return _ranked_visible_facts_for(
+        snapshot.dataset_id,
+        snapshot.publication_sequence,
+        selection=selection,
+    )
+
+
+def _ranked_visible_facts_for(
+    dataset_id: str,
+    publication_sequence: int,
+    *,
+    selection: InstrumentCaptureSelection | None = None,
+    business_key_collation: str | None = None,
+) -> Subquery:
+    """Rank all facts for a dataset at a sequence, optionally within one selector."""
+    dataset_partition = (
+        PUBLISHED_FACT_VERSIONS.c.dataset_id.collate(business_key_collation)
+        if business_key_collation is not None
+        else PUBLISHED_FACT_VERSIONS.c.dataset_id
+    )
+    business_key_partition = (
+        PUBLISHED_FACT_VERSIONS.c.business_key.collate(business_key_collation)
+        if business_key_collation is not None
+        else PUBLISHED_FACT_VERSIONS.c.business_key
+    )
     predicates = [
-        PUBLISHED_FACT_VERSIONS.c.dataset_id == snapshot.dataset_id,
-        PUBLISHED_FACT_VERSIONS.c.publication_sequence <= snapshot.publication_sequence,
+        dataset_partition == dataset_id,
+        PUBLISHED_FACT_VERSIONS.c.publication_sequence <= publication_sequence,
     ]
     if selection is not None:
         predicates.extend(
@@ -1041,8 +1396,8 @@ def _ranked_visible_facts(snapshot: SnapshotRecord) -> Subquery:
             func.row_number()
             .over(
                 partition_by=(
-                    PUBLISHED_FACT_VERSIONS.c.dataset_id,
-                    PUBLISHED_FACT_VERSIONS.c.business_key,
+                    dataset_partition,
+                    business_key_partition,
                 ),
                 order_by=(
                     PUBLISHED_FACT_VERSIONS.c.publication_sequence.desc(),
@@ -1054,6 +1409,272 @@ def _ranked_visible_facts(snapshot: SnapshotRecord) -> Subquery:
         .where(*predicates)
         .subquery("od_snapshot_latest_revision")
     )
+
+
+def _begin_coverage_read_transaction(connection: Connection) -> RootTransaction:
+    """Start a transaction with repeatable reads or reject the SQL dialect."""
+    dialect_name = connection.dialect.name
+    if dialect_name == "sqlite":
+        transaction = connection.begin()
+        try:
+            read_uncommitted = connection.exec_driver_sql("PRAGMA read_uncommitted").scalar_one()
+            if read_uncommitted != 0:
+                raise CoverageSnapshotConsistencyError(
+                    "SQLite read_uncommitted must be disabled for coverage verification"
+                )
+            # pysqlite's legacy transaction mode does not begin on SELECT. Issue
+            # the physical BEGIN before either publication or fact rows are read.
+            connection.exec_driver_sql("BEGIN")
+            return transaction
+        except Exception as exc:
+            _rollback_coverage_read(transaction)
+            if isinstance(exc, CoverageSnapshotConsistencyError):
+                raise
+            raise CoverageSnapshotConsistencyError(
+                "SQLite could not establish a stable read transaction"
+            ) from exc
+
+    if dialect_name in {"mysql", "postgresql"}:
+        try:
+            connection.execution_options(isolation_level="REPEATABLE READ")
+            return connection.begin()
+        except Exception as exc:
+            raise CoverageSnapshotConsistencyError(
+                f"{dialect_name} could not establish REPEATABLE READ isolation"
+            ) from exc
+
+    raise CoverageSnapshotConsistencyError(
+        f"database dialect {dialect_name!r} does not support verified coverage reads"
+    )
+
+
+def _rollback_coverage_read(transaction: RootTransaction) -> None:
+    """Roll back a coverage read without hiding its original fail-closed error."""
+    with suppress(Exception):
+        transaction.rollback()
+
+
+def _require_transactional_coverage_tables(connection: Connection) -> None:
+    """Require InnoDB for both MySQL tables participating in a stable read."""
+    rows = connection.exec_driver_sql(
+        "SELECT table_name, engine FROM information_schema.tables "
+        "WHERE table_schema = DATABASE() "
+        "AND table_name IN ('od_publications', 'od_published_fact_versions')"
+    ).all()
+    engines = {str(row[0]).casefold(): str(row[1] or "").casefold() for row in rows}
+    expected = {"od_publications", "od_published_fact_versions"}
+    if set(engines) != expected or any(engines[name] != "innodb" for name in expected):
+        raise CoverageSnapshotConsistencyError(
+            "MySQL coverage reads require od_publications and "
+            "od_published_fact_versions to use InnoDB"
+        )
+
+
+def _sha256_value(value: str, name: str) -> str:
+    """Validate and return one lowercase SHA-256 value."""
+    if (
+        not isinstance(value, str)
+        or len(value) != 64
+        or any(character not in "0123456789abcdef" for character in value)
+    ):
+        raise ValueError(f"{name} must be a lowercase 64-character SHA-256 digest")
+    return value
+
+
+def _coverage_record_storage_size(row: RowMapping) -> int:
+    """Bound encoded bytes and metadata before parsing one persisted fact row."""
+    business_key = row["business_key"]
+    record_json = row["record_json"]
+    if not isinstance(record_json, str) or len(record_json) > MAX_RECORD_BYTES:
+        raise CoverageRecordIntegrityError("stored record_json exceeds its publication bound")
+    fact_provenance = row["fact_publication_provenance_json"]
+    if (
+        not isinstance(fact_provenance, str)
+        or len(fact_provenance) > MAX_METADATA_BYTES
+        or len(fact_provenance.encode("utf-8")) > MAX_METADATA_BYTES
+    ):
+        raise CoverageRecordIntegrityError("stored fact publication provenance exceeds its bound")
+    _label(business_key, "stored business_key", MAX_BUSINESS_KEY_LENGTH)
+    total = (
+        len(business_key.encode("utf-8"))
+        + len(record_json.encode("utf-8"))
+        + len(fact_provenance.encode("utf-8"))
+        + 256
+    )
+    bounded_text = (
+        (row["event_at"], 40, "event_at"),
+        (row["observed_at"], 40, "observed_at"),
+        (row["source_published_at"], 40, "source_published_at"),
+        (row["available_at"], 40, "available_at"),
+        (row["instrument_id"], MAX_ID_LENGTH, "instrument_id"),
+        (row["capture_id"], 64, "capture_id"),
+    )
+    for value, maximum, name in bounded_text:
+        if value is None:
+            continue
+        if not isinstance(value, str) or len(value) > maximum:
+            raise CoverageRecordIntegrityError(f"stored {name} exceeds its publication bound")
+        total += len(value.encode("utf-8"))
+    return total
+
+
+def _verified_coverage_record(
+    row: RowMapping,
+    *,
+    dataset: str,
+    max_sequence: int,
+    publication: PublicationRecord,
+) -> PublishedRecord:
+    """Rebuild one row through the publication normalizer and compare its hash."""
+    if row["is_deleted"] is not False:
+        raise CoverageRecordIntegrityError("visible fact query returned a tombstone")
+    if (
+        row["dataset_id"] != dataset
+        or type(row["revision"]) is not int
+        or row["revision"] < 1
+        or type(row["publication_sequence"]) is not int
+        or not 1 <= row["publication_sequence"] <= max_sequence
+    ):
+        raise CoverageRecordIntegrityError("visible fact identity or revision is inconsistent")
+    try:
+        _hex_identifier(row["publication_id"], "stored publication_id")
+    except ValueError as exc:
+        raise CoverageRecordIntegrityError("visible fact publication id is malformed") from exc
+    if (
+        row["fact_publication_id"] != row["publication_id"]
+        or row["fact_publication_dataset_id"] != dataset
+        or row["fact_publication_sequence"] != row["publication_sequence"]
+        or row["fact_publication_source_id"] != publication.source_id
+        or row["fact_publication_schema_version"] != publication.schema_version
+        or row["fact_publication_semantic_version"] != publication.semantic_version
+        or row["fact_publication_unit"] != publication.unit
+        or row["fact_publication_adjustment_basis"] != publication.adjustment_basis
+    ):
+        raise CoverageRecordIntegrityError(
+            "visible fact does not match its immutable publication contract"
+        )
+    try:
+        fact_provenance = json.loads(row["fact_publication_provenance_json"])
+    except Exception as exc:
+        raise CoverageRecordIntegrityError(
+            "visible fact publication provenance is malformed"
+        ) from exc
+    if not isinstance(fact_provenance, dict) or fact_provenance.get(
+        "contract_sha256"
+    ) != publication.provenance.get("contract_sha256"):
+        raise CoverageRecordIntegrityError("visible fact publication contract hash is inconsistent")
+    if (
+        _json_object(
+            fact_provenance,
+            "stored fact publication provenance",
+            MAX_METADATA_BYTES,
+        )
+        != row["fact_publication_provenance_json"]
+    ):
+        raise CoverageRecordIntegrityError(
+            "visible fact publication provenance is not canonically encoded"
+        )
+    stored_record_json = row["record_json"]
+    try:
+        payload = json.loads(stored_record_json)
+        candidate = PublishedRecordInput(
+            business_key=row["business_key"],
+            payload=payload,
+            business_date=row["business_date"],
+            observed_at=_parse_timestamp(row["observed_at"]),
+            source_published_at=_parse_timestamp(row["source_published_at"]),
+            available_at=_parse_timestamp(row["available_at"]),
+            event_at=_parse_timestamp(row["event_at"]),
+            instrument_id=row["instrument_id"],
+            capture_id=row["capture_id"],
+        )
+        normalized = _normalize_records((candidate,))
+    except Exception as exc:
+        if isinstance(exc, CoverageRecordIntegrityError):
+            raise
+        raise CoverageRecordIntegrityError("stored visible fact cannot be normalized") from exc
+    if len(normalized) != 1:
+        raise CoverageRecordIntegrityError("stored visible fact did not normalize to one row")
+    item = normalized[0]
+    stored_hash = row["record_hash"]
+    if (
+        not isinstance(stored_hash, str)
+        or len(stored_hash) != 64
+        or any(character not in "0123456789abcdef" for character in stored_hash)
+        or not hmac.compare_digest(item["record_hash"], stored_hash)
+    ):
+        raise CoverageRecordIntegrityError("stored visible fact record_hash does not match")
+    if (
+        item["business_key"] != row["business_key"]
+        or item["business_date"] != row["business_date"]
+        or item["event_at"] != row["event_at"]
+        or item["observed_at"] != row["observed_at"]
+        or item["source_published_at"] != row["source_published_at"]
+        or item["available_at"] != row["available_at"]
+        or item["instrument_id"] != row["instrument_id"]
+        or item["capture_id"] != row["capture_id"]
+        or item["record_json"] != stored_record_json
+    ):
+        raise CoverageRecordIntegrityError(
+            "stored visible fact fields are not in canonical publication form"
+        )
+    return _published_record_from_row(row)
+
+
+def _coverage_record_sort_key(record: PublishedRecord) -> tuple[bool, date, bytes]:
+    """Sort non-null business dates first, then dates and UTF-8 business keys."""
+    return (
+        record.business_date is None,
+        record.business_date if record.business_date is not None else date.min,
+        record.business_key.encode("utf-8"),
+    )
+
+
+def _visible_record_set_sha256(
+    publication: PublicationRecord,
+    contract_sha256: str,
+    records: list[PublishedRecord],
+) -> str:
+    """Hash one canonical header and ordered canonical row per visible record.
+
+    The preimage is canonical JSON encoded as UTF-8 with one newline after the
+    header and each row. Header fields bind all publication/contract metadata,
+    algorithm versions, ordering, and visible row count. Each row binds the
+    business key, revision, business date, source publication, sequence, and
+    recomputed publication record hash.
+    """
+    header = {
+        "adjustment_basis": publication.adjustment_basis,
+        "algorithm": VISIBLE_RECORD_SET_ALGORITHM,
+        "contract_sha256": contract_sha256,
+        "dataset_id": publication.dataset_id,
+        "publication_id": publication.publication_id,
+        "publication_sequence": publication.sequence,
+        "record_count": len(records),
+        "row_hash_algorithm": VISIBLE_RECORD_HASH_ALGORITHM,
+        "schema_version": publication.schema_version,
+        "semantic_version": publication.semantic_version,
+        "sort_id": VISIBLE_RECORD_SET_SORT,
+        "source_id": publication.source_id,
+        "unit": publication.unit,
+    }
+    digest = hashlib.sha256()
+    digest.update(_canonical_json(header).encode("utf-8"))
+    digest.update(b"\n")
+    for record in records:
+        row = {
+            "business_date": record.business_date.isoformat()
+            if record.business_date is not None
+            else None,
+            "business_key": record.business_key,
+            "publication_id": record.publication_id,
+            "publication_sequence": record.publication_sequence,
+            "record_hash": record.record_hash,
+            "revision": record.revision,
+        }
+        digest.update(_canonical_json(row).encode("utf-8"))
+        digest.update(b"\n")
+    return digest.hexdigest()
 
 
 def _snapshot_content_hash(

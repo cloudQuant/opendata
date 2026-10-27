@@ -13,7 +13,7 @@ from threading import Barrier
 from typing import TYPE_CHECKING
 
 import pytest
-from sqlalchemy import create_engine, event, func, insert, select
+from sqlalchemy import create_engine, delete, event, func, insert, select, update
 from sqlalchemy.dialects.mysql import dialect as mysql_dialect
 from sqlalchemy.engine.result import MappingResult
 from sqlalchemy.schema import CreateTable
@@ -27,6 +27,13 @@ from opendata.pipeline.publication_store import (
     PUBLICATIONS,
     PUBLISHED_FACT_VERSIONS,
     SNAPSHOTS,
+    VISIBLE_RECORD_HASH_ALGORITHM,
+    VISIBLE_RECORD_SET_ALGORITHM,
+    VISIBLE_RECORD_SET_SORT,
+    CoverageObservationLimitError,
+    CoverageRecordIntegrityError,
+    CoverageRecordSet,
+    CoverageSnapshotConsistencyError,
     PageSizeLimitError,
     PublicationConflictError,
     PublicationContractConflictError,
@@ -43,6 +50,8 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from sqlalchemy.engine import Engine
+
+    from opendata.pipeline.publication_store import PublicationRecord, PublishedRecord
 
 CURSOR_KEY = b"test-only-cursor-signing-key-32-bytes-min"
 NOW = datetime(2026, 10, 26, 8, 0, tzinfo=timezone.utc)
@@ -117,6 +126,57 @@ def record(
         event_at=event_at,
         payload={"symbol": symbol, "close": close, "unit": "CNY/share"},
     )
+
+
+def expected_coverage_sha256(
+    publication: PublicationRecord,
+    contract_sha256: str,
+    records: tuple[PublishedRecord, ...],
+) -> str:
+    """Independent implementation of the documented visible-set v1 preimage."""
+    header = {
+        "adjustment_basis": publication.adjustment_basis,
+        "algorithm": VISIBLE_RECORD_SET_ALGORITHM,
+        "contract_sha256": contract_sha256,
+        "dataset_id": publication.dataset_id,
+        "publication_id": publication.publication_id,
+        "publication_sequence": publication.sequence,
+        "record_count": len(records),
+        "row_hash_algorithm": VISIBLE_RECORD_HASH_ALGORITHM,
+        "schema_version": publication.schema_version,
+        "semantic_version": publication.semantic_version,
+        "sort_id": VISIBLE_RECORD_SET_SORT,
+        "source_id": publication.source_id,
+        "unit": publication.unit,
+    }
+    preimage = [json.dumps(header, ensure_ascii=False, sort_keys=True, separators=(",", ":"))]
+    ordered = sorted(
+        records,
+        key=lambda item: (
+            item.business_date is None,
+            item.business_date or date.min,
+            item.business_key.encode("utf-8"),
+        ),
+    )
+    preimage.extend(
+        json.dumps(
+            {
+                "business_date": item.business_date.isoformat()
+                if item.business_date is not None
+                else None,
+                "business_key": item.business_key,
+                "publication_id": item.publication_id,
+                "publication_sequence": item.publication_sequence,
+                "record_hash": item.record_hash,
+                "revision": item.revision,
+            },
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        for item in ordered
+    )
+    return hashlib.sha256(("\n".join(preimage) + "\n").encode("utf-8")).hexdigest()
 
 
 def test_publish_retry_is_idempotent_and_changed_payload_conflicts(engine: Engine) -> None:
@@ -255,6 +315,382 @@ def test_delta_publication_preserves_revisions_and_unchanged_business_keys(engin
             .where(PUBLISHED_FACT_VERSIONS.c.business_key == "600000.SH:2026-10-23")
         ).scalar_one()
     assert revisions == 2
+
+
+def test_coverage_scan_reads_complete_facts_at_the_pinned_publication(engine: Engine) -> None:
+    """Coverage sees every visible key at its pin and refuses a partial scan."""
+    store = make_store(engine)
+    day = date(2026, 10, 23)
+    first = publish(
+        store,
+        "coverage-pin-1",
+        [record("600000.SH", day, 12.4), record("600001.SH", day, 8.1)],
+    )
+    second = publish(store, "coverage-pin-2", [record("600000.SH", day, 12.6)])
+
+    pinned = store.read_coverage_records("equity.daily", first.publication_id)
+    latest = store.read_coverage_records("equity.daily", second.publication_id)
+
+    assert pinned is not None
+    assert latest is not None
+    assert len(pinned) == 2
+    assert {item.business_date for item in pinned} == {day}
+    assert {item.payload["close"] for item in pinned} == {12.4, 8.1}
+    assert {item.payload["close"] for item in latest} == {12.6, 8.1}
+    assert store.read_coverage_records("other.dataset", first.publication_id) is None
+    with pytest.raises(CoverageObservationLimitError):
+        store.read_coverage_records("equity.daily", first.publication_id, limit=1)
+    with engine.connect() as connection:
+        snapshot_count = connection.execute(
+            select(func.count()).select_from(SNAPSHOTS)
+        ).scalar_one()
+    assert snapshot_count == 0
+
+
+def test_coverage_scan_excludes_latest_tombstones_only_after_pinned_ranking(engine: Engine) -> None:
+    """An as-of pin before deletion retains a row; the later pin omits its tombstone."""
+    store = make_store(engine)
+    day = date(2026, 10, 23)
+    first = publish(store, "coverage-before-delete", [record("600000.SH", day, 12.4)])
+    deleted = publish(store, "coverage-delete-sequence", [])
+    with engine.begin() as connection:
+        connection.execute(
+            insert(PUBLISHED_FACT_VERSIONS).values(
+                dataset_id="equity.daily",
+                business_key=f"600000.SH:{day.isoformat()}",
+                revision=2,
+                publication_id=deleted.publication_id,
+                publication_sequence=deleted.sequence,
+                instrument_id=None,
+                capture_id=None,
+                business_date=None,
+                event_at=None,
+                observed_at=None,
+                source_published_at=None,
+                available_at=None,
+                record_json="{}",
+                record_hash="0" * 64,
+                is_deleted=True,
+            )
+        )
+
+    before_delete = store.read_coverage_records("equity.daily", first.publication_id)
+    after_delete = store.read_coverage_records("equity.daily", deleted.publication_id)
+
+    assert before_delete is not None and len(before_delete) == 1
+    assert before_delete[0].payload["close"] == 12.4
+    assert after_delete == ()
+
+
+def test_coverage_record_set_hashes_the_complete_pinned_visible_set(engine: Engine) -> None:
+    """The v1 digest binds the pin and sorted complete visible rows, including null dates."""
+    store = make_store(engine)
+    contract_hash = "c" * 64
+    provenance = {"provider": "alpha", "contract_sha256": contract_hash}
+    first = publish(
+        store,
+        "coverage-record-set-v1",
+        [
+            record("600001.SH", date(2026, 10, 24), 8.1),
+            record("600000.SH", date(2026, 10, 23), 12.4),
+            PublishedRecordInput(
+                business_key="undated:600002.SH",
+                payload={"symbol": "600002.SH", "close": 4.2, "unit": "CNY/share"},
+            ),
+        ],
+        provenance=provenance,
+    )
+
+    initial = store.read_coverage_record_set(
+        "equity.daily", first.publication_id, contract_sha256=contract_hash
+    )
+
+    assert isinstance(initial, CoverageRecordSet)
+    assert initial.dataset_id == "equity.daily"
+    assert initial.source_id == "provider.alpha"
+    assert initial.publication_id == first.publication_id
+    assert initial.publication_sequence == first.sequence == 1
+    assert initial.schema_version == "2"
+    assert initial.semantic_version == "2.1"
+    assert initial.contract_sha256 == contract_hash
+    assert initial.algorithm == VISIBLE_RECORD_SET_ALGORITHM
+    assert initial.record_count == 3
+    assert [item.business_date for item in initial.records] == [
+        date(2026, 10, 23),
+        date(2026, 10, 24),
+        None,
+    ]
+    assert initial.sha256 == expected_coverage_sha256(first, contract_hash, initial.records)
+    with pytest.raises(CoverageRecordIntegrityError, match="contract hash"):
+        store.read_coverage_record_set(
+            "equity.daily", first.publication_id, contract_sha256="d" * 64
+        )
+
+
+def test_coverage_record_set_rejects_a_persisted_payload_hash_mismatch(engine: Engine) -> None:
+    """Changing row JSON without changing its stored digest fails closed."""
+    store = make_store(engine)
+    contract_hash = "c" * 64
+    first = publish(
+        store,
+        "coverage-tamper",
+        [record("600000.SH", date(2026, 10, 23), 12.4)],
+        provenance={"provider": "alpha", "contract_sha256": contract_hash},
+    )
+    with engine.begin() as connection:
+        connection.execute(
+            update(PUBLISHED_FACT_VERSIONS)
+            .where(PUBLISHED_FACT_VERSIONS.c.dataset_id == "equity.daily")
+            .where(PUBLISHED_FACT_VERSIONS.c.business_key == "600000.SH:2026-10-23")
+            .values(record_json='{"close":999.0,"symbol":"600000.SH","unit":"CNY/share"}')
+        )
+
+    with pytest.raises(CoverageRecordIntegrityError, match="record_hash"):
+        store.read_coverage_record_set(
+            "equity.daily", first.publication_id, contract_sha256=contract_hash
+        )
+
+
+def test_coverage_record_set_digest_changes_when_visible_rows_are_inserted_or_deleted(
+    engine: Engine,
+) -> None:
+    """A valid inserted or deleted fact changes the externally pinned digest and count."""
+    store = make_store(engine)
+    contract_hash = "c" * 64
+    first = publish(
+        store,
+        "coverage-rowset-mutation",
+        [record("600000.SH", date(2026, 10, 23), 12.4)],
+        provenance={"provider": "alpha", "contract_sha256": contract_hash},
+    )
+    original = store.read_coverage_record_set(
+        "equity.daily", first.publication_id, contract_sha256=contract_hash
+    )
+    assert original is not None
+    candidate = record("600001.SH", date(2026, 10, 23), 8.1)
+    normalized = publication_store._normalize_records([candidate])[0]
+    with engine.begin() as connection:
+        connection.execute(
+            insert(PUBLISHED_FACT_VERSIONS).values(
+                dataset_id="equity.daily",
+                business_key=normalized["business_key"],
+                revision=1,
+                publication_id=first.publication_id,
+                publication_sequence=first.sequence,
+                instrument_id=normalized["instrument_id"],
+                capture_id=normalized["capture_id"],
+                business_date=normalized["business_date"],
+                event_at=normalized["event_at"],
+                observed_at=normalized["observed_at"],
+                source_published_at=normalized["source_published_at"],
+                available_at=normalized["available_at"],
+                record_json=normalized["record_json"],
+                record_hash=normalized["record_hash"],
+                is_deleted=False,
+            )
+        )
+
+    inserted = store.read_coverage_record_set(
+        "equity.daily", first.publication_id, contract_sha256=contract_hash
+    )
+
+    assert inserted is not None
+    assert inserted.record_count == 2
+    assert inserted.sha256 != original.sha256
+    with engine.begin() as connection:
+        connection.execute(
+            delete(PUBLISHED_FACT_VERSIONS).where(
+                PUBLISHED_FACT_VERSIONS.c.dataset_id == "equity.daily",
+                PUBLISHED_FACT_VERSIONS.c.business_key == candidate.business_key,
+            )
+        )
+    deleted = store.read_coverage_record_set(
+        "equity.daily", first.publication_id, contract_sha256=contract_hash
+    )
+    assert deleted is not None
+    assert deleted.record_count == 1
+    assert deleted.sha256 == original.sha256
+    with engine.begin() as connection:
+        connection.execute(
+            delete(PUBLISHED_FACT_VERSIONS).where(
+                PUBLISHED_FACT_VERSIONS.c.dataset_id == "equity.daily",
+                PUBLISHED_FACT_VERSIONS.c.business_key == original.records[0].business_key,
+            )
+        )
+    fully_deleted = store.read_coverage_record_set(
+        "equity.daily", first.publication_id, contract_sha256=contract_hash
+    )
+    assert fully_deleted is not None
+    assert fully_deleted.record_count == 0
+    assert fully_deleted.sha256 != original.sha256
+
+
+def test_coverage_record_set_digest_detects_valid_record_rewrite(engine: Engine) -> None:
+    """An independently valid row-hash rewrite still changes the external set pin."""
+    store = make_store(engine)
+    contract_hash = "c" * 64
+    first = publish(
+        store,
+        "coverage-valid-rewrite",
+        [record("600000.SH", date(2026, 10, 23), 12.4)],
+        provenance={"provider": "alpha", "contract_sha256": contract_hash},
+    )
+    original = store.read_coverage_record_set(
+        "equity.daily", first.publication_id, contract_sha256=contract_hash
+    )
+    assert original is not None
+    replacement = publication_store._normalize_records(
+        [record("600000.SH", date(2026, 10, 23), 99.9)]
+    )[0]
+
+    with engine.begin() as connection:
+        connection.execute(
+            update(PUBLISHED_FACT_VERSIONS)
+            .where(
+                PUBLISHED_FACT_VERSIONS.c.dataset_id == "equity.daily",
+                PUBLISHED_FACT_VERSIONS.c.business_key == original.records[0].business_key,
+            )
+            .values(
+                record_json=replacement["record_json"],
+                record_hash=replacement["record_hash"],
+            )
+        )
+
+    rewritten = store.read_coverage_record_set(
+        "equity.daily", first.publication_id, contract_sha256=contract_hash
+    )
+
+    assert rewritten is not None
+    assert rewritten.record_count == original.record_count == 1
+    assert rewritten.records[0].payload["close"] == 99.9
+    assert rewritten.sha256 != original.sha256
+
+
+def test_coverage_record_set_keeps_old_publication_pin_after_later_correction(
+    engine: Engine,
+) -> None:
+    """A newer revision changes the latest set without changing an older pin."""
+    store = make_store(engine)
+    contract_hash = "c" * 64
+    provenance = {"provider": "alpha", "contract_sha256": contract_hash}
+    first = publish(
+        store,
+        "coverage-version-1",
+        [record("600000.SH", date(2026, 10, 23), 12.4)],
+        provenance=provenance,
+    )
+    original = store.read_coverage_record_set(
+        "equity.daily", first.publication_id, contract_sha256=contract_hash
+    )
+    second = publish(
+        store,
+        "coverage-version-2",
+        [record("600000.SH", date(2026, 10, 23), 12.6)],
+        provenance=provenance,
+    )
+
+    old_again = store.read_coverage_record_set(
+        "equity.daily", first.publication_id, contract_sha256=contract_hash
+    )
+    latest = store.read_coverage_record_set(
+        "equity.daily", second.publication_id, contract_sha256=contract_hash
+    )
+
+    assert old_again == original
+    assert latest is not None
+    assert latest.publication_sequence == second.sequence == 2
+    assert latest.records[0].payload["close"] == 12.6
+    assert latest.sha256 != original.sha256
+
+
+def test_coverage_record_set_hashes_a_stable_empty_visible_set(engine: Engine) -> None:
+    """An empty visible set still has a deterministic versioned pin digest."""
+    store = make_store(engine)
+    contract_hash = "c" * 64
+    empty = publish(
+        store,
+        "coverage-empty-set",
+        [],
+        provenance={"provider": "alpha", "contract_sha256": contract_hash},
+    )
+
+    first_read = store.read_coverage_record_set(
+        "equity.daily", empty.publication_id, contract_sha256=contract_hash
+    )
+    second_read = store.read_coverage_record_set(
+        "equity.daily", empty.publication_id, contract_sha256=contract_hash
+    )
+
+    assert first_read is not None
+    assert first_read.record_count == 0
+    assert first_read.records == ()
+    assert len(first_read.sha256) == 64
+    assert first_read == second_read
+
+
+def test_coverage_record_set_rejects_dialects_without_snapshot_guarantees() -> None:
+    """Only the explicitly supported SQLite/MySQL/PostgreSQL read models are accepted."""
+
+    class UnsupportedDialect:
+        name = "oracle"
+
+    class UnsupportedConnection:
+        dialect = UnsupportedDialect()
+
+    with pytest.raises(CoverageSnapshotConsistencyError, match="does not support"):
+        getattr(publication_store, "_begin_coverage_read_transaction")(UnsupportedConnection())
+
+
+def test_coverage_record_set_reads_metadata_and_rows_from_one_sqlite_snapshot(
+    tmp_path: Path,
+) -> None:
+    """A concurrent publication metadata mutation cannot split the read snapshot."""
+    db_path = tmp_path / "coverage-snapshot.sqlite"
+    snapshot_engine = create_engine(f"sqlite:///{db_path}", connect_args={"timeout": 30})
+    PUBLICATION_METADATA.create_all(snapshot_engine)
+    with snapshot_engine.connect() as connection:
+        connection.exec_driver_sql("PRAGMA journal_mode=WAL")
+    store = make_store(snapshot_engine)
+    contract_hash = "c" * 64
+    publication = publish(
+        store,
+        "coverage-stable-snapshot",
+        [record("600000.SH", date(2026, 10, 23), 12.4)],
+        provenance={"provider": "alpha", "contract_sha256": contract_hash},
+    )
+    writer_committed = False
+
+    def mutate_after_publication_read(
+        connection: object,
+        cursor: object,
+        statement: str,
+        parameters: object,
+        context: object,
+        executemany: bool,
+    ) -> None:
+        nonlocal writer_committed
+        if writer_committed or "from od_publications" not in statement.lower():
+            return
+        writer_committed = True
+        with snapshot_engine.begin() as writer:
+            writer.execute(
+                update(PUBLICATIONS)
+                .where(PUBLICATIONS.c.publication_id == publication.publication_id)
+                .values(source_id="provider.beta")
+            )
+
+    event.listen(snapshot_engine, "after_cursor_execute", mutate_after_publication_read)
+    try:
+        result = store.read_coverage_record_set(
+            "equity.daily", publication.publication_id, contract_sha256=contract_hash
+        )
+    finally:
+        event.remove(snapshot_engine, "after_cursor_execute", mutate_after_publication_read)
+        snapshot_engine.dispose()
+
+    assert writer_committed
+    assert result is not None
+    assert result.source_id == "provider.alpha"
 
 
 def test_fixed_snapshot_excludes_later_publications_and_keeps_page_order(engine: Engine) -> None:
