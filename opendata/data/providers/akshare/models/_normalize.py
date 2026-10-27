@@ -13,6 +13,10 @@ from typing import Any, cast
 
 import pandas as pd
 
+_SH_A_SHARE_PREFIXES = ("600", "601", "603", "605", "688")
+_SZ_A_SHARE_PREFIXES = ("000", "001", "002", "003", "300", "301")
+_BJ_A_SHARE_PREFIXES = ("4", "8", "920")
+
 
 def plain_symbol(symbol: str) -> str:
     """Normalize a symbol to the plain six-digit code.
@@ -51,16 +55,44 @@ def em_symbol(symbol: str) -> str:
 
 
 def sina_symbol(symbol: str) -> str:
-    """Spell a symbol in sina report form (``sh600519``).
+    """Spell a supported mainland A-share code in Sina report form.
 
     Args:
-        symbol: Input symbol (plain or suffixed).
+        symbol: Six-digit A-share code, optionally suffixed with ``.SH`` or ``.SZ``.
 
     Returns:
-        The lowercase-prefixed sina spelling.
+        The lowercase-prefixed Sina spelling (for example, ``sh600519``).
+
+    Raises:
+        ValueError: If the code is malformed, belongs to an unsupported exchange
+            or code family, or has a suffix inconsistent with its code family.
     """
-    code = plain_symbol(symbol)
-    prefix = "sz" if code.startswith(("0", "3")) else "sh"
+    parts = symbol.strip().split(".")
+    if len(parts) not in {1, 2}:
+        raise ValueError(f"cannot derive the sina symbol from malformed code: {symbol!r}")
+
+    code = parts[0].strip()
+    explicit_exchange = parts[1].strip().upper() if len(parts) == 2 else None
+    if len(code) != 6 or not code.isascii() or not code.isdecimal():
+        raise ValueError(f"cannot derive the sina symbol from malformed code: {symbol!r}")
+
+    if code.startswith(_BJ_A_SHARE_PREFIXES):
+        raise ValueError(
+            f"cannot derive the sina symbol for Beijing Stock Exchange code: {symbol!r}"
+        )
+
+    if code.startswith(_SH_A_SHARE_PREFIXES):
+        exchange = "SH"
+    elif code.startswith(_SZ_A_SHARE_PREFIXES):
+        exchange = "SZ"
+    else:
+        raise ValueError(f"cannot derive the sina symbol for unsupported A-share code: {symbol!r}")
+
+    if explicit_exchange not in {None, "SH", "SZ"}:
+        raise ValueError(f"cannot derive the sina symbol from unsupported suffix: {symbol!r}")
+    if explicit_exchange is not None and explicit_exchange != exchange:
+        raise ValueError(f"Sina exchange suffix conflicts with code prefix: {symbol!r}")
+    prefix = exchange.lower()
     return f"{prefix}{code}"
 
 
