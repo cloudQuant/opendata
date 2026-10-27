@@ -4,10 +4,13 @@ Revision ID: 0015_source_attempt_gate
 Revises: 0014_sina_fzb_slot_reconciliation
 Create Date: 2026-10-27
 
-This revision is intentionally SQLite-only and creates no grant, quota policy,
-source binding, or bucket state. The grant evidence fields store operator
-declarations and references; they do not determine legal rights. Reservation
-rows are permanent idempotency tombstones and must not be deleted casually.
+This revision creates the source-attempt gate only on SQLite. On supported
+MySQL 8.0.16+ warehouses it is an explicit no-op: the source gate runtime is
+SQLite-only and this revision must not create its tables in the warehouse.
+MySQL versions outside that range, MariaDB, and other dialects are rejected.
+The grant evidence fields store operator declarations and references; they do
+not determine legal rights. Reservation rows are permanent idempotency
+tombstones and must not be deleted casually.
 """
 
 from sqlalchemy import (
@@ -43,18 +46,29 @@ _GRANT_EVENTS = "od_source_grant_events"
 _ATTEMPTS = "od_source_attempt_reservations"
 
 
-def _require_sqlite() -> None:
-    """Reject unverified dialects before creating any part of this schema."""
+def _target_mode() -> str:
+    """Return the supported migration mode or reject an unverified target."""
     dialect = op.get_bind().dialect
-    if dialect.name != "sqlite":
-        raise RuntimeError(
-            "source attempt gate revision 0015 is SQLite-only and unverified elsewhere"
-        )
+    if dialect.name == "sqlite":
+        return "sqlite"
+    if dialect.name == "mysql" and not getattr(dialect, "is_mariadb", False):
+        version = dialect.server_version_info
+        if (
+            not isinstance(version, tuple)
+            or len(version) < 3
+            or any(type(part) is not int for part in version[:3])
+            or version[0] != 8
+            or version[:3] < (8, 0, 16)
+        ):
+            raise RuntimeError("source attempt gate revision 0015 supports MySQL 8.0.16+ only")
+        return "mysql-noop"
+    raise RuntimeError("source attempt gate revision 0015 supports SQLite and MySQL 8.0.16+ only")
 
 
 def upgrade() -> None:
-    """Create empty authorization/configuration tables and the clock high-water row."""
-    _require_sqlite()
+    """Create SQLite gate tables; explicitly leave supported MySQL unchanged."""
+    if _target_mode() == "mysql-noop":
+        return
     op.create_table(
         _CLOCK,
         Column("clock_id", BigInteger(), primary_key=True, nullable=False),
@@ -546,7 +560,8 @@ def _has_rows(table_name: str) -> bool:
 
 def downgrade() -> None:
     """Refuse to discard attempt, grant, policy, or bucket evidence."""
-    _require_sqlite()
+    if _target_mode() == "mysql-noop":
+        return
     protected = (
         _ATTEMPTS,
         _GRANT_EVENTS,

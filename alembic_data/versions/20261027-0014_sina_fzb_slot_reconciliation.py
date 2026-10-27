@@ -11,7 +11,17 @@ its first missing timestamp and records only a late fanout-group reference.
 The migration does not create groups or enqueue collection work.
 """
 
-from sqlalchemy import BigInteger, CheckConstraint, Column, String, Text, column, select, table
+from sqlalchemy import (
+    BigInteger,
+    CheckConstraint,
+    Column,
+    String,
+    Text,
+    column,
+    inspect,
+    select,
+    table,
+)
 from sqlalchemy.dialects.mysql import MEDIUMTEXT, VARCHAR
 
 from alembic import op
@@ -28,6 +38,7 @@ _GRACE_SECONDS = 120
 _MAX_BASIS_LENGTH = 255
 _MAX_SELECTION_REFERENCE_LENGTH = 512
 _MAX_JOB_VERSION_LENGTH = 128
+_ALEMBIC_VERSION_COLUMN_LENGTH = 64
 _PAIR_STATE_CHECK = (
     "(status = 'PRESENT' AND first_missing_at_us IS NULL "
     "AND first_fanout_status IS NOT NULL AND first_manifest_sha256 IS NOT NULL "
@@ -62,20 +73,129 @@ def _mysql_identifier(length: int) -> String:
 
 
 def _require_supported_database() -> None:
-    """Reject MySQL versions that cannot enforce CHECK constraints."""
-    dialect = op.get_bind().dialect
+    """Allow only the tested SQLite and MySQL 8 migration targets."""
+    migration_context = op.get_context()
+    dialect = migration_context.dialect
     if dialect.name == "mariadb" or getattr(dialect, "is_mariadb", False):
         raise RuntimeError("This migration supports MySQL 8.0.16+ but not MariaDB.")
-    if dialect.name != "mysql":
+    if dialect.name == "sqlite":
         return
+    if dialect.name != "mysql":
+        raise RuntimeError("This migration supports SQLite and MySQL 8.0.16+ only.")
+    if getattr(migration_context, "as_sql", False):
+        raise RuntimeError(
+            "MySQL offline SQL generation is unsupported: revision 0014 must inspect the live "
+            "version table and reject partial DDL before changing schema."
+        )
+    dialect = op.get_bind().dialect
     version = dialect.server_version_info
     if version is None or len(version) < 3 or version[0] != 8 or version[:3] < (8, 0, 16):
         raise RuntimeError("This migration requires MySQL 8.0.16 or later within MySQL 8.")
 
 
+def _prepare_mysql_version_table() -> None:
+    """Validate revision state and widen Alembic's marker before MySQL DDL.
+
+    MySQL DDL commits independently of the surrounding migration transaction.
+    The target tables therefore must both be absent before any write; an older
+    failed 0014 attempt is left for explicit offline recovery instead of being
+    guessed at or resumed automatically.
+    """
+    migration_context = op.get_context()
+    if getattr(migration_context, "as_sql", False):
+        raise RuntimeError(
+            "MySQL offline SQL generation is unsupported: revision 0014 requires live state "
+            "inspection."
+        )
+
+    bind = op.get_bind()
+    inspector = inspect(bind)
+    existing_targets = [name for name in (_STATE_TABLE, _SLOTS_TABLE) if inspector.has_table(name)]
+    if existing_targets:
+        names = ", ".join(existing_targets)
+        raise RuntimeError(
+            "Revision 0014 found pre-existing reconciliation table(s) "
+            f"{names}; possible partial or prior DDL requires offline verification before retry."
+        )
+
+    version_table = migration_context.version_table
+    version_schema = migration_context.version_table_schema
+    if not isinstance(version_table, str) or not version_table.strip():
+        raise RuntimeError("Revision 0014 requires a configured Alembic version table name.")
+    if version_schema is not None and (
+        not isinstance(version_schema, str) or not version_schema.strip()
+    ):
+        raise RuntimeError("Revision 0014 requires a valid Alembic version table schema.")
+    if not inspector.has_table(version_table, schema=version_schema):
+        raise RuntimeError(
+            "Revision 0014 requires the configured Alembic version table to exist before upgrade."
+        )
+
+    columns = inspector.get_columns(version_table, schema=version_schema)
+    if len(columns) != 1 or columns[0].get("name") != "version_num":
+        raise RuntimeError(
+            "Revision 0014 requires the Alembic version table to contain only version_num."
+        )
+    version_column = columns[0]
+    version_type = version_column.get("type")
+    if (
+        not isinstance(version_type, String)
+        or getattr(version_type, "__visit_name__", "").upper() != "VARCHAR"
+        or not isinstance(version_type.length, int)
+        or version_type.length < len(down_revision)
+    ):
+        raise RuntimeError(
+            "Revision 0014 requires a bounded VARCHAR version_num column large enough to hold "
+            "the current revision."
+        )
+    if version_column.get("nullable") is not False:
+        raise RuntimeError("Revision 0014 requires version_num to be NOT NULL.")
+    if version_column.get("default") is not None:
+        raise RuntimeError("Revision 0014 does not alter a version_num column with a default.")
+
+    primary_key = inspector.get_pk_constraint(version_table, schema=version_schema)
+    if primary_key.get("constrained_columns") != ["version_num"]:
+        raise RuntimeError(
+            "Revision 0014 requires version_num as the version table's sole primary key."
+        )
+
+    version_rows = (
+        bind.execute(
+            select(
+                table(
+                    version_table,
+                    column("version_num", version_type),
+                    schema=version_schema,
+                ).c.version_num
+            )
+        )
+        .scalars()
+        .all()
+    )
+    if version_rows != [down_revision]:
+        raise RuntimeError(
+            "Revision 0014 requires exactly one version row matching its 0013 parent; "
+            "unexpected or truncated version state requires offline verification."
+        )
+
+    if version_type.length < _ALEMBIC_VERSION_COLUMN_LENGTH:
+        widened_type = version_type.adapt(type(version_type), length=_ALEMBIC_VERSION_COLUMN_LENGTH)
+        op.alter_column(
+            version_table,
+            "version_num",
+            schema=version_schema,
+            existing_type=version_type,
+            type_=widened_type,
+            existing_nullable=False,
+            existing_comment=version_column.get("comment"),
+        )
+
+
 def upgrade() -> None:
     """Create the explicit cron reconciliation cursor and slot observations."""
     _require_supported_database()
+    if op.get_bind().dialect.name == "mysql":
+        _prepare_mysql_version_table()
     op.create_table(
         _STATE_TABLE,
         Column(
