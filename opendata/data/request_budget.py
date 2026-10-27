@@ -8,6 +8,7 @@ constructed explicitly; a request budget with no grants authorizes nothing.
 from __future__ import annotations
 
 import math
+import re
 import threading
 import time
 from contextlib import contextmanager
@@ -30,6 +31,8 @@ MAX_SOURCE_ATTEMPTS = 3
 MAX_BOUNDED_TASK_ATTEMPTS = 256
 MAX_BOUNDED_SOURCE_ATTEMPTS = 64
 _HOST_LOCK_POLL_SECONDS = 0.05
+_SOURCE_ATTEMPT_BINDING_IDENTIFIER_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,127}")
+_MAX_SOURCE_ATTEMPT_BINDING_REVISION = 2_147_483_647
 
 
 class RequestBudgetError(RuntimeError):
@@ -86,6 +89,45 @@ class GrantDecision(str, Enum):
     ALLOWED = "ALLOWED"
     DENIED = "DENIED"
     UNKNOWN = "UNKNOWN"
+
+
+@dataclass(frozen=True, slots=True)
+class SourceAttemptBinding:
+    """Trusted-code reference to one source-attempt gate grant revision.
+
+    This value carries backend policy identity only. It does not prove rights,
+    create a request grant, or enable a source-attempt gate. Callers must never
+    populate it from request bodies, query parameters, or headers.
+    """
+
+    grant_id: str
+    expected_revision: int
+    principal_scope: str
+    run_key: str | None = None
+
+    def __post_init__(self) -> None:
+        """Validate exact field types and bounded gate identifiers."""
+        _validate_source_attempt_binding_identifier(self.grant_id, "grant_id")
+        _validate_source_attempt_binding_identifier(self.principal_scope, "principal_scope")
+        if self.run_key is not None:
+            _validate_source_attempt_binding_identifier(self.run_key, "run_key")
+        if (
+            type(self.expected_revision) is not int
+            or not 1 <= self.expected_revision <= _MAX_SOURCE_ATTEMPT_BINDING_REVISION
+        ):
+            raise ValueError(
+                "expected_revision must be an integer from 1 through "
+                f"{_MAX_SOURCE_ATTEMPT_BINDING_REVISION}"
+            )
+
+
+def _validate_source_attempt_binding_identifier(value: object, field_name: str) -> None:
+    """Validate one exact, bounded identifier used by a trusted gate binding."""
+    if (
+        type(value) is not str
+        or _SOURCE_ATTEMPT_BINDING_IDENTIFIER_PATTERN.fullmatch(value) is None
+    ):
+        raise ValueError(f"{field_name} must be an exact bounded identifier")
 
 
 def _validate_profile(value: object) -> RequestBudgetProfile:
@@ -262,7 +304,11 @@ class RequestGrant:
 
 @dataclass(frozen=True, slots=True)
 class RequestExecutionScope:
-    """One Fetcher template's source, model, operation, budget, and liveness."""
+    """One Fetcher template's source, model, operation, budget, and liveness.
+
+    ``source_attempt_binding`` is optional trusted backend context. Nested
+    scopes inherit it and cannot replace or add one beneath an unbound scope.
+    """
 
     source: str
     canonical_model: str | None
@@ -270,6 +316,7 @@ class RequestExecutionScope:
     budget: RequestBudget
     deadline: float | None = None
     cancellation: Event | None = field(default=None, repr=False, compare=False)
+    source_attempt_binding: SourceAttemptBinding | None = field(default=None, repr=False)
 
     def check_live(self) -> None:
         """Raise when cancellation or the enclosing deadline has fired."""
@@ -678,22 +725,46 @@ def request_execution_scope(
     deadline: float | None = None,
     cancellation: Event | None = None,
     inherited_scopes: tuple[RequestExecutionScope, ...] | None = None,
+    source_attempt_binding: SourceAttemptBinding | None = None,
 ) -> Iterator[RequestExecutionScope | None]:
     """Establish a nested scope without permitting budget replacement.
 
     Canonical models with no explicit budget receive a shared immutable zero
     budget. Legacy Fetchers without a canonical model and without a budget
-    leave the current behavior unchanged.
+    leave the current behavior unchanged. A source-attempt binding may be set
+    only at the outermost scope; nested scopes inherit it or repeat the exact
+    same value and cannot add, replace, or remove it.
     """
     current = _copy_scope_stack(_CURRENT_SCOPES.get(), inherited_scopes)
     if not isinstance(operation, RequestOperation):
         raise ValueError("operation must be an explicit RequestOperation")
+    if (
+        source_attempt_binding is not None
+        and type(source_attempt_binding) is not SourceAttemptBinding
+    ):
+        raise ValueError("source_attempt_binding must be a SourceAttemptBinding or None")
+
+    effective_source_attempt_binding = source_attempt_binding
+    if current:
+        inherited_binding = current[0].source_attempt_binding
+        if any(scope.source_attempt_binding != inherited_binding for scope in current):
+            raise RequestBudgetScopeError("active source-attempt bindings are inconsistent")
+        if source_attempt_binding is not None and source_attempt_binding != inherited_binding:
+            raise RequestBudgetScopeError(
+                "nested request scope cannot add or replace its source-attempt binding"
+            )
+        effective_source_attempt_binding = inherited_binding
+
     effective_budget = budget
     if effective_budget is None:
         if current:
             effective_budget = current[-1].budget
         elif canonical_model is not None:
             effective_budget = _ZERO_BUDGET
+        elif effective_source_attempt_binding is not None:
+            raise RequestAuthorizationError(
+                "source-attempt binding requires a canonical request scope"
+            )
         else:
             yield None
             return
@@ -708,6 +779,7 @@ def request_execution_scope(
         budget=effective_budget,
         deadline=deadline,
         cancellation=cancellation,
+        source_attempt_binding=effective_source_attempt_binding,
     )
     token: Token[tuple[RequestExecutionScope, ...]] = _CURRENT_SCOPES.set(current + (scope,))
     try:
