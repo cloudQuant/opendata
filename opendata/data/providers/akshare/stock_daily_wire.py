@@ -61,6 +61,7 @@ MAX_STOCK_DAILY_PROCESS_PARAMETER_BYTES = len(
 )
 _PROCESS_SYMBOL = re.compile(r"^[0-9]{6}$")
 _PROCESS_DATE = re.compile(r"^[0-9]{8}$")
+_BSE_ROUTE_UNVERIFIED = "STOCK_DAILY_BSE_ROUTE_UNVERIFIED"
 
 _KLINE_FIELDS = "f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61"
 _KLINE_COLUMNS = (
@@ -231,7 +232,9 @@ def _validate_process_parameters(parameters: Mapping[str, object]) -> tuple[str,
                 "adjust": "",
             }
         )
-    except (TypeError, ValueError):
+    except (TypeError, ValueError) as exc:
+        if _BSE_ROUTE_UNVERIFIED in str(exc):
+            raise ValueError(_BSE_ROUTE_UNVERIFIED) from None
         raise ValueError("stock_daily_process_query_invalid") from None
     if query.symbol != symbol:
         raise ValueError("stock_daily_process_query_invalid")
@@ -291,6 +294,9 @@ def parse_stock_daily_wire(
     Raises:
         ValueError: If the body, envelope, identity, or row shape is invalid.
     """
+    routed_market = _market_for_symbol(symbol)
+    if type(expected_market) is not int or expected_market != routed_market:
+        raise ValueError("Eastmoney secid market does not match the supported symbol route")
     if not isinstance(content, bytes):
         raise ValueError("Eastmoney stock history response content must be bytes")
     if len(content) > MAX_RAW_RESPONSE_BYTES:
@@ -341,8 +347,16 @@ def parse_stock_daily_wire(
 
 
 def _market_for_symbol(symbol: str) -> int:
-    """Return the fixed Eastmoney secid market for an already validated code."""
-    return 1 if symbol.startswith("6") else 0
+    """Return a reviewed SH/SZ market code and refuse unverified BSE routing."""
+    if not isinstance(symbol, str) or _PROCESS_SYMBOL.fullmatch(symbol) is None:
+        raise ValueError("stock_daily_symbol_invalid")
+    if symbol.startswith("6"):
+        return 1
+    if symbol.startswith(("0", "3")):
+        return 0
+    if symbol.startswith(("4", "8", "920")):
+        raise ValueError(_BSE_ROUTE_UNVERIFIED)
+    raise ValueError("stock_daily_symbol_invalid")
 
 
 def _object_without_duplicate_keys(pairs: Sequence[tuple[str, object]]) -> dict[str, object]:

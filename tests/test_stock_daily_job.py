@@ -533,6 +533,35 @@ def test_invalid_market_symbol_shard_or_window_fails_before_source_call(
     assert calls == []
 
 
+@pytest.mark.parametrize("symbol", ["920000", "920000.BJ", "BJ920000", "430000.BJ"])
+def test_bse_job_query_fails_before_source_or_raw_capture(tmp_path: Path, symbol: str) -> None:
+    """No job input can fetch or capture through the unverified BSE route."""
+    calls: list[str] = []
+
+    def source(_query):
+        calls.append("called")
+        return StockDailyJsonResponse(_wire_body(), 200, OBSERVED_AT)
+
+    job = _make_job(tmp_path, source)
+    shard = "920000" if symbol.startswith(("920", "BJ92")) else "430000"
+    request = _request(symbol=symbol, shard=shard)
+
+    with pytest.raises(ValueError, match="STOCK_DAILY_BSE_ROUTE_UNVERIFIED"):
+        job.fetch(request, _context())
+
+    assert calls == []
+    assert not list((tmp_path / "private-raw").glob("objects/*/*.blob"))
+
+
+def test_bse_job_normalization_fails_before_parsing_captured_input(tmp_path: Path) -> None:
+    """Previously captured bytes cannot be normalized through the unverified route."""
+    job = _make_job(tmp_path, lambda _query: pytest.fail("normalize must not fetch"))
+    request = _request(symbol="920000.BJ", shard="920000")
+
+    with pytest.raises(ValueError, match="STOCK_DAILY_BSE_ROUTE_UNVERIFIED"):
+        job.normalize(object(), request, _context())
+
+
 def test_backfill_requires_request_range_to_match_inclusive_source_window(tmp_path: Path) -> None:
     """Backfill metadata cannot imply a range different from the queried dates."""
     calls: list[str] = []
@@ -1120,6 +1149,27 @@ def test_stock_daily_process_worker_uses_fixed_query_and_bounded_http_options(
         "source": SOURCE,
     }
     assert client.transport_calls == 1
+
+
+def test_bse_process_worker_fails_before_budget_or_transport(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The child worker rejects BJ symbols before creating authority or transport."""
+    client = _SyntheticGovernedStockClient(BoundedHttpResponse(b"unused", 200, OBSERVED_AT))
+    monkeypatch.setattr(stock_daily_wire, "get_shared_http_client", lambda: client)
+    monkeypatch.setattr(
+        stock_daily_wire,
+        "_new_child_request_budget",
+        lambda: pytest.fail("unverified BSE input must stop before budget creation"),
+    )
+
+    with pytest.raises(ValueError, match="STOCK_DAILY_BSE_ROUTE_UNVERIFIED"):
+        stock_daily_wire.fetch_stock_daily_process(
+            {"symbol": "920000", "start_date": "20261026", "end_date": "20261027"}
+        )
+
+    assert client.calls == []
+    assert client.transport_calls == 0
 
 
 def test_stock_daily_process_parameter_builder_revalidates_canonical_identity() -> None:
