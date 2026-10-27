@@ -21,7 +21,10 @@ from opendata.data.providers.sina.financial_statement_contract import (
     SinaFzbReport,
     SinaFzbWireError,
 )
-from opendata.data.providers.sina.financial_statement_parser import parse_sina_fzb_response
+from opendata.data.providers.sina.financial_statement_parser import (
+    _parse_sina_fzb_response,
+    parse_sina_fzb_response,
+)
 from opendata.pipeline.run_service import (
     MAX_RESULT_BYTES,
     MAX_RESULT_RECORDS,
@@ -30,6 +33,8 @@ from opendata.pipeline.run_service import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from pydantic import JsonValue
 
 __all__ = [
@@ -182,9 +187,31 @@ def serialize_sina_fzb_response(
         SinaFzbPublicationError: If input, response identity, or downstream
             bounds are invalid. The exception text is sanitized.
     """
+    return _serialize_sina_fzb_response(
+        body,
+        query=query,
+        retrieved_at_utc=retrieved_at_utc,
+        capture_id=capture_id,
+        checkpoint=None,
+    )
+
+
+def _serialize_sina_fzb_response(
+    body: bytes,
+    *,
+    query: SinaFzbQuery,
+    retrieved_at_utc: datetime,
+    capture_id: str,
+    checkpoint: Callable[[], None] | None,
+) -> NormalizedBatch:
+    """Build a publication batch while yielding to the owning run lease."""
     normalized_retrieved_at = _validate_inputs(body, query, retrieved_at_utc, capture_id)
     try:
-        reports = parse_sina_fzb_response(body, query=query)
+        if checkpoint is None:
+            # Keep the established public parser seam used by serializer callers/tests.
+            reports = parse_sina_fzb_response(body, query=query)
+        else:
+            reports = _parse_sina_fzb_response(body, query=query, checkpoint=checkpoint)
     except SinaFzbWireError as exc:
         code: _PublicationErrorCode = (
             "limit_exceeded" if exc.code == "limit_exceeded" else "invalid_response"
@@ -196,12 +223,15 @@ def serialize_sina_fzb_response(
     report_payloads: list[dict[str, JsonValue]] = []
     total_occurrences = 0
     for report in reports:
+        if checkpoint is not None:
+            checkpoint()
         payload, occurrence_count = _report_payload(
             report,
             symbol=query.symbol,
             paper_code=paper_code,
             capture_id=capture_id,
             retrieved_at_text=retrieved_text,
+            checkpoint=checkpoint,
         )
         report_payloads.append(payload)
         total_occurrences += occurrence_count
@@ -212,23 +242,28 @@ def serialize_sina_fzb_response(
         symbol=query.symbol,
         retrieved_at_text=retrieved_text,
         payloads=report_payloads,
+        checkpoint=checkpoint,
     )
-    records = tuple(
-        NormalizedRecord(
-            business_key=_business_key(
-                symbol=query.symbol,
-                capture_id=capture_id,
-                report_period=payload["report_period"],
-            ),
-            payload=payload,
-            business_date=None,
-            event_at=None,
-            observed_at=normalized_retrieved_at,
-            source_published_at=None,
-            available_at=None,
+    records_list: list[NormalizedRecord] = []
+    for payload in report_payloads:
+        if checkpoint is not None:
+            checkpoint()
+        records_list.append(
+            NormalizedRecord(
+                business_key=_business_key(
+                    symbol=query.symbol,
+                    capture_id=capture_id,
+                    report_period=payload["report_period"],
+                ),
+                payload=payload,
+                business_date=None,
+                event_at=None,
+                observed_at=normalized_retrieved_at,
+                source_published_at=None,
+                available_at=None,
+            )
         )
-        for payload in report_payloads
-    )
+    records = tuple(records_list)
     quality: dict[str, JsonValue] = {
         "status": "unknown",
         "report_id": None,
@@ -253,7 +288,7 @@ def serialize_sina_fzb_response(
         provenance=provenance,
         watermark=None,
     )
-    _preflight_batch(batch)
+    _preflight_batch(batch, checkpoint=checkpoint)
     return batch
 
 
@@ -298,6 +333,7 @@ def _report_payload(
     paper_code: str,
     capture_id: str,
     retrieved_at_text: str,
+    checkpoint: Callable[[], None] | None = None,
 ) -> tuple[dict[str, JsonValue], int]:
     """Create one flat report payload while retaining every typed source value."""
     if type(report) is not SinaFzbReport:
@@ -321,9 +357,9 @@ def _report_payload(
     ):
         _raise_publication("invalid_response")
     source_updated_at = _validate_source_update(report)
-    period_metadata = _metadata_object(report.period_metadata)
-    report_metadata = _metadata_object(report.report_metadata)
-    entries, occurrence_count = _entries_payload(report.entries)
+    period_metadata = _metadata_object(report.period_metadata, checkpoint=checkpoint)
+    report_metadata = _metadata_object(report.report_metadata, checkpoint=checkpoint)
+    entries, occurrence_count = _entries_payload(report.entries, checkpoint=checkpoint)
     payload: dict[str, JsonValue] = {
         "instrument_id": symbol,
         "capture_id": capture_id,
@@ -362,13 +398,17 @@ def _validate_source_update(report: SinaFzbReport) -> datetime:
     return value
 
 
-def _metadata_object(value: object) -> dict[str, JsonValue]:
+def _metadata_object(
+    value: object, *, checkpoint: Callable[[], None] | None = None
+) -> dict[str, JsonValue]:
     """Convert parser metadata pairs to an object only after strict validation."""
     if type(value) is not tuple:
         _raise_publication("invalid_response")
     result: dict[str, JsonValue] = {}
     previous_key: str | None = None
     for pair in value:
+        if checkpoint is not None:
+            checkpoint()
         if type(pair) is not tuple or len(pair) != 2:
             _raise_publication("invalid_response")
         key, scalar = pair
@@ -396,7 +436,9 @@ def _json_scalar(value: object) -> JsonValue:
     _raise_publication("invalid_response")
 
 
-def _entries_payload(entries_value: object) -> tuple[list[JsonValue], int]:
+def _entries_payload(
+    entries_value: object, *, checkpoint: Callable[[], None] | None = None
+) -> tuple[list[JsonValue], int]:
     """Serialize parser entries in source order and verify every source ordinal."""
     if type(entries_value) is not tuple:
         _raise_publication("invalid_response")
@@ -406,10 +448,12 @@ def _entries_payload(entries_value: object) -> tuple[list[JsonValue], int]:
     ordinals: list[int] = []
     previous_first_ordinal = -1
     for entry in entries_value:
+        if checkpoint is not None:
+            checkpoint()
         if type(entry) is SinaFzbItem:
-            entry_payload, entry_ordinals = _item_payload(entry)
+            entry_payload, entry_ordinals = _item_payload(entry, checkpoint=checkpoint)
         elif type(entry) is SinaFzbGroupMarker:
-            entry_payload, entry_ordinals = _group_payload(entry)
+            entry_payload, entry_ordinals = _group_payload(entry, checkpoint=checkpoint)
         else:
             _raise_publication("invalid_response")
         if not entry_ordinals:
@@ -427,7 +471,9 @@ def _entries_payload(entries_value: object) -> tuple[list[JsonValue], int]:
     return output, len(ordinals)
 
 
-def _item_payload(item: SinaFzbItem) -> tuple[dict[str, JsonValue], tuple[int, ...]]:
+def _item_payload(
+    item: SinaFzbItem, *, checkpoint: Callable[[], None] | None = None
+) -> tuple[dict[str, JsonValue], tuple[int, ...]]:
     """Serialize one retained financial item, including duplicate ordinals."""
     if (
         type(item.source_item_id) is not str
@@ -442,7 +488,9 @@ def _item_payload(item: SinaFzbItem) -> tuple[dict[str, JsonValue], tuple[int, .
     )
     if item.value_state != expected_state:
         _raise_publication("invalid_response")
-    source_ordinals, ordinal_values = _validated_ordinals(item.source_ordinals)
+    source_ordinals, ordinal_values = _validated_ordinals(
+        item.source_ordinals, checkpoint=checkpoint
+    )
     return (
         {
             "kind": "item",
@@ -451,13 +499,15 @@ def _item_payload(item: SinaFzbItem) -> tuple[dict[str, JsonValue], tuple[int, .
             "source_ordinals": source_ordinals,
             "raw_value": item.raw_value,
             "value_state": item.value_state,
-            "source_metadata": _metadata_object(item.source_metadata),
+            "source_metadata": _metadata_object(item.source_metadata, checkpoint=checkpoint),
         },
         ordinal_values,
     )
 
 
-def _group_payload(marker: SinaFzbGroupMarker) -> tuple[dict[str, JsonValue], tuple[int, ...]]:
+def _group_payload(
+    marker: SinaFzbGroupMarker, *, checkpoint: Callable[[], None] | None = None
+) -> tuple[dict[str, JsonValue], tuple[int, ...]]:
     """Serialize one recognized structural marker without treating it as data."""
     if (
         marker.raw_item_field != ""
@@ -466,7 +516,9 @@ def _group_payload(marker: SinaFzbGroupMarker) -> tuple[dict[str, JsonValue], tu
         or type(marker.source_title) is not str
     ):
         _raise_publication("invalid_response")
-    source_ordinals, ordinal_values = _validated_ordinals(marker.source_ordinals)
+    source_ordinals, ordinal_values = _validated_ordinals(
+        marker.source_ordinals, checkpoint=checkpoint
+    )
     return (
         {
             "kind": "group_marker",
@@ -475,13 +527,15 @@ def _group_payload(marker: SinaFzbGroupMarker) -> tuple[dict[str, JsonValue], tu
             "source_title": marker.source_title,
             "raw_item_field": marker.raw_item_field,
             "raw_item_value": marker.raw_item_value,
-            "source_metadata": _metadata_object(marker.source_metadata),
+            "source_metadata": _metadata_object(marker.source_metadata, checkpoint=checkpoint),
         },
         ordinal_values,
     )
 
 
-def _validated_ordinals(value: object) -> tuple[list[JsonValue], tuple[int, ...]]:
+def _validated_ordinals(
+    value: object, *, checkpoint: Callable[[], None] | None = None
+) -> tuple[list[JsonValue], tuple[int, ...]]:
     """Copy a nonempty, strictly increasing source ordinal tuple."""
     if type(value) is not tuple or not value:
         _raise_publication("invalid_response")
@@ -489,6 +543,8 @@ def _validated_ordinals(value: object) -> tuple[list[JsonValue], tuple[int, ...]
     ordinal_values: list[int] = []
     previous = -1
     for ordinal in value:
+        if checkpoint is not None:
+            checkpoint()
         if type(ordinal) is not int or ordinal < 0 or ordinal <= previous:
             _raise_publication("invalid_response")
         output.append(ordinal)
@@ -498,16 +554,23 @@ def _validated_ordinals(value: object) -> tuple[list[JsonValue], tuple[int, ...]
 
 
 def _parsed_snapshot_digest(
-    *, symbol: str, retrieved_at_text: str, payloads: list[dict[str, JsonValue]]
+    *,
+    symbol: str,
+    retrieved_at_text: str,
+    payloads: list[dict[str, JsonValue]],
+    checkpoint: Callable[[], None] | None = None,
 ) -> str:
     """Hash canonical parsed report payloads plus query and retrieval identity."""
     reports: list[JsonValue] = []
     for payload in payloads:
-        report_payload: dict[str, JsonValue] = {
-            key: value
-            for key, value in payload.items()
-            if key not in {"capture_id", "retrieved_at_utc"}
-        }
+        if checkpoint is not None:
+            checkpoint()
+        report_payload: dict[str, JsonValue] = {}
+        for key, value in payload.items():
+            if checkpoint is not None:
+                checkpoint()
+            if key not in {"capture_id", "retrieved_at_utc"}:
+                report_payload[key] = value
         reports.append(report_payload)
     envelope: dict[str, JsonValue] = {
         "digest_version": "sina-fzb-parsed-snapshot-v1",
@@ -515,7 +578,7 @@ def _parsed_snapshot_digest(
         "retrieved_at_utc": retrieved_at_text,
         "reports": reports,
     }
-    digest = hashlib.sha256(_canonical_json_bytes(envelope)).hexdigest()
+    digest = hashlib.sha256(_canonical_json_bytes(envelope, checkpoint=checkpoint)).hexdigest()
     return digest
 
 
@@ -542,21 +605,38 @@ def _utc_iso(value: datetime) -> str:
     return value.isoformat(timespec="microseconds").replace("+00:00", "Z")
 
 
-def _canonical_json_bytes(value: object) -> bytes:
+def _canonical_json_bytes(value: object, *, checkpoint: Callable[[], None] | None = None) -> bytes:
     """Encode strict canonical JSON without lossy fallback conversion."""
+    chunks: list[bytes] = []
     try:
-        return json.dumps(
-            value,
+        encoder = json.JSONEncoder(
             ensure_ascii=False,
             sort_keys=True,
             separators=(",", ":"),
             allow_nan=False,
-        ).encode("utf-8", errors="strict")
-    except (RecursionError, TypeError, ValueError, UnicodeEncodeError):
+        )
+    except (RecursionError, TypeError, ValueError):
         _raise_publication("invalid_response")
+    iterator = encoder.iterencode(value)
+    while True:
+        try:
+            text_chunk = next(iterator)
+        except StopIteration:
+            break
+        except (RecursionError, TypeError, ValueError):
+            _raise_publication("invalid_response")
+        try:
+            chunks.append(text_chunk.encode("utf-8", errors="strict"))
+        except UnicodeEncodeError:
+            _raise_publication("invalid_response")
+        if checkpoint is not None:
+            checkpoint()
+    return b"".join(chunks)
 
 
-def _preflight_batch(batch: NormalizedBatch) -> None:
+def _preflight_batch(
+    batch: NormalizedBatch, *, checkpoint: Callable[[], None] | None = None
+) -> None:
     """Reject data that any configured run or publication boundary would reject."""
     if len(batch.records) > MAX_RESULT_RECORDS:
         _raise_publication("limit_exceeded")
@@ -567,25 +647,29 @@ def _preflight_batch(batch: NormalizedBatch) -> None:
 
     run_nodes = [0]
     for _name, value in (("quality", batch.quality), ("provenance", batch.provenance)):
-        _validate_run_object(value, run_nodes)
-        encoded = _store_json_object(value)
+        if checkpoint is not None:
+            checkpoint()
+        _validate_run_object(value, run_nodes, checkpoint=checkpoint)
+        encoded = _store_json_object(value, checkpoint=checkpoint)
         if len(encoded) > _MAX_STORE_METADATA_BYTES:
             _raise_publication("limit_exceeded")
 
     stored_batch_bytes = 0
     serialized_records: list[JsonValue] = []
     for record in batch.records:
+        if checkpoint is not None:
+            checkpoint()
         business_key = record.business_key
         _validate_run_text(business_key, _MAX_STORE_BUSINESS_KEY_LENGTH)
         key_bytes = business_key.encode("utf-8", errors="strict")
-        payload_bytes = _store_json_object(record.payload)
+        payload_bytes = _store_json_object(record.payload, checkpoint=checkpoint)
         record_size = len(payload_bytes) + len(key_bytes) + 256
         if record_size > _MAX_STORE_RECORD_BYTES:
             _raise_publication("limit_exceeded")
         stored_batch_bytes += record_size
         if stored_batch_bytes > _MAX_STORE_BATCH_BYTES:
             _raise_publication("limit_exceeded")
-        _validate_run_object(record.payload, run_nodes)
+        _validate_run_object(record.payload, run_nodes, checkpoint=checkpoint)
         serialized_records.append(
             {
                 "business_key": business_key,
@@ -609,7 +693,7 @@ def _preflight_batch(batch: NormalizedBatch) -> None:
         "provenance": dict(batch.provenance),
         "records": serialized_records,
     }
-    if len(_canonical_json_bytes(result)) > MAX_RESULT_BYTES:
+    if len(_canonical_json_bytes(result, checkpoint=checkpoint)) > MAX_RESULT_BYTES:
         _raise_publication("limit_exceeded")
 
 
@@ -618,17 +702,32 @@ def _validate_batch_label(value: object, maximum: int) -> None:
     _validate_run_text(value, maximum)
 
 
-def _validate_run_object(value: object, node_count: list[int]) -> None:
+def _validate_run_object(
+    value: object,
+    node_count: list[int],
+    *,
+    checkpoint: Callable[[], None] | None = None,
+) -> None:
     """Mirror RunService's root-object checks and share its whole-batch node budget."""
     if not isinstance(value, dict):
         _raise_publication("invalid_response")
     for key, nested in value.items():
+        if checkpoint is not None:
+            checkpoint()
         _validate_run_key(key, _MAX_RUN_RESULT_TEXT)
-        _validate_run_value(nested, depth=0, node_count=node_count)
+        _validate_run_value(nested, depth=0, node_count=node_count, checkpoint=checkpoint)
 
 
-def _validate_run_value(value: object, *, depth: int, node_count: list[int]) -> None:
+def _validate_run_value(
+    value: object,
+    *,
+    depth: int,
+    node_count: list[int],
+    checkpoint: Callable[[], None] | None = None,
+) -> None:
     """Apply the source producer's frozen RunService-compatible JSON limits."""
+    if checkpoint is not None:
+        checkpoint()
     node_count[0] += 1
     if node_count[0] > _MAX_RUN_RESULT_NODES or depth > _MAX_RUN_RESULT_DEPTH:
         _raise_publication("limit_exceeded")
@@ -650,14 +749,20 @@ def _validate_run_value(value: object, *, depth: int, node_count: list[int]) -> 
         if len(value) > MAX_RESULT_RECORDS:
             _raise_publication("limit_exceeded")
         for child in value:
-            _validate_run_value(child, depth=depth + 1, node_count=node_count)
+            _validate_run_value(
+                child, depth=depth + 1, node_count=node_count, checkpoint=checkpoint
+            )
         return
     if isinstance(value, dict):
         if len(value) > MAX_RESULT_RECORDS:
             _raise_publication("limit_exceeded")
         for key, child in value.items():
+            if checkpoint is not None:
+                checkpoint()
             _validate_run_key(key, _MAX_RUN_RESULT_TEXT)
-            _validate_run_value(child, depth=depth + 1, node_count=node_count)
+            _validate_run_value(
+                child, depth=depth + 1, node_count=node_count, checkpoint=checkpoint
+            )
         return
     _raise_publication("invalid_response")
 
@@ -683,18 +788,26 @@ def _validate_run_text(value: object, maximum: int) -> None:
         _raise_publication("invalid_response")
 
 
-def _store_json_object(value: object) -> bytes:
+def _store_json_object(value: object, *, checkpoint: Callable[[], None] | None = None) -> bytes:
     """Validate and canonically encode one store JSON object without store imports."""
     if not isinstance(value, dict):
         _raise_publication("invalid_response")
     node_count = [0]
-    _validate_store_value(value, depth=0, node_count=node_count)
-    encoded = _canonical_json_bytes(value)
+    _validate_store_value(value, depth=0, node_count=node_count, checkpoint=checkpoint)
+    encoded = _canonical_json_bytes(value, checkpoint=checkpoint)
     return encoded
 
 
-def _validate_store_value(value: object, *, depth: int, node_count: list[int]) -> None:
+def _validate_store_value(
+    value: object,
+    *,
+    depth: int,
+    node_count: list[int],
+    checkpoint: Callable[[], None] | None = None,
+) -> None:
     """Apply the store JSON node, nesting, container, text, and credential bounds."""
+    if checkpoint is not None:
+        checkpoint()
     node_count[0] += 1
     if node_count[0] > _MAX_STORE_NODES or depth > _MAX_STORE_DEPTH:
         _raise_publication("limit_exceeded")
@@ -714,17 +827,23 @@ def _validate_store_value(value: object, *, depth: int, node_count: list[int]) -
         if len(value) > _MAX_STORE_CONTAINER_ITEMS:
             _raise_publication("limit_exceeded")
         for child in value:
-            _validate_store_value(child, depth=depth + 1, node_count=node_count)
+            _validate_store_value(
+                child, depth=depth + 1, node_count=node_count, checkpoint=checkpoint
+            )
         return
     if isinstance(value, dict):
         if len(value) > _MAX_STORE_CONTAINER_ITEMS:
             _raise_publication("limit_exceeded")
         for key, child in value.items():
+            if checkpoint is not None:
+                checkpoint()
             if type(key) is not str or key == "" or len(key) > _MAX_STORE_KEY_LENGTH:
                 _raise_publication("limit_exceeded")
             if _is_secret_key(key):
                 _raise_publication("invalid_response")
-            _validate_store_value(child, depth=depth + 1, node_count=node_count)
+            _validate_store_value(
+                child, depth=depth + 1, node_count=node_count, checkpoint=checkpoint
+            )
         return
     _raise_publication("invalid_response")
 

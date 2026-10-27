@@ -81,6 +81,7 @@ class _ReplayAdapter(requests.adapters.BaseAdapter):
         self.status_code = status_code
         self.body = body
         self.transport_error = transport_error
+        self.allow_multiple_requests = False
         self.requests: list[requests.PreparedRequest] = []
         self.scopes: list[tuple[Any, ...]] = []
         self.responses: list[requests.Response] = []
@@ -91,7 +92,7 @@ class _ReplayAdapter(requests.adapters.BaseAdapter):
         request: requests.PreparedRequest,
         **_kwargs: object,
     ) -> requests.Response:
-        if self.requests:
+        if self.requests and not self.allow_multiple_requests:
             raise AssertionError("bounded Sina fetch attempted more than one HTTP request")
         self.requests.append(request)
         self.scopes.append(current_request_scopes())
@@ -129,6 +130,25 @@ class _TrackedRaw(HTTPResponse):
     def close(self) -> None:
         self.closed_by_test = True
         super().close()
+
+
+class _RetryThenReplayAdapter(_ReplayAdapter):
+    """Return one retryable server response, then the pinned fixture response."""
+
+    def __init__(self, body: bytes) -> None:
+        super().__init__(200, body)
+        self.allow_multiple_requests = True
+        self._statuses = (503, 200)
+
+    def send(
+        self,
+        request: requests.PreparedRequest,
+        **kwargs: object,
+    ) -> requests.Response:
+        if len(self.requests) >= len(self._statuses):
+            raise AssertionError("caller retry policy made an unexpected extra request")
+        self.status_code = self._statuses[len(self.requests)]
+        return super().send(request, **kwargs)
 
 
 @dataclass
@@ -185,6 +205,50 @@ class _OfflineTransport:
                 SinaFzbQuery("600519.SH"), context=context, client=self.client
             )
 
+    def fetch_bounded_response(self, context: FetchContext) -> BoundedHttpResponse:
+        """Invoke the private response helper through the same governed client."""
+        original_get_bounded = self.client.get_bounded
+
+        def recording_get_bounded(
+            url: str,
+            *,
+            max_body_bytes: int,
+            overall_timeout: float,
+            params: Mapping[str, str] | None = None,
+            headers: Mapping[str, str] | None = None,
+            timeout: float | tuple[float, float] | None = None,
+            source: str = "unspecified",
+        ) -> BoundedHttpResponse:
+            self.bounded_calls.append(
+                {
+                    "url": url,
+                    "max_body_bytes": max_body_bytes,
+                    "overall_timeout": overall_timeout,
+                    "params": dict(params or {}),
+                    "headers": dict(headers or {}),
+                    "timeout": timeout,
+                    "source": source,
+                }
+            )
+            response = original_get_bounded(
+                url,
+                max_body_bytes=max_body_bytes,
+                overall_timeout=overall_timeout,
+                params=params,
+                headers=headers,
+                timeout=timeout,
+                source=source,
+            )
+            self.responses.append(response)
+            if self.after_response is not None:
+                self.after_response()
+            return response
+
+        with patch.object(self.client, "get_bounded", recording_get_bounded):
+            return wire_module._fetch_sina_fzb_bounded_response(
+                SinaFzbQuery("600519.SH"), context=context, client=self.client
+            )
+
 
 def _make_context(
     *,
@@ -198,6 +262,8 @@ def _make_context(
     grant_operation: RequestOperation = RequestOperation.QUERY,
     decision: GrantDecision = GrantDecision.ALLOWED,
     allowed_hosts: frozenset[str] | None = None,
+    task_attempts: int = 1,
+    source_attempts: int = 1,
 ) -> FetchContext:
     if request_budget is None and grant_source is not None:
         profile = RequestBudgetProfile.BOUNDED_REQUEST
@@ -207,15 +273,15 @@ def _make_context(
             operation=grant_operation,
             decision=decision,
             rights_evidence="test-only:synthetic-offline-grant",
-            task_attempts=1,
-            source_attempts=1,
+            task_attempts=task_attempts,
+            source_attempts=source_attempts,
             allowed_hosts=allowed_hosts or frozenset({SINA_FZB_HOST}),
             expires_at=datetime.now(timezone.utc) + timedelta(hours=1),
             profile=profile,
         )
         request_budget = RequestBudget(
-            task_attempts=1,
-            source_attempts=1,
+            task_attempts=task_attempts,
+            source_attempts=source_attempts,
             grants=(grant,),
             profile=profile,
         )
@@ -253,6 +319,30 @@ def _make_transport(
         raw_response_cache=None,
     )
     return _OfflineTransport(client, adapter, after_response=after_response)
+
+
+def _make_retry_transport() -> tuple[_OfflineTransport, HttpClientConfig]:
+    """Build a caller-owned two-attempt client with a wholly in-memory adapter."""
+    adapter = _RetryThenReplayAdapter(_recorded_body())
+    session = requests.Session()
+    session.trust_env = False
+    session.adapters.clear()
+    session.mount("", adapter)
+    config = HttpClientConfig(
+        connect_timeout=3.0,
+        read_timeout=5.0,
+        max_attempts=2,
+        backoff_base=0.0,
+        backoff_jitter=0.0,
+        rate_limit_per_host=None,
+    )
+    client = GovernedHttpClient(
+        config,
+        session=session,
+        sleep=lambda _seconds: None,
+        raw_response_cache=None,
+    )
+    return _OfflineTransport(client, adapter), config
 
 
 def _fetch_error(
@@ -326,6 +416,54 @@ def test_bounded_fetch_uses_exact_query_and_propagates_the_execution_scope() -> 
     assert len(snapshot.reports) == 103
     assert snapshot.retrieved_at_utc == transport.responses[0].retrieved_at
     assert snapshot.retrieved_at_utc.tzinfo is timezone.utc
+
+
+def test_bounded_response_helper_returns_the_same_status_time_and_body_without_parsing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    transport = _make_transport()
+
+    def unexpected_parse(*_args: object, **_kwargs: object) -> object:
+        raise AssertionError("the bounded-response helper must not parse source bytes")
+
+    monkeypatch.setattr(wire_module, "parse_sina_fzb_response", unexpected_parse)
+    response = transport.fetch_bounded_response(_make_context())
+
+    assert response is transport.responses[0]
+    assert response.body == _recorded_body()
+    assert response.status_code == 200
+    assert response.retrieved_at.tzinfo is timezone.utc
+    assert len(transport.bounded_calls) == 1
+    assert len(transport.adapter.requests) == 1
+    assert current_request_scopes() == ()
+
+
+def test_public_fetch_preserves_the_callers_retry_enabled_client() -> None:
+    transport, config = _make_retry_transport()
+    context = _make_context(task_attempts=2, source_attempts=2)
+
+    snapshot = transport.fetch(context)
+
+    assert transport.client._config is config
+    assert config.max_attempts == 2
+    assert len(transport.bounded_calls) == 1
+    assert len(transport.adapter.requests) == 2
+    assert all(
+        request.method == "GET"
+        and parse_qs(urlsplit(request.url or "").query)
+        == {
+            "paperCode": ["sh600519"],
+            "source": ["fzb"],
+            "type": ["0"],
+            "page": ["1"],
+            "num": ["1000"],
+        }
+        for request in transport.adapter.requests
+    )
+    assert [response.status_code for response in transport.adapter.responses] == [503, 200]
+    assert context.request_budget is not None
+    assert context.request_budget.attempts_used == 2
+    assert len(snapshot.reports) == 103
 
 
 def test_context_timeout_is_tightened_against_the_fixed_socket_bounds() -> None:
@@ -592,6 +730,9 @@ def test_cancellation_after_parsing_prevents_snapshot_return(
     original_parse = wire_module.parse_sina_fzb_response
 
     def parse_then_cancel(body: bytes, *, query: SinaFzbQuery) -> object:
+        scope_stack = current_request_scopes()
+        assert len(scope_stack) == 1
+        assert scope_stack[0].budget is context.request_budget
         reports = original_parse(body, query=query)
         cancellation.set()
         return reports

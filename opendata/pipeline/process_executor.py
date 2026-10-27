@@ -35,6 +35,7 @@ MAX_RESULT_BYTES = 16 * 1024 * 1024
 MAX_JSON_DEPTH = 24
 MAX_JSON_NODES = 250_000
 MAX_JSON_TEXT_BYTES = 4 * 1024 * 1024
+MAX_RESULT_TEXT_BYTES = 8 * 1024 * 1024
 MAX_TIMEOUT_SECONDS = 3_600.0
 MAX_STDIO_BYTES = 16 * 1024
 _MAX_IPC_OVERHEAD = 2_048
@@ -153,6 +154,7 @@ class ReviewedProcessExecutor:
         *,
         max_parameter_bytes: int = 1_048_576,
         max_result_bytes: int = MAX_RESULT_BYTES,
+        max_result_text_bytes: int = MAX_JSON_TEXT_BYTES,
         stdout_limit_bytes: int = MAX_STDIO_BYTES,
         stderr_limit_bytes: int = MAX_STDIO_BYTES,
         poll_interval_seconds: float = 0.05,
@@ -163,7 +165,9 @@ class ReviewedProcessExecutor:
 
         The stdout/stderr limits count bytes passed through the child's Python
         text streams. Native writes to file descriptors 1 and 2 are discarded
-        at ``/dev/null`` and are not included in those counters.
+        at ``/dev/null`` and are not included in those counters. Result text
+        keeps the existing 4 MiB default and may be raised per executor up to
+        ``MAX_RESULT_TEXT_BYTES``; the encoded result-byte ceiling is separate.
         """
         if not isinstance(registry, ReviewedProcessRegistry):
             raise TypeError("registry must be a ReviewedProcessRegistry")
@@ -172,6 +176,14 @@ class ReviewedProcessExecutor:
         )
         self._max_result_bytes = _bounded_integer(
             max_result_bytes, "max_result_bytes", 1, MAX_RESULT_BYTES
+        )
+        if type(max_result_text_bytes) is not int:
+            raise ValueError("max_result_text_bytes must be an integer")
+        self._max_result_text_bytes = _bounded_integer(
+            max_result_text_bytes,
+            "max_result_text_bytes",
+            1,
+            MAX_RESULT_TEXT_BYTES,
         )
         self._stdout_limit_bytes = _bounded_integer(
             stdout_limit_bytes, "stdout_limit_bytes", 0, MAX_STDIO_BYTES
@@ -240,12 +252,16 @@ class ReviewedProcessExecutor:
         ready = False
         isolated_group = False
         response: Mapping[str, JsonValue] | None = None
-        message_reader = _JsonSocketReader(receiver, self._max_result_bytes)
+        message_reader = _JsonSocketReader(
+            receiver,
+            self._max_result_bytes,
+            max_text_bytes=self._max_result_text_bytes + _MAX_IPC_OVERHEAD,
+        )
         try:
             try:
                 # The command is a fixed adjacent helper; arguments contain only the inherited FD.
                 process = subprocess.Popen(  # noqa: S603  # nosec B603
-                    [sys.executable, "-I", str(_WORKER_SCRIPT), str(sender.fileno())],
+                    [sys.executable, "-I", "-B", str(_WORKER_SCRIPT), str(sender.fileno())],
                     stdin=subprocess.DEVNULL,
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
@@ -265,6 +281,7 @@ class ReviewedProcessExecutor:
                     "handler_qualified_name": handler_reference.qualified_name,
                     "parameters": _decode_json_object(parameters_json),
                     "max_result_bytes": self._max_result_bytes,
+                    "max_result_text_bytes": self._max_result_text_bytes,
                     "stdout_limit_bytes": self._stdout_limit_bytes,
                     "stderr_limit_bytes": self._stderr_limit_bytes,
                 },
@@ -374,8 +391,15 @@ class ReviewedProcessExecutor:
                 "stderr_truncated",
             }:
                 raise ProcessExecutionProtocolError("process_response_invalid")
-            value_json = _encode_json_value(response.get("value"), self._max_result_bytes)
-            value = _decode_json_value(value_json)
+            value_json = _encode_json_value(
+                response.get("value"),
+                self._max_result_bytes,
+                max_text_bytes=self._max_result_text_bytes,
+            )
+            value = _decode_json_value(
+                value_json,
+                max_text_bytes=self._max_result_text_bytes,
+            )
             stdout_count = _response_counter(response, "stdout_bytes")
             stderr_count = _response_counter(response, "stderr_bytes")
             if stdout_count > self._stdout_limit_bytes + 1:
@@ -453,9 +477,22 @@ class _DiscardingTextStream:
 class _JsonSocketReader:
     """Read one bounded length-prefixed JSON frame without blocking the parent."""
 
-    def __init__(self, receiver: socket.socket, max_message_bytes: int) -> None:
+    def __init__(
+        self,
+        receiver: socket.socket,
+        max_message_bytes: int,
+        *,
+        max_text_bytes: int = MAX_JSON_TEXT_BYTES,
+    ) -> None:
+        if (
+            type(max_text_bytes) is not int
+            or max_text_bytes < 1
+            or max_text_bytes > MAX_RESULT_TEXT_BYTES + _MAX_IPC_OVERHEAD
+        ):
+            raise ValueError("max_text_bytes is outside the supported range")
         self._receiver = receiver
         self._max_message_bytes = max_message_bytes + _MAX_IPC_OVERHEAD
+        self._max_text_bytes = max_text_bytes
         self._buffer = bytearray()
         self._expected_bytes: int | None = None
         self.eof = False
@@ -472,7 +509,7 @@ class _JsonSocketReader:
                 encoded = bytes(self._buffer)
                 self._buffer.clear()
                 self._expected_bytes = None
-                return _decode_message(encoded)
+                return _decode_message(encoded, max_text_bytes=self._max_text_bytes)
 
             if self._expected_bytes is None and len(self._buffer) == 4:
                 self._expected_bytes = struct.unpack(">I", self._buffer)[0]
@@ -511,6 +548,7 @@ def _child_entry(
     parameters_json: bytes,
     sender: socket.socket,
     max_result_bytes: int,
+    max_result_text_bytes: int,
     stdout_limit_bytes: int,
     stderr_limit_bytes: int,
 ) -> None:
@@ -527,9 +565,16 @@ def _child_entry(
         try:
             handler = _resolve_handler(handler_module, handler_qualified_name)
             value = handler(parameters)
-            _validate_json_value(value)
-            result_json = _encode_json_value(value, max_result_bytes)
-            result_value = _decode_json_value(result_json)
+            _validate_json_value(value, max_text_bytes=max_result_text_bytes)
+            result_json = _encode_json_value(
+                value,
+                max_result_bytes,
+                max_text_bytes=max_result_text_bytes,
+            )
+            result_value = _decode_json_value(
+                result_json,
+                max_text_bytes=max_result_text_bytes,
+            )
             message = {
                 "type": "result",
                 "ok": True,
@@ -635,10 +680,14 @@ def _send_parent_command(
     return next_checkpoint
 
 
-def _decode_message(encoded: bytes) -> dict[str, JsonValue]:
+def _decode_message(
+    encoded: bytes,
+    *,
+    max_text_bytes: int = MAX_JSON_TEXT_BYTES,
+) -> dict[str, JsonValue]:
     """Decode one bounded UTF-8 JSON protocol message."""
     try:
-        parsed = _decode_json_value(encoded)
+        parsed = _decode_json_value(encoded, max_text_bytes=max_text_bytes)
     except _ProtocolValueError as exc:
         raise ProcessExecutionProtocolError("process_message_invalid") from exc
     if not isinstance(parsed, dict) or not isinstance(parsed.get("type"), str):
@@ -649,6 +698,7 @@ def _decode_message(encoded: bytes) -> dict[str, JsonValue]:
 def _worker_bootstrap(channel: socket.socket) -> None:
     """Read one bounded command frame and invoke the child worker entry point."""
     max_result_bytes = MAX_RESULT_BYTES
+    max_result_text_bytes = MAX_JSON_TEXT_BYTES
     try:
         header = _read_exact(channel, 4)
         command_size = struct.unpack(">I", header)[0]
@@ -661,6 +711,7 @@ def _worker_bootstrap(channel: socket.socket) -> None:
             "handler_qualified_name",
             "parameters",
             "max_result_bytes",
+            "max_result_text_bytes",
             "stdout_limit_bytes",
             "stderr_limit_bytes",
         }
@@ -677,6 +728,12 @@ def _worker_bootstrap(channel: socket.socket) -> None:
         max_result_bytes = _bounded_integer(
             command.get("max_result_bytes"), "max_result_bytes", 1, MAX_RESULT_BYTES
         )
+        max_result_text_bytes = _bounded_integer(
+            command.get("max_result_text_bytes"),
+            "max_result_text_bytes",
+            1,
+            MAX_RESULT_TEXT_BYTES,
+        )
         stdout_limit = _bounded_integer(
             command.get("stdout_limit_bytes"), "stdout_limit_bytes", 0, MAX_STDIO_BYTES
         )
@@ -689,6 +746,7 @@ def _worker_bootstrap(channel: socket.socket) -> None:
             parameters_json,
             channel,
             max_result_bytes,
+            max_result_text_bytes,
             stdout_limit,
             stderr_limit,
         )
@@ -727,9 +785,14 @@ def _encode_json_object(value: Mapping[str, JsonValue], max_bytes: int) -> bytes
     return encoded
 
 
-def _encode_json_value(value: object, max_bytes: int) -> bytes:
+def _encode_json_value(
+    value: object,
+    max_bytes: int,
+    *,
+    max_text_bytes: int = MAX_JSON_TEXT_BYTES,
+) -> bytes:
     """Encode one JSON value after structural and secret-like value checks."""
-    _validate_json_value(value)
+    _validate_json_value(value, max_text_bytes=max_text_bytes)
     try:
         encoded = json.dumps(
             value,
@@ -754,7 +817,11 @@ def _decode_json_object(encoded: bytes) -> dict[str, JsonValue]:
     return value
 
 
-def _decode_json_value(encoded: bytes) -> JsonValue:
+def _decode_json_value(
+    encoded: bytes,
+    *,
+    max_text_bytes: int = MAX_JSON_TEXT_BYTES,
+) -> JsonValue:
     """Decode one JSON document while rejecting duplicate keys and NaN values."""
 
     def reject_duplicates(pairs: list[tuple[str, object]]) -> dict[str, object]:
@@ -776,12 +843,22 @@ def _decode_json_value(encoded: bytes) -> JsonValue:
         )
     except (json.JSONDecodeError, UnicodeDecodeError, RecursionError) as exc:
         raise _ProtocolValueError("json_document_invalid") from exc
-    _validate_json_value(parsed)
+    _validate_json_value(parsed, max_text_bytes=max_text_bytes)
     return parsed  # type: ignore[return-value]
 
 
-def _validate_json_value(value: object) -> None:
+def _validate_json_value(
+    value: object,
+    *,
+    max_text_bytes: int = MAX_JSON_TEXT_BYTES,
+) -> None:
     """Enforce plain JSON types, bounded shape, and conservative secret checks."""
+    if (
+        type(max_text_bytes) is not int
+        or max_text_bytes < 1
+        or max_text_bytes > MAX_RESULT_TEXT_BYTES + _MAX_IPC_OVERHEAD
+    ):
+        raise _ProtocolValueError("json_text_limit_invalid")
     active: set[int] = set()
     stack: list[tuple[object, int, bool]] = [(value, 0, False)]
     node_count = 0
@@ -809,7 +886,7 @@ def _validate_json_value(value: object) -> None:
         if type(current) is str:
             size = _text_size(current)
             text_bytes += size
-            if text_bytes > MAX_JSON_TEXT_BYTES:
+            if text_bytes > max_text_bytes:
                 raise _ProtocolValueError("json_text_limit_exceeded")
             if any(pattern.search(current) for pattern in _SECRET_VALUE_PATTERNS):
                 raise _ProtocolValueError("result_contains_secret_like_value")
@@ -828,7 +905,7 @@ def _validate_json_value(value: object) -> None:
                         raise _ProtocolValueError("json_object_key_invalid")
                     key_size = _text_size(key)
                     text_bytes += key_size
-                    if text_bytes > MAX_JSON_TEXT_BYTES:
+                    if text_bytes > max_text_bytes:
                         raise _ProtocolValueError("json_text_limit_exceeded")
                     normalized_key = key.casefold().replace("_", "").replace("-", "")
                     if any(part in normalized_key for part in _SECRET_KEY_PARTS):
@@ -852,7 +929,7 @@ class _ProtocolValueError(ValueError):
 
 def _safe_protocol_error(error: _ProtocolValueError) -> str:
     """Map validator failures to the narrow public child error vocabulary."""
-    if error.code == "result_limit_exceeded":
+    if error.code in {"result_limit_exceeded", "json_text_limit_exceeded"}:
         return "result_limit_exceeded"
     if error.code == "result_contains_secret_like_value":
         return "result_contains_secret_like_value"

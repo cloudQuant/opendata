@@ -10,6 +10,8 @@ from zoneinfo import ZoneInfo
 
 import pytest
 
+import opendata.pipeline.run_service as run_service_module
+
 if TYPE_CHECKING:
     from collections.abc import Callable
 
@@ -416,6 +418,87 @@ def test_cancel_before_commit_never_calls_publisher() -> None:
     assert outcome.record is not None and outcome.record.status == "cancelled"
 
 
+def test_cooperative_validation_loss_never_calls_publisher(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A renewal miss inside large-batch validation aborts before publication."""
+    published: list[bool] = []
+
+    class _LoseLeaseOnCooperativeCheck:
+        def __init__(self, callback: Callable[[], None], **_kwargs: object) -> None:
+            self._callback = callback
+
+        def __call__(self) -> None:
+            ledger.deny_heartbeat = True
+            self._callback()
+
+        def mark_renewed(self) -> None:
+            return None
+
+    job = make_job(
+        normalize=lambda *_args: make_batch(rows=100),
+        publish=lambda *_args: (
+            published.append(True),
+            PublicationReceipt("pub-1", "cn.stock.daily", 100),
+        )[1],
+    )
+    ledger = FakeLedger()
+    service, _, _ = make_service(job, ledger)
+    service.submit("stock-daily", "v1", make_request())
+    monkeypatch.setattr(run_service_module, "_CooperativeCheckpoint", _LoseLeaseOnCooperativeCheck)
+
+    outcome = service.run_once("worker-a", TTL)
+
+    assert outcome is not None and outcome.record is not None
+    assert outcome.record.status == "failed"
+    assert outcome.record.error_text == "execution_failed:_LeaseLostError"
+    assert outcome.publication is None
+    assert published == []
+
+
+def test_nested_batch_validation_loss_stops_before_publisher(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Lease loss during recursive payload validation prevents publication."""
+    published: list[bool] = []
+    ledger = FakeLedger()
+    cooperative_calls = 0
+
+    class _LoseLeaseDuringNestedValidation:
+        def __init__(self, callback: Callable[[], None], **_kwargs: object) -> None:
+            self._callback = callback
+
+        def __call__(self) -> None:
+            nonlocal cooperative_calls
+            cooperative_calls += 1
+            if cooperative_calls == 10:
+                ledger.deny_heartbeat = True
+            self._callback()
+
+        def mark_renewed(self) -> None:
+            return None
+
+    job = make_job(
+        normalize=lambda *_args: make_batch(payload_value={"nested": {"value": "ok"}}),
+        publish=lambda *_args: (
+            published.append(True),
+            PublicationReceipt("pub-1", "cn.stock.daily", 1),
+        )[1],
+    )
+    service, _, _ = make_service(job, ledger)
+    service.submit("stock-daily", "v1", make_request())
+    monkeypatch.setattr(
+        run_service_module, "_CooperativeCheckpoint", _LoseLeaseDuringNestedValidation
+    )
+
+    outcome = service.run_once("worker-a", TTL)
+
+    assert cooperative_calls == 10
+    assert outcome is not None and outcome.record is not None
+    assert outcome.record.status == "failed"
+    assert outcome.record.error_text == "execution_failed:_LeaseLostError"
+    assert outcome.publication is None
+    assert published == []
+
+
 def test_lease_renewal_failure_stops_pipeline_before_publish() -> None:
     """A handler checkpoint aborts immediately when lease renewal fails."""
     published: list[bool] = []
@@ -460,8 +543,13 @@ def test_expired_fence_during_publish_does_not_expose_exception_secret() -> None
         return PublicationReceipt("pub-1", task.dataset_id, len(batch.records))
 
     ledger = FakeLedger()
-    times = iter([NOW] * 5 + [NOW + TTL] * 5)
-    service, _, _ = make_service(make_job(publish=publish), ledger, clock=lambda: next(times))
+
+    def clock() -> datetime:
+        # Keep every pre-publication heartbeat live; expire only at the
+        # transaction's post-callback lease check, independent of its cadence.
+        return NOW + TTL if published else NOW
+
+    service, _, _ = make_service(make_job(publish=publish), ledger, clock=clock)
     service.submit("stock-daily", "v1", make_request())
     ledger.expire_during_commit = True
 
