@@ -11,7 +11,9 @@ from uuid import uuid4
 
 import pytest
 from sqlalchemy import create_engine, pool, text
+from sqlalchemy.exc import OperationalError
 
+from opendata.api import data_query
 from opendata.main import app
 
 pytestmark = pytest.mark.integration
@@ -104,6 +106,53 @@ class TestValidationPaths:
 
 def _auth(token: str) -> dict[str, str]:
     return {"Authorization": f"Bearer {token}"}
+
+
+class _UnavailableWarehouse:
+    """Fail the warehouse read without opening a connection."""
+
+    def connect(self) -> None:
+        raise OperationalError(
+            "SELECT MAX(`trade_date`) FROM `dwd_stock_daily`",
+            {},
+            RuntimeError("private warehouse host and password"),
+        )
+
+
+async def test_freshness_http_route_authenticates_and_hides_database_failure(
+    test_client,
+    test_user_token: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Exercise the ASGI route with JWT auth and a fake warehouse dependency.
+
+    The shared ASGITransport fixture does not run the app lifespan. Its auth
+    dependencies use only the fixture's in-memory database; the warehouse
+    dependency is replaced before any request can reach the real engine.
+    """
+
+    async def fixed_expected(_engine: object, *, on: date | None = None) -> date:
+        del on
+        return date(2026, 10, 8)
+
+    async def unavailable_warehouse() -> object:
+        return _UnavailableWarehouse()
+
+    monkeypatch.setattr(data_query, "_expected_data_date", fixed_expected)
+    monkeypatch.setitem(
+        app.dependency_overrides,
+        data_query.get_warehouse_engine,
+        unavailable_warehouse,
+    )
+
+    path = "/api/v1/data/domains/stock_daily/freshness"
+    anonymous = await test_client.get(path)
+    response = await test_client.get(path, headers=_auth(test_user_token))
+
+    assert anonymous.status_code == 401
+    assert response.status_code == 503
+    assert response.json() == {"detail": "Freshness data is temporarily unavailable"}
+    assert "private warehouse host and password" not in response.text
 
 
 @pytest.mark.e2e
