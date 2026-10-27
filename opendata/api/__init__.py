@@ -17,6 +17,7 @@ from opendata.api.metrics import router as metrics_router
 from opendata.api.minute_data import router as minute_data_router
 from opendata.api.pipeline import router as pipeline_router
 from opendata.api.provider_models import router as provider_models_router
+from opendata.api.published_data import router as published_data_router
 from opendata.api.scripts import router as scripts_router
 from opendata.api.tables import router as tables_router
 from opendata.api.tasks import router as tasks_router
@@ -30,6 +31,9 @@ from opendata.api.websocket import router as ws_router
 ws_routers = (ws_router, data_subscribe_router)
 
 api_router = APIRouter()
+# Versioned publication routes already carry their /api/v2 prefix and must not
+# be mounted under the legacy /api or /api/v1 compatibility aliases.
+api_v2_router = published_data_router
 
 # Include all route modules
 api_router.include_router(auth_router, prefix="/auth", tags=["Authentication"])

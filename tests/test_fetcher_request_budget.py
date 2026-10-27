@@ -10,7 +10,7 @@ from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
-from typing import TYPE_CHECKING, Any, ClassVar, cast
+from typing import TYPE_CHECKING, Any, ClassVar, NoReturn, cast
 
 import pytest
 import requests
@@ -51,6 +51,7 @@ from opendata.data.request_budget import (
     RequestRedirectError,
     current_request_scopes,
     request_execution_scope,
+    scoped_host_slot,
 )
 
 HOST = "api.example.test"
@@ -121,6 +122,7 @@ class FakeResponse(requests.Response):
         super().__init__()
         self.status_code = status_code
         self._content = content
+        self._content_consumed = True
         self.encoding = "utf-8"
         self.headers["Content-Type"] = "application/json"
 
@@ -166,6 +168,8 @@ class OfflineAdapter(requests.adapters.BaseAdapter):
         response.url = request.url
         response.request = request
         response.connection = self
+        if status == 302:
+            response.headers["Location"] = "https://other.example.test/redirect-target"
         if status == 401:
             response.headers["WWW-Authenticate"] = (
                 'Digest realm="offline", nonce="offline-nonce", qop="auth"'
@@ -550,6 +554,143 @@ def test_two_clients_sharing_one_budget_serialize_same_host_transport() -> None:
     assert budget.attempts_used == 2
 
 
+def test_bounded_deadline_covers_wait_for_shared_scope_host_slot() -> None:
+    budget = make_budget()
+    gate_held = threading.Event()
+    release_gate = threading.Event()
+    gate_released = threading.Event()
+
+    def hold_shared_gate() -> None:
+        with request_execution_scope(
+            source="budget_test",
+            canonical_model="TinyModel",
+            operation=RequestOperation.QUERY,
+            budget=budget,
+        ):
+            with scoped_host_slot(current_request_scopes(), "budget_test", HOST):
+                gate_held.set()
+                release_gate.wait()
+            gate_released.set()
+
+    holder = threading.Thread(target=hold_shared_gate, daemon=True)
+    holder.start()
+    assert gate_held.wait(timeout=1)
+
+    class AdjustableClock:
+        def __init__(self) -> None:
+            self.now = 100.0
+
+        def time(self) -> float:
+            return self.now
+
+        def sleep(self, seconds: float) -> None:
+            self.now += seconds
+
+        def advance(self, seconds: float) -> None:
+            self.now += seconds
+
+    clock = AdjustableClock()
+
+    class NeverCalledAdapter(requests.adapters.BaseAdapter):
+        max_retries = requests.adapters.Retry(total=0)
+
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def send(
+            self,
+            _request: requests.PreparedRequest,
+            **_kwargs: object,
+        ) -> requests.Response:
+            self.calls += 1
+            raise AssertionError("host-slot deadline must expire before transport")
+
+        def close(self) -> None:
+            """Close no resources because this adapter never opens a socket."""
+
+    session = requests.Session()
+    adapter = NeverCalledAdapter()
+    session.mount("https://", adapter)
+    client = GovernedHttpClient(
+        HttpClientConfig(
+            max_attempts=1,
+            rate_limit_per_host=None,
+            backoff_base=0,
+            backoff_jitter=0,
+        ),
+        session=session,
+        sleep=clock.sleep,
+        time_fn=clock.time,
+        jitter_fn=lambda: 0.0,
+        raw_response_cache=None,
+    )
+    advance_deadline = threading.Timer(0.05, clock.advance, args=(0.2,))
+    release_watchdog = threading.Timer(0.5, release_gate.set)
+    advance_deadline.start()
+    release_watchdog.start()
+
+    try:
+        with (
+            request_execution_scope(
+                source="budget_test",
+                canonical_model="TinyModel",
+                operation=RequestOperation.QUERY,
+                budget=budget,
+            ),
+            pytest.raises(HttpFetchError) as error,
+        ):
+            client.get_bounded(
+                URL,
+                max_body_bytes=32,
+                overall_timeout=0.1,
+                source="budget_test",
+            )
+
+        assert error.value.category is FailureCategory.TIMEOUT
+        assert error.value.attempts == 0
+        assert adapter.calls == 0
+        assert not gate_released.is_set()
+    finally:
+        advance_deadline.cancel()
+        release_watchdog.cancel()
+        release_gate.set()
+        holder.join(timeout=1)
+    assert not holder.is_alive()
+
+
+def test_shared_host_slot_releases_gate_if_wait_liveness_raises_after_acquire() -> None:
+    budget = make_budget()
+    callback_calls = 0
+
+    def fail_after_acquire() -> None:
+        nonlocal callback_calls
+        callback_calls += 1
+        if callback_calls == 2:
+            raise RuntimeError("synthetic client deadline")
+
+    with request_execution_scope(
+        source="budget_test",
+        canonical_model="TinyModel",
+        operation=RequestOperation.QUERY,
+        budget=budget,
+    ):
+        scopes = current_request_scopes()
+        with (
+            pytest.raises(RuntimeError, match="synthetic client deadline"),
+            scoped_host_slot(
+                scopes,
+                "budget_test",
+                HOST,
+                check_wait_liveness=fail_after_acquire,
+            ),
+        ):
+            raise AssertionError("expired liveness callback must stop before yield")
+
+    gate = budget._host_gates[HOST]
+    assert gate.acquire(blocking=False)
+    gate.release()
+
+
 def test_cache_requires_grant_before_read_and_does_not_consume_an_attempt() -> None:
     class SpyCache:
         def __init__(self) -> None:
@@ -614,10 +755,53 @@ def test_redirects_are_disabled_and_rejected_without_cache_or_followup() -> None
     assert budget.attempts_used == 1
 
 
-def test_scoped_requests_reject_adapter_retries_before_transport() -> None:
+def test_bounded_scoped_redirect_is_an_http_error_with_actual_status() -> None:
     budget = make_budget(task_attempts=1, source_attempts=1)
     session = requests.Session()
-    session.mount("https://", requests.adapters.HTTPAdapter(max_retries=1))
+    adapter = OfflineAdapter((302, 200))
+    session.mount("https://", adapter)
+    client = make_client(session)
+
+    with (
+        request_execution_scope(
+            source="budget_test",
+            canonical_model="TinyModel",
+            operation=RequestOperation.QUERY,
+            budget=budget,
+        ),
+        pytest.raises(HttpFetchError) as error,
+    ):
+        client.get_bounded(
+            URL,
+            max_body_bytes=1,
+            overall_timeout=10.0,
+            source="budget_test",
+        )
+
+    assert error.value.category is FailureCategory.REDIRECT
+    assert error.value.status == 302
+    assert error.value.attempts == 1
+    assert len(adapter.calls) == 1
+    assert budget.attempts_used == 1
+
+
+def test_scoped_requests_reject_adapter_retries_before_transport(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    budget = make_budget(task_attempts=1, source_attempts=1)
+    session = requests.Session()
+    adapter = requests.adapters.HTTPAdapter(max_retries=1)
+    sends: list[requests.PreparedRequest] = []
+
+    def forbidden_send(
+        request: requests.PreparedRequest,
+        **_kwargs: object,
+    ) -> NoReturn:
+        sends.append(request)
+        raise AssertionError("retry adapter transport must not be reached")
+
+    monkeypatch.setattr(adapter, "send", forbidden_send)
+    session.mount("https://", adapter)
     client = make_client(session)
     try:
         with (
@@ -632,6 +816,7 @@ def test_scoped_requests_reject_adapter_retries_before_transport() -> None:
             client.get(URL, source="budget_test")
     finally:
         session.close()
+    assert sends == []
     assert budget.attempts_used == 0
 
 

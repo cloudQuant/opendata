@@ -53,7 +53,7 @@ def _naive_dates(index: pd.Index) -> pd.DatetimeIndex:
     stamps = pd.DatetimeIndex(pd.to_datetime(index))
     if stamps.tz is not None:
         stamps = stamps.tz_localize(None)
-    return cast("pd.DatetimeIndex", stamps.normalize())
+    return stamps.normalize()
 
 
 def split_events(frame: pd.DataFrame, splits: pd.Series) -> pd.Series:
@@ -109,13 +109,14 @@ def lookahead_factors(row_dates: pd.Index, events: pd.Series) -> pd.Series:
     """
     dates = _naive_dates(row_dates)
     if events.empty:
-        return cast("pd.Series", pd.Series(1.0, index=dates))
-    trailing = np.cumprod(events.values[::-1])[::-1]
+        return pd.Series(1.0, index=dates)
+    numeric_events = events.to_numpy(dtype="float64", na_value=np.nan)
+    trailing = np.cumprod(numeric_events[::-1])[::-1]
     positions = events.index.searchsorted(dates, side="right")
     # A position past the last split means there is nothing left to undo.
     clamped = np.minimum(positions, len(events) - 1)
     factors = np.where(positions == len(events), 1.0, trailing[clamped])
-    return cast("pd.Series", pd.Series(factors, index=dates))
+    return pd.Series(factors, index=dates)
 
 
 @dataclass(frozen=True)
@@ -143,7 +144,7 @@ def as_traded_bars(frame: pd.DataFrame, splits: pd.Series) -> pd.DataFrame:
     """
     events = split_events(frame, splits)
     factor = lookahead_factors(frame.index, events)
-    restored = cast("pd.DataFrame", frame.copy())
+    restored = frame.copy()
     for column in PRICE_COLUMNS:
         restored[column] = frame[column].to_numpy(dtype="float64") * factor.to_numpy()
     restored["Volume"] = frame["Volume"].to_numpy(dtype="float64") / factor.to_numpy()
@@ -164,7 +165,7 @@ def settled_rows(frame: pd.DataFrame) -> pd.DataFrame:
     Returns:
         The rows with a complete OHLC set.
     """
-    return cast("pd.DataFrame", frame.dropna(subset=list(PRICE_COLUMNS)))
+    return frame.dropna(subset=list(PRICE_COLUMNS))
 
 
 class StockDailyOverseasQuery(QueryParams):
@@ -274,8 +275,13 @@ class YfinanceStockDailyFetcher(Fetcher[StockDailyOverseasQuery, YfinanceHistory
         )
         frame["symbol"] = params.symbol.strip().upper()
         frame["amount"] = None
+        frame = frame.sort_values(
+            "trade_date",
+            key=lambda values: pd.Series(pd.to_datetime(values)).dt.date,
+            kind="stable",
+        )
         rows = OverseasBar.from_frame(frame)
-        return tuple(sorted(rows, key=lambda bar: bar.trade_date))
+        return tuple(rows)
 
 
 class YfinanceProviderError(RuntimeError):

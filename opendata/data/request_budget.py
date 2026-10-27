@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING
 from urllib.parse import urlsplit
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Iterator
+    from collections.abc import Callable, Iterable, Iterator
     from threading import Event
 
 
@@ -496,8 +496,18 @@ class RequestBudget:
         scopes: tuple[RequestExecutionScope, ...],
         source: str,
         host: str,
+        *,
+        check_wait_liveness: Callable[[], None] | None = None,
     ) -> Iterator[None]:
-        """Serialize one host across clients sharing this budget."""
+        """Serialize one host across clients sharing this budget.
+
+        Args:
+            scopes: Active request scopes authorizing this host slot.
+            source: Registered source name.
+            host: Governed host name.
+            check_wait_liveness: Optional caller-owned deadline check run while
+                waiting and after acquisition. It must use the caller's own clock.
+        """
         if not scopes:
             yield
             return
@@ -507,11 +517,17 @@ class RequestBudget:
             return
         with self._lock:
             gate = self._host_gates.setdefault(host, threading.Lock())
-        while not gate.acquire(timeout=_HOST_LOCK_POLL_SECONDS):
+        while True:
+            if check_wait_liveness is not None:
+                check_wait_liveness()
+            if gate.acquire(timeout=_HOST_LOCK_POLL_SECONDS):
+                break
             check_scope_liveness(scopes)
         try:
             check_scope_liveness(scopes)
             authorize_request(scopes, source, host)
+            if check_wait_liveness is not None:
+                check_wait_liveness()
             yield
         finally:
             gate.release()
@@ -594,13 +610,23 @@ def scoped_host_slot(
     scopes: tuple[RequestExecutionScope, ...],
     source: str,
     host: str,
+    *,
+    check_wait_liveness: Callable[[], None] | None = None,
 ) -> Iterator[None]:
-    """Acquire the shared budget's host gate when a request is scoped."""
+    """Acquire the shared budget's host gate when a request is scoped.
+
+    Args:
+        scopes: Active request scopes authorizing this host slot.
+        source: Registered source name.
+        host: Governed host name.
+        check_wait_liveness: Optional caller-owned deadline check to run while
+            waiting for and immediately before yielding the shared slot.
+    """
     if not scopes:
         yield
         return
     budget = _effective_budget(scopes)
-    with budget.host_slot(scopes, source, host):
+    with budget.host_slot(scopes, source, host, check_wait_liveness=check_wait_liveness):
         yield
 
 

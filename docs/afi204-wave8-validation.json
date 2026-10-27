@@ -1,0 +1,891 @@
+{
+  "accepted_receipts": [
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-od-second-root-command.json",
+      "sha256": "942f6761ca266cd7cf623cc035f72e5a57edc6a37ffca1b9e5402d709ffd94a3"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-od-static-command.json",
+      "sha256": "b9e620b170d98333ce4eb10f22f8977764742e8955079caeb510692fb92b9165"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-lock-root-command.json",
+      "sha256": "3dbd01400c56ee87c38a96f5dde357b52b1916ad6fdc572ef95d75f6ba820109"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-static-lock-command.json",
+      "sha256": "f57c6a063e47f62182f9caef8f16fccb066afab75b6d1266a0002904c013daeb"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-lock-environment-setup.json",
+      "sha256": "181f55597ae6cbbfa12726a9272bec5c345ea60675b91931fdd21f300b414a89"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-lock-environment-verification.json",
+      "sha256": "0595ecaab20a4360a7d3e071c57bce3d8dff95d5801a60a284f3714060dda721"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-frontend-new-fixed-root-command.json",
+      "sha256": "c0169839159395247ff499c820d7c7d0592f1d1d65403ee4332382266c88c156"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-frontend-compat-fixed-root-command.json",
+      "sha256": "e74bdeff3f2d2a6114521c7ead5560b9851c45be3e308f00d10ec382b98846b0"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-frontend-typecheck-generated-root-command.json",
+      "sha256": "d4d9c3126e4226882b11a9ef2e8c3f77a8cbd57ee6444c3f276c79cb2ee11dd2"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-frontend-build-stable-root-command.json",
+      "sha256": "064cd917931411e50dbdecea6959c8750a253daecf6c589f4d3657fedf6adf25"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-reference-wire-bridge-root-command.json",
+      "sha256": "bd02f5f23d78b0d955ac6f937c82508aefa47c2f1a20acabe171634a851f8b56"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-final-a2-command.json",
+      "sha256": "83d99514cc3e9a0a4dc9977c58d8a73b86be5ebbe8dd5950aff3eb064f2efd8d"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-final-secret-command.json",
+      "sha256": "ce31f2f6511bc3ee523284e8648913369beb749ff5b620470650bc58d6c0ee84"
+    }
+  ],
+  "accepted_run_source_commits": [
+    {
+      "receipt": "wave8-afi-backend-lock-root-command.json",
+      "source_revisions": "6b8f13c6d6c7d8cec360ebed63ae7098288a5a2c"
+    },
+    {
+      "receipt": "wave8-afi-frontend-build-stable-root-command.json",
+      "source_revisions": "dee1849fa960758505f1816ba70acaeacc543b48"
+    },
+    {
+      "receipt": "wave8-afi-frontend-compat-fixed-root-command.json",
+      "source_revisions": "dee1849fa960758505f1816ba70acaeacc543b48"
+    },
+    {
+      "receipt": "wave8-afi-frontend-new-fixed-root-command.json",
+      "source_revisions": "e1c032ab05f9182f4d3c99f276268618f4128b1c"
+    },
+    {
+      "receipt": "wave8-afi-frontend-typecheck-generated-root-command.json",
+      "source_revisions": "6df61696640fa3cd1653b24f014fa2309002026d"
+    },
+    {
+      "receipt": "wave8-afi-lock-environment-setup.json",
+      "source_revisions": null
+    },
+    {
+      "receipt": "wave8-afi-lock-environment-verification.json",
+      "source_revisions": null
+    },
+    {
+      "receipt": "wave8-afi-static-lock-command.json",
+      "source_revisions": "6b8f13c6d6c7d8cec360ebed63ae7098288a5a2c"
+    },
+    {
+      "receipt": "wave8-final-a2-command.json",
+      "source_revisions": "ec831160dbf4bbe5b2b766e6d6f8d7e31db0922f"
+    },
+    {
+      "receipt": "wave8-final-secret-command.json",
+      "source_revisions": "ec831160dbf4bbe5b2b766e6d6f8d7e31db0922f"
+    },
+    {
+      "receipt": "wave8-od-second-root-command.json",
+      "source_revisions": "71fdf9cddeb0efebd120da77d80948dd6bdddb2d"
+    },
+    {
+      "receipt": "wave8-od-static-command.json",
+      "source_revisions": "71fdf9cddeb0efebd120da77d80948dd6bdddb2d"
+    },
+    {
+      "receipt": "wave8-reference-wire-bridge-root-command.json",
+      "source_revisions": {
+        "afi": "6b8f13c6d6c7d8cec360ebed63ae7098288a5a2c",
+        "od": "ec831160dbf4bbe5b2b766e6d6f8d7e31db0922f"
+      }
+    }
+  ],
+  "archive_note": "Same-host ignored private evidence; not an external backup or recovery drill.",
+  "archive_path": "var/reports/afi204/2026-10-27-wave8",
+  "contract_sha256": "8dc2e5912f5a8c9e371beed3c36c772fe32914f59065d7655310a4e6e3be5c96",
+  "coverage": {
+    "afi_adapter": 92.55319148936171,
+    "afi_route_helper": 94.68085106382979,
+    "od_api": 89.88621997471554,
+    "od_producer": 98.90710382513662
+  },
+  "created_at": "2026-10-26T20:13:28.771640+00:00",
+  "failure_policy": "All selected failed/interrupted attempts preserved alongside final passes; no threshold reduction or new coverage exclusions.",
+  "full_make_gate": "NOT_RUN",
+  "inventory": {
+    "real_task_imports_this_wave": 0,
+    "registered_scripts": 1066,
+    "scheduled_tasks": 1103,
+    "scope": "Inherited historical census; no current readiness or denominator reduction."
+  },
+  "iteration": 204,
+  "open_conditions": [
+    "source rights/grants and reviewed real catalog/symbol mapping",
+    "full-history head/interior/tail by instrument and source key",
+    "all AFI consumers and legacy scripts/tasks",
+    "natural cycles and backup/restore",
+    "single-writer cutover and production acceptance",
+    "full extras/remote CI and Python 3.10 runtime",
+    "historical Ruff and support/active-evidence gaps"
+  ],
+  "private_receipt_sha256": [
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/finalize_wave8.py",
+      "sha256": "6801d18e5c800671fbf80804e9025e6a94ee7b109caaeeeb17a069462a09ec90"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/run_wave8_afi_frontend.py",
+      "sha256": "b19901f60137fb0120f1a7d8d438edaea0b4d944ef7fbfa18d50723ca4b6017d"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/run_wave8_afi_static.py",
+      "sha256": "2b99791f26e1be29ac46dc46c34a1758ff3f68775b45c931b7f683501a9d9837"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/run_wave8_bridge.py",
+      "sha256": "2af08e34bf3dafb0ba74ed08669f4045cca257ae77019ccd44e8079923b4134d"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/run_wave8_od_gate.py",
+      "sha256": "60c8b7533089adf872e8fb518c8265345c674196782b28dc9df1ddef9e44b982"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/run_wave8_root.py",
+      "sha256": "bedcf29383cccf5737a401984994fe01b06acaeb720a85f37f94900acde95f78"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/run_wave8_static.py",
+      "sha256": "ae12b9d8fc62160577061a9a7bfea4ced2f66fb71b45cab290646a2775f219a0"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/setup_wave8_afi_lock_env.py",
+      "sha256": "5fefa992f715ab91517269ad057fe5c1c7cc04d35264638d4cc188868fd21637"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/test_wave8_reference_wire_bridge.py",
+      "sha256": "9ef70ba6dd1dd00c2489b28b7d6210a956c12d9a8066706f5728d7fe9abb8297"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/verify_wave8_afi_lock_env.py",
+      "sha256": "9c095eb308d43d8186c047991435121ceccc4a76004d5cd98fa694cbd69c4ca5"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-adapter-protocol-review-v2.txt",
+      "sha256": "26b50b605e3cc4f99b88349d89f30ed305fc955cb680ad4bc7fa43829e1ee16c"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-adapter-protocol-review-v3.txt",
+      "sha256": "b4de10b5fdbf427c0cb29b1e297955284a7c278ac04878079b88f0dfc49efa88"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-adapter-protocol-review-v4.txt",
+      "sha256": "32b4a356f71a58ea1ef8b743453e2a00eb391f2ffd9600c3e002306710b15692"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-adapter-protocol-review-v5.txt",
+      "sha256": "efc2275fc38e3910dcad286e799ce052ff1ed588617d5362491d8f1ad446bfec"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-adapter-protocol-review.txt",
+      "sha256": "3afe797b6d2479b7b02c3c8d267df5dd836c441b04103e444c780346c6b9bf48"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-boundaries-root-command.json",
+      "sha256": "3b3fd93fbf823aaa704d1cdc2cb94edcfd8f93e993cb6bad0feadf2e4ceef05a"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-boundaries-root-coverage.ini",
+      "sha256": "9c87325149443d0c7de4f4798410b58f26a09dcfaf1089b00fb40693cda17edb"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-boundaries-root-coverage.json",
+      "sha256": "a8e40d334c43e596303e9073db5f7d30b5000f094a771afa2c93ba1eaa912d97"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-boundaries-root-coverage.xml",
+      "sha256": "ceeb8843647ffb72f464f7af4520b4ae6e9034809a2148e82e6cbeacf022b65c"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-boundaries-root-htmlcov.zip",
+      "sha256": "087eed9c4332f0364f34986e6d99cc50057a890b9dd9873f5cd1b97cd5a50498"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-boundaries-root.coverage",
+      "sha256": "a0ad91c1ac0ca0524159009a82314c8ab70473f0e3bcd29d201875d37028bc43"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-boundaries-root.txt",
+      "sha256": "36b68803ea7a81a71fa36c4615cc695e0da0218494b050224d1ccd555ada3590"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-first-root-command.json",
+      "sha256": "7083edd4f1f2ba4758dc9ecdc5b505617f43ebbcfd91a88c22ae008394526b74"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-first-root-coverage.ini",
+      "sha256": "0ec3535bf80dbe725875b24793dc54d81d592240d6d64f1b0f307eeaceaaa863"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-first-root-coverage.json",
+      "sha256": "593abc6116f75a6dc43e3567820c51ead2afc291b960adcf287f728dc2c1cee9"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-first-root-coverage.xml",
+      "sha256": "88fc46e78e28309e30f62afb236c16a8e37d94fc2ac226b1d3d75bb92056845f"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-first-root-htmlcov.zip",
+      "sha256": "a2c573d0ca1faa5c3b247613899850209eba9ba05984004fa48d6856635933f8"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-first-root.coverage",
+      "sha256": "34634122ad87d65fda54764d71b26806ea63367e3bec74a80edd14c27e5b4903"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-first-root.txt",
+      "sha256": "64d37992136a7f8d1a8cc9785202e438e433158424d504ead6af6719a1ac1951"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-greenlet-root-command.json",
+      "sha256": "ccff06aaddc31ba0c1ac5f9cdb8400411408df90f1010bd0c6daa4dbcc2b28e4"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-greenlet-root-coverage.ini",
+      "sha256": "9c87325149443d0c7de4f4798410b58f26a09dcfaf1089b00fb40693cda17edb"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-greenlet-root-coverage.json",
+      "sha256": "0e9cf3ef7aa2125d9328bb9b31c919e2b7110fbf144a0ff72569e7a13b375d7d"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-greenlet-root-coverage.xml",
+      "sha256": "a353820868183bd8fd6c5aeb5dac11dd14fa8e102ab9831615d26d98cafe7c80"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-greenlet-root-htmlcov.zip",
+      "sha256": "a7b93db1295d6750f59991b61ca4586f81cf116162c0682329a2327e965ed684"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-greenlet-root.coverage",
+      "sha256": "a2e1a45c35557a75a80d0195e4a820b24622bb677d71806d0f5e2f5eba2bce08"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-greenlet-root.txt",
+      "sha256": "d86b6aff5021dc23aa5f3dbecaae1941211a19762bf6afbc790e5a7853a2d39b"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-incremental-root-command.json",
+      "sha256": "4e971da50b9312f186e22ea477d4358f020df7addd8531046004d64238ca0062"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-incremental-root-coverage.ini",
+      "sha256": "9c87325149443d0c7de4f4798410b58f26a09dcfaf1089b00fb40693cda17edb"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-incremental-root-coverage.json",
+      "sha256": "c7830888db1e07519b5152037cab63f1b07994f2c0e3eb847706ade1a7a8230c"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-incremental-root-coverage.xml",
+      "sha256": "8070e11ed8dd8cbad23263611bf362cc4b6bcccdf21ab532dd5fbcabd05da243"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-incremental-root-htmlcov.zip",
+      "sha256": "6264f06d5d6e97e7a7ec159888e465c671da42cf26c279b42616a6e210421761"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-incremental-root.coverage",
+      "sha256": "25f5a36cbdef810e46a7d9cdf0385f290ae60f9f99e52a2eb91647bb8d866a66"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-incremental-root.txt",
+      "sha256": "827d4a1fa44bbe4c371165320dab1c07d4e37c8a83478dc81d97e6c2cccc4bc1"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-lock-root-command.json",
+      "sha256": "3dbd01400c56ee87c38a96f5dde357b52b1916ad6fdc572ef95d75f6ba820109"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-lock-root-coverage.ini",
+      "sha256": "9c87325149443d0c7de4f4798410b58f26a09dcfaf1089b00fb40693cda17edb"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-lock-root-coverage.json",
+      "sha256": "a2649e91b85423e3c713502211212856fdea6fca916462e198e179bb5d74d30e"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-lock-root-coverage.xml",
+      "sha256": "60e27d99ae42fcc92f506f21b3fa25291a745831ebfa9cc74b78d7801953cc7f"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-lock-root-htmlcov.zip",
+      "sha256": "16031571dabfed2af13f4fe80985982e6b558cd1397a3672b51c8d49678237ca"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-lock-root.coverage",
+      "sha256": "73516ef34689210fadb1018ed6072714d15edce77f28d74dad2ee1f82c2109d0"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-lock-root.txt",
+      "sha256": "bd12478670195bbaa7e950e947fe84a51bd5bad1fea25f29aa253e9f98bc20e4"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-stream-fixed-root-command.json",
+      "sha256": "e29933d286a7a549807a4930a0bd265ce658af8e8a4fdb836fbd7181dd71cda5"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-stream-fixed-root-coverage.ini",
+      "sha256": "0ec3535bf80dbe725875b24793dc54d81d592240d6d64f1b0f307eeaceaaa863"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-stream-fixed-root-coverage.json",
+      "sha256": "7dcf51d7ba505a327fefa517b7f2a5aeadb688b6f970cfb00975d373fe27373c"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-stream-fixed-root-coverage.xml",
+      "sha256": "44bf2bb4e5c2d85320bac010832c16063b6dc01757aad577970ee1a85b8db3ad"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-stream-fixed-root-htmlcov.zip",
+      "sha256": "ad752f05ae5537347fc34a2b2e83e8d0f3e12c7e8fac49d60e219767f0b850c3"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-stream-fixed-root.coverage",
+      "sha256": "e162d24652ceb731c7e81ffa9363072847cded460ab0a14696972c154df56456"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-backend-stream-fixed-root.txt",
+      "sha256": "82cbed6f1ff4f657942efcde62be64c29c1761f4ab171643f829793bbb177521"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-boundary-tests-review-v2.txt",
+      "sha256": "dbecbe3a7ad82efe8488e5b6f90aa3372c00893cd2f6fca66cd9ed6494bf6fdd"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-boundary-tests-review.txt",
+      "sha256": "dd6e51315edea4ceb87e4874bd8f59839cc25f5220eb5346d14677e302831c1c"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-consumer-design.txt",
+      "sha256": "8a040684077f18db9a6789f52c6ff4ec7f21b2ae1ea04f2f66bd8c997dd90476"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-consumer-ui-review-v2.txt",
+      "sha256": "98379ec78ed0a61a4b16d490d1bcbcf68064efd0aa704ecf8c73c9a980a4fb40"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-consumer-ui-review.txt",
+      "sha256": "d6353221fd5b8d5deae448c5462623420cbfd3a6d8b91e91c0a6f8769e4f59ec"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-coverage-tracing-audit.txt",
+      "sha256": "db08c251253f6b826932a8bd2061e85c3b3e118b88e5effc94e6ccb3d4ff1f64"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-coverage-tracing-result-audit.txt",
+      "sha256": "a590d2378250364cfcb29c74d4df6b8e11fdf681228e08c59a3d3ea574af3c53"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-environment-compatibility-plan.txt",
+      "sha256": "acce121be5eb03c2fe21a334952afbbe693bc5143c94eeaf878111873f714285"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-final-route-ui-review.txt",
+      "sha256": "835b088149d18695763fcc68cb9cd6801a493f1ace7dd76586afd94219ea815c"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-frontend-build-root-command.json",
+      "sha256": "0e5ac6822010edf4537afab8d581fdeceb5a5d31fcf61fe59d6c883338d87205"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-frontend-build-root.txt",
+      "sha256": "fb9868badbd94f464cde5e869fba2361d061cb48f9fe19767658a563a3e09a89"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-frontend-build-stable-root-command.json",
+      "sha256": "064cd917931411e50dbdecea6959c8750a253daecf6c589f4d3657fedf6adf25"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-frontend-build-stable-root.txt",
+      "sha256": "f8c7afc21060bd00dd775090230f3ff7be23a60c0e8a05e733eace3ee2159459"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-frontend-compat-failure-review.txt",
+      "sha256": "c0967e4bd8e863d18a58fbfd22cf51ac3a7ddc4115a227714f36a8cf30bc7794"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-frontend-compat-fixed-root-command.json",
+      "sha256": "e74bdeff3f2d2a6114521c7ead5560b9851c45be3e308f00d10ec382b98846b0"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-frontend-compat-fixed-root.txt",
+      "sha256": "cfd3f3e847233d6509b988fe254a1488b17f6df5635d05e01adee07d33a12697"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-frontend-compat-root-command.json",
+      "sha256": "1c6adb9031e6212a06d274aff0652f21b941c0902ffa1df87174ef79f369578a"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-frontend-compat-root.txt",
+      "sha256": "79c122cea0e125ea63acd3ba293f5e34b5b979fe4b34479b212cd7d09a6d5635"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-frontend-dependencies.json",
+      "sha256": "b7096a429a83abd5e1fce4ef6401292adc71ae54a6506171ef0587780ea2caa5"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-frontend-new-fixed-root-command.json",
+      "sha256": "c0169839159395247ff499c820d7c7d0592f1d1d65403ee4332382266c88c156"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-frontend-new-fixed-root.txt",
+      "sha256": "72da3930b85954627faa53f940d14f6fbacd8db78e07645954b860a0430849c3"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-frontend-new-root-command.json",
+      "sha256": "129d981a84de722e0fe62e816573b4c584c17eef28dfe2bf10972a9681aa3b50"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-frontend-new-root.txt",
+      "sha256": "80cdd94c1ed8a26d3873b2bfcb4b6b9106789dd6d186fe46f438966b0cb3f122"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-frontend-test-scope-review.txt",
+      "sha256": "ff33157b1aaf40aa45629cb072023f79ee95c52f911bcd5d24798ea52be1016c"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-frontend-typecheck-fixed-root-command.json",
+      "sha256": "94d2c355bbd11473c3794146ac5a79a2795bb73d183eaffe9c100b51ba871a0b"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-frontend-typecheck-fixed-root.txt",
+      "sha256": "fd06c49385472f67c8998b291676842167d1131d3717566b5e85896b6d3d8b99"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-frontend-typecheck-generated-root-command.json",
+      "sha256": "d4d9c3126e4226882b11a9ef2e8c3f77a8cbd57ee6444c3f276c79cb2ee11dd2"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-frontend-typecheck-generated-root.txt",
+      "sha256": "d80faa434b9b4945bfeb6eee26948bf5394595eb192745c84d475f965dab3fd6"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-frontend-typecheck-root-command.json",
+      "sha256": "35837a2ef0fa3291f74394947aa8445b399e4ba136cfeb53db8159a59c34606e"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-frontend-typecheck-root.txt",
+      "sha256": "250e369d730a46c4d41df37449a5c58c169b4b1d2ab546951a8bed0285805a95"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-generated-declarations.json",
+      "sha256": "ef359b54a81fdec51d15b6b5063be2457431332745ccc46e816f6ddb7f262fef"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-incremental-publication-review.txt",
+      "sha256": "13bf3038b1458aacc0e7604cc83fde70edcb2a48f839b0c9e45aa7bbbdcd6253"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-lock-constraints.txt",
+      "sha256": "4fcd9ec01bc7b3a29906e04d02f243eb2433b5d6b5b459515e014534bd068b38"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-lock-environment-install.txt",
+      "sha256": "5626376c23dc0b6c1e4d3f180a167de7d1e38e8326c8ba0d1e363b37d0435723"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-lock-environment-pip-report.json",
+      "sha256": "5ebf702869545a7a7ab9333034e407a4c53d1a1efe8e47ae11026cc8ca5e69e4"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-lock-environment-review.txt",
+      "sha256": "fafc912e0dd9eb37662636703cfc92559c1893ddec2670a65c86c680fa12f044"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-lock-environment-setup.json",
+      "sha256": "181f55597ae6cbbfa12726a9272bec5c345ea60675b91931fdd21f300b414a89"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-lock-environment-verification.json",
+      "sha256": "0595ecaab20a4360a7d3e071c57bce3d8dff95d5801a60a284f3714060dda721"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-lock-focused-requirements.txt",
+      "sha256": "fd997fe23cff15c8b4570cfad4d2ac647ca72f3a092b5f243378bbb98ad84acd"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-protected-source-progress.json",
+      "sha256": "0d38a1c41c9350d27dbf4a125b1c07c4aa94eb30ed7c747a17294b6ec5147610"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-route-review-v2.txt",
+      "sha256": "be3d6b93359457512f027033325ea59afb580b2628c23a6c21e6ec1a66280027"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-route-review.txt",
+      "sha256": "e02b1e60aa3c98abe1295ca94eab038b2394e7a0f6fe5a0a2b58a5984acf6831"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-static-first-bandit.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-static-first-command.json",
+      "sha256": "32fa7d767c3e0e7c1a8a75c687f9e3b340699357722cd5b31a56ea7518814f59"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-static-first-eslint.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-static-first-format.txt",
+      "sha256": "0321fffcb91606a42c0a19d8c1121d5c544379d663821fce616c71a7bb62f6b5"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-static-first-mypy.txt",
+      "sha256": "71144743c83babea384888a735db0c4daba3d4d7b7942b6839984bd5c21b52bb"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-static-first-ruff.txt",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-static-incremental-bandit.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-static-incremental-command.json",
+      "sha256": "da6f690e3815dfd4ff01a1247ed700843a4a0b24306eff67dd75a8793336f9fd"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-static-incremental-eslint.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-static-incremental-format.txt",
+      "sha256": "0321fffcb91606a42c0a19d8c1121d5c544379d663821fce616c71a7bb62f6b5"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-static-incremental-mypy.txt",
+      "sha256": "71144743c83babea384888a735db0c4daba3d4d7b7942b6839984bd5c21b52bb"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-static-incremental-ruff.txt",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-static-lock-bandit.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-static-lock-command.json",
+      "sha256": "f57c6a063e47f62182f9caef8f16fccb066afab75b6d1266a0002904c013daeb"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-static-lock-eslint.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-static-lock-format.txt",
+      "sha256": "0321fffcb91606a42c0a19d8c1121d5c544379d663821fce616c71a7bb62f6b5"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-static-lock-mypy.txt",
+      "sha256": "71144743c83babea384888a735db0c4daba3d4d7b7942b6839984bd5c21b52bb"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-static-lock-ruff.txt",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-afi-typecheck-audit.txt",
+      "sha256": "6ccf15e7f0911da10688f1f7e0a359aead2fbc43ca7d6418561cfc00d701dc38"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-archive-script-review-v2.txt",
+      "sha256": "35713f9784de1b9d3eeadabe025ce2aaf41d014f42cb5afc0c8e382d643616df"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-archive-script-review.txt",
+      "sha256": "b14c04fc9cb3e666f588b9de5d239cbf226c87dc8d33df5d859154d6da26a6e6"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-final-a2-command.json",
+      "sha256": "83d99514cc3e9a0a4dc9977c58d8a73b86be5ebbe8dd5950aff3eb064f2efd8d"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-final-a2-summary.json",
+      "sha256": "394c3454f536788a701f8719a8c96395da3c49a2572810d406735aa2092a97bb"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-final-a2.txt",
+      "sha256": "0ffbe664b9c1b404d539f6fd9ae683fa6f6afd7da842a1f8488611ee08bdbae9"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-final-secret-command.json",
+      "sha256": "ce31f2f6511bc3ee523284e8648913369beb749ff5b620470650bc58d6c0ee84"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-final-secret.txt",
+      "sha256": "729ab060babb204e3ac1c6d46f889acf474f0c08cc6e0c57c2135f76e8744d97"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-frozen-contract.json",
+      "sha256": "1c33cef5412c687b5f12197a5e1c73c87fed158a2415b14ef9facfb5023577d1"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-incremental-publication-decision.json",
+      "sha256": "81c790d8e759df22489c92c41e12b6106c117fb133677bf51e1e480feb988aa6"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-instrument-contract-independent-review.txt",
+      "sha256": "570d9f17d516bbf9b882638f4eca05d56f8ecda9521927582d1e2ddf97717d98"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-instrument-contract-proposal.txt",
+      "sha256": "3ee281bc4a597c7010d0fcb27a03cb6643f2cffa842dd4a8f6e6fec897530693"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-od-first-root-command.json",
+      "sha256": "9ba4092e224810fef7cfc9b46257714516de2451cf1292e55b0b77e334290591"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-od-first-root-coverage.ini",
+      "sha256": "98ca403a3e20fdeeab1dafb3f0b4a3c33d5fe1887423fe85458fae4d247a3adc"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-od-first-root-coverage.json",
+      "sha256": "f4c90fcb7fe437d7bd5c74758917d77f1c82760259b1aa3ca4cf2cbc3f40ee0f"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-od-first-root-coverage.xml",
+      "sha256": "fd24047631c6354feeded5e3c2a6290a347e5cb9025777db6417d66f5638992b"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-od-first-root-htmlcov.zip",
+      "sha256": "a94e5dce7c1777fda3406ba5383432daff15cc6e5c1f02608389b9122db702cc"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-od-first-root.coverage",
+      "sha256": "f7c781ea1a3905531be26a33fa52162939a7b8732d94df29ef143d6a8ec9f8e3"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-od-first-root.txt",
+      "sha256": "81c32c4a972df020aa6fac8cbf39fce65fda27970eb1b5e7d360b31d9e384f97"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-od-second-root-command.json",
+      "sha256": "942f6761ca266cd7cf623cc035f72e5a57edc6a37ffca1b9e5402d709ffd94a3"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-od-second-root-coverage.ini",
+      "sha256": "98ca403a3e20fdeeab1dafb3f0b4a3c33d5fe1887423fe85458fae4d247a3adc"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-od-second-root-coverage.json",
+      "sha256": "3b764c04b202b4f52add77a288dc918a9180474b669cf91f6c00c6f95edbd3fb"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-od-second-root-coverage.xml",
+      "sha256": "01bb590ba2b01272f3fdd17ddbd0b203d6374e6fd63f6d7e5e1a9d337c5b8905"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-od-second-root-htmlcov.zip",
+      "sha256": "feb68e9b39384835699332eabdf4ce532f434d747dd3a34a9ba55a74e8334b00"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-od-second-root.coverage",
+      "sha256": "5da1351479e9550cc3aec76607e97e28ec1a17b5f74ab8a56bef83e030dcfc6c"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-od-second-root.txt",
+      "sha256": "53c32c2b5b9d3447ef403c4b12e0c2cb069c70ee6b966b8defe04b64476b9807"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-od-static-bandit.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-od-static-command.json",
+      "sha256": "b9e620b170d98333ce4eb10f22f8977764742e8955079caeb510692fb92b9165"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-od-static-format.txt",
+      "sha256": "177f260a5645724013185e4b140c7045cc39e56c0c97b120f5cb23599f85f0de"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-od-static-mypy.txt",
+      "sha256": "feff43ba62cf5f483a41615f51b4d38a653112487f08c65d5f6e8f6f210efeb8"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-od-static-public-api.txt",
+      "sha256": "e9dcc50650471c729a7fa4b852de70937cee380a838637c4d975e12ff16bd1a7"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-od-static-ruff.txt",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-od-static-zero-dep-selftest.txt",
+      "sha256": "d7e2cac1e225513f6d3223d8454864675eaa3afe4d1e9f68c01f7ddd39e6a05d"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-od-static-zero-dep.txt",
+      "sha256": "fd588327186983ff2c8cf940454f75970e8cf7c99fa1efe1b99b871fec5d1be1"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-producer-api-review-v2.txt",
+      "sha256": "24b31595daac50297786cb76540c1d3f54793a98e4cc47c6dcbe5b2734ffd598"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-producer-api-review.txt",
+      "sha256": "8f21bc0fdcf2c2939ed39435f1592b3184a8eeb9e3635ac055784713267c04d5"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-reference-wire-bridge-review-v2.txt",
+      "sha256": "0e9c0aa3f5cc9472d16a09e86618d9f7599637cd7f89f716296fffe5e08e7c69"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-reference-wire-bridge-review.txt",
+      "sha256": "9d72d80404be88f6382e434e5405ce15cff901d3696dc76108549b967cfd2c5b"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-reference-wire-bridge-root-command.json",
+      "sha256": "bd02f5f23d78b0d955ac6f937c82508aefa47c2f1a20acabe171634a851f8b56"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-reference-wire-bridge-root.txt",
+      "sha256": "973ec7bf10ba8083982c7c142a583148b064738d48e0cc852a30f3b22b7ce07d"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-root-architecture-decision.json",
+      "sha256": "052c91f0f4c7413d6da1ff068cf64b66fe0e006245f3c03918688da57a4f5431"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-securities-first-batch-mapping.json",
+      "sha256": "0ed4d8a77420c3725e0220dd7c07cb94f5f408b71f21ed024c07cbe13a1822f5"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-securities-first-batch-mapping.txt",
+      "sha256": "c7f66c9224db5f26fd0315ceafe73380ecc66dc4ecc25687216f80d0e0d3a820"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-task-status-audit.txt",
+      "sha256": "e6e1494392644877a14fb448ca379c73a143e6208a7fdefd554ad935775ac30f"
+    },
+    {
+      "path": "var/reports/afi204/2026-10-27-wave8/wave8-zero-dep-census-review.txt",
+      "sha256": "24f90babee04f95cc5aafe418051bccee71a54e0b02875bdbbb058999392e0f4"
+    }
+  ],
+  "production_pin_continuity": [
+    {
+      "matches_at_packaging": true,
+      "receipt": "wave8-od-second-root-command.json",
+      "sha256": "0234a9237fa8e78e0f094c9e606e25425d7236fcbd4a2fe8e058b75abb5a59fe",
+      "source_path": "/home/yun/Documents/opendata-od204/opendata/data/instrument_reference_publication.py"
+    },
+    {
+      "matches_at_packaging": true,
+      "receipt": "wave8-od-second-root-command.json",
+      "sha256": "8f636f644e3ceda139af512efd5de280d5f13c791edb60c92ce6a4309933b096",
+      "source_path": "/home/yun/Documents/opendata-od204/opendata/api/published_data.py"
+    },
+    {
+      "matches_at_packaging": true,
+      "receipt": "wave8-afi-backend-lock-root-command.json",
+      "sha256": "c9ee43929bc7172a0180695bc4af705b6d99b29e31a8289480713a1b0494c4ad",
+      "source_path": "/home/yun/.codex/worktrees/od204-integration/ai-for-investor/src/backend/app/config.py"
+    },
+    {
+      "matches_at_packaging": true,
+      "receipt": "wave8-afi-backend-lock-root-command.json",
+      "sha256": "90d2b90d330eef0d2e7eaa167e85290ef61f22f664e0a8087024af3d3f15612b",
+      "source_path": "/home/yun/.codex/worktrees/od204-integration/ai-for-investor/src/backend/app/api/data/base.py"
+    },
+    {
+      "matches_at_packaging": true,
+      "receipt": "wave8-afi-backend-lock-root-command.json",
+      "sha256": "ed1d9ba7aa2d4963752e494872a2ce5cd7e31c58d20bd72c029709f8f28846a5",
+      "source_path": "/home/yun/.codex/worktrees/od204-integration/ai-for-investor/src/backend/app/api/data/instrument_reference.py"
+    },
+    {
+      "matches_at_packaging": true,
+      "receipt": "wave8-afi-backend-lock-root-command.json",
+      "sha256": "69b4c289bdc5c95d14ddfa47769e151e34517ba5830eda0adff6fba196188503",
+      "source_path": "/home/yun/.codex/worktrees/od204-integration/ai-for-investor/src/backend/app/services/market_data/opendata_instrument_reference.py"
+    },
+    {
+      "matches_at_packaging": true,
+      "receipt": "wave8-afi-frontend-build-stable-root-command.json",
+      "sha256": "cb851f6e16b9b85b1f201a998af51d4fc84647d824e12ef8ac6d969bf768413a",
+      "source_path": "/home/yun/.codex/worktrees/od204-integration/ai-for-investor/src/frontend/src/api/marketData.ts"
+    },
+    {
+      "matches_at_packaging": true,
+      "receipt": "wave8-afi-frontend-build-stable-root-command.json",
+      "sha256": "0effe0637c5b85ba16889db87fd76caf42b4c4a344e1139a7a2bcf86079da9ca",
+      "source_path": "/home/yun/.codex/worktrees/od204-integration/ai-for-investor/src/frontend/src/api/index.ts"
+    },
+    {
+      "matches_at_packaging": true,
+      "receipt": "wave8-afi-frontend-build-stable-root-command.json",
+      "sha256": "7c47bbd59880b560af91c4303ec56b6cccd9dd8812bee0610b4afd946e972fc0",
+      "source_path": "/home/yun/.codex/worktrees/od204-integration/ai-for-investor/src/frontend/src/views/DataPage.vue"
+    },
+    {
+      "matches_at_packaging": true,
+      "receipt": "wave8-afi-frontend-build-stable-root-command.json",
+      "sha256": "44817b2d7f56ed7feb6bd22711b4caa6ed8c11fd757254e701de362710ac1800",
+      "source_path": "/home/yun/.codex/worktrees/od204-integration/ai-for-investor/src/frontend/src/views/data/useDataPage.ts"
+    }
+  ],
+  "production_status": "NOT_PRODUCTION_ACCEPTED",
+  "python310_runtime": "NOT_RUN",
+  "revision_scope": "Mixed-revision evidence, not one current-HEAD combined test run. Exact source commits and byte pins are in each accepted receipt; later production bytes listed below match their accepted runs.",
+  "snapshot_heads_at_packaging": {
+    "afi": "6b8f13c6d6c7d8cec360ebed63ae7098288a5a2c",
+    "od": "ec831160dbf4bbe5b2b766e6d6f8d7e31db0922f"
+  },
+  "static": {
+    "afi_scoped_locked_tools": "PASS",
+    "od_complete_a2": "PASS",
+    "od_full_history_secret": "PASS",
+    "od_scoped": "PASS"
+  },
+  "status": "SCOPED_CODE_AND_ISOLATED_INTEGRATION_VALIDATED",
+  "synthetic_fixture_sha256": "bc891b8abaa1f332bf6f1c08ee4737bdada68e10a848f30866dd43dbbe215f72",
+  "test_results": {
+    "afi_backend": {
+      "dependency_scope": "Isolated focused subset pinned to checked-in dev lock, not all extras/full CI.",
+      "files": 3,
+      "passed": 203,
+      "python": "3.11.15"
+    },
+    "afi_frontend": {
+      "build": "PASS_WITH_EXISTING_CHUNK_WARNING",
+      "compat_passed": 91,
+      "new_passed": 18,
+      "typecheck": "PASS"
+    },
+    "cross_repo_asgi_bridge": {
+      "passed": 2,
+      "scope": "Synthetic actual producer/store/v2 router/AFI client, initial and incremental publication."
+    },
+    "od": {
+      "files": 4,
+      "passed": 112
+    }
+  },
+  "wave": 8
+}

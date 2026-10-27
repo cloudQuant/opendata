@@ -1,0 +1,1195 @@
+{
+  "fixture_kind": "SYNTHETIC_PROTOCOL; not live/source/rights/production evidence",
+  "notes": "Canonical contract and record hashes computed from documented wire encoding. selection_sha256/content_sha256/cursor are synthetic opaque server attestations; client may bind/validate them but cannot independently recompute the scope-bound snapshot digest without server access_scope. API tests compare normalized contract/row semantics; dynamic server IDs/hashes are not asserted equal to this template.",
+  "contract": {
+    "dataset_id": "fixture.instrument-reference.stock",
+    "schema_version": "1",
+    "semantic_version": "1.0.0",
+    "asset_class": "equity",
+    "frequency": "irregular",
+    "record_kind": "table",
+    "fields": [
+      {
+        "name": "profile_version",
+        "data_type": "string",
+        "nullable": false
+      },
+      {
+        "name": "registry_version",
+        "data_type": "string",
+        "nullable": false
+      },
+      {
+        "name": "registry_evidence_ref",
+        "data_type": "string",
+        "nullable": false
+      },
+      {
+        "name": "instrument_id",
+        "data_type": "string",
+        "nullable": false
+      },
+      {
+        "name": "asset_type",
+        "data_type": "string",
+        "nullable": false
+      },
+      {
+        "name": "symbol",
+        "data_type": "string",
+        "nullable": false
+      },
+      {
+        "name": "name",
+        "data_type": "string",
+        "nullable": false
+      },
+      {
+        "name": "market",
+        "data_type": "string",
+        "nullable": false
+      },
+      {
+        "name": "exchange",
+        "data_type": "string",
+        "nullable": false
+      },
+      {
+        "name": "lifecycle_version",
+        "data_type": "string",
+        "nullable": false
+      },
+      {
+        "name": "status",
+        "data_type": "string",
+        "nullable": false
+      },
+      {
+        "name": "status_as_of",
+        "data_type": "date",
+        "nullable": false
+      },
+      {
+        "name": "status_evidence_ref",
+        "data_type": "string",
+        "nullable": false
+      },
+      {
+        "name": "known_start_date",
+        "data_type": "date",
+        "nullable": true
+      },
+      {
+        "name": "start_boundary_unknown",
+        "data_type": "boolean",
+        "nullable": false
+      },
+      {
+        "name": "start_evidence_ref",
+        "data_type": "string",
+        "nullable": true
+      },
+      {
+        "name": "delisted_on",
+        "data_type": "date",
+        "nullable": true
+      },
+      {
+        "name": "delist_evidence_ref",
+        "data_type": "string",
+        "nullable": true
+      },
+      {
+        "name": "aliases",
+        "data_type": "array",
+        "nullable": false
+      }
+    ],
+    "business_key": [
+      "instrument_id"
+    ],
+    "ordering": [
+      "instrument_id"
+    ],
+    "filter_fields": [],
+    "time_field": null,
+    "temporal_semantics": "none",
+    "source_available_at_field": null,
+    "source": {
+      "source_id": "fixture.reference",
+      "source": "synthetic-fixture"
+    },
+    "field_units": {},
+    "field_currencies": {},
+    "currency": null,
+    "adjustment_basis": "not_applicable",
+    "field_adjustments": {},
+    "calendar_id": null,
+    "timezone": "Asia/Shanghai",
+    "pit_policy": "unsupported"
+  },
+  "contract_sha256": "8dc2e5912f5a8c9e371beed3c36c772fe32914f59065d7655310a4e6e3be5c96",
+  "rows": [
+    {
+      "dataset_id": "fixture.instrument-reference.stock",
+      "business_key": "[\"TEST_XSHE_B\"]",
+      "business_date": null,
+      "event_at": null,
+      "observed_at": null,
+      "source_published_at": null,
+      "available_at": null,
+      "payload": {
+        "profile_version": "od.instrument-reference.v1",
+        "registry_version": "fixture-registry-1",
+        "registry_evidence_ref": "TEST-204-REGISTRY",
+        "instrument_id": "TEST_XSHE_B",
+        "asset_type": "stock",
+        "symbol": "000001",
+        "name": "SYNTHETIC Beta",
+        "market": "CN",
+        "exchange": "XSHE",
+        "lifecycle_version": "fixture-lifecycle-1",
+        "status": "unknown",
+        "status_as_of": "2026-10-22",
+        "status_evidence_ref": "TEST-204-STATUS",
+        "known_start_date": null,
+        "start_boundary_unknown": true,
+        "start_evidence_ref": null,
+        "delisted_on": null,
+        "delist_evidence_ref": null,
+        "aliases": [
+          {
+            "alias": "HIST",
+            "alias_version": "fixture-alias-1",
+            "evidence_ref": "TEST-204-ALIAS",
+            "valid_from": "2020-01-01",
+            "valid_through": null
+          }
+        ]
+      },
+      "revision": 1,
+      "publication_id": "11111111111111111111111111111111",
+      "publication_sequence": 1,
+      "record_hash": "47e44bf8f4c05d3e1c5e1d2dac3109a5bd7163c5f7e56f55581d877c135e8656"
+    },
+    {
+      "dataset_id": "fixture.instrument-reference.stock",
+      "business_key": "[\"TEST_XSHG_A\"]",
+      "business_date": null,
+      "event_at": null,
+      "observed_at": null,
+      "source_published_at": null,
+      "available_at": null,
+      "payload": {
+        "profile_version": "od.instrument-reference.v1",
+        "registry_version": "fixture-registry-1",
+        "registry_evidence_ref": "TEST-204-REGISTRY",
+        "instrument_id": "TEST_XSHG_A",
+        "asset_type": "stock",
+        "symbol": "600001",
+        "name": "SYNTHETIC Alpha",
+        "market": "CN",
+        "exchange": "XSHG",
+        "lifecycle_version": "fixture-lifecycle-1",
+        "status": "active",
+        "status_as_of": "2026-10-22",
+        "status_evidence_ref": "TEST-204-STATUS",
+        "known_start_date": "1991-01-01",
+        "start_boundary_unknown": false,
+        "start_evidence_ref": "TEST-204-START",
+        "delisted_on": null,
+        "delist_evidence_ref": null,
+        "aliases": [
+          {
+            "alias": "HIST",
+            "alias_version": "fixture-alias-1",
+            "evidence_ref": "TEST-204-ALIAS",
+            "valid_from": "2010-01-01",
+            "valid_through": "2019-12-31"
+          }
+        ]
+      },
+      "revision": 1,
+      "publication_id": "11111111111111111111111111111111",
+      "publication_sequence": 1,
+      "record_hash": "e0e61edaae282ac9b00f95d8dbcb3b4009367fce793a9eed9f09a1900d2e837b"
+    }
+  ],
+  "pages": [
+    {
+      "dataset_id": "fixture.instrument-reference.stock",
+      "publication_id": "11111111111111111111111111111111",
+      "sequence": 1,
+      "schema_version": "1",
+      "semantic_version": "1.0.0",
+      "contract_sha256": "8dc2e5912f5a8c9e371beed3c36c772fe32914f59065d7655310a4e6e3be5c96",
+      "source": {
+        "source_id": "fixture.reference",
+        "source": "synthetic-fixture"
+      },
+      "schema": [
+        {
+          "name": "profile_version",
+          "data_type": "string",
+          "nullable": false
+        },
+        {
+          "name": "registry_version",
+          "data_type": "string",
+          "nullable": false
+        },
+        {
+          "name": "registry_evidence_ref",
+          "data_type": "string",
+          "nullable": false
+        },
+        {
+          "name": "instrument_id",
+          "data_type": "string",
+          "nullable": false
+        },
+        {
+          "name": "asset_type",
+          "data_type": "string",
+          "nullable": false
+        },
+        {
+          "name": "symbol",
+          "data_type": "string",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "data_type": "string",
+          "nullable": false
+        },
+        {
+          "name": "market",
+          "data_type": "string",
+          "nullable": false
+        },
+        {
+          "name": "exchange",
+          "data_type": "string",
+          "nullable": false
+        },
+        {
+          "name": "lifecycle_version",
+          "data_type": "string",
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "data_type": "string",
+          "nullable": false
+        },
+        {
+          "name": "status_as_of",
+          "data_type": "date",
+          "nullable": false
+        },
+        {
+          "name": "status_evidence_ref",
+          "data_type": "string",
+          "nullable": false
+        },
+        {
+          "name": "known_start_date",
+          "data_type": "date",
+          "nullable": true
+        },
+        {
+          "name": "start_boundary_unknown",
+          "data_type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "start_evidence_ref",
+          "data_type": "string",
+          "nullable": true
+        },
+        {
+          "name": "delisted_on",
+          "data_type": "date",
+          "nullable": true
+        },
+        {
+          "name": "delist_evidence_ref",
+          "data_type": "string",
+          "nullable": true
+        },
+        {
+          "name": "aliases",
+          "data_type": "array",
+          "nullable": false
+        }
+      ],
+      "quality": {
+        "status": "passed",
+        "report_id": "SYNTHETIC-DQ-204",
+        "issue_count": 0
+      },
+      "field_units": {},
+      "field_currencies": {},
+      "field_adjustments": {},
+      "currency": null,
+      "adjustment_basis": "not_applicable",
+      "asset_class": "equity",
+      "frequency": "irregular",
+      "record_kind": "table",
+      "filter_fields": [],
+      "time_field": null,
+      "temporal_semantics": "none",
+      "source_available_at_field": null,
+      "calendar_id": null,
+      "timezone": "Asia/Shanghai",
+      "pit_policy": "unsupported",
+      "business_key_fields": [
+        "instrument_id"
+      ],
+      "ordering_fields": [
+        "instrument_id"
+      ],
+      "storage_order": [
+        {
+          "field": "business_date",
+          "direction": "asc",
+          "nulls": "last",
+          "comparison": "native"
+        },
+        {
+          "field": "business_key",
+          "direction": "asc",
+          "comparison": "binary_lexicographic"
+        }
+      ],
+      "identity_key_encoding": "canonical-json-array-v1",
+      "as_of": "2026-10-22T00:00:00+00:00",
+      "snapshot_id": "22222222222222222222222222222222",
+      "window": {
+        "start": null,
+        "end": null,
+        "end_exclusive": true
+      },
+      "page_size": 1,
+      "created_at": "2026-10-22T00:00:00+00:00",
+      "expires_at": "2026-10-22T01:00:00+00:00",
+      "record_count": 2,
+      "selection_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "content_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+      "identity_semantics": {
+        "version": 1,
+        "business_key_fields": [
+          "instrument_id"
+        ],
+        "identity_key_encoding": "canonical-json-array-v1",
+        "revision": "latest non-deleted revision per business_key at the pinned publication sequence",
+        "ordering_fields": [
+          "instrument_id"
+        ],
+        "storage_order": [
+          {
+            "field": "business_date",
+            "direction": "asc",
+            "nulls": "last",
+            "comparison": "native"
+          },
+          {
+            "field": "business_key",
+            "direction": "asc",
+            "comparison": "binary_lexicographic"
+          }
+        ],
+        "temporal_semantics": "none",
+        "time_field": null,
+        "temporal_fields": {
+          "business_date": "null for atemporal table records; not a historical business date",
+          "observed_at": "source observation time",
+          "source_published_at": "source publication time",
+          "available_at": "platform availability time",
+          "event_at": "source event time"
+        }
+      },
+      "rows": [
+        {
+          "dataset_id": "fixture.instrument-reference.stock",
+          "business_key": "[\"TEST_XSHE_B\"]",
+          "business_date": null,
+          "event_at": null,
+          "observed_at": null,
+          "source_published_at": null,
+          "available_at": null,
+          "payload": {
+            "profile_version": "od.instrument-reference.v1",
+            "registry_version": "fixture-registry-1",
+            "registry_evidence_ref": "TEST-204-REGISTRY",
+            "instrument_id": "TEST_XSHE_B",
+            "asset_type": "stock",
+            "symbol": "000001",
+            "name": "SYNTHETIC Beta",
+            "market": "CN",
+            "exchange": "XSHE",
+            "lifecycle_version": "fixture-lifecycle-1",
+            "status": "unknown",
+            "status_as_of": "2026-10-22",
+            "status_evidence_ref": "TEST-204-STATUS",
+            "known_start_date": null,
+            "start_boundary_unknown": true,
+            "start_evidence_ref": null,
+            "delisted_on": null,
+            "delist_evidence_ref": null,
+            "aliases": [
+              {
+                "alias": "HIST",
+                "alias_version": "fixture-alias-1",
+                "evidence_ref": "TEST-204-ALIAS",
+                "valid_from": "2020-01-01",
+                "valid_through": null
+              }
+            ]
+          },
+          "revision": 1,
+          "publication_id": "11111111111111111111111111111111",
+          "publication_sequence": 1,
+          "record_hash": "47e44bf8f4c05d3e1c5e1d2dac3109a5bd7163c5f7e56f55581d877c135e8656"
+        }
+      ],
+      "count": 1,
+      "next_cursor": "synthetic-cursor-page-2",
+      "has_more": true,
+      "meta": {
+        "snapshot": {
+          "dataset_id": "fixture.instrument-reference.stock",
+          "publication_id": "11111111111111111111111111111111",
+          "sequence": 1,
+          "schema_version": "1",
+          "semantic_version": "1.0.0",
+          "contract_sha256": "8dc2e5912f5a8c9e371beed3c36c772fe32914f59065d7655310a4e6e3be5c96",
+          "source": {
+            "source_id": "fixture.reference",
+            "source": "synthetic-fixture"
+          },
+          "schema": [
+            {
+              "name": "profile_version",
+              "data_type": "string",
+              "nullable": false
+            },
+            {
+              "name": "registry_version",
+              "data_type": "string",
+              "nullable": false
+            },
+            {
+              "name": "registry_evidence_ref",
+              "data_type": "string",
+              "nullable": false
+            },
+            {
+              "name": "instrument_id",
+              "data_type": "string",
+              "nullable": false
+            },
+            {
+              "name": "asset_type",
+              "data_type": "string",
+              "nullable": false
+            },
+            {
+              "name": "symbol",
+              "data_type": "string",
+              "nullable": false
+            },
+            {
+              "name": "name",
+              "data_type": "string",
+              "nullable": false
+            },
+            {
+              "name": "market",
+              "data_type": "string",
+              "nullable": false
+            },
+            {
+              "name": "exchange",
+              "data_type": "string",
+              "nullable": false
+            },
+            {
+              "name": "lifecycle_version",
+              "data_type": "string",
+              "nullable": false
+            },
+            {
+              "name": "status",
+              "data_type": "string",
+              "nullable": false
+            },
+            {
+              "name": "status_as_of",
+              "data_type": "date",
+              "nullable": false
+            },
+            {
+              "name": "status_evidence_ref",
+              "data_type": "string",
+              "nullable": false
+            },
+            {
+              "name": "known_start_date",
+              "data_type": "date",
+              "nullable": true
+            },
+            {
+              "name": "start_boundary_unknown",
+              "data_type": "boolean",
+              "nullable": false
+            },
+            {
+              "name": "start_evidence_ref",
+              "data_type": "string",
+              "nullable": true
+            },
+            {
+              "name": "delisted_on",
+              "data_type": "date",
+              "nullable": true
+            },
+            {
+              "name": "delist_evidence_ref",
+              "data_type": "string",
+              "nullable": true
+            },
+            {
+              "name": "aliases",
+              "data_type": "array",
+              "nullable": false
+            }
+          ],
+          "quality": {
+            "status": "passed",
+            "report_id": "SYNTHETIC-DQ-204",
+            "issue_count": 0
+          },
+          "field_units": {},
+          "field_currencies": {},
+          "field_adjustments": {},
+          "currency": null,
+          "adjustment_basis": "not_applicable",
+          "asset_class": "equity",
+          "frequency": "irregular",
+          "record_kind": "table",
+          "filter_fields": [],
+          "time_field": null,
+          "temporal_semantics": "none",
+          "source_available_at_field": null,
+          "calendar_id": null,
+          "timezone": "Asia/Shanghai",
+          "pit_policy": "unsupported",
+          "business_key_fields": [
+            "instrument_id"
+          ],
+          "ordering_fields": [
+            "instrument_id"
+          ],
+          "storage_order": [
+            {
+              "field": "business_date",
+              "direction": "asc",
+              "nulls": "last",
+              "comparison": "native"
+            },
+            {
+              "field": "business_key",
+              "direction": "asc",
+              "comparison": "binary_lexicographic"
+            }
+          ],
+          "identity_key_encoding": "canonical-json-array-v1",
+          "as_of": "2026-10-22T00:00:00+00:00",
+          "snapshot_id": "22222222222222222222222222222222",
+          "window": {
+            "start": null,
+            "end": null,
+            "end_exclusive": true
+          },
+          "page_size": 1,
+          "created_at": "2026-10-22T00:00:00+00:00",
+          "expires_at": "2026-10-22T01:00:00+00:00",
+          "record_count": 2,
+          "selection_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+          "content_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+          "identity_semantics": {
+            "version": 1,
+            "business_key_fields": [
+              "instrument_id"
+            ],
+            "identity_key_encoding": "canonical-json-array-v1",
+            "revision": "latest non-deleted revision per business_key at the pinned publication sequence",
+            "ordering_fields": [
+              "instrument_id"
+            ],
+            "storage_order": [
+              {
+                "field": "business_date",
+                "direction": "asc",
+                "nulls": "last",
+                "comparison": "native"
+              },
+              {
+                "field": "business_key",
+                "direction": "asc",
+                "comparison": "binary_lexicographic"
+              }
+            ],
+            "temporal_semantics": "none",
+            "time_field": null,
+            "temporal_fields": {
+              "business_date": "null for atemporal table records; not a historical business date",
+              "observed_at": "source observation time",
+              "source_published_at": "source publication time",
+              "available_at": "platform availability time",
+              "event_at": "source event time"
+            }
+          }
+        },
+        "ordering_fields": [
+          "instrument_id"
+        ],
+        "storage_order": [
+          {
+            "field": "business_date",
+            "direction": "asc",
+            "nulls": "last",
+            "comparison": "native"
+          },
+          {
+            "field": "business_key",
+            "direction": "asc",
+            "comparison": "binary_lexicographic"
+          }
+        ],
+        "identity_key_encoding": "canonical-json-array-v1"
+      }
+    },
+    {
+      "dataset_id": "fixture.instrument-reference.stock",
+      "publication_id": "11111111111111111111111111111111",
+      "sequence": 1,
+      "schema_version": "1",
+      "semantic_version": "1.0.0",
+      "contract_sha256": "8dc2e5912f5a8c9e371beed3c36c772fe32914f59065d7655310a4e6e3be5c96",
+      "source": {
+        "source_id": "fixture.reference",
+        "source": "synthetic-fixture"
+      },
+      "schema": [
+        {
+          "name": "profile_version",
+          "data_type": "string",
+          "nullable": false
+        },
+        {
+          "name": "registry_version",
+          "data_type": "string",
+          "nullable": false
+        },
+        {
+          "name": "registry_evidence_ref",
+          "data_type": "string",
+          "nullable": false
+        },
+        {
+          "name": "instrument_id",
+          "data_type": "string",
+          "nullable": false
+        },
+        {
+          "name": "asset_type",
+          "data_type": "string",
+          "nullable": false
+        },
+        {
+          "name": "symbol",
+          "data_type": "string",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "data_type": "string",
+          "nullable": false
+        },
+        {
+          "name": "market",
+          "data_type": "string",
+          "nullable": false
+        },
+        {
+          "name": "exchange",
+          "data_type": "string",
+          "nullable": false
+        },
+        {
+          "name": "lifecycle_version",
+          "data_type": "string",
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "data_type": "string",
+          "nullable": false
+        },
+        {
+          "name": "status_as_of",
+          "data_type": "date",
+          "nullable": false
+        },
+        {
+          "name": "status_evidence_ref",
+          "data_type": "string",
+          "nullable": false
+        },
+        {
+          "name": "known_start_date",
+          "data_type": "date",
+          "nullable": true
+        },
+        {
+          "name": "start_boundary_unknown",
+          "data_type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "start_evidence_ref",
+          "data_type": "string",
+          "nullable": true
+        },
+        {
+          "name": "delisted_on",
+          "data_type": "date",
+          "nullable": true
+        },
+        {
+          "name": "delist_evidence_ref",
+          "data_type": "string",
+          "nullable": true
+        },
+        {
+          "name": "aliases",
+          "data_type": "array",
+          "nullable": false
+        }
+      ],
+      "quality": {
+        "status": "passed",
+        "report_id": "SYNTHETIC-DQ-204",
+        "issue_count": 0
+      },
+      "field_units": {},
+      "field_currencies": {},
+      "field_adjustments": {},
+      "currency": null,
+      "adjustment_basis": "not_applicable",
+      "asset_class": "equity",
+      "frequency": "irregular",
+      "record_kind": "table",
+      "filter_fields": [],
+      "time_field": null,
+      "temporal_semantics": "none",
+      "source_available_at_field": null,
+      "calendar_id": null,
+      "timezone": "Asia/Shanghai",
+      "pit_policy": "unsupported",
+      "business_key_fields": [
+        "instrument_id"
+      ],
+      "ordering_fields": [
+        "instrument_id"
+      ],
+      "storage_order": [
+        {
+          "field": "business_date",
+          "direction": "asc",
+          "nulls": "last",
+          "comparison": "native"
+        },
+        {
+          "field": "business_key",
+          "direction": "asc",
+          "comparison": "binary_lexicographic"
+        }
+      ],
+      "identity_key_encoding": "canonical-json-array-v1",
+      "as_of": "2026-10-22T00:00:00+00:00",
+      "snapshot_id": "22222222222222222222222222222222",
+      "window": {
+        "start": null,
+        "end": null,
+        "end_exclusive": true
+      },
+      "page_size": 1,
+      "created_at": "2026-10-22T00:00:00+00:00",
+      "expires_at": "2026-10-22T01:00:00+00:00",
+      "record_count": 2,
+      "selection_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "content_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+      "identity_semantics": {
+        "version": 1,
+        "business_key_fields": [
+          "instrument_id"
+        ],
+        "identity_key_encoding": "canonical-json-array-v1",
+        "revision": "latest non-deleted revision per business_key at the pinned publication sequence",
+        "ordering_fields": [
+          "instrument_id"
+        ],
+        "storage_order": [
+          {
+            "field": "business_date",
+            "direction": "asc",
+            "nulls": "last",
+            "comparison": "native"
+          },
+          {
+            "field": "business_key",
+            "direction": "asc",
+            "comparison": "binary_lexicographic"
+          }
+        ],
+        "temporal_semantics": "none",
+        "time_field": null,
+        "temporal_fields": {
+          "business_date": "null for atemporal table records; not a historical business date",
+          "observed_at": "source observation time",
+          "source_published_at": "source publication time",
+          "available_at": "platform availability time",
+          "event_at": "source event time"
+        }
+      },
+      "rows": [
+        {
+          "dataset_id": "fixture.instrument-reference.stock",
+          "business_key": "[\"TEST_XSHG_A\"]",
+          "business_date": null,
+          "event_at": null,
+          "observed_at": null,
+          "source_published_at": null,
+          "available_at": null,
+          "payload": {
+            "profile_version": "od.instrument-reference.v1",
+            "registry_version": "fixture-registry-1",
+            "registry_evidence_ref": "TEST-204-REGISTRY",
+            "instrument_id": "TEST_XSHG_A",
+            "asset_type": "stock",
+            "symbol": "600001",
+            "name": "SYNTHETIC Alpha",
+            "market": "CN",
+            "exchange": "XSHG",
+            "lifecycle_version": "fixture-lifecycle-1",
+            "status": "active",
+            "status_as_of": "2026-10-22",
+            "status_evidence_ref": "TEST-204-STATUS",
+            "known_start_date": "1991-01-01",
+            "start_boundary_unknown": false,
+            "start_evidence_ref": "TEST-204-START",
+            "delisted_on": null,
+            "delist_evidence_ref": null,
+            "aliases": [
+              {
+                "alias": "HIST",
+                "alias_version": "fixture-alias-1",
+                "evidence_ref": "TEST-204-ALIAS",
+                "valid_from": "2010-01-01",
+                "valid_through": "2019-12-31"
+              }
+            ]
+          },
+          "revision": 1,
+          "publication_id": "11111111111111111111111111111111",
+          "publication_sequence": 1,
+          "record_hash": "e0e61edaae282ac9b00f95d8dbcb3b4009367fce793a9eed9f09a1900d2e837b"
+        }
+      ],
+      "count": 1,
+      "next_cursor": null,
+      "has_more": false,
+      "meta": {
+        "snapshot": {
+          "dataset_id": "fixture.instrument-reference.stock",
+          "publication_id": "11111111111111111111111111111111",
+          "sequence": 1,
+          "schema_version": "1",
+          "semantic_version": "1.0.0",
+          "contract_sha256": "8dc2e5912f5a8c9e371beed3c36c772fe32914f59065d7655310a4e6e3be5c96",
+          "source": {
+            "source_id": "fixture.reference",
+            "source": "synthetic-fixture"
+          },
+          "schema": [
+            {
+              "name": "profile_version",
+              "data_type": "string",
+              "nullable": false
+            },
+            {
+              "name": "registry_version",
+              "data_type": "string",
+              "nullable": false
+            },
+            {
+              "name": "registry_evidence_ref",
+              "data_type": "string",
+              "nullable": false
+            },
+            {
+              "name": "instrument_id",
+              "data_type": "string",
+              "nullable": false
+            },
+            {
+              "name": "asset_type",
+              "data_type": "string",
+              "nullable": false
+            },
+            {
+              "name": "symbol",
+              "data_type": "string",
+              "nullable": false
+            },
+            {
+              "name": "name",
+              "data_type": "string",
+              "nullable": false
+            },
+            {
+              "name": "market",
+              "data_type": "string",
+              "nullable": false
+            },
+            {
+              "name": "exchange",
+              "data_type": "string",
+              "nullable": false
+            },
+            {
+              "name": "lifecycle_version",
+              "data_type": "string",
+              "nullable": false
+            },
+            {
+              "name": "status",
+              "data_type": "string",
+              "nullable": false
+            },
+            {
+              "name": "status_as_of",
+              "data_type": "date",
+              "nullable": false
+            },
+            {
+              "name": "status_evidence_ref",
+              "data_type": "string",
+              "nullable": false
+            },
+            {
+              "name": "known_start_date",
+              "data_type": "date",
+              "nullable": true
+            },
+            {
+              "name": "start_boundary_unknown",
+              "data_type": "boolean",
+              "nullable": false
+            },
+            {
+              "name": "start_evidence_ref",
+              "data_type": "string",
+              "nullable": true
+            },
+            {
+              "name": "delisted_on",
+              "data_type": "date",
+              "nullable": true
+            },
+            {
+              "name": "delist_evidence_ref",
+              "data_type": "string",
+              "nullable": true
+            },
+            {
+              "name": "aliases",
+              "data_type": "array",
+              "nullable": false
+            }
+          ],
+          "quality": {
+            "status": "passed",
+            "report_id": "SYNTHETIC-DQ-204",
+            "issue_count": 0
+          },
+          "field_units": {},
+          "field_currencies": {},
+          "field_adjustments": {},
+          "currency": null,
+          "adjustment_basis": "not_applicable",
+          "asset_class": "equity",
+          "frequency": "irregular",
+          "record_kind": "table",
+          "filter_fields": [],
+          "time_field": null,
+          "temporal_semantics": "none",
+          "source_available_at_field": null,
+          "calendar_id": null,
+          "timezone": "Asia/Shanghai",
+          "pit_policy": "unsupported",
+          "business_key_fields": [
+            "instrument_id"
+          ],
+          "ordering_fields": [
+            "instrument_id"
+          ],
+          "storage_order": [
+            {
+              "field": "business_date",
+              "direction": "asc",
+              "nulls": "last",
+              "comparison": "native"
+            },
+            {
+              "field": "business_key",
+              "direction": "asc",
+              "comparison": "binary_lexicographic"
+            }
+          ],
+          "identity_key_encoding": "canonical-json-array-v1",
+          "as_of": "2026-10-22T00:00:00+00:00",
+          "snapshot_id": "22222222222222222222222222222222",
+          "window": {
+            "start": null,
+            "end": null,
+            "end_exclusive": true
+          },
+          "page_size": 1,
+          "created_at": "2026-10-22T00:00:00+00:00",
+          "expires_at": "2026-10-22T01:00:00+00:00",
+          "record_count": 2,
+          "selection_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+          "content_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+          "identity_semantics": {
+            "version": 1,
+            "business_key_fields": [
+              "instrument_id"
+            ],
+            "identity_key_encoding": "canonical-json-array-v1",
+            "revision": "latest non-deleted revision per business_key at the pinned publication sequence",
+            "ordering_fields": [
+              "instrument_id"
+            ],
+            "storage_order": [
+              {
+                "field": "business_date",
+                "direction": "asc",
+                "nulls": "last",
+                "comparison": "native"
+              },
+              {
+                "field": "business_key",
+                "direction": "asc",
+                "comparison": "binary_lexicographic"
+              }
+            ],
+            "temporal_semantics": "none",
+            "time_field": null,
+            "temporal_fields": {
+              "business_date": "null for atemporal table records; not a historical business date",
+              "observed_at": "source observation time",
+              "source_published_at": "source publication time",
+              "available_at": "platform availability time",
+              "event_at": "source event time"
+            }
+          }
+        },
+        "ordering_fields": [
+          "instrument_id"
+        ],
+        "storage_order": [
+          {
+            "field": "business_date",
+            "direction": "asc",
+            "nulls": "last",
+            "comparison": "native"
+          },
+          {
+            "field": "business_key",
+            "direction": "asc",
+            "comparison": "binary_lexicographic"
+          }
+        ],
+        "identity_key_encoding": "canonical-json-array-v1"
+      }
+    }
+  ],
+  "options_response": {
+    "asset_type": "stock",
+    "catalog_mode": "opendata",
+    "complete": true,
+    "has_more": false,
+    "total": 2,
+    "data_availability": "unknown",
+    "items": [
+      {
+        "asset_type": "stock",
+        "symbol": "000001",
+        "name": "SYNTHETIC Beta",
+        "market": "CN",
+        "exchange": "XSHE",
+        "instrument_id": "TEST_XSHE_B",
+        "catalog_verified": true,
+        "data_availability": "unknown",
+        "has_snapshot": null,
+        "has_history": null,
+        "history_rows": null,
+        "source_table": null,
+        "latest_date": null,
+        "lifecycle_status": "unknown",
+        "status_as_of": "2026-10-22"
+      },
+      {
+        "asset_type": "stock",
+        "symbol": "600001",
+        "name": "SYNTHETIC Alpha",
+        "market": "CN",
+        "exchange": "XSHG",
+        "instrument_id": "TEST_XSHG_A",
+        "catalog_verified": true,
+        "data_availability": "unknown",
+        "has_snapshot": null,
+        "has_history": null,
+        "history_rows": null,
+        "source_table": null,
+        "latest_date": null,
+        "lifecycle_status": "active",
+        "status_as_of": "2026-10-22"
+      }
+    ],
+    "provenance": {
+      "source": "opendata_published_instrument_reference",
+      "dataset_id": "fixture.instrument-reference.stock",
+      "source_id": "fixture.reference",
+      "publication_id": "11111111111111111111111111111111",
+      "snapshot_id": "22222222222222222222222222222222",
+      "sequence": 1,
+      "schema_version": "1",
+      "semantic_version": "1.0.0",
+      "contract_sha256": "8dc2e5912f5a8c9e371beed3c36c772fe32914f59065d7655310a4e6e3be5c96",
+      "content_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+      "selection_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "as_of": "2026-10-22T00:00:00+00:00",
+      "expires_at": "2026-10-22T01:00:00+00:00",
+      "registry_version": "fixture-registry-1",
+      "profile_version": "od.instrument-reference.v1",
+      "coverage": "unknown"
+    }
+  },
+  "clock": "2026-10-22T00:00:30+00:00"
+}

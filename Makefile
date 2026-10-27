@@ -10,7 +10,7 @@
 # debt by design and are NOT part of the gate. Only the ratchet decides whether
 # that debt is acceptable.
 
-.PHONY: help lint format format-check typecheck security deps-audit a2-check \
+.PHONY: help lint format format-check typecheck security deps-audit a2-check published-openapi-check \
         test test-cov quality-ratchet public-api-quality acceptance-probe-check zero-dep-check brand-check \
         loguru-check secret-check ledger-check evidence-traceability \
         frontend-lint frontend-format frontend-test frontend-test-cov frontend-typecheck \
@@ -31,7 +31,7 @@ PY_PORTED := opendata/data/providers/akshare/_vendor
 
 help:
 	@echo "Gate:             gate"
-	@echo "A2 (gating):      a2-check public-api-quality acceptance-probe-check zero-dep-check brand-check loguru-check secret-check ledger-check evidence-traceability quality-ratchet"
+	@echo "A2 (gating):      a2-check published-openapi-check public-api-quality acceptance-probe-check zero-dep-check brand-check loguru-check secret-check ledger-check evidence-traceability quality-ratchet"
 	@echo "Tests:            test test-cov"
 	@echo "Dev views (A1):   lint format format-check typecheck security deps-audit"
 	@echo "Frontend:         frontend-lint frontend-format frontend-collection frontend-e2e frontend-test frontend-test-cov frontend-typecheck"
@@ -40,6 +40,11 @@ help:
 
 a2-check:
 	python scripts/quality/a2_check.py
+
+# Compare the live FastAPI document to the reviewed v1/v2 contracts without
+# starting app lifespan, contacting databases, or fetching source data.
+published-openapi-check:
+	APP_ENV=testing TESTING=true REDIS_URL= python scripts/quality/check_published_openapi.py
 
 # --- Developer views (full tree; A1 debt is expected here) ------------------
 
@@ -208,6 +213,8 @@ gate:
 	@$(MAKE) --no-print-directory loguru-check
 	@echo "===== gate: a2-check ====="
 	@$(MAKE) --no-print-directory a2-check
+	@echo "===== gate: published-openapi-check ====="
+	@$(MAKE) --no-print-directory published-openapi-check
 	@echo "===== gate: quality-ratchet ====="
 	@$(MAKE) --no-print-directory quality-ratchet
 	@echo "===== gate: public-api-quality ====="

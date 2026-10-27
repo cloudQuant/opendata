@@ -19,7 +19,13 @@ from pathlib import Path
 
 import httpx
 import pytest
-from opendata_client.client import SubscriptionSession
+from opendata_client.client import (
+    MAX_ITER_PAGES,
+    MAX_ITER_ROWS,
+    MAX_PAGE_NUMBER,
+    MAX_PAGE_SIZE,
+    SubscriptionSession,
+)
 
 from opendata_client import (
     AuthenticationError,
@@ -37,6 +43,18 @@ def _envelope(data, success: bool = True, message: str = "success") -> httpx.Res
     return httpx.Response(200, json={"success": success, "message": message, "data": data})
 
 
+def _page_data(
+    rows, *, page: int = 1, page_size: int = 500, count: int | None = None, columns=None
+) -> dict:
+    return {
+        "rows": rows,
+        "columns": [] if columns is None else columns,
+        "page": page,
+        "page_size": page_size,
+        "count": len(rows) if count is None else count,
+    }
+
+
 def _client(handler, **kwargs) -> OpendataClient:
     return OpendataClient(
         "http://api.test",
@@ -44,6 +62,21 @@ def _client(handler, **kwargs) -> OpendataClient:
         transport=httpx.MockTransport(handler),
         **kwargs,
     )
+
+
+class _TrackingByteStream(httpx.SyncByteStream):
+    def __init__(self, chunks: list[bytes]) -> None:
+        self.chunks = chunks
+        self.read_count = 0
+        self.closed = False
+
+    def __iter__(self):
+        for chunk in self.chunks:
+            self.read_count += 1
+            yield chunk
+
+    def close(self) -> None:
+        self.closed = True
 
 
 class TestRequestContract:
@@ -90,7 +123,7 @@ class TestRequestContract:
 
         def handler(request: httpx.Request) -> httpx.Response:
             seen.update(dict(request.url.params))
-            return _envelope({"rows": [], "count": 0})
+            return _envelope(_page_data([]))
 
         with _client(handler) as client:
             client.stock_daily("600519")
@@ -150,7 +183,7 @@ class TestPagination:
             page = int(dict(request.url.params)["page"])
             seen_pages.append(page)
             rows = pages[page]
-            return _envelope({"rows": rows, "count": len(rows), "page": page, "page_size": 2})
+            return _envelope(_page_data(rows, page=page, page_size=2))
 
         with _client(handler) as client:
             rows = list(client.iter_rows("equity", "stock_daily", symbols="600519", page_size=2))
@@ -163,7 +196,7 @@ class TestPagination:
 
         def handler(request: httpx.Request) -> httpx.Response:
             calls.append(1)
-            return _envelope({"rows": [], "count": 0, "page": 1, "page_size": 500})
+            return _envelope(_page_data([]))
 
         with _client(handler) as client:
             rows = list(client.iter_rows("equity", "stock_daily", symbols="600519"))
@@ -171,16 +204,175 @@ class TestPagination:
         assert rows == []
         assert len(calls) == 1
 
+    def test_iter_rows_accepts_a_full_page_followed_by_an_empty_page(self):
+        seen_pages: list[int] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            page = int(request.url.params["page"])
+            seen_pages.append(page)
+            rows = [{"symbol": "a"}, {"symbol": "b"}] if page == 1 else []
+            return _envelope(_page_data(rows, page=page, page_size=2))
+
+        with _client(handler) as client:
+            rows = list(
+                client.iter_rows(
+                    "equity", "stock_daily", symbols="600519", page_size=2, max_pages=2
+                )
+            )
+
+        assert rows == [{"symbol": "a"}, {"symbol": "b"}]
+        assert seen_pages == [1, 2]
+
+    def test_iter_rows_rejects_a_repeated_page_echo(self):
+        seen_pages: list[int] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen_pages.append(int(request.url.params["page"]))
+            return _envelope(_page_data([{"symbol": "a"}], page=1, page_size=1))
+
+        with _client(handler) as client, pytest.raises(OpendataClientError, match="page metadata"):
+            list(client.iter_rows("equity", "stock_daily", page_size=1, max_pages=2))
+
+        assert seen_pages == [1, 2]
+
     def test_stock_daily_all_collects_every_page(self):
         def handler(request: httpx.Request) -> httpx.Response:
             page = int(dict(request.url.params)["page"])
             rows = [{"symbol": f"s{page}"}] * 2 if page == 1 else [{"symbol": "s2"}]
-            return _envelope({"rows": rows, "count": len(rows), "page": page, "page_size": 2})
+            return _envelope(_page_data(rows, page=page, page_size=2))
 
         with _client(handler) as client:
             rows = client.stock_daily_all("600519", page_size=2)
 
         assert [row["symbol"] for row in rows] == ["s1", "s1", "s2"]
+
+    @pytest.mark.parametrize(
+        "bad_data",
+        [
+            {"rows": [], "columns": [], "page": 1, "page_size": 500},
+            {**_page_data([], page=True), "page": True},
+            {**_page_data([]), "page": 2},
+            {**_page_data([]), "page_size": True},
+            {**_page_data([]), "page_size": 499},
+            {**_page_data([]), "count": False},
+            {**_page_data([]), "count": 1},
+            {"rows": [{}], "columns": [], "page": 1, "page_size": 500, "count": 0},
+            {**_page_data(["not-a-row"]), "count": 1},
+            {**_page_data([]), "columns": "symbol"},
+            {**_page_data([]), "columns": [1]},
+        ],
+    )
+    def test_query_rejects_untrusted_page_metadata(self, bad_data):
+        with (
+            _client(lambda request: _envelope(bad_data)) as client,
+            pytest.raises(OpendataClientError, match="invalid page metadata"),
+        ):
+            client.query("equity", "stock_daily")
+
+    @pytest.mark.parametrize(
+        ("name", "value"),
+        [
+            ("page", 0),
+            ("page", True),
+            ("page", MAX_PAGE_NUMBER + 1),
+            ("page_size", 0),
+            ("page_size", False),
+            ("page_size", MAX_PAGE_SIZE + 1),
+        ],
+    )
+    def test_query_rejects_invalid_pagination_before_request(self, name, value):
+        calls: list[int] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            calls.append(1)
+            return _envelope(_page_data([]))
+
+        with _client(handler) as client, pytest.raises(ValueError, match=name):
+            client.query("equity", "stock_daily", **{name: value})
+
+        assert calls == []
+
+    def test_iter_rows_rejects_invalid_budgets_before_request(self):
+        calls: list[int] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            calls.append(1)
+            return _envelope(_page_data([]))
+
+        with _client(handler) as client, pytest.raises(ValueError, match="max_pages"):
+            list(client.iter_rows("equity", "stock_daily", max_pages=0))
+        with _client(handler) as client, pytest.raises(ValueError, match="max_pages"):
+            list(client.iter_rows("equity", "stock_daily", max_pages=MAX_ITER_PAGES + 1))
+        with _client(handler) as client, pytest.raises(ValueError, match="max_rows"):
+            list(client.iter_rows("equity", "stock_daily", max_rows=True))
+        with _client(handler) as client, pytest.raises(ValueError, match="max_rows"):
+            list(client.iter_rows("equity", "stock_daily", max_rows=MAX_ITER_ROWS + 1))
+
+        assert calls == []
+
+    def test_iter_rows_budget_options_are_not_sent_to_the_api(self):
+        seen: dict[str, str] = {}
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.update(dict(request.url.params))
+            return _envelope(_page_data([]))
+
+        with _client(handler) as client:
+            assert (
+                list(
+                    client.iter_rows(
+                        "equity",
+                        "stock_daily",
+                        symbols="600519",
+                        max_pages=2,
+                        max_rows=10,
+                    )
+                )
+                == []
+            )
+
+        assert "max_pages" not in seen
+        assert "max_rows" not in seen
+        assert seen["page"] == "1"
+        assert seen["page_size"] == "500"
+
+    def test_iter_rows_raises_when_page_budget_cannot_confirm_completion(self):
+        seen_pages: list[int] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            page = int(request.url.params["page"])
+            seen_pages.append(page)
+            return _envelope(_page_data([{"symbol": str(page)}], page=page, page_size=1))
+
+        with _client(handler) as client, pytest.raises(OpendataClientError, match="page budget"):
+            list(client.iter_rows("equity", "stock_daily", page_size=1, max_pages=2))
+
+        assert seen_pages == [1, 2]
+
+    def test_iter_rows_raises_before_yielding_rows_over_the_row_budget(self):
+        calls: list[int] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            calls.append(1)
+            return _envelope(_page_data([{"symbol": "a"}, {"symbol": "b"}], page_size=2))
+
+        with _client(handler) as client, pytest.raises(OpendataClientError, match="row budget"):
+            list(client.iter_rows("equity", "stock_daily", page_size=2, max_rows=1))
+
+        assert calls == [1]
+
+    def test_iter_rows_detects_more_rows_after_exact_row_budget(self):
+        seen_pages: list[int] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            page = int(request.url.params["page"])
+            seen_pages.append(page)
+            return _envelope(_page_data([{"symbol": str(page)}], page=page, page_size=1))
+
+        with _client(handler) as client, pytest.raises(OpendataClientError, match="row budget"):
+            list(client.iter_rows("equity", "stock_daily", page_size=1, max_rows=1))
+
+        assert seen_pages == [1, 2]
 
 
 class TestErrorMapping:
@@ -204,21 +396,74 @@ class TestErrorMapping:
             client.stock_daily("600519")
 
         assert f"HTTP {status_code}" in str(excinfo.value)
-        assert "boom" in str(excinfo.value)
+        assert "boom" not in str(excinfo.value)
 
-    def test_failure_envelope_raises_even_with_200(self):
+    def test_failure_envelope_raises_safely_even_with_200(self):
         def handler(request: httpx.Request) -> httpx.Response:
-            return _envelope(None, success=False, message="domain is not registered")
+            return _envelope(None, success=False, message="private response detail")
 
-        with _client(handler) as client, pytest.raises(OpendataClientError, match="not registered"):
+        with _client(handler) as client, pytest.raises(OpendataClientError) as excinfo:
             client.stock_daily("600519")
+
+        assert "private response detail" not in str(excinfo.value)
+
+    def test_invalid_json_response_is_wrapped_without_echoing_body(self):
+        secret = "server response containing a private token"
+        stream = _TrackingByteStream([secret.encode()])
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(200, stream=stream)
+
+        with _client(handler) as client, pytest.raises(OpendataClientError) as excinfo:
+            client.stock_daily("600519")
+
+        assert "invalid JSON" in str(excinfo.value)
+        assert secret not in str(excinfo.value)
+        assert stream.read_count == 1
+        assert stream.closed
+
+    def test_oversized_stream_stops_reading_and_closes_response(self, monkeypatch):
+        monkeypatch.setattr("opendata_client.client.MAX_QUERY_RESPONSE_BYTES", 8)
+        stream = _TrackingByteStream([b"x" * (64 * 1024 + 1), b"must-not-be-read"])
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(200, stream=stream)
+
+        with (
+            _client(handler) as client,
+            pytest.raises(OpendataClientError, match="response exceeds the size limit"),
+        ):
+            client.stock_daily("600519")
+
+        assert stream.read_count == 1
+        assert stream.closed
+
+    def test_http_error_closes_stream_without_reading_error_body(self):
+        stream = _TrackingByteStream([b"private error detail"])
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(503, stream=stream)
+
+        with _client(handler) as client, pytest.raises(OpendataClientError) as excinfo:
+            client.stock_daily("600519")
+
+        assert stream.read_count == 0
+        assert stream.closed
+        assert "private error detail" not in str(excinfo.value)
 
     def test_transport_failure_is_wrapped(self):
-        def handler(request: httpx.Request) -> httpx.Response:
-            raise httpx.ConnectError("connection refused")
+        secret = "private transport credential"
 
-        with _client(handler) as client, pytest.raises(OpendataClientError, match="failed"):
+        def handler(request: httpx.Request) -> httpx.Response:
+            raise httpx.ConnectError(secret)
+
+        with (
+            _client(handler) as client,
+            pytest.raises(OpendataClientError, match="failed") as excinfo,
+        ):
             client.stock_daily("600519")
+
+        assert secret not in str(excinfo.value)
 
 
 @pytest.mark.e2e

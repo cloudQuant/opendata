@@ -397,7 +397,7 @@ class TestApiKeyAuthentication:
         assert via_bearer.status_code == 200
         assert via_header.status_code == 200
 
-    async def test_jwt_still_works(self, test_client, test_user_token):
+    async def test_jwt_still_works(self, test_client, test_user_token, sqlite_query_warehouse):
         response = await test_client.get(
             "/api/v1/data/catalog", headers=get_auth_headers(test_user_token)
         )

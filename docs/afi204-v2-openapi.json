@@ -1,0 +1,2696 @@
+{
+  "components": {
+    "schemas": {
+      "CoverageRangeResponse": {
+        "additionalProperties": false,
+        "description": "Half-open date range in a coverage request or evidence response.",
+        "properties": {
+          "end": {
+            "format": "date",
+            "title": "End",
+            "type": "string"
+          },
+          "start": {
+            "format": "date",
+            "title": "Start",
+            "type": "string"
+          }
+        },
+        "required": [
+          "start",
+          "end"
+        ],
+        "title": "CoverageRangeResponse",
+        "type": "object"
+      },
+      "CoverageResponse": {
+        "additionalProperties": false,
+        "description": "Coverage response that distinguishes unknown evidence from complete data.",
+        "properties": {
+          "contract_sha256": {
+            "title": "Contract Sha256",
+            "type": "string"
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/DataCoverageResponse"
+          },
+          "dataset_id": {
+            "title": "Dataset Id",
+            "type": "string"
+          },
+          "publication_id": {
+            "title": "Publication Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dataset_id",
+          "publication_id",
+          "contract_sha256",
+          "coverage"
+        ],
+        "title": "CoverageResponse",
+        "type": "object"
+      },
+      "CreateSnapshotRequest": {
+        "additionalProperties": false,
+        "description": "Strict request body for creating one fixed read snapshot.",
+        "properties": {
+          "capture_id": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "minLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capture Id"
+          },
+          "dataset_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Dataset Id",
+            "type": "string"
+          },
+          "end_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Date"
+          },
+          "instrument_id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instrument Id"
+          },
+          "page_size": {
+            "default": 100,
+            "maximum": 1000.0,
+            "minimum": 1.0,
+            "title": "Page Size",
+            "type": "integer"
+          },
+          "publication_id": {
+            "anyOf": [
+              {
+                "maxLength": 32,
+                "minLength": 32,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publication Id"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Date"
+          }
+        },
+        "required": [
+          "dataset_id"
+        ],
+        "title": "CreateSnapshotRequest",
+        "type": "object"
+      },
+      "DataCoverageResponse": {
+        "additionalProperties": false,
+        "description": "Coverage state with explicit scope, evidence, and limitation fields.",
+        "properties": {
+          "evidence_refs": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Evidence Refs",
+            "type": "array"
+          },
+          "limitation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limitation"
+          },
+          "missing_ranges": {
+            "items": {
+              "$ref": "#/components/schemas/CoverageRangeResponse"
+            },
+            "title": "Missing Ranges",
+            "type": "array"
+          },
+          "observed": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CoverageRangeResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "requested": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CoverageRangeResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "scope": {
+            "enum": [
+              "business_history",
+              "archived_snapshot_observations",
+              "current_snapshot",
+              "point_in_time_records",
+              "not_applicable",
+              "unknown"
+            ],
+            "title": "Scope",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "complete",
+              "partial",
+              "source_limited",
+              "unknown",
+              "not_applicable"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "scope",
+          "requested",
+          "observed",
+          "missing_ranges",
+          "evidence_refs",
+          "limitation"
+        ],
+        "title": "DataCoverageResponse",
+        "type": "object"
+      },
+      "DataPageResponse": {
+        "additionalProperties": false,
+        "description": "One page of records from a fixed snapshot.",
+        "properties": {
+          "adjustment_basis": {
+            "enum": [
+              "raw",
+              "split_adjusted",
+              "total_return_adjusted",
+              "back_adjusted",
+              "forward_adjusted",
+              "not_applicable",
+              "unknown"
+            ],
+            "title": "Adjustment Basis",
+            "type": "string"
+          },
+          "as_of": {
+            "format": "date-time",
+            "title": "As Of",
+            "type": "string"
+          },
+          "asset_class": {
+            "enum": [
+              "equity",
+              "fund",
+              "bond",
+              "future",
+              "option",
+              "fx",
+              "crypto",
+              "index",
+              "financial",
+              "macro",
+              "other"
+            ],
+            "title": "Asset Class",
+            "type": "string"
+          },
+          "business_key_fields": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Business Key Fields",
+            "type": "array"
+          },
+          "calendar_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Calendar Id"
+          },
+          "content_sha256": {
+            "title": "Content Sha256",
+            "type": "string"
+          },
+          "contract_sha256": {
+            "title": "Contract Sha256",
+            "type": "string"
+          },
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "dataset_id": {
+            "title": "Dataset Id",
+            "type": "string"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "field_adjustments": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Field Adjustments",
+            "type": "object"
+          },
+          "field_currencies": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Field Currencies",
+            "type": "object"
+          },
+          "field_units": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Field Units",
+            "type": "object"
+          },
+          "filter_fields": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Filter Fields",
+            "type": "array"
+          },
+          "frequency": {
+            "enum": [
+              "tick",
+              "1s",
+              "1m",
+              "5m",
+              "15m",
+              "30m",
+              "60m",
+              "1d",
+              "1w",
+              "1mo",
+              "irregular",
+              "snapshot"
+            ],
+            "title": "Frequency",
+            "type": "string"
+          },
+          "has_more": {
+            "title": "Has More",
+            "type": "boolean"
+          },
+          "identity_key_encoding": {
+            "const": "canonical-json-array-v1",
+            "title": "Identity Key Encoding",
+            "type": "string"
+          },
+          "identity_semantics": {
+            "$ref": "#/components/schemas/IdentitySemanticsResponse"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PageMetaResponse"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          },
+          "ordering_fields": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Ordering Fields",
+            "type": "array"
+          },
+          "page_size": {
+            "title": "Page Size",
+            "type": "integer"
+          },
+          "pit_policy": {
+            "enum": [
+              "supported",
+              "required",
+              "unsupported"
+            ],
+            "title": "Pit Policy",
+            "type": "string"
+          },
+          "publication_id": {
+            "title": "Publication Id",
+            "type": "string"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualityResponse"
+          },
+          "record_count": {
+            "title": "Record Count",
+            "type": "integer"
+          },
+          "record_kind": {
+            "enum": [
+              "time_series",
+              "snapshot",
+              "event",
+              "table"
+            ],
+            "title": "Record Kind",
+            "type": "string"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/PublishedRowResponse"
+            },
+            "title": "Rows",
+            "type": "array"
+          },
+          "schema": {
+            "items": {
+              "$ref": "#/components/schemas/SchemaFieldResponse"
+            },
+            "title": "Schema",
+            "type": "array"
+          },
+          "schema_version": {
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "selection": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InstrumentCaptureSelectionResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "selection_sha256": {
+            "title": "Selection Sha256",
+            "type": "string"
+          },
+          "semantic_version": {
+            "title": "Semantic Version",
+            "type": "string"
+          },
+          "sequence": {
+            "title": "Sequence",
+            "type": "integer"
+          },
+          "snapshot_id": {
+            "title": "Snapshot Id",
+            "type": "string"
+          },
+          "source": {
+            "$ref": "#/components/schemas/SourceResponse"
+          },
+          "source_available_at_field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Available At Field"
+          },
+          "storage_order": {
+            "items": {
+              "$ref": "#/components/schemas/StorageOrderTermResponse"
+            },
+            "title": "Storage Order",
+            "type": "array"
+          },
+          "temporal_semantics": {
+            "enum": [
+              "business_date",
+              "event_time",
+              "observation_time",
+              "none"
+            ],
+            "title": "Temporal Semantics",
+            "type": "string"
+          },
+          "time_field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Time Field"
+          },
+          "timezone": {
+            "title": "Timezone",
+            "type": "string"
+          },
+          "window": {
+            "$ref": "#/components/schemas/WindowResponse"
+          }
+        },
+        "required": [
+          "dataset_id",
+          "publication_id",
+          "sequence",
+          "schema_version",
+          "semantic_version",
+          "contract_sha256",
+          "source",
+          "schema",
+          "quality",
+          "field_units",
+          "field_currencies",
+          "field_adjustments",
+          "currency",
+          "adjustment_basis",
+          "asset_class",
+          "frequency",
+          "record_kind",
+          "business_key_fields",
+          "ordering_fields",
+          "storage_order",
+          "identity_key_encoding",
+          "filter_fields",
+          "time_field",
+          "temporal_semantics",
+          "source_available_at_field",
+          "calendar_id",
+          "timezone",
+          "pit_policy",
+          "as_of",
+          "identity_semantics",
+          "snapshot_id",
+          "window",
+          "page_size",
+          "created_at",
+          "expires_at",
+          "record_count",
+          "selection_sha256",
+          "content_sha256",
+          "rows",
+          "count",
+          "next_cursor",
+          "has_more",
+          "meta"
+        ],
+        "title": "DataPageResponse",
+        "type": "object"
+      },
+      "DatasetListResponse": {
+        "additionalProperties": false,
+        "description": "Accessible current publication summaries.",
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DatasetResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items",
+          "count"
+        ],
+        "title": "DatasetListResponse",
+        "type": "object"
+      },
+      "DatasetResponse": {
+        "additionalProperties": false,
+        "description": "Current published head metadata for one permitted dataset.",
+        "properties": {
+          "adjustment_basis": {
+            "enum": [
+              "raw",
+              "split_adjusted",
+              "total_return_adjusted",
+              "back_adjusted",
+              "forward_adjusted",
+              "not_applicable",
+              "unknown"
+            ],
+            "title": "Adjustment Basis",
+            "type": "string"
+          },
+          "as_of": {
+            "format": "date-time",
+            "title": "As Of",
+            "type": "string"
+          },
+          "asset_class": {
+            "enum": [
+              "equity",
+              "fund",
+              "bond",
+              "future",
+              "option",
+              "fx",
+              "crypto",
+              "index",
+              "financial",
+              "macro",
+              "other"
+            ],
+            "title": "Asset Class",
+            "type": "string"
+          },
+          "business_key_fields": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Business Key Fields",
+            "type": "array"
+          },
+          "calendar_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Calendar Id"
+          },
+          "content_sha256": {
+            "title": "Content Sha256",
+            "type": "string"
+          },
+          "contract_sha256": {
+            "title": "Contract Sha256",
+            "type": "string"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "dataset_id": {
+            "title": "Dataset Id",
+            "type": "string"
+          },
+          "field_adjustments": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Field Adjustments",
+            "type": "object"
+          },
+          "field_currencies": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Field Currencies",
+            "type": "object"
+          },
+          "field_units": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Field Units",
+            "type": "object"
+          },
+          "filter_fields": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Filter Fields",
+            "type": "array"
+          },
+          "frequency": {
+            "enum": [
+              "tick",
+              "1s",
+              "1m",
+              "5m",
+              "15m",
+              "30m",
+              "60m",
+              "1d",
+              "1w",
+              "1mo",
+              "irregular",
+              "snapshot"
+            ],
+            "title": "Frequency",
+            "type": "string"
+          },
+          "identity_key_encoding": {
+            "const": "canonical-json-array-v1",
+            "title": "Identity Key Encoding",
+            "type": "string"
+          },
+          "identity_semantics": {
+            "$ref": "#/components/schemas/IdentitySemanticsResponse"
+          },
+          "ordering_fields": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Ordering Fields",
+            "type": "array"
+          },
+          "pit_policy": {
+            "enum": [
+              "supported",
+              "required",
+              "unsupported"
+            ],
+            "title": "Pit Policy",
+            "type": "string"
+          },
+          "publication_id": {
+            "title": "Publication Id",
+            "type": "string"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualityResponse"
+          },
+          "record_count": {
+            "title": "Record Count",
+            "type": "integer"
+          },
+          "record_kind": {
+            "enum": [
+              "time_series",
+              "snapshot",
+              "event",
+              "table"
+            ],
+            "title": "Record Kind",
+            "type": "string"
+          },
+          "schema": {
+            "items": {
+              "$ref": "#/components/schemas/SchemaFieldResponse"
+            },
+            "title": "Schema",
+            "type": "array"
+          },
+          "schema_version": {
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "semantic_version": {
+            "title": "Semantic Version",
+            "type": "string"
+          },
+          "sequence": {
+            "title": "Sequence",
+            "type": "integer"
+          },
+          "source": {
+            "$ref": "#/components/schemas/SourceResponse"
+          },
+          "source_available_at_field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Available At Field"
+          },
+          "storage_order": {
+            "items": {
+              "$ref": "#/components/schemas/StorageOrderTermResponse"
+            },
+            "title": "Storage Order",
+            "type": "array"
+          },
+          "temporal_semantics": {
+            "enum": [
+              "business_date",
+              "event_time",
+              "observation_time",
+              "none"
+            ],
+            "title": "Temporal Semantics",
+            "type": "string"
+          },
+          "time_field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Time Field"
+          },
+          "timezone": {
+            "title": "Timezone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dataset_id",
+          "publication_id",
+          "sequence",
+          "schema_version",
+          "semantic_version",
+          "contract_sha256",
+          "source",
+          "schema",
+          "quality",
+          "field_units",
+          "field_currencies",
+          "field_adjustments",
+          "currency",
+          "adjustment_basis",
+          "asset_class",
+          "frequency",
+          "record_kind",
+          "business_key_fields",
+          "ordering_fields",
+          "storage_order",
+          "identity_key_encoding",
+          "filter_fields",
+          "time_field",
+          "temporal_semantics",
+          "source_available_at_field",
+          "calendar_id",
+          "timezone",
+          "pit_policy",
+          "as_of",
+          "identity_semantics",
+          "record_count",
+          "content_sha256"
+        ],
+        "title": "DatasetResponse",
+        "type": "object"
+      },
+      "ErrorDetail": {
+        "additionalProperties": false,
+        "description": "Stable, sanitized API error body.",
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "request_id": {
+            "title": "Request Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "request_id"
+        ],
+        "title": "ErrorDetail",
+        "type": "object"
+      },
+      "ErrorEnvelope": {
+        "additionalProperties": false,
+        "description": "Top-level error response used by all v2 route failures.",
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorDetail"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "title": "ErrorEnvelope",
+        "type": "object"
+      },
+      "IdentitySemanticsResponse": {
+        "additionalProperties": false,
+        "description": "Declared dataset keys paired with the store's stable page ordering.",
+        "properties": {
+          "business_key_fields": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Business Key Fields",
+            "type": "array"
+          },
+          "identity_key_encoding": {
+            "const": "canonical-json-array-v1",
+            "title": "Identity Key Encoding",
+            "type": "string"
+          },
+          "ordering_fields": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Ordering Fields",
+            "type": "array"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "string"
+          },
+          "storage_order": {
+            "items": {
+              "$ref": "#/components/schemas/StorageOrderTermResponse"
+            },
+            "title": "Storage Order",
+            "type": "array"
+          },
+          "temporal_fields": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Temporal Fields",
+            "type": "object"
+          },
+          "temporal_semantics": {
+            "title": "Temporal Semantics",
+            "type": "string"
+          },
+          "time_field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Time Field"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version",
+          "business_key_fields",
+          "identity_key_encoding",
+          "revision",
+          "ordering_fields",
+          "storage_order",
+          "temporal_semantics",
+          "time_field",
+          "temporal_fields"
+        ],
+        "title": "IdentitySemanticsResponse",
+        "type": "object"
+      },
+      "InstrumentCaptureSelectionResponse": {
+        "additionalProperties": false,
+        "description": "Exact instrument/capture pair pinned by a selected snapshot.",
+        "properties": {
+          "capture_id": {
+            "title": "Capture Id",
+            "type": "string"
+          },
+          "instrument_id": {
+            "title": "Instrument Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "instrument_id",
+          "capture_id"
+        ],
+        "title": "InstrumentCaptureSelectionResponse",
+        "type": "object"
+      },
+      "PageMetaResponse": {
+        "additionalProperties": false,
+        "description": "Namespaced snapshot reference echoed alongside the top-level fields.",
+        "properties": {
+          "identity_key_encoding": {
+            "const": "canonical-json-array-v1",
+            "title": "Identity Key Encoding",
+            "type": "string"
+          },
+          "ordering_fields": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Ordering Fields",
+            "type": "array"
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/SnapshotResponse"
+          },
+          "storage_order": {
+            "items": {
+              "$ref": "#/components/schemas/StorageOrderTermResponse"
+            },
+            "title": "Storage Order",
+            "type": "array"
+          }
+        },
+        "required": [
+          "snapshot",
+          "ordering_fields",
+          "storage_order",
+          "identity_key_encoding"
+        ],
+        "title": "PageMetaResponse",
+        "type": "object"
+      },
+      "PublishedRowResponse": {
+        "additionalProperties": false,
+        "description": "One published record with independent business and source timestamps.",
+        "properties": {
+          "available_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Available At"
+          },
+          "business_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Business Date"
+          },
+          "business_key": {
+            "title": "Business Key",
+            "type": "string"
+          },
+          "dataset_id": {
+            "title": "Dataset Id",
+            "type": "string"
+          },
+          "event_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event At"
+          },
+          "observed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed At"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "title": "Payload",
+            "type": "object"
+          },
+          "publication_id": {
+            "title": "Publication Id",
+            "type": "string"
+          },
+          "publication_sequence": {
+            "title": "Publication Sequence",
+            "type": "integer"
+          },
+          "record_hash": {
+            "title": "Record Hash",
+            "type": "string"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          },
+          "source_published_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Published At"
+          }
+        },
+        "required": [
+          "dataset_id",
+          "business_key",
+          "revision",
+          "publication_id",
+          "publication_sequence",
+          "business_date",
+          "event_at",
+          "observed_at",
+          "source_published_at",
+          "available_at",
+          "payload",
+          "record_hash"
+        ],
+        "title": "PublishedRowResponse",
+        "type": "object"
+      },
+      "QualityResponse": {
+        "additionalProperties": false,
+        "description": "Normalized quality receipt stored with the publication.",
+        "properties": {
+          "issue_count": {
+            "title": "Issue Count",
+            "type": "integer"
+          },
+          "report_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Report Id"
+          },
+          "status": {
+            "enum": [
+              "passed",
+              "warning",
+              "unknown"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "report_id",
+          "issue_count"
+        ],
+        "title": "QualityResponse",
+        "type": "object"
+      },
+      "SchemaFieldResponse": {
+        "additionalProperties": false,
+        "description": "One versioned result field and its declared JSON value type.",
+        "properties": {
+          "data_type": {
+            "enum": [
+              "string",
+              "integer",
+              "number",
+              "boolean",
+              "date",
+              "datetime",
+              "object",
+              "array"
+            ],
+            "title": "Data Type",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "nullable": {
+            "title": "Nullable",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "data_type",
+          "nullable"
+        ],
+        "title": "SchemaFieldResponse",
+        "type": "object"
+      },
+      "SnapshotResponse": {
+        "additionalProperties": false,
+        "description": "Immutable metadata and boundaries for one fixed publication snapshot.",
+        "properties": {
+          "adjustment_basis": {
+            "enum": [
+              "raw",
+              "split_adjusted",
+              "total_return_adjusted",
+              "back_adjusted",
+              "forward_adjusted",
+              "not_applicable",
+              "unknown"
+            ],
+            "title": "Adjustment Basis",
+            "type": "string"
+          },
+          "as_of": {
+            "format": "date-time",
+            "title": "As Of",
+            "type": "string"
+          },
+          "asset_class": {
+            "enum": [
+              "equity",
+              "fund",
+              "bond",
+              "future",
+              "option",
+              "fx",
+              "crypto",
+              "index",
+              "financial",
+              "macro",
+              "other"
+            ],
+            "title": "Asset Class",
+            "type": "string"
+          },
+          "business_key_fields": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Business Key Fields",
+            "type": "array"
+          },
+          "calendar_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Calendar Id"
+          },
+          "content_sha256": {
+            "title": "Content Sha256",
+            "type": "string"
+          },
+          "contract_sha256": {
+            "title": "Contract Sha256",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "dataset_id": {
+            "title": "Dataset Id",
+            "type": "string"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "field_adjustments": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Field Adjustments",
+            "type": "object"
+          },
+          "field_currencies": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Field Currencies",
+            "type": "object"
+          },
+          "field_units": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Field Units",
+            "type": "object"
+          },
+          "filter_fields": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Filter Fields",
+            "type": "array"
+          },
+          "frequency": {
+            "enum": [
+              "tick",
+              "1s",
+              "1m",
+              "5m",
+              "15m",
+              "30m",
+              "60m",
+              "1d",
+              "1w",
+              "1mo",
+              "irregular",
+              "snapshot"
+            ],
+            "title": "Frequency",
+            "type": "string"
+          },
+          "identity_key_encoding": {
+            "const": "canonical-json-array-v1",
+            "title": "Identity Key Encoding",
+            "type": "string"
+          },
+          "identity_semantics": {
+            "$ref": "#/components/schemas/IdentitySemanticsResponse"
+          },
+          "ordering_fields": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Ordering Fields",
+            "type": "array"
+          },
+          "page_size": {
+            "title": "Page Size",
+            "type": "integer"
+          },
+          "pit_policy": {
+            "enum": [
+              "supported",
+              "required",
+              "unsupported"
+            ],
+            "title": "Pit Policy",
+            "type": "string"
+          },
+          "publication_id": {
+            "title": "Publication Id",
+            "type": "string"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualityResponse"
+          },
+          "record_count": {
+            "title": "Record Count",
+            "type": "integer"
+          },
+          "record_kind": {
+            "enum": [
+              "time_series",
+              "snapshot",
+              "event",
+              "table"
+            ],
+            "title": "Record Kind",
+            "type": "string"
+          },
+          "schema": {
+            "items": {
+              "$ref": "#/components/schemas/SchemaFieldResponse"
+            },
+            "title": "Schema",
+            "type": "array"
+          },
+          "schema_version": {
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "selection": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InstrumentCaptureSelectionResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "selection_sha256": {
+            "title": "Selection Sha256",
+            "type": "string"
+          },
+          "semantic_version": {
+            "title": "Semantic Version",
+            "type": "string"
+          },
+          "sequence": {
+            "title": "Sequence",
+            "type": "integer"
+          },
+          "snapshot_id": {
+            "title": "Snapshot Id",
+            "type": "string"
+          },
+          "source": {
+            "$ref": "#/components/schemas/SourceResponse"
+          },
+          "source_available_at_field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Available At Field"
+          },
+          "storage_order": {
+            "items": {
+              "$ref": "#/components/schemas/StorageOrderTermResponse"
+            },
+            "title": "Storage Order",
+            "type": "array"
+          },
+          "temporal_semantics": {
+            "enum": [
+              "business_date",
+              "event_time",
+              "observation_time",
+              "none"
+            ],
+            "title": "Temporal Semantics",
+            "type": "string"
+          },
+          "time_field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Time Field"
+          },
+          "timezone": {
+            "title": "Timezone",
+            "type": "string"
+          },
+          "window": {
+            "$ref": "#/components/schemas/WindowResponse"
+          }
+        },
+        "required": [
+          "dataset_id",
+          "publication_id",
+          "sequence",
+          "schema_version",
+          "semantic_version",
+          "contract_sha256",
+          "source",
+          "schema",
+          "quality",
+          "field_units",
+          "field_currencies",
+          "field_adjustments",
+          "currency",
+          "adjustment_basis",
+          "asset_class",
+          "frequency",
+          "record_kind",
+          "business_key_fields",
+          "ordering_fields",
+          "storage_order",
+          "identity_key_encoding",
+          "filter_fields",
+          "time_field",
+          "temporal_semantics",
+          "source_available_at_field",
+          "calendar_id",
+          "timezone",
+          "pit_policy",
+          "as_of",
+          "identity_semantics",
+          "snapshot_id",
+          "window",
+          "page_size",
+          "created_at",
+          "expires_at",
+          "record_count",
+          "selection_sha256",
+          "content_sha256"
+        ],
+        "title": "SnapshotResponse",
+        "type": "object"
+      },
+      "SourceResponse": {
+        "additionalProperties": false,
+        "description": "Public source identity copied from the reviewed data contract.",
+        "properties": {
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "source_id": {
+            "title": "Source Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source_id",
+          "source"
+        ],
+        "title": "SourceResponse",
+        "type": "object"
+      },
+      "StorageOrderTermResponse": {
+        "additionalProperties": false,
+        "description": "One actual store ordering term, distinct from declared contract fields.",
+        "properties": {
+          "comparison": {
+            "enum": [
+              "native",
+              "binary_lexicographic"
+            ],
+            "title": "Comparison",
+            "type": "string"
+          },
+          "direction": {
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "title": "Direction",
+            "type": "string"
+          },
+          "field": {
+            "title": "Field",
+            "type": "string"
+          },
+          "nulls": {
+            "anyOf": [
+              {
+                "enum": [
+                  "first",
+                  "last"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nulls"
+          }
+        },
+        "required": [
+          "field",
+          "direction",
+          "comparison"
+        ],
+        "title": "StorageOrderTermResponse",
+        "type": "object"
+      },
+      "WindowResponse": {
+        "additionalProperties": false,
+        "description": "Half-open business-date window pinned to a snapshot.",
+        "properties": {
+          "end": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End"
+          },
+          "end_exclusive": {
+            "title": "End Exclusive",
+            "type": "boolean"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start"
+          }
+        },
+        "required": [
+          "start",
+          "end",
+          "end_exclusive"
+        ],
+        "title": "WindowResponse",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "title": "OpenData published datasets v2 (pre-release)",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/v2/datasets": {
+      "get": {
+        "description": "List only published datasets permitted by the caller's current grants.",
+        "operationId": "list_datasets_api_v2_datasets_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-API-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatasetListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Dataset unavailable"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Published resource unavailable"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Published dataset contract changed"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Snapshot expired"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Response exceeds the size limit"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Published data service unavailable"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Datasets"
+      }
+    },
+    "/api/v2/datasets/{dataset_id}": {
+      "get": {
+        "description": "Return the current immutable publication metadata for one permitted dataset.",
+        "operationId": "get_dataset_api_v2_datasets__dataset_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "dataset_id",
+            "required": true,
+            "schema": {
+              "title": "Dataset Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-API-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatasetResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Dataset unavailable"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Published resource unavailable"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Published dataset contract changed"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Snapshot expired"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Response exceeds the size limit"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Published data service unavailable"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Dataset"
+      }
+    },
+    "/api/v2/datasets/{dataset_id}/coverage": {
+      "get": {
+        "description": "Return UNKNOWN until independent dataset-specific coverage evidence exists.",
+        "operationId": "get_dataset_coverage_api_v2_datasets__dataset_id__coverage_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "dataset_id",
+            "required": true,
+            "schema": {
+              "title": "Dataset Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "start_date",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Start Date"
+            }
+          },
+          {
+            "in": "query",
+            "name": "end_date",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "End Date"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-API-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoverageResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Dataset unavailable"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Published resource unavailable"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Published dataset contract changed"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Snapshot expired"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Response exceeds the size limit"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Published data service unavailable"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Dataset Coverage"
+      }
+    },
+    "/api/v2/datasets/{dataset_id}/records": {
+      "get": {
+        "description": "Read a fixed snapshot page, creating the snapshot on the first request.",
+        "operationId": "get_dataset_records_api_v2_datasets__dataset_id__records_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "dataset_id",
+            "required": true,
+            "schema": {
+              "title": "Dataset Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "start_date",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Start Date"
+            }
+          },
+          {
+            "in": "query",
+            "name": "end_date",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "End Date"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 1000,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Page Size"
+            }
+          },
+          {
+            "in": "query",
+            "name": "publication_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 32,
+                  "minLength": 32,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Publication Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "snapshot_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 32,
+                  "minLength": 32,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Snapshot Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 8192,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "in": "query",
+            "name": "instrument_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Instrument Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "capture_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "minLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Capture Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-API-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataPageResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Dataset unavailable"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Published resource unavailable"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Published dataset contract changed"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Snapshot expired"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Response exceeds the size limit"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Published data service unavailable"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Dataset Records"
+      }
+    },
+    "/api/v2/snapshots": {
+      "post": {
+        "description": "Create a fixed snapshot without reading or returning its records.",
+        "operationId": "create_snapshot_api_v2_snapshots_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-API-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSnapshotRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SnapshotResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Dataset unavailable"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Published resource unavailable"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Published dataset contract changed"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Snapshot expired"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Response exceeds the size limit"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Published data service unavailable"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Snapshot"
+      }
+    },
+    "/api/v2/snapshots/{snapshot_id}": {
+      "get": {
+        "description": "Read snapshot metadata after authorizing its explicit dataset identity.",
+        "operationId": "get_snapshot_api_v2_snapshots__snapshot_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "snapshot_id",
+            "required": true,
+            "schema": {
+              "title": "Snapshot Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "dataset_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Dataset Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-API-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SnapshotResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Dataset unavailable"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Published resource unavailable"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Published dataset contract changed"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Snapshot expired"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Response exceeds the size limit"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Published data service unavailable"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Snapshot"
+      }
+    }
+  }
+}

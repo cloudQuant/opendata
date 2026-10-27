@@ -147,6 +147,38 @@ class TestSplitFactors:
         )
         assert list(factors) == [8.0, 2.0, 1.0]
 
+    def test_nullable_extension_split_values_keep_the_same_golden_factors(self) -> None:
+        """The pandas extension-array form has the same split product semantics."""
+        splits = pd.Series(
+            [4.0, 2.0],
+            index=pd.DatetimeIndex([pd.Timestamp("2020-08-31"), pd.Timestamp("2022-01-03")]),
+            dtype="Float64",
+        )
+
+        factors = lookahead_factors(_index("2020-08-28", "2021-01-04", "2022-06-01"), splits)
+
+        assert list(factors) == [8.0, 2.0, 1.0]
+
+    def test_missing_extension_split_value_keeps_nan_propagation(self) -> None:
+        events = pd.Series(
+            [4.0, pd.NA, 2.0],
+            index=pd.DatetimeIndex(
+                [
+                    pd.Timestamp("2020-08-31"),
+                    pd.Timestamp("2021-08-31"),
+                    pd.Timestamp("2022-01-03"),
+                ]
+            ),
+            dtype="Float64",
+        )
+
+        factors = lookahead_factors(
+            _index("2020-08-28", "2020-08-31", "2021-08-31", "2022-06-01"), events
+        )
+
+        assert pd.isna(factors.iloc[:2]).all()
+        assert factors.iloc[2:].tolist() == [2.0, 1.0]
+
     def test_frame_split_rows_must_agree_with_the_history(self) -> None:
         frame = _frame(("2020-08-31",))
         frame[SPLITS_COLUMN] = 4.0
@@ -182,7 +214,7 @@ class TestTransform:
     def test_rows_sorted_amount_none_symbol_upper(self) -> None:
         fetcher = YfinanceStockDailyFetcher()
         query = fetcher.transform_query(symbol="aapl")
-        result = fetcher.transform_data(_history(), query)
+        result = fetcher.transform_data(_history(_frame(("2026-09-22", "2026-09-21"))), query)
         assert [bar.trade_date for bar in result] == [
             datetime.date(2026, 9, 21),
             datetime.date(2026, 9, 22),
@@ -190,6 +222,20 @@ class TestTransform:
         assert all(bar.symbol == "AAPL" for bar in result)
         assert all(bar.amount is None for bar in result)
         assert result[1].close == pytest.approx(229.5)
+
+    def test_same_trade_date_different_times_keep_source_order(self) -> None:
+        frame = _frame(("2026-09-22", "2026-09-21 15:00", "2026-09-21 09:00"))
+        frame["Close"] = [229.5, 229.25, 229.0]
+        fetcher = YfinanceStockDailyFetcher()
+        query = fetcher.transform_query(symbol="aapl")
+
+        result = fetcher.transform_data(_history(frame), query)
+
+        assert [(bar.trade_date, bar.close) for bar in result] == [
+            (datetime.date(2026, 9, 21), 229.25),
+            (datetime.date(2026, 9, 21), 229.0),
+            (datetime.date(2026, 9, 22), 229.5),
+        ]
 
     def test_pre_split_window_is_restored_with_the_out_of_window_ratio(self) -> None:
         """The defect C8 fixes: Yahoo de-visions by a split outside the window.

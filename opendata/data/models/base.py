@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import math
 from datetime import date, datetime
-from typing import TYPE_CHECKING, cast, get_args
+from typing import TYPE_CHECKING, get_args
 
 import pandas as pd
 from pydantic import BaseModel, ConfigDict
@@ -64,8 +64,8 @@ class ContractModel(BaseModel):
             objects, which round-trips losslessly with MySQL DATE columns.
         """
         if not rows:
-            return cast("pd.DataFrame", pd.DataFrame(columns=list(cls.model_fields)))
-        return cast("pd.DataFrame", pd.DataFrame([row.model_dump() for row in rows]))
+            return pd.DataFrame(columns=list(cls.model_fields))
+        return pd.DataFrame([row.model_dump() for row in rows])
 
     @classmethod
     def from_frame(cls, df: pd.DataFrame) -> list[Self]:

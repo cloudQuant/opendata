@@ -6,27 +6,23 @@ Provides shared test fixtures for all test modules.
 
 import asyncio
 import os
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Callable
+from functools import wraps
 
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from opendata.core.database import Base, get_data_db, get_db
-from opendata.main import app
-
-# Set testing environment variable to disable rate limiting
+# These must be set before importing any app module. Settings reads .env during
+# import; empty Redis and Sentry URLs keep their singletons from doing I/O.
 os.environ["TESTING"] = "true"
+os.environ["APP_ENV"] = "testing"
+os.environ["REDIS_URL"] = ""
+os.environ["SENTRY_DSN"] = ""
 
-# Test database URL
-TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
-
-#: Live e2e legs are the only tests that touch the production warehouse and the
-#: paid upstream APIs. Forgetting ``-m "not e2e"`` used to be enough to run them:
-#: C58 measured one such run issuing ``CREATE/DROP TABLE`` on ``opendata_data``.
-#: The gate therefore defaults to deny, and the release token has to be exact --
-#: a truthy ``export`` in a shell profile must not be enough.
+# Live e2e legs are released only by the exact token used by the collection guard.
 LIVE_E2E_OPT_IN_ENV = "OPENDATA_ALLOW_LIVE_E2E"
 LIVE_E2E_OPT_IN_TOKEN = "allow-prod-and-upstream-writes"
 LIVE_E2E_MARKER = "e2e"
@@ -39,6 +35,228 @@ OWNED_MYSQL_E2E_NODE = (
 def live_e2e_allowed() -> bool:
     """Whether the operator explicitly released the live e2e legs."""
     return os.environ.get(LIVE_E2E_OPT_IN_ENV, "").strip() == LIVE_E2E_OPT_IN_TOKEN
+
+
+from opendata.core.database import (  # noqa: E402  # environment guard must precede app imports
+    Base,
+    data_engine,
+    engine,
+    get_data_db,
+    get_db,
+)
+
+_LIVE_DEFAULT_DB_ACCESS_NODE_ID: str | None = None
+
+
+def _live_default_db_access_allowed() -> bool:
+    """Allow default-engine access only during an explicitly released e2e item."""
+    return _LIVE_DEFAULT_DB_ACCESS_NODE_ID is not None and live_e2e_allowed()
+
+
+def _make_default_engine_connect_guard(engine_name: str) -> Callable[..., None]:
+    """Reject new DBAPI connections through one of the app's default engines."""
+
+    def guard_do_connect(*_args: object, **_kwargs: object) -> None:
+        if _live_default_db_access_allowed():
+            return
+        raise RuntimeError(
+            f"test blocked a DBAPI connection through the app's default {engine_name} engine "
+            f"before driver connect; only an e2e item with exact {LIVE_E2E_OPT_IN_ENV} opt-in "
+            "may use it"
+        )
+
+    return guard_do_connect
+
+
+def _make_default_engine_checkout_guard(engine_name: str) -> Callable[..., None]:
+    """Reject reuse of a pooled default connection by an unreleased test item."""
+
+    def guard_checkout(*_args: object, **_kwargs: object) -> None:
+        if _live_default_db_access_allowed():
+            return
+        raise RuntimeError(
+            f"test blocked checkout of the app's default {engine_name} connection; "
+            "the connection cannot be used by this test item"
+        )
+
+    return guard_checkout
+
+
+def _make_default_engine_cursor_guard(engine_name: str) -> Callable[..., None]:
+    """Reject SQLAlchemy cursor execution through a retained default connection."""
+
+    def guard_before_cursor_execute(*_args: object, **_kwargs: object) -> None:
+        if _live_default_db_access_allowed():
+            return
+        raise RuntimeError(
+            f"test blocked SQL execution through the app's default {engine_name} engine "
+            "before cursor execution"
+        )
+
+    return guard_before_cursor_execute
+
+
+def _make_default_engine_ping_guard(
+    engine_name: str, original_do_ping: Callable[..., object]
+) -> Callable[..., object]:
+    """Reject pool pre-ping before it touches a default Engine's DBAPI handle."""
+
+    def guard_do_ping(dbapi_connection: object) -> object:
+        if not _live_default_db_access_allowed():
+            raise RuntimeError(
+                f"test blocked pool pre-ping through the app's default {engine_name} engine "
+                "before DBAPI ping"
+            )
+        return original_do_ping(dbapi_connection)
+
+    return guard_do_ping
+
+
+_GUARDED_DEFAULT_ENGINE_GUARDS: dict[
+    int, tuple[object, tuple[tuple[str, Callable[..., None]], ...]]
+] = {}
+_GUARDED_DEFAULT_ENGINE_PING_GUARDS: dict[int, tuple[object, Callable[..., object]]] = {}
+
+
+def _install_default_engine_guards(
+    target: object, engine_name: str
+) -> tuple[Callable[..., None], ...]:
+    """Guard one known app-owned Engine object without affecting explicit fixture engines."""
+    sync_target = getattr(target, "sync_engine", target)
+    existing = _GUARDED_DEFAULT_ENGINE_GUARDS.get(id(sync_target))
+    if existing is not None and existing[0] is sync_target:
+        return tuple(listener for _, listener in existing[1])
+
+    guards = (
+        ("do_connect", _make_default_engine_connect_guard(engine_name)),
+        ("checkout", _make_default_engine_checkout_guard(engine_name)),
+        ("before_cursor_execute", _make_default_engine_cursor_guard(engine_name)),
+    )
+    for event_name, listener in guards:
+        event.listen(sync_target, event_name, listener)
+    _GUARDED_DEFAULT_ENGINE_GUARDS[id(sync_target)] = (sync_target, guards)
+    pool = getattr(sync_target, "pool", None)
+    if getattr(pool, "_pre_ping", False):
+        # Pool pre-ping precedes its checkout event. This is an instance-local
+        # guard, so it cannot affect explicit fixture Engines or other dialects.
+        dialect = sync_target.dialect
+        original_do_ping = dialect.do_ping
+        ping_guard = _make_default_engine_ping_guard(engine_name, original_do_ping)
+        dialect.do_ping = ping_guard
+        _GUARDED_DEFAULT_ENGINE_PING_GUARDS[id(sync_target)] = (sync_target, ping_guard)
+    return tuple(listener for _, listener in guards)
+
+
+def _guard_default_engine_factory(
+    factory: Callable[..., object], engine_name: str
+) -> Callable[..., object]:
+    """Wrap a known cached factory so every returned default Engine is guarded."""
+    cache_info = getattr(factory, "cache_info", None)
+    if callable(cache_info) and cache_info().currsize:
+        # A plugin may have imported and primed this factory before conftest.
+        # Attach guards to its cached Engine before test modules can retain it.
+        _install_default_engine_guards(factory(), engine_name)
+
+    @wraps(factory)
+    def guarded_factory(*args: object, **kwargs: object) -> object:
+        default_engine = factory(*args, **kwargs)
+        _install_default_engine_guards(default_engine, engine_name)
+        return default_engine
+
+    for cache_method_name in ("cache_clear", "cache_info", "cache_parameters"):
+        cache_method = getattr(factory, cache_method_name, None)
+        if callable(cache_method):
+            setattr(guarded_factory, cache_method_name, cache_method)
+    return guarded_factory
+
+
+def _guard_default_engine_constructor(
+    module: object,
+    factory: Callable[..., object],
+    engine_name: str,
+    *,
+    cached_engine: object | None = None,
+) -> None:
+    """Guard one module-local Engine constructor without changing its factory identity."""
+    if cached_engine is not None:
+        _install_default_engine_guards(cached_engine, engine_name)
+    else:
+        cache_info = getattr(factory, "cache_info", None)
+        if callable(cache_info) and cache_info().currsize:
+            # Guard any Engine cached before conftest was loaded without connecting it.
+            _install_default_engine_guards(factory(), engine_name)
+
+    constructor_attribute = "create_engine"
+    constructor = getattr(module, constructor_attribute)
+
+    @wraps(constructor)
+    def guarded_constructor(*args: object, **kwargs: object) -> object:
+        default_engine = constructor(*args, **kwargs)
+        _install_default_engine_guards(default_engine, engine_name)
+        return default_engine
+
+    setattr(module, constructor_attribute, guarded_constructor)
+
+
+_CONTROL_DB_GUARDS = _install_default_engine_guards(engine, "control")
+_DATA_DB_GUARDS = _install_default_engine_guards(data_engine, "data")
+_CONTROL_DB_CONNECT_GUARD, _CONTROL_DB_CHECKOUT_GUARD, _CONTROL_DB_CURSOR_GUARD = _CONTROL_DB_GUARDS
+_DATA_DB_CONNECT_GUARD, _DATA_DB_CHECKOUT_GUARD, _DATA_DB_CURSOR_GUARD = _DATA_DB_GUARDS
+
+# Install before importing ``opendata.main`` and before pytest imports any test
+# modules. These seven known default targets are guarded at DBAPI connect,
+# checkout, and SQLAlchemy cursor execution. Direct DBAPI use is outside scope.
+from opendata.pipeline import jobs as pipeline_jobs  # noqa: E402  # protect before app/test imports
+
+pipeline_jobs.warehouse_engine = _guard_default_engine_factory(
+    pipeline_jobs.warehouse_engine, "pipeline warehouse"
+)
+pipeline_jobs.control_engine = _guard_default_engine_factory(
+    pipeline_jobs.control_engine, "pipeline control"
+)
+
+# The API router has already captured this getter in ``Depends`` objects. Guard
+# its module-local constructor so those references keep their identity and
+# still receive guarded Engines, including after the factory cache is cleared.
+from opendata.api import (  # noqa: E402  # guard before route use
+    data_query as api_data_query,
+)
+from opendata.api import (  # noqa: E402  # protect configured store
+    published_data as api_published_data,
+)
+from opendata.data import minute_archive  # noqa: E402  # guard before app/test imports
+
+_guard_default_engine_constructor(
+    api_data_query, api_data_query.get_warehouse_engine, "API warehouse"
+)
+_guard_default_engine_constructor(
+    minute_archive, minute_archive.get_minute_archive_engine, "minute archive index"
+)
+_guard_default_engine_constructor(
+    api_published_data,
+    api_published_data._configured_publication_store,
+    "published data store",
+    cached_engine=api_published_data._CONFIGURED_ENGINE,
+)
+
+from opendata.main import app  # noqa: E402  # default-engine guards must be installed first
+
+# Test database URL
+TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+
+
+@pytest.hookimpl(hookwrapper=True, tryfirst=True)
+def pytest_runtest_protocol(item: pytest.Item, nextitem: pytest.Item | None):
+    """Scope default-engine access to one exact-token, e2e-marked test item."""
+    global _LIVE_DEFAULT_DB_ACCESS_NODE_ID
+
+    _LIVE_DEFAULT_DB_ACCESS_NODE_ID = None
+    if live_e2e_allowed() and item.get_closest_marker(LIVE_E2E_MARKER) is not None:
+        _LIVE_DEFAULT_DB_ACCESS_NODE_ID = item.nodeid
+    try:
+        yield
+    finally:
+        _LIVE_DEFAULT_DB_ACCESS_NODE_ID = None
 
 
 def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
@@ -131,21 +349,13 @@ async def test_client(test_db):
     app.dependency_overrides.clear()
 
 
-def _clear_blacklist(bl):
-    """Clear token blacklist regardless of backend type."""
-    if hasattr(bl, "_blacklist"):
-        # In-memory backend
-        bl._blacklist.clear()
-    elif hasattr(bl, "_redis"):
-        # Redis backend – delete only our namespaced keys
+def _clear_blacklist(bl: object) -> None:
+    """Clear only the process-local test blacklist, never a shared Redis backend."""
+    from opendata.core.token_blacklist import _InMemoryBlacklist
 
-        cursor, keys = bl._redis.scan(match=f"{bl._KEY_PREFIX}*", count=1000)
-        all_keys = list(keys)
-        while cursor:
-            cursor, keys = bl._redis.scan(cursor=cursor, match=f"{bl._KEY_PREFIX}*", count=1000)
-            all_keys.extend(keys)
-        if all_keys:
-            bl._redis.delete(*all_keys)
+    if isinstance(bl, _InMemoryBlacklist):
+        with bl._lock:
+            bl._blacklist.clear()
 
 
 @pytest.fixture(autouse=True)

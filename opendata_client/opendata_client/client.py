@@ -34,6 +34,18 @@ if TYPE_CHECKING:
     from collections.abc import Iterator, Sequence
 
 DEFAULT_PAGE_SIZE = 500
+# The v1 data-query route enforces this ceiling server-side. Keep the SDK
+# guard aligned so an invalid request fails locally and predictably.
+MAX_PAGE_SIZE = 1_000
+# Direct page reads may address older offsets, but reject values large enough
+# to become accidental unbounded warehouse scans.
+MAX_PAGE_NUMBER = 10_000
+DEFAULT_MAX_ITER_PAGES = 1_000
+MAX_ITER_PAGES = 10_000
+DEFAULT_MAX_ITER_ROWS = 200_000
+MAX_ITER_ROWS = 1_000_000
+MAX_QUERY_RESPONSE_BYTES = 16 * 1024 * 1024
+_QUERY_RESPONSE_CHUNK_BYTES = 64 * 1024
 DEFAULT_TIMEOUT = 30.0
 #: Seconds to wait for the server's first answer after subscribing.
 DEFAULT_WS_TIMEOUT = 30.0
@@ -286,6 +298,38 @@ def _csv(value: str | Sequence[str] | None) -> str | None:
     return ",".join(str(item) for item in value)
 
 
+def _validate_positive_int(value: object, name: str, maximum: int) -> int:
+    """Require an exact positive integer within a public API bound."""
+    if type(value) is int and 1 <= value <= maximum:
+        return value
+    raise ValueError(f"{name} must be an integer between 1 and {maximum}")
+
+
+def _read_query_json(response: httpx.Response) -> Any:  # noqa: ANN401  # API JSON payload
+    """Read one query response with a decoded-byte ceiling, then parse JSON."""
+    content_length = response.headers.get("content-length")
+    content_encoding = response.headers.get("content-encoding", "identity").lower()
+    if (
+        content_encoding in {"", "identity"}
+        and content_length is not None
+        and len(content_length) <= 20
+        and content_length.isascii()
+        and content_length.isdecimal()
+        and int(content_length) > MAX_QUERY_RESPONSE_BYTES
+    ):
+        raise OpendataClientError("data query response exceeds the size limit")
+
+    body = bytearray()
+    for chunk in response.iter_bytes(chunk_size=_QUERY_RESPONSE_CHUNK_BYTES):
+        if len(body) + len(chunk) > MAX_QUERY_RESPONSE_BYTES:
+            raise OpendataClientError("data query response exceeds the size limit")
+        body.extend(chunk)
+    try:
+        return json.loads(body)
+    except ValueError:
+        raise OpendataClientError("data query returned invalid JSON") from None
+
+
 class OpendataClient:
     """Synchronous REST client for the opendata API.
 
@@ -357,49 +401,80 @@ class OpendataClient:
         """Exit a context manager, closing the HTTP client."""
         self.close()
 
-    def _raise_for_status(self, response: httpx.Response) -> None:
+    def _raise_for_status(self, response: httpx.Response, *, include_detail: bool = True) -> None:
         """Translate an HTTP failure into a client error.
 
         Args:
             response: The response to inspect.
+            include_detail: Whether to include server-provided error text.
 
         Raises:
             OpendataClientError: For 400/401/403/404/429/501 and any
-                other non-2xx status, carrying the API's detail text.
+                other non-2xx status; server detail is included only when
+                ``include_detail`` is true.
         """
         if response.is_success:
             return
         detail = ""
-        try:
-            body = response.json()
-            detail = str(body.get("detail") or body.get("message") or "")
-        except ValueError:
-            detail = response.text[:200]
-        message = f"HTTP {response.status_code}: {detail}"
+        if include_detail:
+            try:
+                body = response.json()
+                detail = str(body.get("detail") or body.get("message") or "")
+            except ValueError:
+                detail = response.text[:200]
+        message = f"HTTP {response.status_code}"
+        if detail:
+            message = f"{message}: {detail}"
         raise _ERRORS.get(response.status_code, OpendataClientError)(message)
 
-    def _get(self, path: str, params: dict[str, Any]) -> Any:  # noqa: ANN401  # API JSON payload
+    def _get(
+        self,
+        path: str,
+        params: dict[str, Any],
+        *,
+        safe_errors: bool = False,
+        require_envelope: bool = False,
+    ) -> Any:  # noqa: ANN401  # API JSON payload
         """Perform a GET and return the unwrapped ``data`` payload.
 
         Args:
             path: Path below ``/api/v1``.
             params: Query parameters; ``None`` values are dropped.
+            safe_errors: Suppress response and transport details in errors.
+            require_envelope: Require a successful API envelope with an object payload.
 
         Returns:
             The ``data`` field of the API envelope; a body that is not an
             envelope at all (the bare list of ``/data/capabilities``) is
-            returned as it came.
+            returned as it came unless ``require_envelope`` is set.
 
         Raises:
             OpendataClientError: On transport failure or a failure body.
         """
         clean = {key: value for key, value in params.items() if value is not None}
-        try:
-            response = self._client.get(f"/api/v1{path}", params=clean)
-        except httpx.HTTPError as exc:  # unreachable host, timeout, ...
-            raise OpendataClientError(f"request to {path} failed: {exc}") from exc
-        self._raise_for_status(response)
-        payload = response.json()
+        if safe_errors:
+            try:
+                with self._client.stream("GET", f"/api/v1{path}", params=clean) as response:
+                    self._raise_for_status(response, include_detail=False)
+                    payload = _read_query_json(response)
+            except OpendataClientError:
+                raise
+            except httpx.HTTPError:
+                raise OpendataClientError("data query request failed") from None
+        else:
+            try:
+                response = self._client.get(f"/api/v1{path}", params=clean)
+            except httpx.HTTPError as exc:  # unreachable host, timeout, ...
+                raise OpendataClientError(f"request to {path} failed: {exc}") from exc
+            self._raise_for_status(response)
+            payload = response.json()
+        if require_envelope:
+            if not isinstance(payload, dict) or payload.get("success") is not True:
+                raise OpendataClientError("data query returned an invalid response envelope")
+            data = payload.get("data")
+            if not isinstance(data, dict):
+                raise OpendataClientError("data query returned an invalid response shape")
+            return data
         if not isinstance(payload, dict):
             return payload
         if not payload.get("success", True):
@@ -446,56 +521,112 @@ class OpendataClient:
 
         Returns:
             The page with its rows and column order.
+
+        Raises:
+            ValueError: If ``page`` or ``page_size`` is outside the supported bounds.
+            OpendataClientError: If the API response is malformed or its pagination
+                metadata does not match the request.
         """
-        data = (
-            self._get(
-                f"/data/{asset_class}/{domain}",
-                {
-                    "symbols": _csv(symbols),
-                    "start": start,
-                    "end": end,
-                    "source": source,
-                    "layer": layer,
-                    "adjust": adjust,
-                    "fields": _csv(fields),
-                    "period": period,
-                    "report_date": report_date,
-                    "as_of": as_of.isoformat() if isinstance(as_of, (date, datetime)) else as_of,
-                    "market": market,
-                    "page": page,
-                    "page_size": page_size,
-                },
-            )
-            or {}
+        _validate_positive_int(page, "page", MAX_PAGE_NUMBER)
+        _validate_positive_int(page_size, "page_size", MAX_PAGE_SIZE)
+        data = self._get(
+            f"/data/{asset_class}/{domain}",
+            {
+                "symbols": _csv(symbols),
+                "start": start,
+                "end": end,
+                "source": source,
+                "layer": layer,
+                "adjust": adjust,
+                "fields": _csv(fields),
+                "period": period,
+                "report_date": report_date,
+                "as_of": as_of.isoformat() if isinstance(as_of, (date, datetime)) else as_of,
+                "market": market,
+                "page": page,
+                "page_size": page_size,
+            },
+            safe_errors=True,
+            require_envelope=True,
         )
-        rows = list(data.get("rows") or [])
+        rows = data.get("rows")
+        columns = data.get("columns")
+        response_page = data.get("page")
+        response_page_size = data.get("page_size")
+        count = data.get("count")
+        pit = data.get("pit")
+        if (
+            not isinstance(rows, list)
+            or any(not isinstance(row, dict) for row in rows)
+            or len(rows) > page_size
+            or not isinstance(columns, list)
+            or any(not isinstance(column, str) for column in columns)
+            or type(response_page) is not int
+            or response_page != page
+            or type(response_page_size) is not int
+            or response_page_size != page_size
+            or type(count) is not int
+            or count != len(rows)
+            or (pit is not None and not isinstance(pit, dict))
+        ):
+            raise OpendataClientError("data query returned invalid page metadata or rows")
         return Page(
             rows=rows,
-            columns=list(data.get("columns") or []),
-            page=int(data.get("page") or page),
-            page_size=int(data.get("page_size") or page_size),
-            count=int(data.get("count") or len(rows)),
-            pit=data.get("pit"),
+            columns=columns,
+            page=response_page,
+            page_size=response_page_size,
+            count=count,
+            pit=pit,
         )
 
-    def iter_rows(self, asset_class: str, domain: str, **kwargs: Any) -> Iterator[dict[str, Any]]:  # noqa: ANN401  # forwarded query args
+    def iter_rows(
+        self,
+        asset_class: str,
+        domain: str,
+        *,
+        max_pages: int = DEFAULT_MAX_ITER_PAGES,
+        max_rows: int = DEFAULT_MAX_ITER_ROWS,
+        **kwargs: Any,  # noqa: ANN401  # forwarded query args
+    ) -> Iterator[dict[str, Any]]:
         """Iterate every row of a query, following pagination.
 
         Args:
             asset_class: Asset class segment of the path.
             domain: Domain identifier.
-            **kwargs: Any argument of :meth:`query` except ``page``.
+            **kwargs: Query arguments, including an optional starting ``page`` and
+                ``page_size``.
+            max_pages: Maximum number of API pages to read (including a final
+                empty page used to confirm completion).
+            max_rows: Maximum number of rows to yield.
 
         Yields:
             One row dict at a time.
+
+        Raises:
+            ValueError: If page, page size, or either budget is outside its bounds.
+            OpendataClientError: If the response is malformed or a budget is exceeded.
         """
-        page_number = int(kwargs.pop("page", 1))
-        page_size = int(kwargs.pop("page_size", DEFAULT_PAGE_SIZE))
+        page_number = kwargs.pop("page", 1)
+        page_size = kwargs.pop("page_size", DEFAULT_PAGE_SIZE)
+        _validate_positive_int(max_pages, "max_pages", MAX_ITER_PAGES)
+        _validate_positive_int(max_rows, "max_rows", MAX_ITER_ROWS)
+        _validate_positive_int(page_number, "page", MAX_PAGE_NUMBER)
+        _validate_positive_int(page_size, "page_size", MAX_PAGE_SIZE)
+        pages_read = 0
+        rows_yielded = 0
         while True:
+            if pages_read >= max_pages:
+                raise OpendataClientError("row iteration exceeded its page budget")
             page = self.query(asset_class, domain, page=page_number, page_size=page_size, **kwargs)
+            pages_read += 1
+            if len(page.rows) > max_rows - rows_yielded:
+                raise OpendataClientError("row iteration exceeded its row budget")
             yield from page.rows
-            if page.count < page.page_size or not page.rows:
+            rows_yielded += len(page.rows)
+            if len(page.rows) < page_size:
                 return
+            if page_number >= MAX_PAGE_NUMBER:
+                raise OpendataClientError("row iteration exceeded its maximum page number")
             page_number += 1
 
     def stock_daily(
@@ -546,19 +677,28 @@ class OpendataClient:
 
         Args:
             symbols: One symbol or a sequence.
-            **kwargs: Any argument of :meth:`stock_daily`.
+            **kwargs: Arguments of :meth:`stock_daily` plus optional ``max_pages``
+                and ``max_rows`` iteration budgets.
 
         Returns:
             All rows across pages.
+
+        Raises:
+            ValueError: If a page or budget is outside its supported bounds.
+            OpendataClientError: If a page is malformed or a budget is exceeded.
         """
         kwargs.pop("page", None)
         page_size = kwargs.pop("page_size", DEFAULT_PAGE_SIZE)
+        max_pages = kwargs.pop("max_pages", DEFAULT_MAX_ITER_PAGES)
+        max_rows = kwargs.pop("max_rows", DEFAULT_MAX_ITER_ROWS)
         return list(
             self.iter_rows(
                 "equity",
                 "stock_daily",
                 symbols=symbols,
                 page_size=page_size,
+                max_pages=max_pages,
+                max_rows=max_rows,
                 **kwargs,
             )
         )

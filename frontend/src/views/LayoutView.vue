@@ -36,6 +36,7 @@ const menuItems = computed(() => {
 
   if (authStore.isAdmin) {
     items.push({ index: '/admin/interfaces', name: t('nav.interfaceManagement'), icon: 'Setting' })
+    items.push({ index: '/admin/reviewed-runs', name: '审核运行', icon: 'List' })
     items.push({ index: '/users', name: t('nav.users'), icon: 'User' })
     items.push({ index: '/settings', name: t('nav.settings'), icon: 'Setting' })
   }

@@ -19,7 +19,7 @@ from fastapi.staticfiles import StaticFiles
 from loguru import logger
 from starlette.middleware.base import RequestResponseEndpoint
 
-from opendata.api import api_router, ws_routers
+from opendata.api import api_router, api_v2_router, ws_routers
 from opendata.api.rate_limit import get_limiter
 from opendata.core.config import settings
 from opendata.core.database import close_db, init_db
@@ -310,6 +310,7 @@ async def generic_exception_handler(request: Request, exc: Exception) -> JSONRes
 # Include API routes (v1 is the canonical prefix)
 app.include_router(api_router, prefix="/api/v1")
 app.include_router(api_router, prefix="/api")
+app.include_router(api_v2_router)
 
 # WebSocket routes live at the root: nginx proxies `location /ws/` to the
 # backend unchanged and the frontend dials `/ws/executions`, so the socket

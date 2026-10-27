@@ -86,6 +86,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '接口管理', requiresAdmin: true },
       },
       {
+        path: 'admin/reviewed-runs',
+        name: 'ReviewedRuns',
+        component: () => import('@/views/admin/ReviewedRunsView.vue'),
+        meta: { title: '审核运行', requiresAdmin: true },
+      },
+      {
         path: 'settings',
         name: 'Settings',
         component: () => import('@/views/SettingsView.vue'),

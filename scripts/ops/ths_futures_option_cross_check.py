@@ -94,11 +94,8 @@ def _sse_option_sina(symbol: str) -> pd.DataFrame:
     )
 
     frame = cast("pd.DataFrame", option_sse_daily_sina(symbol=symbol))
-    return cast(
-        "pd.DataFrame",
-        frame.rename(
-            columns={"日期": "date", "开盘": "open", "最高": "high", "最低": "low", "收盘": "close"}
-        ),
+    return frame.rename(
+        columns={"日期": "date", "开盘": "open", "最高": "high", "最低": "low", "收盘": "close"}
     )
 
 
@@ -187,7 +184,7 @@ def _sina_frame(channel: str, sina_symbol: str, start: date, end: date) -> pd.Da
     out = frame.copy()
     out["trade_date"] = pd.to_datetime(out["date"]).dt.date
     windowed = out[(out["trade_date"] >= start) & (out["trade_date"] <= end)]
-    return cast("pd.DataFrame", windowed.reset_index(drop=True))
+    return windowed.reset_index(drop=True)
 
 
 def _compare(ours: pd.DataFrame, theirs: pd.DataFrame, fields: tuple[str, ...]) -> dict[str, Any]:

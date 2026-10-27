@@ -1,0 +1,1742 @@
+"""Append-only publication metadata and fixed, signed warehouse snapshots.
+
+This module provides a bounded generic record envelope for publication and
+snapshot mechanics. It is not a substitute for domain-specific DWD schemas,
+constraints, or financial semantics. Callers supply the domain's stable
+business key and retain business dates separately from observation timestamps.
+The caller owns migrations and database lifetime; no table is created here.
+"""
+
+from __future__ import annotations
+
+import base64
+import hashlib
+import hmac
+import json
+import math
+import re
+from collections.abc import Iterable, Mapping
+from dataclasses import dataclass
+from datetime import date, datetime, timedelta, timezone
+from typing import TYPE_CHECKING, Any
+from uuid import uuid4
+
+from sqlalchemy import (
+    BigInteger,
+    Boolean,
+    CheckConstraint,
+    Column,
+    Date,
+    ForeignKey,
+    Index,
+    Integer,
+    MetaData,
+    String,
+    Table,
+    Text,
+    and_,
+    case,
+    func,
+    insert,
+    or_,
+    select,
+    update,
+)
+from sqlalchemy.dialects.mysql import MEDIUMTEXT, VARCHAR
+from sqlalchemy.engine import Connection, Engine, RowMapping
+from sqlalchemy.exc import IntegrityError
+
+from opendata.data.capture_selection import (
+    InstrumentCaptureSelection,
+    InstrumentCaptureSelectionError,
+    validate_selector_pair,
+)
+
+if TYPE_CHECKING:
+    from sqlalchemy.sql.selectable import Subquery
+
+MAX_ID_LENGTH = 128
+MAX_IDEMPOTENCY_KEY_LENGTH = 256
+MAX_BUSINESS_KEY_LENGTH = 512
+MAX_PAGE_SIZE = 1_000
+MAX_PUBLICATION_RECORDS = 100_000
+MAX_SNAPSHOT_RECORDS = 100_000
+MAX_RECORD_BYTES = 256 * 1024
+MAX_BATCH_BYTES = 64 * 1024 * 1024
+MAX_METADATA_BYTES = 256 * 1024
+MAX_PAGE_BYTES = 8 * 1024 * 1024
+MAX_CURSOR_BYTES = 8_192
+_PAGE_ENVELOPE_BYTES = 16 * 1024
+_PAGE_ROW_OVERHEAD_BYTES = 1_024
+_READ_YIELD_PER = 16
+_HASH_YIELD_PER = 256
+MIN_SNAPSHOT_TTL = timedelta(seconds=1)
+MAX_SNAPSHOT_TTL = timedelta(days=7)
+_UTC = timezone.utc
+_SECRET_KEY_PARTS = (
+    "accesskey",
+    "apikey",
+    "authorization",
+    "cookie",
+    "credential",
+    "password",
+    "passwd",
+    "privatekey",
+    "secret",
+)
+_BEARER_VALUE = re.compile(r"^\s*bearer\s+\S+", re.IGNORECASE)
+_COMMON_SECRET_VALUE = re.compile(
+    r"^(?:sk-[A-Za-z0-9]{16,}|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{20,})$"
+)
+
+PUBLICATION_METADATA = MetaData()
+
+
+def _key_type(length: int) -> String:
+    """Use exact, case-sensitive, no-pad MySQL key comparisons and SQLite defaults."""
+    return String(length).with_variant(
+        VARCHAR(length, collation="utf8mb4_0900_bin"),
+        "mysql",
+    )
+
+
+def _json_storage_type() -> Text:
+    """Allow the documented bounded payloads on MySQL beyond its 64KiB TEXT cap."""
+    return Text().with_variant(MEDIUMTEXT(), "mysql")
+
+
+PUBLICATION_HEADS = Table(
+    "od_publication_heads",
+    PUBLICATION_METADATA,
+    Column("dataset_id", _key_type(MAX_ID_LENGTH), primary_key=True),
+    Column("latest_sequence", BigInteger, nullable=False),
+    Column("latest_publication_id", String(32), nullable=True),
+    Column("watermark_json", _json_storage_type(), nullable=True),
+    Column("updated_at_us", BigInteger, nullable=False),
+    CheckConstraint("latest_sequence >= 0", name="ck_od_publication_head_sequence"),
+)
+PUBLICATIONS = Table(
+    "od_publications",
+    PUBLICATION_METADATA,
+    Column("publication_id", String(32), primary_key=True),
+    Column("dataset_id", _key_type(MAX_ID_LENGTH), nullable=False),
+    Column("source_id", _key_type(MAX_ID_LENGTH), nullable=False),
+    Column("sequence", BigInteger, nullable=False),
+    Column("schema_version", String(64), nullable=False),
+    Column("semantic_version", String(64), nullable=False),
+    Column("unit", String(128), nullable=False),
+    Column("adjustment_basis", String(128), nullable=False),
+    Column("quality_json", _json_storage_type(), nullable=False),
+    Column("provenance_json", _json_storage_type(), nullable=False),
+    Column("watermark_json", _json_storage_type(), nullable=True),
+    Column("idempotency_key", _key_type(MAX_IDEMPOTENCY_KEY_LENGTH), nullable=False),
+    Column("payload_hash", String(64), nullable=False),
+    Column("record_count", Integer, nullable=False),
+    Column("published_at_us", BigInteger, nullable=False),
+    CheckConstraint("sequence > 0", name="ck_od_publication_sequence"),
+    CheckConstraint("record_count >= 0", name="ck_od_publication_record_count"),
+    Index(
+        "uq_od_publication_dataset_sequence",
+        "dataset_id",
+        "sequence",
+        unique=True,
+    ),
+    Index(
+        "uq_od_publication_dataset_idempotency",
+        "dataset_id",
+        "idempotency_key",
+        unique=True,
+    ),
+    Index("ix_od_publication_dataset_published", "dataset_id", "published_at_us"),
+)
+PUBLISHED_FACT_VERSIONS = Table(
+    "od_published_fact_versions",
+    PUBLICATION_METADATA,
+    Column("dataset_id", _key_type(MAX_ID_LENGTH), primary_key=True),
+    Column("business_key", _key_type(MAX_BUSINESS_KEY_LENGTH), primary_key=True),
+    Column("revision", Integer, primary_key=True),
+    Column(
+        "publication_id", String(32), ForeignKey("od_publications.publication_id"), nullable=False
+    ),
+    Column("publication_sequence", BigInteger, nullable=False),
+    Column("instrument_id", _key_type(MAX_ID_LENGTH), nullable=True),
+    Column("capture_id", _key_type(64), nullable=True),
+    Column("business_date", Date, nullable=True),
+    Column("event_at", String(40), nullable=True),
+    Column("observed_at", String(40), nullable=True),
+    Column("source_published_at", String(40), nullable=True),
+    Column("available_at", String(40), nullable=True),
+    Column("record_json", _json_storage_type(), nullable=False),
+    Column("record_hash", String(64), nullable=False),
+    Column("is_deleted", Boolean, nullable=False, default=False),
+    CheckConstraint("revision > 0", name="ck_od_published_fact_revision"),
+    CheckConstraint(
+        "(instrument_id IS NULL AND capture_id IS NULL) OR "
+        "(instrument_id IS NOT NULL AND capture_id IS NOT NULL)",
+        name="ck_od_fact_capture_pair",
+    ),
+    Index(
+        "ix_od_published_fact_asof",
+        "dataset_id",
+        "business_key",
+        "publication_sequence",
+        "revision",
+    ),
+    Index(
+        "ix_od_published_fact_date",
+        "dataset_id",
+        "business_date",
+        "business_key",
+    ),
+    Index(
+        "ix_od_fact_capture_read",
+        "dataset_id",
+        "instrument_id",
+        "capture_id",
+        "publication_sequence",
+    ),
+)
+SNAPSHOTS = Table(
+    "od_publication_snapshots",
+    PUBLICATION_METADATA,
+    Column("snapshot_id", String(32), primary_key=True),
+    Column("dataset_id", _key_type(MAX_ID_LENGTH), nullable=False),
+    Column(
+        "publication_id", String(32), ForeignKey("od_publications.publication_id"), nullable=False
+    ),
+    Column("schema_version", String(64), nullable=False),
+    Column("publication_sequence", BigInteger, nullable=False),
+    Column("instrument_id", _key_type(MAX_ID_LENGTH), nullable=True),
+    Column("capture_id", _key_type(64), nullable=True),
+    Column("start_date", Date, nullable=True),
+    Column("end_date", Date, nullable=True),
+    Column("page_size", Integer, nullable=False),
+    Column("access_scope", _key_type(MAX_ID_LENGTH), nullable=False),
+    Column("selection_sha256", String(64), nullable=False),
+    Column("content_hash", String(64), nullable=False),
+    Column("record_count", BigInteger, nullable=False),
+    Column("as_of_us", BigInteger, nullable=False),
+    Column("created_at_us", BigInteger, nullable=False),
+    Column("expires_at_us", BigInteger, nullable=False),
+    CheckConstraint("page_size > 0", name="ck_od_snapshot_page_size"),
+    CheckConstraint("record_count >= 0", name="ck_od_snapshot_record_count"),
+    CheckConstraint(
+        "(instrument_id IS NULL AND capture_id IS NULL) OR "
+        "(instrument_id IS NOT NULL AND capture_id IS NOT NULL)",
+        name="ck_od_snapshot_capture_pair",
+    ),
+    Index("ix_od_snapshot_expiry", "expires_at_us"),
+)
+
+
+@dataclass(frozen=True, slots=True)
+class PublishedRecordInput:
+    """One complete replacement value for a dataset business key.
+
+    ``business_date`` is a date bucket and cannot be a datetime. The three
+    timestamps preserve independent event, source-publication, observation, and
+    platform-availability semantics; none is inferred from another. Selector
+    metadata is an explicit trusted storage hint and must match the payload.
+    Payload fields alone never materialize indexed selector columns.
+    """
+
+    business_key: str
+    payload: Mapping[str, Any]
+    business_date: date | None = None
+    observed_at: datetime | None = None
+    source_published_at: datetime | None = None
+    available_at: datetime | None = None
+    event_at: datetime | None = None
+    instrument_id: str | None = None
+    capture_id: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class PublicationRecord:
+    """Immutable platform publication metadata and platform publication time."""
+
+    publication_id: str
+    dataset_id: str
+    source_id: str
+    sequence: int
+    schema_version: str
+    semantic_version: str
+    unit: str
+    adjustment_basis: str
+    quality: Mapping[str, Any]
+    provenance: Mapping[str, Any]
+    watermark: Mapping[str, Any] | None
+    idempotency_key: str
+    payload_hash: str
+    record_count: int
+    published_at: datetime
+
+    @property
+    def content_sha256(self) -> str:
+        """Expose the canonical full-publication digest in contract terminology."""
+        return self.payload_hash
+
+
+@dataclass(frozen=True, slots=True)
+class DatasetSummary:
+    """Latest published version for one dataset known to the publication store."""
+
+    dataset_id: str
+    publication_id: str
+    sequence: int
+    published_at: datetime
+    schema_version: str
+    semantic_version: str
+    record_count: int
+
+
+@dataclass(frozen=True, slots=True)
+class SnapshotRecord:
+    """A fixed publication, optional selector, ordering, scope, and expiry boundary."""
+
+    snapshot_id: str
+    dataset_id: str
+    publication_id: str
+    schema_version: str
+    publication_sequence: int
+    start_date: date | None
+    end_date: date | None
+    page_size: int
+    access_scope: str
+    selection_sha256: str
+    content_hash: str
+    record_count: int
+    created_at: datetime
+    expires_at: datetime
+    as_of: datetime
+    instrument_id: str | None = None
+    capture_id: str | None = None
+
+    @property
+    def selection_hash(self) -> str:
+        """Expose the frozen digest under its short internal name."""
+        return self.selection_sha256
+
+    @property
+    def content_sha256(self) -> str:
+        """Expose the actual scoped row-set digest in contract terminology."""
+        return self.content_hash
+
+
+@dataclass(frozen=True, slots=True)
+class PublishedRecord:
+    """One visible business-key revision at the snapshot publication boundary."""
+
+    dataset_id: str
+    business_key: str
+    revision: int
+    publication_id: str
+    publication_sequence: int
+    business_date: date | None
+    event_at: datetime | None
+    observed_at: datetime | None
+    source_published_at: datetime | None
+    available_at: datetime | None
+    payload: Mapping[str, Any]
+    record_hash: str
+
+
+@dataclass(frozen=True, slots=True)
+class PublishedPage:
+    """Stable page of published records and the next signed cursor, if any."""
+
+    records: tuple[PublishedRecord, ...]
+    next_cursor: str | None
+    snapshot: SnapshotRecord
+
+
+class PublicationConflictError(ValueError):
+    """Raised when an idempotency key is reused with changed publication input."""
+
+
+class PublicationContractConflictError(ValueError):
+    """Raised when a delta changes a dataset's source or data contract."""
+
+
+class SnapshotError(ValueError):
+    """Raised when a snapshot or cursor is malformed or does not match its scope."""
+
+
+class SnapshotExpiredError(SnapshotError):
+    """Raised when a snapshot or cursor has passed its persisted expiry time."""
+
+
+class PageSizeLimitError(ValueError):
+    """Raised instead of returning a partial page that exceeds the response budget."""
+
+
+class SnapshotSizeLimitError(ValueError):
+    """Raised when a fixed snapshot would require hashing too many visible rows."""
+
+
+def publish_in_connection(
+    connection: Connection,
+    *,
+    dataset_id: str,
+    source_id: str,
+    schema_version: str,
+    semantic_version: str,
+    unit: str,
+    adjustment_basis: str,
+    quality: Mapping[str, Any],
+    provenance: Mapping[str, Any],
+    idempotency_key: str,
+    records: Iterable[PublishedRecordInput],
+    watermark: Mapping[str, Any] | None = None,
+) -> PublicationRecord:
+    """Append a publication and fact revisions inside the caller's transaction.
+
+    Publication input is a delta: supplied business keys are replaced by a new
+    revision when their canonical content changed; keys omitted from the batch
+    remain unchanged. The caller's transaction controls atomic commit/rollback,
+    allowing a run lease/fence and run success to commit with these writes.
+
+    Args:
+        connection: Active synchronous SQLAlchemy connection.
+        dataset_id: Stable data-domain identifier.
+        source_id: Stable source/provider identifier.
+        schema_version: Version of the published record schema.
+        semantic_version: Version of field meaning and transformations.
+        unit: Native or normalized unit declaration.
+        adjustment_basis: Explicit adjustment basis, including ``none``.
+        quality: Bounded JSON quality summary for this publication.
+        provenance: Bounded JSON lineage/source summary without credentials.
+        idempotency_key: Caller-owned stable retry key within the dataset.
+        records: Complete replacement values for the supplied business keys.
+        watermark: Optional bounded watermark advanced atomically with facts.
+
+    Returns:
+        The immutable publication metadata. Exact retries return the original.
+
+    Raises:
+        PublicationConflictError: A retry key has different canonical input.
+        PublicationContractConflictError: Dataset contract metadata changed.
+        ValueError: Input is invalid, unbounded, or contains credential material.
+    """
+    if not isinstance(connection, Connection):
+        raise TypeError("connection must be a synchronous SQLAlchemy Connection")
+    dataset = _identifier(dataset_id, "dataset_id")
+    source = _identifier(source_id, "source_id")
+    schema = _label(schema_version, "schema_version", 64)
+    semantics = _label(semantic_version, "semantic_version", 64)
+    unit_value = _label(unit, "unit", 128)
+    adjustment = _label(adjustment_basis, "adjustment_basis", 128)
+    request_key = _label(idempotency_key, "idempotency_key", MAX_IDEMPOTENCY_KEY_LENGTH)
+    quality_json = _json_object(quality, "quality", MAX_METADATA_BYTES)
+    provenance_json = _json_object(provenance, "provenance", MAX_METADATA_BYTES)
+    watermark_json = (
+        _json_object(watermark, "watermark", MAX_METADATA_BYTES) if watermark is not None else None
+    )
+    normalized_records = _normalize_records(records)
+    payload = {
+        "dataset_id": dataset,
+        "source_id": source,
+        "schema_version": schema,
+        "semantic_version": semantics,
+        "unit": unit_value,
+        "adjustment_basis": adjustment,
+        "quality": json.loads(quality_json),
+        "provenance": json.loads(provenance_json),
+        "watermark": json.loads(watermark_json) if watermark_json is not None else None,
+        "records": [record["canonical"] for record in normalized_records],
+    }
+    payload_hash = _sha256(_canonical_json(payload).encode("utf-8"))
+    if connection.dialect.name == "sqlite":
+        # pysqlite may defer its physical BEGIN until the first DML statement;
+        # a SAVEPOINT issued first can otherwise survive an outer rollback.
+        # This no-op DML opens the caller's real transaction before publication.
+        connection.exec_driver_sql(
+            "UPDATE od_publication_heads SET latest_sequence = latest_sequence WHERE 1 = 0"
+        )
+    existing = (
+        connection.execute(
+            select(PUBLICATIONS).where(
+                PUBLICATIONS.c.dataset_id == dataset,
+                PUBLICATIONS.c.idempotency_key == request_key,
+            )
+        )
+        .mappings()
+        .first()
+    )
+    if existing is not None:
+        return _publication_from_row(_ensure_same_payload(existing, payload_hash))
+
+    try:
+        # A savepoint lets a uniqueness race on dataset+idempotency_key resolve
+        # to the already committed publication without aborting an outer lease
+        # transaction. All sequence/fact/head changes roll back with it.
+        with connection.begin_nested():
+            _ensure_head(connection, dataset)
+            # The earlier idempotency lookup may establish a MySQL REPEATABLE READ
+            # snapshot. Lock the head as a current read before inspecting its contract.
+            head_row = (
+                connection.execute(
+                    select(PUBLICATION_HEADS)
+                    .where(PUBLICATION_HEADS.c.dataset_id == dataset)
+                    .with_for_update()
+                )
+                .mappings()
+                .one()
+            )
+            sequence = int(head_row["latest_sequence"])
+            latest_publication_id = head_row["latest_publication_id"]
+            if latest_publication_id is not None:
+                # Keep this a locking/current read too; a plain SELECT can see stale
+                # metadata from the transaction's older consistent-read snapshot.
+                latest_publication = (
+                    connection.execute(
+                        select(PUBLICATIONS)
+                        .where(PUBLICATIONS.c.publication_id == latest_publication_id)
+                        .with_for_update()
+                    )
+                    .mappings()
+                    .one()
+                )
+                _require_compatible_publication_contract(
+                    latest_publication,
+                    source_id=source,
+                    schema_version=schema,
+                    semantic_version=semantics,
+                    unit=unit_value,
+                    adjustment_basis=adjustment,
+                    provenance=json.loads(provenance_json),
+                )
+            sequence += 1
+            now = datetime.now(_UTC)
+            now_us = _datetime_to_us(now)
+            publication_id = uuid4().hex
+            connection.execute(
+                update(PUBLICATION_HEADS)
+                .where(PUBLICATION_HEADS.c.dataset_id == dataset)
+                .values(latest_sequence=sequence, updated_at_us=now_us)
+            )
+            connection.execute(
+                insert(PUBLICATIONS).values(
+                    publication_id=publication_id,
+                    dataset_id=dataset,
+                    source_id=source,
+                    sequence=sequence,
+                    schema_version=schema,
+                    semantic_version=semantics,
+                    unit=unit_value,
+                    adjustment_basis=adjustment,
+                    quality_json=quality_json,
+                    provenance_json=provenance_json,
+                    watermark_json=watermark_json,
+                    idempotency_key=request_key,
+                    payload_hash=payload_hash,
+                    record_count=len(normalized_records),
+                    published_at_us=now_us,
+                )
+            )
+            for record in normalized_records:
+                _append_changed_revision(connection, dataset, publication_id, sequence, record)
+            connection.execute(
+                update(PUBLICATION_HEADS)
+                .where(PUBLICATION_HEADS.c.dataset_id == dataset)
+                .values(
+                    latest_publication_id=publication_id,
+                    watermark_json=watermark_json,
+                    updated_at_us=now_us,
+                )
+            )
+    except IntegrityError:
+        raced = (
+            connection.execute(
+                select(PUBLICATIONS)
+                .where(
+                    PUBLICATIONS.c.dataset_id == dataset,
+                    PUBLICATIONS.c.idempotency_key == request_key,
+                )
+                .with_for_update()
+            )
+            .mappings()
+            .first()
+        )
+        if raced is None:
+            raise
+        return _publication_from_row(_ensure_same_payload(raced, payload_hash))
+
+    row = (
+        connection.execute(
+            select(PUBLICATIONS).where(PUBLICATIONS.c.publication_id == publication_id)
+        )
+        .mappings()
+        .one()
+    )
+    return _publication_from_row(row)
+
+
+class PublicationStore:
+    """Read and publish immutable versions through an explicit SQLAlchemy engine."""
+
+    def __init__(self, engine: Engine, *, cursor_signing_key: bytes) -> None:
+        """Bind an engine and mandatory 256-bit-or-stronger cursor key.
+
+        Args:
+            engine: Synchronous SQLAlchemy engine whose schema was migrated.
+            cursor_signing_key: Secret key supplied by the deployment environment.
+
+        Raises:
+            TypeError: The engine or key type is invalid.
+            ValueError: The key is shorter than 32 bytes.
+        """
+        if not isinstance(engine, Engine):
+            raise TypeError("engine must be a synchronous SQLAlchemy Engine")
+        if not isinstance(cursor_signing_key, bytes):
+            raise TypeError("cursor_signing_key must be bytes")
+        if len(cursor_signing_key) < 32:
+            raise ValueError("cursor_signing_key must contain at least 32 bytes")
+        self._engine = engine
+        self._cursor_signing_key = bytes(cursor_signing_key)
+
+    def publish(
+        self,
+        *,
+        dataset_id: str,
+        source_id: str,
+        schema_version: str,
+        semantic_version: str,
+        unit: str,
+        adjustment_basis: str,
+        quality: Mapping[str, Any],
+        provenance: Mapping[str, Any],
+        idempotency_key: str,
+        records: Iterable[PublishedRecordInput],
+        watermark: Mapping[str, Any] | None = None,
+    ) -> PublicationRecord:
+        """Publish a delta and watermark in one engine-owned transaction."""
+        with self._engine.connect() as connection:
+            transaction = connection.begin()
+            if self._engine.dialect.name == "sqlite":
+                # Reserve the SQLite writer before reading the head so separate
+                # engine instances cannot both advance one dataset sequence.
+                connection.exec_driver_sql("BEGIN IMMEDIATE")
+            try:
+                publication = publish_in_connection(
+                    connection,
+                    dataset_id=dataset_id,
+                    source_id=source_id,
+                    schema_version=schema_version,
+                    semantic_version=semantic_version,
+                    unit=unit,
+                    adjustment_basis=adjustment_basis,
+                    quality=quality,
+                    provenance=provenance,
+                    idempotency_key=idempotency_key,
+                    records=records,
+                    watermark=watermark,
+                )
+            except Exception:
+                transaction.rollback()
+                raise
+            else:
+                transaction.commit()
+                return publication
+
+    def list_datasets(self, *, limit: int = 1_000) -> tuple[DatasetSummary, ...]:
+        """Return current published dataset heads, excluding empty heads."""
+        _page_limit(limit, "limit", max_value=10_000)
+        statement = (
+            select(PUBLICATIONS)
+            .join(
+                PUBLICATION_HEADS,
+                and_(
+                    PUBLICATION_HEADS.c.dataset_id == PUBLICATIONS.c.dataset_id,
+                    PUBLICATION_HEADS.c.latest_publication_id == PUBLICATIONS.c.publication_id,
+                ),
+            )
+            .order_by(PUBLICATIONS.c.dataset_id)
+            .limit(limit)
+        )
+        with self._engine.connect() as connection:
+            rows = connection.execute(statement).mappings().all()
+        return tuple(
+            DatasetSummary(
+                dataset_id=row["dataset_id"],
+                publication_id=row["publication_id"],
+                sequence=row["sequence"],
+                published_at=_us_to_datetime(row["published_at_us"]),
+                schema_version=row["schema_version"],
+                semantic_version=row["semantic_version"],
+                record_count=row["record_count"],
+            )
+            for row in rows
+        )
+
+    def list_publications(
+        self, dataset_id: str, *, limit: int = 100, before_sequence: int | None = None
+    ) -> tuple[PublicationRecord, ...]:
+        """List immutable publication metadata newest first for one dataset."""
+        dataset = _identifier(dataset_id, "dataset_id")
+        _page_limit(limit, "limit", max_value=1_000)
+        statement = select(PUBLICATIONS).where(PUBLICATIONS.c.dataset_id == dataset)
+        if before_sequence is not None:
+            if type(before_sequence) is not int or before_sequence < 1:
+                raise ValueError("before_sequence must be a positive integer")
+            statement = statement.where(PUBLICATIONS.c.sequence < before_sequence)
+        statement = statement.order_by(PUBLICATIONS.c.sequence.desc()).limit(limit)
+        with self._engine.connect() as connection:
+            rows = connection.execute(statement).mappings().all()
+        return tuple(_publication_from_row(row) for row in rows)
+
+    def get_publication(self, publication_id: str) -> PublicationRecord | None:
+        """Return immutable publication metadata by identifier, if it exists."""
+        identifier = _hex_identifier(publication_id, "publication_id")
+        with self._engine.connect() as connection:
+            row = (
+                connection.execute(
+                    select(PUBLICATIONS).where(PUBLICATIONS.c.publication_id == identifier)
+                )
+                .mappings()
+                .first()
+            )
+        return _publication_from_row(row) if row is not None else None
+
+    def create_snapshot(
+        self,
+        dataset_id: str,
+        *,
+        publication_id: str | None = None,
+        start_date: date | None = None,
+        end_date: date | None = None,
+        page_size: int = 100,
+        access_scope: str = "default",
+        ttl: timedelta = timedelta(hours=24),
+        instrument_id: str | None = None,
+        capture_id: str | None = None,
+    ) -> SnapshotRecord:
+        """Pin a publication and compute a content hash for its scoped subset.
+
+        The date window is half-open: ``start_date <= business_date < end_date``.
+        Snapshot content hashing streams ordered key/revision/row-hash tuples,
+        so the hash covers the actual subset rather than publication metadata.
+        """
+        dataset = _identifier(dataset_id, "dataset_id")
+        selection = _validated_capture_selection(
+            instrument_id, capture_id, error_type=SnapshotError
+        )
+        start, end = _validate_date_window(start_date, end_date)
+        page = _page_limit(page_size, "page_size", max_value=MAX_PAGE_SIZE)
+        scope = _label(access_scope, "access_scope", MAX_ID_LENGTH)
+        ttl_us = _ttl_to_us(ttl)
+        snapshot_id = uuid4().hex
+        now_us = _datetime_to_us(datetime.now(_UTC))
+        expires_us = now_us + ttl_us
+        with self._engine.begin() as connection:
+            if publication_id is None:
+                row = (
+                    connection.execute(
+                        select(PUBLICATIONS)
+                        .join(
+                            PUBLICATION_HEADS,
+                            and_(
+                                PUBLICATION_HEADS.c.dataset_id == PUBLICATIONS.c.dataset_id,
+                                PUBLICATION_HEADS.c.latest_publication_id
+                                == PUBLICATIONS.c.publication_id,
+                            ),
+                        )
+                        .where(PUBLICATIONS.c.dataset_id == dataset)
+                    )
+                    .mappings()
+                    .first()
+                )
+            else:
+                publication_key = _hex_identifier(publication_id, "publication_id")
+                row = (
+                    connection.execute(
+                        select(PUBLICATIONS).where(
+                            PUBLICATIONS.c.dataset_id == dataset,
+                            PUBLICATIONS.c.publication_id == publication_key,
+                        )
+                    )
+                    .mappings()
+                    .first()
+                )
+            if row is None:
+                raise SnapshotError("dataset has no matching published version")
+            publication = _publication_from_row(row)
+            digest, record_count = _snapshot_content_hash(
+                connection,
+                dataset,
+                publication,
+                start,
+                end,
+                scope,
+                page,
+                instrument_id=selection.instrument_id if selection is not None else None,
+                capture_id=selection.capture_id if selection is not None else None,
+            )
+            selection_hash = _snapshot_selection_hash(
+                dataset,
+                publication,
+                start,
+                end,
+                scope,
+                page,
+                instrument_id=selection.instrument_id if selection is not None else None,
+                capture_id=selection.capture_id if selection is not None else None,
+            )
+            connection.execute(
+                insert(SNAPSHOTS).values(
+                    snapshot_id=snapshot_id,
+                    dataset_id=dataset,
+                    publication_id=publication.publication_id,
+                    schema_version=publication.schema_version,
+                    publication_sequence=publication.sequence,
+                    instrument_id=selection.instrument_id if selection is not None else None,
+                    capture_id=selection.capture_id if selection is not None else None,
+                    start_date=start,
+                    end_date=end,
+                    page_size=page,
+                    access_scope=scope,
+                    selection_sha256=selection_hash,
+                    content_hash=digest,
+                    record_count=record_count,
+                    as_of_us=_datetime_to_us(publication.published_at),
+                    created_at_us=now_us,
+                    expires_at_us=expires_us,
+                )
+            )
+            snapshot_row = (
+                connection.execute(select(SNAPSHOTS).where(SNAPSHOTS.c.snapshot_id == snapshot_id))
+                .mappings()
+                .one()
+            )
+        return _snapshot_from_row(snapshot_row)
+
+    def get_snapshot(
+        self, snapshot_id: str, *, access_scope: str = "default"
+    ) -> SnapshotRecord | None:
+        """Read a snapshot within its access scope, raising when it has expired."""
+        snapshot_key = _hex_identifier(snapshot_id, "snapshot_id")
+        scope = _label(access_scope, "access_scope", MAX_ID_LENGTH)
+        with self._engine.connect() as connection:
+            row = (
+                connection.execute(
+                    select(SNAPSHOTS).where(
+                        SNAPSHOTS.c.snapshot_id == snapshot_key,
+                        SNAPSHOTS.c.access_scope == scope,
+                    )
+                )
+                .mappings()
+                .first()
+            )
+        if row is None:
+            return None
+        snapshot = _snapshot_from_row(row)
+        _require_unexpired(snapshot)
+        return snapshot
+
+    def read_page(
+        self,
+        snapshot_id: str,
+        *,
+        cursor: str | None = None,
+        access_scope: str = "default",
+    ) -> PublishedPage:
+        """Read one stable page from published rows at the snapshot boundary."""
+        snapshot = self.get_snapshot(snapshot_id, access_scope=access_scope)
+        if snapshot is None:
+            raise SnapshotError("snapshot does not exist in the requested scope")
+        cursor_position: tuple[date | None, str] | None = None
+        if cursor is not None:
+            cursor_position = self._decode_cursor(cursor, snapshot)
+        ranked = _ranked_visible_facts(snapshot)
+        statement = select(ranked).where(ranked.c.row_number == 1, ranked.c.is_deleted.is_(False))
+        if snapshot.start_date is not None:
+            statement = statement.where(ranked.c.business_date >= snapshot.start_date)
+        if snapshot.end_date is not None:
+            statement = statement.where(ranked.c.business_date < snapshot.end_date)
+        if cursor_position is not None:
+            last_date, last_key = cursor_position
+            if last_date is None:
+                after = and_(ranked.c.business_date.is_(None), ranked.c.business_key > last_key)
+            else:
+                after = or_(
+                    ranked.c.business_date > last_date,
+                    and_(ranked.c.business_date == last_date, ranked.c.business_key > last_key),
+                    ranked.c.business_date.is_(None),
+                )
+            statement = statement.where(after)
+        nulls_last = case((ranked.c.business_date.is_(None), 1), else_=0)
+        statement = statement.order_by(
+            nulls_last,
+            ranked.c.business_date,
+            ranked.c.business_key,
+        ).limit(snapshot.page_size + 1)
+        records_list: list[PublishedRecord] = []
+        response_bytes = _PAGE_ENVELOPE_BYTES
+        has_more = False
+        with self._engine.connect() as connection:
+            result = connection.execute(
+                statement.execution_options(stream_results=True, yield_per=_READ_YIELD_PER)
+            ).mappings()
+            try:
+                for row in result:
+                    if len(records_list) >= snapshot.page_size:
+                        has_more = True
+                        break
+                    response_bytes += _published_record_response_size(row)
+                    if response_bytes > MAX_PAGE_BYTES:
+                        raise PageSizeLimitError(
+                            f"page exceeds the {MAX_PAGE_BYTES:,}-byte response limit"
+                        )
+                    records_list.append(_published_record_from_row(row))
+            finally:
+                result.close()
+        records = tuple(records_list)
+        next_cursor = None
+        if has_more and records:
+            last = records[-1]
+            next_cursor = self._encode_cursor(snapshot, last.business_date, last.business_key)
+        return PublishedPage(records=records, next_cursor=next_cursor, snapshot=snapshot)
+
+    def _encode_cursor(
+        self, snapshot: SnapshotRecord, last_date: date | None, last_key: str
+    ) -> str:
+        """Create an authenticated continuation token for one snapshot page."""
+        selection = _validated_capture_selection(
+            snapshot.instrument_id,
+            snapshot.capture_id,
+            error_type=SnapshotError,
+        )
+        payload = {
+            "version": 2 if selection is not None else 1,
+            "snapshot_id": snapshot.snapshot_id,
+            "dataset_id": snapshot.dataset_id,
+            "publication_id": snapshot.publication_id,
+            "schema_version": snapshot.schema_version,
+            "publication_sequence": snapshot.publication_sequence,
+            "start_date": snapshot.start_date.isoformat() if snapshot.start_date else None,
+            "end_date": snapshot.end_date.isoformat() if snapshot.end_date else None,
+            "page_size": snapshot.page_size,
+            "access_scope": snapshot.access_scope,
+            "selection_sha256": snapshot.selection_sha256,
+            "as_of_us": _datetime_to_us(snapshot.as_of),
+            "expires_at_us": _datetime_to_us(snapshot.expires_at),
+            "sort": "business_date_asc_nulls_last_business_key_asc",
+            "last_business_date": last_date.isoformat() if last_date else None,
+            "last_business_key": last_key,
+        }
+        if selection is not None:
+            payload["instrument_id"] = selection.instrument_id
+            payload["capture_id"] = selection.capture_id
+        encoded = _base64url(_canonical_json(payload).encode("utf-8"))
+        signature = _base64url(
+            hmac.new(self._cursor_signing_key, encoded.encode("ascii"), hashlib.sha256).digest()
+        )
+        token = f"{encoded}.{signature}"
+        if len(token) > MAX_CURSOR_BYTES:
+            raise SnapshotError("cursor exceeds its size limit")
+        return token
+
+    def _decode_cursor(self, token: str, snapshot: SnapshotRecord) -> tuple[date | None, str]:
+        """Verify cursor authentication, bindings, expiry, and continuation key."""
+        if not isinstance(token, str) or not token or len(token) > MAX_CURSOR_BYTES:
+            raise SnapshotError("cursor is malformed or exceeds its size limit")
+        pieces = token.split(".")
+        if len(pieces) != 2:
+            raise SnapshotError("cursor is malformed")
+        encoded, signature = pieces
+        base64url_characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+        if (
+            not encoded
+            or len(signature) != 43
+            or any(char not in base64url_characters for char in encoded)
+            or any(char not in base64url_characters for char in signature)
+        ):
+            raise SnapshotError("cursor encoding is invalid")
+        expected = _base64url(
+            hmac.new(self._cursor_signing_key, encoded.encode("ascii"), hashlib.sha256).digest()
+        )
+        if not hmac.compare_digest(signature, expected):
+            raise SnapshotError("cursor signature is invalid")
+        try:
+            raw = _base64url_decode(encoded)
+            payload = json.loads(raw.decode("utf-8"), object_pairs_hook=_reject_duplicate_keys)
+        except (ValueError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise SnapshotError("cursor payload is invalid") from exc
+        if not isinstance(payload, dict):
+            raise SnapshotError("cursor payload is invalid")
+        selection = _validated_capture_selection(
+            snapshot.instrument_id,
+            snapshot.capture_id,
+            error_type=SnapshotError,
+        )
+        expected_binding = {
+            "version": 2 if selection is not None else 1,
+            "snapshot_id": snapshot.snapshot_id,
+            "dataset_id": snapshot.dataset_id,
+            "publication_id": snapshot.publication_id,
+            "schema_version": snapshot.schema_version,
+            "publication_sequence": snapshot.publication_sequence,
+            "start_date": snapshot.start_date.isoformat() if snapshot.start_date else None,
+            "end_date": snapshot.end_date.isoformat() if snapshot.end_date else None,
+            "page_size": snapshot.page_size,
+            "access_scope": snapshot.access_scope,
+            "selection_sha256": snapshot.selection_sha256,
+            "as_of_us": _datetime_to_us(snapshot.as_of),
+            "expires_at_us": _datetime_to_us(snapshot.expires_at),
+            "sort": "business_date_asc_nulls_last_business_key_asc",
+        }
+        if selection is not None:
+            expected_binding["instrument_id"] = selection.instrument_id
+            expected_binding["capture_id"] = selection.capture_id
+        if any(payload.get(key) != value for key, value in expected_binding.items()):
+            raise SnapshotError("cursor belongs to a different snapshot, window, or page contract")
+        last_key = payload.get("last_business_key")
+        if not isinstance(last_key, str) or not last_key:
+            raise SnapshotError("cursor continuation key is invalid")
+        raw_date = payload.get("last_business_date")
+        try:
+            last_date = date.fromisoformat(raw_date) if raw_date is not None else None
+        except (TypeError, ValueError) as exc:
+            raise SnapshotError("cursor business date is invalid") from exc
+        if _datetime_to_us(datetime.now(_UTC)) >= _datetime_to_us(snapshot.expires_at):
+            raise SnapshotExpiredError("snapshot cursor has expired")
+        return last_date, last_key
+
+
+def _ranked_visible_facts(snapshot: SnapshotRecord) -> Subquery:
+    """Build a latest-revision-as-of query shared by pages and hash snapshots."""
+    selection = _validated_capture_selection(
+        snapshot.instrument_id,
+        snapshot.capture_id,
+        error_type=SnapshotError,
+    )
+    predicates = [
+        PUBLISHED_FACT_VERSIONS.c.dataset_id == snapshot.dataset_id,
+        PUBLISHED_FACT_VERSIONS.c.publication_sequence <= snapshot.publication_sequence,
+    ]
+    if selection is not None:
+        predicates.extend(
+            (
+                PUBLISHED_FACT_VERSIONS.c.instrument_id == selection.instrument_id,
+                PUBLISHED_FACT_VERSIONS.c.capture_id == selection.capture_id,
+            )
+        )
+    return (
+        select(
+            PUBLISHED_FACT_VERSIONS.c.dataset_id,
+            PUBLISHED_FACT_VERSIONS.c.business_key,
+            PUBLISHED_FACT_VERSIONS.c.revision,
+            PUBLISHED_FACT_VERSIONS.c.publication_id,
+            PUBLISHED_FACT_VERSIONS.c.publication_sequence,
+            PUBLISHED_FACT_VERSIONS.c.instrument_id,
+            PUBLISHED_FACT_VERSIONS.c.capture_id,
+            PUBLISHED_FACT_VERSIONS.c.business_date,
+            PUBLISHED_FACT_VERSIONS.c.event_at,
+            PUBLISHED_FACT_VERSIONS.c.observed_at,
+            PUBLISHED_FACT_VERSIONS.c.source_published_at,
+            PUBLISHED_FACT_VERSIONS.c.available_at,
+            PUBLISHED_FACT_VERSIONS.c.record_json,
+            PUBLISHED_FACT_VERSIONS.c.record_hash,
+            PUBLISHED_FACT_VERSIONS.c.is_deleted,
+            func.row_number()
+            .over(
+                partition_by=(
+                    PUBLISHED_FACT_VERSIONS.c.dataset_id,
+                    PUBLISHED_FACT_VERSIONS.c.business_key,
+                ),
+                order_by=(
+                    PUBLISHED_FACT_VERSIONS.c.publication_sequence.desc(),
+                    PUBLISHED_FACT_VERSIONS.c.revision.desc(),
+                ),
+            )
+            .label("row_number"),
+        )
+        .where(*predicates)
+        .subquery("od_snapshot_latest_revision")
+    )
+
+
+def _snapshot_content_hash(
+    connection: Connection,
+    dataset_id: str,
+    publication: PublicationRecord,
+    start: date | None,
+    end: date | None,
+    access_scope: str,
+    page_size: int,
+    *,
+    instrument_id: str | None = None,
+    capture_id: str | None = None,
+) -> tuple[str, int]:
+    """Hash every visible key/revision in a scoped half-open window in order."""
+    temporary = SnapshotRecord(
+        snapshot_id="0" * 32,
+        dataset_id=dataset_id,
+        publication_id=publication.publication_id,
+        schema_version=publication.schema_version,
+        publication_sequence=publication.sequence,
+        start_date=start,
+        end_date=end,
+        page_size=page_size,
+        access_scope=access_scope,
+        selection_sha256=_snapshot_selection_hash(
+            dataset_id,
+            publication,
+            start,
+            end,
+            access_scope,
+            page_size,
+            instrument_id=instrument_id,
+            capture_id=capture_id,
+        ),
+        content_hash="0" * 64,
+        record_count=0,
+        created_at=datetime.now(_UTC),
+        expires_at=datetime.now(_UTC) + timedelta(seconds=1),
+        as_of=publication.published_at,
+        instrument_id=instrument_id,
+        capture_id=capture_id,
+    )
+    ranked = _ranked_visible_facts(temporary)
+    statement = select(
+        ranked.c.business_key,
+        ranked.c.revision,
+        ranked.c.business_date,
+        ranked.c.record_hash,
+    ).where(ranked.c.row_number == 1, ranked.c.is_deleted.is_(False))
+    if start is not None:
+        statement = statement.where(ranked.c.business_date >= start)
+    if end is not None:
+        statement = statement.where(ranked.c.business_date < end)
+    statement = statement.order_by(
+        case((ranked.c.business_date.is_(None), 1), else_=0),
+        ranked.c.business_date,
+        ranked.c.business_key,
+    )
+    digest = hashlib.sha256()
+    header = {
+        "dataset_id": dataset_id,
+        "publication_id": publication.publication_id,
+        "publication_sequence": publication.sequence,
+        "start_date": start.isoformat() if start else None,
+        "end_date": end.isoformat() if end else None,
+        "access_scope": access_scope,
+        "page_size": page_size,
+        "sort": "business_date_asc_nulls_last_business_key_asc",
+    }
+    header["selection_sha256"] = _snapshot_selection_hash(
+        dataset_id,
+        publication,
+        start,
+        end,
+        access_scope,
+        page_size,
+        instrument_id=instrument_id,
+        capture_id=capture_id,
+    )
+    digest.update(_canonical_json(header).encode("utf-8"))
+    digest.update(b"\n")
+    count = 0
+    result = connection.execute(
+        statement.execution_options(stream_results=True, yield_per=_HASH_YIELD_PER)
+    ).mappings()
+    try:
+        for row in result:
+            if count >= MAX_SNAPSHOT_RECORDS:
+                raise SnapshotSizeLimitError(
+                    f"snapshot exceeds the {MAX_SNAPSHOT_RECORDS:,}-record limit"
+                )
+            item = {
+                "business_key": row["business_key"],
+                "revision": row["revision"],
+                "business_date": (
+                    row["business_date"].isoformat() if row["business_date"] else None
+                ),
+                "record_hash": row["record_hash"],
+            }
+            digest.update(_canonical_json(item).encode("utf-8"))
+            digest.update(b"\n")
+            count += 1
+    finally:
+        result.close()
+    return digest.hexdigest(), count
+
+
+def _published_record_response_size(row: RowMapping) -> int:
+    """Conservatively estimate one serialized API row without decoding its payload."""
+    record_json = row["record_json"]
+    if not isinstance(record_json, str):
+        raise ValueError("stored record_json must be text")
+    payload_bytes = _json_text_ascii_size_upper_bound(record_json)
+    metadata = {
+        "dataset_id": row["dataset_id"],
+        "business_key": row["business_key"],
+        "revision": row["revision"],
+        "publication_id": row["publication_id"],
+        "publication_sequence": row["publication_sequence"],
+        "business_date": row["business_date"].isoformat() if row["business_date"] else None,
+        "event_at": _timestamp_output(row["event_at"]),
+        "observed_at": _timestamp_output(row["observed_at"]),
+        "source_published_at": _timestamp_output(row["source_published_at"]),
+        "available_at": _timestamp_output(row["available_at"]),
+        "payload": None,
+        "record_hash": row["record_hash"],
+    }
+    metadata_json = _canonical_json(metadata)
+    placeholder = '"payload":null'
+    if placeholder not in metadata_json:
+        raise ValueError("could not estimate serialized record metadata")
+    metadata_bytes = (
+        _json_text_ascii_size_upper_bound(metadata_json) - len(placeholder) + len('"payload":')
+    )
+    return payload_bytes + metadata_bytes + _PAGE_ROW_OVERHEAD_BYTES
+
+
+def _json_text_ascii_size_upper_bound(value: str) -> int:
+    """Bound compact JSON bytes even if an API encoder escapes non-ASCII text."""
+    return sum(1 if ord(char) < 128 else 6 if ord(char) <= 0xFFFF else 12 for char in value)
+
+
+def _timestamp_output(value: str | None) -> str | None:
+    """Match the public datetime ISO representation used by JSON encoders."""
+    parsed = _parse_timestamp(value)
+    return parsed.isoformat() if parsed is not None else None
+
+
+def _snapshot_selection_hash(
+    dataset_id: str,
+    publication: PublicationRecord,
+    start: date | None,
+    end: date | None,
+    access_scope: str,
+    page_size: int,
+    *,
+    instrument_id: str | None = None,
+    capture_id: str | None = None,
+) -> str:
+    """Hash the immutable selection semantics, including source/schema identity."""
+    selection = {
+        "dataset_id": dataset_id,
+        "source_id": publication.source_id,
+        "publication_id": publication.publication_id,
+        "publication_sequence": publication.sequence,
+        "schema_version": publication.schema_version,
+        "semantic_version": publication.semantic_version,
+        "as_of": publication.published_at.isoformat(),
+        "start_date": start.isoformat() if start else None,
+        "end_date": end.isoformat() if end else None,
+        "access_scope": access_scope,
+        "page_size": page_size,
+        "sort": "business_date_asc_nulls_last_business_key_asc",
+    }
+    selector = _validated_capture_selection(
+        instrument_id,
+        capture_id,
+        error_type=SnapshotError,
+    )
+    if selector is not None:
+        selection.update(
+            {
+                "selection_version": 2,
+                "instrument_id": selector.instrument_id,
+                "capture_id": selector.capture_id,
+            }
+        )
+    return _sha256(_canonical_json(selection).encode("utf-8"))
+
+
+def _ensure_head(connection: Connection, dataset_id: str) -> None:
+    """Create an empty sequence head safely within a nested savepoint."""
+    found = connection.execute(
+        select(PUBLICATION_HEADS.c.dataset_id).where(PUBLICATION_HEADS.c.dataset_id == dataset_id)
+    ).scalar_one_or_none()
+    if found is not None:
+        return
+    try:
+        with connection.begin_nested():
+            connection.execute(
+                insert(PUBLICATION_HEADS).values(
+                    dataset_id=dataset_id,
+                    latest_sequence=0,
+                    latest_publication_id=None,
+                    watermark_json=None,
+                    updated_at_us=_datetime_to_us(datetime.now(_UTC)),
+                )
+            )
+    except IntegrityError:
+        # A concurrent publisher created the same head; continue under its row.
+        return
+
+
+def _append_changed_revision(
+    connection: Connection,
+    dataset_id: str,
+    publication_id: str,
+    sequence: int,
+    record: dict[str, Any],
+) -> None:
+    """Append one business-key revision only when canonical content changed."""
+    existing = (
+        connection.execute(
+            select(PUBLISHED_FACT_VERSIONS)
+            .where(
+                PUBLISHED_FACT_VERSIONS.c.dataset_id == dataset_id,
+                PUBLISHED_FACT_VERSIONS.c.business_key == record["business_key"],
+            )
+            .order_by(
+                PUBLISHED_FACT_VERSIONS.c.publication_sequence.desc(),
+                PUBLISHED_FACT_VERSIONS.c.revision.desc(),
+            )
+            .limit(1)
+            .with_for_update()
+        )
+        .mappings()
+        .first()
+    )
+    if existing is not None and (
+        existing["instrument_id"],
+        existing["capture_id"],
+    ) != (record["instrument_id"], record["capture_id"]):
+        raise PublicationContractConflictError(
+            "fact selector metadata is immutable for each business key"
+        )
+    if existing is not None and existing["record_hash"] == record["record_hash"]:
+        return
+    revision = int(existing["revision"]) + 1 if existing is not None else 1
+    connection.execute(
+        insert(PUBLISHED_FACT_VERSIONS).values(
+            dataset_id=dataset_id,
+            business_key=record["business_key"],
+            revision=revision,
+            publication_id=publication_id,
+            publication_sequence=sequence,
+            instrument_id=record["instrument_id"],
+            capture_id=record["capture_id"],
+            business_date=record["business_date"],
+            event_at=record["event_at"],
+            observed_at=record["observed_at"],
+            source_published_at=record["source_published_at"],
+            available_at=record["available_at"],
+            record_json=record["record_json"],
+            record_hash=record["record_hash"],
+            is_deleted=False,
+        )
+    )
+
+
+def _validated_capture_selection(
+    instrument_id: object | None,
+    capture_id: object | None,
+    *,
+    error_type: type[ValueError] = ValueError,
+) -> InstrumentCaptureSelection | None:
+    """Validate one paired storage selector with a caller-safe exception type."""
+    try:
+        return validate_selector_pair(instrument_id=instrument_id, capture_id=capture_id)
+    except InstrumentCaptureSelectionError as exc:
+        raise error_type(str(exc)) from None
+
+
+def _normalize_records(records: Iterable[PublishedRecordInput]) -> list[dict[str, Any]]:
+    """Validate, canonicalize, and bound one replacement-record batch."""
+    if isinstance(records, (str, bytes, Mapping)):
+        raise ValueError("records must be an iterable of PublishedRecordInput values")
+    try:
+        iterator = iter(records)
+    except TypeError as exc:
+        raise ValueError("records must be iterable") from exc
+    normalized: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    total_bytes = 0
+    for index, item in enumerate(iterator):
+        if index >= MAX_PUBLICATION_RECORDS:
+            raise ValueError(f"publication exceeds {MAX_PUBLICATION_RECORDS:,} records")
+        if not isinstance(item, PublishedRecordInput):
+            raise ValueError(f"records[{index}] must be PublishedRecordInput")
+        business_key = _label(
+            item.business_key, f"records[{index}].business_key", MAX_BUSINESS_KEY_LENGTH
+        )
+        if business_key in seen:
+            raise ValueError(f"duplicate business_key in publication: {business_key}")
+        seen.add(business_key)
+        if item.business_date is not None and (
+            isinstance(item.business_date, datetime) or not isinstance(item.business_date, date)
+        ):
+            raise ValueError(f"records[{index}].business_date must be datetime.date")
+        selection = _validated_capture_selection(item.instrument_id, item.capture_id)
+        payload_json = _json_object(item.payload, f"records[{index}].payload", MAX_RECORD_BYTES)
+        payload = json.loads(payload_json)
+        if selection is not None and (
+            payload.get("instrument_id") != selection.instrument_id
+            or payload.get("capture_id") != selection.capture_id
+        ):
+            raise ValueError(f"records[{index}] selector metadata does not match its payload")
+        observed_at = _timestamp(item.observed_at, f"records[{index}].observed_at")
+        source_published_at = _timestamp(
+            item.source_published_at, f"records[{index}].source_published_at"
+        )
+        available_at = _timestamp(item.available_at, f"records[{index}].available_at")
+        event_at = _timestamp(item.event_at, f"records[{index}].event_at")
+        canonical = {
+            "business_key": business_key,
+            "business_date": item.business_date.isoformat() if item.business_date else None,
+            "event_at": event_at,
+            "observed_at": observed_at,
+            "source_published_at": source_published_at,
+            "available_at": available_at,
+            "payload": payload,
+        }
+        if selection is not None:
+            canonical["selection"] = {
+                "instrument_id": selection.instrument_id,
+                "capture_id": selection.capture_id,
+            }
+        record_hash = _sha256(_canonical_json(canonical).encode("utf-8"))
+        size = len(payload_json.encode("utf-8")) + len(business_key.encode("utf-8")) + 256
+        total_bytes += size
+        if size > MAX_RECORD_BYTES:
+            raise ValueError(f"records[{index}] exceeds the {MAX_RECORD_BYTES:,}-byte limit")
+        if total_bytes > MAX_BATCH_BYTES:
+            raise ValueError(f"publication exceeds the {MAX_BATCH_BYTES:,}-byte batch limit")
+        normalized.append(
+            {
+                "business_key": business_key,
+                "business_date": item.business_date,
+                "event_at": event_at,
+                "observed_at": observed_at,
+                "source_published_at": source_published_at,
+                "available_at": available_at,
+                "instrument_id": selection.instrument_id if selection is not None else None,
+                "capture_id": selection.capture_id if selection is not None else None,
+                "record_json": payload_json,
+                "record_hash": record_hash,
+                "canonical": canonical,
+            }
+        )
+    normalized.sort(key=lambda record: record["business_key"])
+    return normalized
+
+
+def _json_object(value: Mapping[str, Any], name: str, maximum_bytes: int) -> str:
+    """Validate and canonically serialize bounded credential-free JSON object."""
+    if not isinstance(value, Mapping):
+        raise ValueError(f"{name} must be a JSON object")
+    copied = _validate_json(value, name, depth=0, node_count=[0], active=set())
+    encoded = _canonical_json(copied)
+    if len(encoded.encode("utf-8")) > maximum_bytes:
+        raise ValueError(f"{name} exceeds the {maximum_bytes:,}-byte limit")
+    return encoded
+
+
+def _validate_json(
+    value: object,
+    path: str,
+    *,
+    depth: int,
+    node_count: list[int],
+    active: set[int],
+) -> object:
+    """Copy only bounded JSON values, rejecting non-finite and secret-like data."""
+    node_count[0] += 1
+    if node_count[0] > 200_000:
+        raise ValueError("JSON input exceeds the 200,000-node limit")
+    if depth > 16:
+        raise ValueError(f"JSON input at {path} exceeds the maximum depth")
+    if value is None or type(value) in {bool, int}:
+        return value
+    if type(value) is float:
+        if not math.isfinite(value):
+            raise ValueError(f"JSON number at {path} must be finite")
+        return value
+    if isinstance(value, str):
+        if len(value) > MAX_METADATA_BYTES or any(ord(char) < 32 for char in value):
+            raise ValueError(f"JSON string at {path} is too long or contains control characters")
+        if _BEARER_VALUE.match(value) or _COMMON_SECRET_VALUE.fullmatch(value):
+            raise ValueError(f"secret-like value is not allowed at {path}")
+        return value
+    if isinstance(value, Mapping):
+        identity = id(value)
+        if identity in active:
+            raise ValueError(f"cyclic JSON object at {path}")
+        if len(value) > 10_000:
+            raise ValueError(f"JSON object at {path} exceeds the 10,000-item limit")
+        active.add(identity)
+        output: dict[str, Any] = {}
+        for key, child in value.items():
+            if not isinstance(key, str) or not key or len(key) > 256:
+                raise ValueError(f"JSON object key at {path} must be a bounded nonempty string")
+            normalized = re.sub(r"[^a-z0-9]", "", key.lower())
+            if any(part in normalized for part in _SECRET_KEY_PARTS):
+                raise ValueError(f"credential-like field is not allowed at {path}.{key}")
+            output[key] = _validate_json(
+                child,
+                f"{path}.{key}",
+                depth=depth + 1,
+                node_count=node_count,
+                active=active,
+            )
+        active.remove(identity)
+        return output
+    if isinstance(value, (list, tuple)):
+        identity = id(value)
+        if identity in active:
+            raise ValueError(f"cyclic JSON array at {path}")
+        if len(value) > 10_000:
+            raise ValueError(f"JSON array at {path} exceeds the 10,000-item limit")
+        active.add(identity)
+        array_output = [
+            _validate_json(
+                child,
+                f"{path}[{index}]",
+                depth=depth + 1,
+                node_count=node_count,
+                active=active,
+            )
+            for index, child in enumerate(value)
+        ]
+        active.remove(identity)
+        return array_output
+    raise ValueError(f"{path} contains non-JSON value {type(value).__name__}")
+
+
+def _publication_from_row(row: RowMapping) -> PublicationRecord:
+    """Parse one database publication row into its public immutable model."""
+    return PublicationRecord(
+        publication_id=row["publication_id"],
+        dataset_id=row["dataset_id"],
+        source_id=row["source_id"],
+        sequence=row["sequence"],
+        schema_version=row["schema_version"],
+        semantic_version=row["semantic_version"],
+        unit=row["unit"],
+        adjustment_basis=row["adjustment_basis"],
+        quality=json.loads(row["quality_json"]),
+        provenance=json.loads(row["provenance_json"]),
+        watermark=json.loads(row["watermark_json"]) if row["watermark_json"] is not None else None,
+        idempotency_key=row["idempotency_key"],
+        payload_hash=row["payload_hash"],
+        record_count=row["record_count"],
+        published_at=_us_to_datetime(row["published_at_us"]),
+    )
+
+
+def _snapshot_from_row(row: RowMapping) -> SnapshotRecord:
+    """Parse one persisted snapshot row into its public immutable model."""
+    selection = _validated_capture_selection(
+        row["instrument_id"],
+        row["capture_id"],
+        error_type=SnapshotError,
+    )
+    return SnapshotRecord(
+        snapshot_id=row["snapshot_id"],
+        dataset_id=row["dataset_id"],
+        publication_id=row["publication_id"],
+        schema_version=row["schema_version"],
+        publication_sequence=row["publication_sequence"],
+        start_date=row["start_date"],
+        end_date=row["end_date"],
+        page_size=row["page_size"],
+        access_scope=row["access_scope"],
+        selection_sha256=row["selection_sha256"],
+        content_hash=row["content_hash"],
+        record_count=row["record_count"],
+        created_at=_us_to_datetime(row["created_at_us"]),
+        expires_at=_us_to_datetime(row["expires_at_us"]),
+        as_of=_us_to_datetime(row["as_of_us"]),
+        instrument_id=selection.instrument_id if selection is not None else None,
+        capture_id=selection.capture_id if selection is not None else None,
+    )
+
+
+def _published_record_from_row(row: RowMapping) -> PublishedRecord:
+    """Parse the selected row version without conflating its time dimensions."""
+    return PublishedRecord(
+        dataset_id=row["dataset_id"],
+        business_key=row["business_key"],
+        revision=row["revision"],
+        publication_id=row["publication_id"],
+        publication_sequence=row["publication_sequence"],
+        business_date=row["business_date"],
+        event_at=_parse_timestamp(row["event_at"]),
+        observed_at=_parse_timestamp(row["observed_at"]),
+        source_published_at=_parse_timestamp(row["source_published_at"]),
+        available_at=_parse_timestamp(row["available_at"]),
+        payload=json.loads(row["record_json"]),
+        record_hash=row["record_hash"],
+    )
+
+
+def _ensure_same_payload(row: RowMapping, payload_hash: str) -> RowMapping:
+    """Reject changed content under an existing idempotency key."""
+    if row["payload_hash"] != payload_hash:
+        raise PublicationConflictError(
+            "idempotency_key already exists with a different publication payload"
+        )
+    return row
+
+
+def _require_compatible_publication_contract(
+    previous: RowMapping,
+    *,
+    source_id: str,
+    schema_version: str,
+    semantic_version: str,
+    unit: str,
+    adjustment_basis: str,
+    provenance: Mapping[str, Any],
+) -> None:
+    """Reject metadata changes that would relabel retained delta facts."""
+    incoming = {
+        "source_id": source_id,
+        "schema_version": schema_version,
+        "semantic_version": semantic_version,
+        "unit": unit,
+        "adjustment_basis": adjustment_basis,
+    }
+    changed = [name for name, value in incoming.items() if previous[name] != value]
+    previous_provenance = json.loads(previous["provenance_json"])
+    if not isinstance(previous_provenance, dict):
+        raise RuntimeError("stored publication provenance must be a JSON object")
+    prior_hash = (
+        "contract_sha256" in previous_provenance,
+        previous_provenance.get("contract_sha256"),
+    )
+    incoming_hash = ("contract_sha256" in provenance, provenance.get("contract_sha256"))
+    if prior_hash != incoming_hash:
+        changed.append("provenance.contract_sha256")
+    if changed:
+        changed_fields = ", ".join(changed)
+        raise PublicationContractConflictError(
+            "dataset publication contract changed: " + changed_fields
+        )
+
+
+def _identifier(value: str, name: str) -> str:
+    """Validate a bounded identifier used in a persistent key."""
+    return _label(value, name, MAX_ID_LENGTH)
+
+
+def _hex_identifier(value: str, name: str) -> str:
+    """Validate a UUID-shaped lowercase hex identifier."""
+    if (
+        not isinstance(value, str)
+        or len(value) != 32
+        or any(char not in "0123456789abcdef" for char in value)
+    ):
+        raise ValueError(f"{name} must be a lowercase 32-character hex identifier")
+    return value
+
+
+def _label(value: str, name: str, maximum: int) -> str:
+    """Validate a single-line nonempty string label."""
+    if not isinstance(value, str) or not value.strip() or len(value) > maximum:
+        raise ValueError(f"{name} must be a nonempty string of at most {maximum} characters")
+    if value != value.strip() or any(ord(char) < 32 for char in value):
+        raise ValueError(f"{name} must not have surrounding whitespace or control characters")
+    return value
+
+
+def _timestamp(value: datetime | None, name: str) -> str | None:
+    """Normalize an aware instant to ISO-8601 UTC without inventing time."""
+    if value is None:
+        return None
+    if not isinstance(value, datetime) or value.tzinfo is None or value.utcoffset() is None:
+        raise ValueError(f"{name} must be a timezone-aware datetime")
+    return value.astimezone(_UTC).isoformat(timespec="microseconds").replace("+00:00", "Z")
+
+
+def _parse_timestamp(value: str | None) -> datetime | None:
+    """Parse a previously validated UTC timestamp string."""
+    if value is None:
+        return None
+    return datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+
+def _validate_date_window(start: date | None, end: date | None) -> tuple[date | None, date | None]:
+    """Require date-only, nonempty half-open bounds when both are supplied."""
+    for value, name in ((start, "start_date"), (end, "end_date")):
+        if value is not None and (isinstance(value, datetime) or not isinstance(value, date)):
+            raise ValueError(f"{name} must be datetime.date, not timestamp or string")
+    if start is not None and end is not None and start >= end:
+        raise ValueError("date window must be nonempty and half-open: start_date < end_date")
+    return start, end
+
+
+def _page_limit(value: int, name: str, *, max_value: int) -> int:
+    """Validate an exact integer page bound."""
+    if type(value) is not int or value < 1 or value > max_value:
+        raise ValueError(f"{name} must be an integer between 1 and {max_value}")
+    return value
+
+
+def _ttl_to_us(ttl: timedelta) -> int:
+    """Validate and convert a bounded snapshot TTL to exact microseconds."""
+    if not isinstance(ttl, timedelta) or ttl < MIN_SNAPSHOT_TTL or ttl > MAX_SNAPSHOT_TTL:
+        raise ValueError("ttl must be between one second and seven days")
+    value = ttl.days * 86_400_000_000 + ttl.seconds * 1_000_000 + ttl.microseconds
+    if value <= 0:
+        raise ValueError("ttl must be positive")
+    return value
+
+
+def _require_unexpired(snapshot: SnapshotRecord) -> None:
+    """Raise the API-mappable error for an expired persistent snapshot."""
+    if datetime.now(_UTC) >= snapshot.expires_at:
+        raise SnapshotExpiredError("snapshot has expired")
+
+
+def _datetime_to_us(value: datetime) -> int:
+    """Convert an aware instant to epoch microseconds without float rounding."""
+    if value.tzinfo is None or value.utcoffset() is None:
+        raise ValueError("datetime must be timezone-aware")
+    utc_value = value.astimezone(_UTC)
+    epoch = datetime(1970, 1, 1, tzinfo=_UTC)
+    delta = utc_value - epoch
+    return (delta.days * 86_400 + delta.seconds) * 1_000_000 + delta.microseconds
+
+
+def _us_to_datetime(value: int) -> datetime:
+    """Convert epoch microseconds to an aware UTC datetime."""
+    epoch = datetime(1970, 1, 1, tzinfo=_UTC)
+    return epoch + timedelta(microseconds=value)
+
+
+def _canonical_json(value: object) -> str:
+    """Encode JSON deterministically and reject NaN or Infinity."""
+    return json.dumps(
+        value,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+        allow_nan=False,
+    )
+
+
+def _sha256(value: bytes) -> str:
+    """Return the lowercase SHA-256 hex digest."""
+    return hashlib.sha256(value).hexdigest()
+
+
+def _base64url(value: bytes) -> str:
+    """Encode URL-safe base64 without padding."""
+    return base64.urlsafe_b64encode(value).decode("ascii").rstrip("=")
+
+
+def _base64url_decode(value: str) -> bytes:
+    """Decode canonical URL-safe base64 without accepting arbitrary characters."""
+    if not value or any(
+        char not in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+        for char in value
+    ):
+        raise ValueError("invalid base64url value")
+    return base64.urlsafe_b64decode(value + "=" * (-len(value) % 4))
+
+
+def _reject_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    """Reject ambiguous JSON object keys in signed cursor payloads."""
+    output: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in output:
+            raise ValueError("duplicate JSON object key")
+        output[key] = value
+    return output

@@ -1,16 +1,17 @@
 """Tests for the P0 provider fetchers and their registration (A2.4).
 
-The upstream flat functions are mocked with frames shaped exactly
-like the ported upstream output (Chinese column names, upstream
-units), so the mapping/unit-conversion assertions double as
-documentation of the upstream shapes. The sina corporate-action
-frames are copied cell by cell from a live reading
+Legacy upstream flat functions are mocked with frames shaped like the
+ported output. Stock daily uses a separate synthetic Eastmoney wire
+response to exercise the governed request and identity parser. The sina
+corporate-action frames are copied cell by cell from a live reading
 (``docs/evidence/C26/fixture-live-cells.txt``): a hand-written frame
 that disagrees with the live dtype is what let the ÷10 配股 bug pass
 as correct.
 """
 
+import json
 from datetime import date
+from types import SimpleNamespace
 
 import pandas as pd
 import pytest
@@ -28,6 +29,7 @@ from opendata.data.models import (
     IndexConstituent,
 )
 from opendata.data.protocol import FetchContext
+from opendata.data.providers.akshare import stock_daily_wire
 from opendata.data.providers.akshare.models import (
     AkshareFinancialIndicatorFetcher,
     AkshareFinancialStatementFetcher,
@@ -84,20 +86,23 @@ def log_lines():
         logger.remove(handler_id)
 
 
-def _em_klines_frame() -> pd.DataFrame:
-    """Upstream-shaped eastmoney kline frame (volume in lots)."""
-    return pd.DataFrame(
+def _em_klines_wire() -> bytes:
+    """Return a synthetic raw Eastmoney response; it is not source evidence."""
+    return json.dumps(
         {
-            "日期": ["2024-01-02", "2024-01-03", "2024-01-04"],
-            "股票代码": ["600519", "600519", "600519"],
-            "开盘": [1685.0, 1690.0, None],
-            "收盘": [1688.0, 1695.0, 1692.0],
-            "最高": [1690.0, 1698.0, 1694.0],
-            "最低": [1680.0, 1685.0, 1688.0],
-            "成交量": [30000.0, 28000.0, 32000.0],
-            "成交额": [5.06e9, 4.74e9, 5.41e9],
-        }
-    )
+            "rc": 0,
+            "data": {
+                "code": "600519",
+                "market": 1,
+                "klines": [
+                    "2024-01-02,1685,1688,1690,1680,30000,5060000000,0,0,0,0",
+                    "2024-01-03,1690,1695,1698,1685,28000,4740000000,0,0,0,0",
+                    "2024-01-04,1690,1692,1694,1688,32000,5410000000,0,0,0,0",
+                ],
+            },
+        },
+        separators=(",", ":"),
+    ).encode()
 
 
 def _sina_dividend_frame() -> pd.DataFrame:
@@ -257,13 +262,21 @@ class TestRegistration:
 
 class TestStockDailyFetcher:
     def test_maps_klines_to_bars_with_share_volume(self, monkeypatch):
-        monkeypatch.setattr(opendata_http, "stock_zh_a_hist", lambda **kwargs: _em_klines_frame())
+        monkeypatch.setattr(
+            stock_daily_wire,
+            "get_shared_http_client",
+            lambda: SimpleNamespace(
+                get=lambda *args, **kwargs: SimpleNamespace(
+                    status_code=200, content=_em_klines_wire()
+                )
+            ),
+        )
         fetcher = AkshareStockDailyFetcher()
 
         result = fetcher.fetch(symbol="600519.SH")
 
         bars = list(result)
-        assert len(bars) == 2  # the row with a missing price dropped
+        assert len(bars) == 3
         assert all(isinstance(bar, Bar) for bar in bars)
         assert bars[0].symbol == "600519"
         assert bars[0].trade_date == date(2024, 1, 2)
@@ -279,28 +292,39 @@ class TestStockDailyFetcher:
     def test_extract_passes_plain_symbol_and_dates(self, monkeypatch):
         seen = {}
 
-        def fake_hist(**kwargs):
+        def fake_get(url, **kwargs):
+            seen["url"] = url
             seen.update(kwargs)
-            return _em_klines_frame()
+            return SimpleNamespace(status_code=200, content=_em_klines_wire())
 
-        monkeypatch.setattr(opendata_http, "stock_zh_a_hist", fake_hist)
+        monkeypatch.setattr(
+            stock_daily_wire,
+            "get_shared_http_client",
+            lambda: SimpleNamespace(get=fake_get),
+        )
         fetcher = AkshareStockDailyFetcher()
 
-        fetcher.fetch(symbol="600519.SH", start_date=date(2024, 1, 1), adjust="qfq")
+        fetcher.fetch(symbol="600519.SH", start_date=date(2024, 1, 1), adjust="")
 
-        assert seen["symbol"] == "600519"
-        assert seen["period"] == "daily"
-        assert seen["start_date"] == "20240101"
-        assert seen["adjust"] == "qfq"
+        assert seen["url"] == stock_daily_wire.EASTMONEY_KLINE_URL
+        assert seen["params"]["secid"] == "1.600519"
+        assert seen["params"]["klt"] == "101"
+        assert seen["params"]["beg"] == "20240101"
+        assert seen["params"]["fqt"] == "0"
 
     def test_timeout_context_is_forwarded(self, monkeypatch):
         seen = {}
 
-        def fake_hist(**kwargs):
+        def fake_get(url, **kwargs):
+            seen["url"] = url
             seen.update(kwargs)
-            return _em_klines_frame()
+            return SimpleNamespace(status_code=200, content=_em_klines_wire())
 
-        monkeypatch.setattr(opendata_http, "stock_zh_a_hist", fake_hist)
+        monkeypatch.setattr(
+            stock_daily_wire,
+            "get_shared_http_client",
+            lambda: SimpleNamespace(get=fake_get),
+        )
         fetcher = AkshareStockDailyFetcher()
 
         fetcher.fetch(symbol="600519", ctx=FetchContext(timeout=12.5))

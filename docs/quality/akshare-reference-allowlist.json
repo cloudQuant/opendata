@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "scanner_version": 4,
+  "scanner_version": 5,
   "entries": [
     {
       "path": ".env.example",
@@ -33,9 +33,9 @@
       "path": "Makefile",
       "purpose": "搬运根路径、质量门禁和零依赖扫描入口的名称说明。",
       "category": "build-declaration",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "856c8ce43732f0a5e98a24fc8d9659621340b761b20838fa9d1cd7526feef342",
+      "reviewed_date": "2026-10-26",
+      "reviewer": "Codex primary wave3 review: Makefile adds named OpenAPI gate; stock adapter replaces vendor relabeling with fixed governed HTTP and original JSON identity checks. No external SDK loads or new AST exception.",
+      "sha256": "932254740fef0948d46c2bbdd42b98a031bff667913557c5a051d83db57c4728",
       "ast_exceptions": []
     },
     {
@@ -206,7 +206,7 @@
       "category": "runtime-integration",
       "reviewed_date": "2026-10-10",
       "reviewer": "Codex primary; authorized C65 criterion migration；C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=1==live=1、出现次数 pinned=1==live=1；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增1 删1，其中 0/1 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=0 live=0、策略过滤后 pinned=0 live=0，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
-      "sha256": "b7d3677e65311b6cea841b03594c66cb09e6822149cc4654718a879eb578b909",
+      "sha256": "7485d33001a3853c66ae44343e0506608231f58fce0c9bd7145157a628de8a4f",
       "ast_exceptions": []
     },
     {
@@ -372,11 +372,11 @@
     },
     {
       "path": "opendata/data/providers/akshare/models/stock_daily.py",
-      "purpose": "首方akshare来源适配器、契约模型、归一化或注册说明；调用opendata_http搬运实现并保留来源身份。",
+      "purpose": "库存档案查询语义已收紧（拒绝qfq/hfq、严格校验并使用不复权输入）；依赖边界仍为仓内vendor，不新增外部SDK加载。 复核范围：opendata/data/providers/akshare/models/stock_daily.py 的当前字节与引用面。",
       "category": "source-adapter",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "f3472b15074f423ac5076c31ff6238b8db5bc1a2c708fa5df156befb2b3b5b2d",
+      "reviewed_date": "2026-10-26",
+      "reviewer": "Codex primary wave3 review: Makefile adds named OpenAPI gate; stock adapter replaces vendor relabeling with fixed governed HTTP and original JSON identity checks. No external SDK loads or new AST exception.",
+      "sha256": "fc83a9bbf83d13b1f5829bc81202c069356ec60488504631c263a1aeab6b739f",
       "ast_exceptions": []
     },
     {
@@ -419,6 +419,15 @@
           "literal": "akshare"
         }
       ]
+    },
+    {
+      "path": "opendata/data/providers/akshare/stock_daily_wire.py",
+      "category": "source-adapter",
+      "purpose": "首方固定Eastmoney端点、原始JSON证券身份校验；akshare仅在首方包路径出现，不加载外部SDK。",
+      "reviewed_date": "2026-10-26",
+      "reviewer": "Codex primary reviewed exact metadata/import sites; no external SDK loading. Removed redundant docs registrations only because existing AC1 docs bucket already excludes those paths; no bucket/scope expansion.",
+      "sha256": "f190b1899d8d43acd9d7288996877bdf98cd1afeba6a106493fffef8f2f5fbb9",
+      "ast_exceptions": []
     },
     {
       "path": "opendata/data/providers/catalog.py",
@@ -494,12 +503,74 @@
     },
     {
       "path": "opendata/main.py",
-      "purpose": "首方集成中的来源标识、接口兼容、配置或搬运沿革说明；外部包依赖仍受零依赖AST断言。",
+      "purpose": "增加仓内api_v2_router挂载；所有akshare/openbb残留均为旧任务关闭/文案，不新增外部SDK导入或动态加载。 复核范围：opendata/main.py 的当前字节与引用面。",
       "category": "runtime-integration",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "85e1216379de4850d06bc45d446ff4d0b61851196377514400e7058c28e7dbfe",
+      "reviewed_date": "2026-10-26",
+      "reviewer": "Codex primary; independent wave2 zero-dependency review; receipt /tmp/od204-receipts/wave2-zero-dep-review.json sha256=c540bfc824f243ed5466b3b37004c18d3894be81143af51d1046dee065075d8f",
+      "sha256": "ba87561e3a0422979e1ee4a9330ad05119445bf7ca8c64ce2c23b878f6bb6a1e",
       "ast_exceptions": []
+    },
+    {
+      "path": "opendata/migration_catalog.py",
+      "purpose": "只读扫描旧版数据采集源码并输出迁移交叉表；指定的来源根与source_root字段是AST分类元数据，不导入或执行旧版SDK。",
+      "category": "operations-tool",
+      "reviewed_date": "2026-10-26",
+      "reviewer": "Codex primary; independent wave2 zero-dependency review; receipt /tmp/od204-receipts/wave2-zero-dep-review.json sha256=c540bfc824f243ed5466b3b37004c18d3894be81143af51d1046dee065075d8f",
+      "sha256": "42e435e271d125990ac5592025fc410f51035ea072df00517a09c52cbc10d3ec",
+      "ast_exceptions": [
+        {
+          "kind": "catalog_source_roots_akshare",
+          "scope": "_SOURCE_ROOTS",
+          "callee": "frozenset",
+          "slot": "set-element",
+          "literal": "akshare"
+        },
+        {
+          "kind": "catalog_source_roots_openbb",
+          "scope": "_SOURCE_ROOTS",
+          "callee": "frozenset",
+          "slot": "set-element",
+          "literal": "openbb"
+        },
+        {
+          "kind": "catalog_legacy_call_source_root",
+          "scope": "_collect_legacy_calls",
+          "callee": "LegacyCall",
+          "slot": "keyword:source_root",
+          "literal": "akshare"
+        }
+      ]
+    },
+    {
+      "path": "opendata/migration_inventory.py",
+      "purpose": "只读解析旧版脚本AST并分类直接来源导入；指定provider根与比较值为静态分类元数据，不加载SDK。",
+      "category": "operations-tool",
+      "reviewed_date": "2026-10-26",
+      "reviewer": "Codex primary; independent wave2 zero-dependency review; receipt /tmp/od204-receipts/wave2-zero-dep-review.json sha256=c540bfc824f243ed5466b3b37004c18d3894be81143af51d1046dee065075d8f",
+      "sha256": "094b101808c97621dd569468ac9ba7e398c1dc058288f308ef0d3ac442c83292",
+      "ast_exceptions": [
+        {
+          "kind": "inventory_provider_roots_akshare",
+          "scope": "_PROVIDER_IMPORT_ROOTS",
+          "callee": "frozenset",
+          "slot": "set-element",
+          "literal": "akshare"
+        },
+        {
+          "kind": "inventory_provider_roots_openbb",
+          "scope": "_PROVIDER_IMPORT_ROOTS",
+          "callee": "frozenset",
+          "slot": "set-element",
+          "literal": "openbb"
+        },
+        {
+          "kind": "inventory_akshare_usage_root",
+          "scope": "_analyze_ast",
+          "callee": "any(item.removeprefix().split())",
+          "slot": "compare:right",
+          "literal": "akshare"
+        }
+      ]
     },
     {
       "path": "opendata/models/data_script.py",
@@ -581,6 +652,15 @@
       "ast_exceptions": []
     },
     {
+      "path": "opendata/pipeline/stock_daily_job.py",
+      "purpose": "离线股票日线来源适配器以 akshare 来源身份封装固定原始响应解析；不加载外部 SDK，由调用方注入受审查的响应来源与发布边界。",
+      "category": "source-adapter",
+      "reviewed_date": "2026-10-26",
+      "reviewer": "Codex primary wave4 review: exact-path bare-token reference for the offline stock daily job; reviewed import is the in-repo akshare provider and no external SDK is loaded.",
+      "sha256": "e68a36f5928b3bb00298b9c34464980f918e13994ac8b05d0856be8185dad582",
+      "ast_exceptions": []
+    },
+    {
       "path": "opendata/pipeline/templates.py",
       "purpose": "ths+akshare双源流水线模板与首方注册表分派。",
       "category": "runtime-integration",
@@ -644,6 +724,15 @@
       "ast_exceptions": []
     },
     {
+      "path": "scripts/ops/build_migration_catalog.py",
+      "category": "operations-tool",
+      "purpose": "离线AST crosswalk命令只引用受保护的首方vendor manifest输入路径，不执行旧脚本或外部SDK。",
+      "reviewed_date": "2026-10-26",
+      "reviewer": "Codex primary reviewed exact metadata/import sites; no external SDK loading. Removed redundant docs registrations only because existing AC1 docs bucket already excludes those paths; no bucket/scope expansion.",
+      "sha256": "a54a8d69828d38069768a9870945b8dc70b497d20e4016b1a7479bb183616c79",
+      "ast_exceptions": []
+    },
+    {
       "path": "scripts/ops/migrate_legacy_stock_daily.py",
       "purpose": "用户授权旧库逐表审查及隔离迁移中的实际旧库名称；仅作为被审数据库标识，不加载外部包。",
       "category": "operations-tool",
@@ -701,9 +790,9 @@
       "path": "scripts/ops/ths_futures_option_cross_check.py",
       "purpose": "明确的来源取数、全量ODS基准或官方跨源对照工具，引用首方akshare来源标签/搬运接口。",
       "category": "cross-check",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "9cfe80a6e2e1c2e0fd92e293212f50652e9f31017394bba31197c3777f82dce2",
+      "reviewed_date": "2026-10-26",
+      "reviewer": "Codex primary wave5 review: only redundant typing casts removed; source-identification literals, transport calls, reference scope and AST exceptions unchanged; independent typing-casts review preserved.",
+      "sha256": "31448f050fcf9f55eca8bd774972d966d3c20ffcdd889bc41ee6e466a58529f4",
       "ast_exceptions": []
     },
     {
@@ -719,9 +808,9 @@
       "path": "scripts/ops/ths_index_cross_check.py",
       "purpose": "明确的来源取数、全量ODS基准或官方跨源对照工具，引用首方akshare来源标签/搬运接口。",
       "category": "cross-check",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "7ec2857c2667566ab37f6b6b4d97891e3a3f36561ec875ff418932550170fd52",
+      "reviewed_date": "2026-10-26",
+      "reviewer": "Codex primary wave5 review: only redundant typing casts removed; source-identification literals, transport calls, reference scope and AST exceptions unchanged; independent typing-casts review preserved.",
+      "sha256": "637bf270979b0bfe5e4ddf5fcfd98b80b1e31ba4793c195c6e0d95f43e86388e",
       "ast_exceptions": []
     },
     {
@@ -746,9 +835,9 @@
       "path": "scripts/ops/yfinance_overseas_cross_check.py",
       "purpose": "境外行情对照工具从搬运包取美股/港股 sina 通道，akshare 只出现在搬运包路径里。",
       "category": "cross-check",
-      "reviewed_date": "2026-10-08",
-      "reviewer": "Qoder agent C66; post-migration per-path review of the bare-word hits",
-      "sha256": "c54e5db8eb3885e80d50519a2bccb662f9a655790e47ce952001c588f0e5c6be",
+      "reviewed_date": "2026-10-26",
+      "reviewer": "Codex primary wave5 review: only redundant typing casts removed; source-identification literals, transport calls, reference scope and AST exceptions unchanged; independent typing-casts review preserved.",
+      "sha256": "f69fdd54489198de4af78ec269022f96d452b3d6d774ef19ad0a2032165179cf",
       "ast_exceptions": []
     },
     {
@@ -780,11 +869,11 @@
     },
     {
       "path": "scripts/quality/check_brand.py",
-      "purpose": "品牌、分层质量、来源依赖或验收判据的测量工具；被测来源名不用于加载外部包。",
+      "purpose": "token路径allowlist调整后原有scan_token(\"akshare\")提示字面量仍仅用于扫描输出；不新增外部SDK导入或动态加载。 复核范围：scripts/quality/check_brand.py 的当前字节与引用面。",
       "category": "operations-tool",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "3a534f361553c5faaa84d61032933bc4cbc69d4e1b1aec07369f3ff48daf9e78",
+      "reviewed_date": "2026-10-26",
+      "reviewer": "Codex primary; independent wave2 zero-dependency review; receipt /tmp/od204-receipts/wave2-zero-dep-review.json sha256=c540bfc824f243ed5466b3b37004c18d3894be81143af51d1046dee065075d8f",
+      "sha256": "7cbf155f06b7e75d49a151c60c80b9bbb1db0d10d112de3182924af8df67a8dd",
       "ast_exceptions": []
     },
     {
@@ -803,6 +892,15 @@
       "reviewed_date": "2026-10-09",
       "reviewer": "C74 primary; content re-reviewed against the scanner's own AST reading",
       "sha256": "c06218aa60e8f0d651b76efcdc4a8c4b8e93e4b7a3f9617468133edc4b93ac3f",
+      "ast_exceptions": []
+    },
+    {
+      "path": "scripts/quality/runtime_package_probe.py",
+      "category": "cross-check",
+      "purpose": "既有安装包验证器中的MIT vendor资源与首方模块路径；SMOKE_PRODUCT_IMPORTS仅为opendata/opendata.data/首方vendor，独立复核当前字节后精确登记。",
+      "reviewed_date": "2026-10-26",
+      "reviewer": "Codex primary reviewed exact metadata/import sites; no external SDK loading. Removed redundant docs registrations only because existing AC1 docs bucket already excludes those paths; no bucket/scope expansion.",
+      "sha256": "2a24c80cb56e06e9118f5147de829d32f7104773c59ec33d99e02b562072e9da",
       "ast_exceptions": []
     },
     {
