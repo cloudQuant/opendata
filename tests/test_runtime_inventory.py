@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import hashlib
 import json
-from contextlib import nullcontext
+from contextlib import contextmanager, nullcontext
 from datetime import date, datetime, timezone
 from decimal import Decimal
-from typing import TYPE_CHECKING
+from pathlib import Path
 
 import pytest
 from sqlalchemy import create_engine, text
@@ -15,7 +15,12 @@ from sqlalchemy.engine import make_url
 
 from opendata.migration_inventory import build_inventory
 from opendata.runtime_inventory import (
+    MAX_ENV_FILE_BYTES,
+    MAX_IDENTITY_PIN_BYTES,
     METADATA_DATABASE,
+    SCRIPT_TABLE,
+    TASK_TABLE,
+    WAREHOUSE_DATABASE,
     ApprovedEndpoint,
     RuntimeInventoryError,
     _canonical_json,
@@ -33,18 +38,41 @@ from opendata.runtime_inventory import (
     _report_scalar,
     _resolve_columns,
     _safe_env_urls,
+    _safe_identity_pins,
     _source_path,
     _sqlite_warehouse_schema,
     _sync_mysql_url,
     _task_map_rows,
     _validate_endpoint,
+    _validate_expected_server_uuids,
     _write_report,
     build_runtime_inventory,
     main,
 )
 
-if TYPE_CHECKING:
-    from pathlib import Path
+_MYSQL_UUID = "123e4567-e89b-12d3-a456-426614174000"
+_WAREHOUSE_UUID = "123e4567-e89b-12d3-a456-426614174001"
+
+
+def _write_identity_file(
+    path: Path,
+    *,
+    metadata_uuid: str = _MYSQL_UUID,
+    warehouse_uuid: str = _MYSQL_UUID,
+) -> Path:
+    """Create a synthetic operator pin file for CLI contract tests."""
+    path.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "metadata": {"database": METADATA_DATABASE, "server_uuid": metadata_uuid},
+                "warehouse": {"database": WAREHOUSE_DATABASE, "server_uuid": warehouse_uuid},
+            }
+        ),
+        encoding="utf-8",
+    )
+    path.chmod(0o600)
+    return path
 
 
 def _create_database_pair(tmp_path: Path, source_root: Path) -> tuple[str, str]:
@@ -109,12 +137,17 @@ def test_runtime_inventory_is_redacted_and_feeds_bidirectional_ast_join(
     source_root = tmp_path / "afi"
     source_root.mkdir()
     metadata_url, warehouse_url = _create_database_pair(tmp_path, source_root)
+    env_file = tmp_path / "verified-service.env"
+    env_file.write_text(
+        f"DATABASE_URL={metadata_url}\nAKSHARE_DATA_DATABASE_URL={warehouse_url}\n",
+        encoding="utf-8",
+    )
+    identity_file = _write_identity_file(tmp_path / "database-identities.json")
 
     report = build_runtime_inventory(
-        metadata_url=metadata_url,
-        warehouse_url=warehouse_url,
         source_root=source_root,
-        env_file_sha256="0" * 64,
+        env_file=env_file,
+        identity_file=identity_file,
         allow_sqlite_for_tests=True,
     )
 
@@ -126,7 +159,10 @@ def test_runtime_inventory_is_redacted_and_feeds_bidirectional_ast_join(
     assert report["counts"]["scheduled_task_inactive_exact"] == 1
     assert report["counts"]["data_script_rows_exact"] == 1
     assert report["counts"]["warehouse_tables"] == 1
+    assert report["runtime_table_engine_check"] is None
     assert report["warehouse_schema"]["tables"][0]["estimated_rows"] is None
+    assert report["env_file_sha256"] == hashlib.sha256(env_file.read_bytes()).hexdigest()
+    assert report["identity_pin_sha256"] == hashlib.sha256(identity_file.read_bytes()).hexdigest()
 
     task_rows = report["metadata"]["scheduled_tasks"]["records"]
     assert task_rows[0]["parameter_summary"]["credential_flag"] is True
@@ -212,7 +248,8 @@ def test_dotenv_reads_only_allowlisted_urls_and_never_returns_other_secrets(
     env_file.write_text(
         "DATABASE_URL=mysql+aiomysql://reader:do-not-print@127.0.0.1:3306/ai_for_investor\n"
         "AKSHARE_DATA_DATABASE_URL=mysql+aiomysql://reader:do-not-print@127.0.0.1:3306/akshare_data\n"
-        "UNRELATED_SECRET=must-not-be-returned\n",
+        "export UNRELATED_SECRET=must-not-be-returned\n"
+        "UNRELATED_SETTING=first\nUNRELATED_SETTING=second\n",
         encoding="utf-8",
     )
 
@@ -223,6 +260,209 @@ def test_dotenv_reads_only_allowlisted_urls_and_never_returns_other_secrets(
     assert len(env_hash) == 64
     assert "UNRELATED_SECRET" not in metadata_url + warehouse_url
     assert "must-not-be-returned" not in metadata_url + warehouse_url
+
+
+@pytest.mark.parametrize("target_key", ["DATABASE_URL", "AKSHARE_DATA_DATABASE_URL"])
+def test_dotenv_rejects_duplicate_target_keys_without_exposing_values(
+    tmp_path: Path, target_key: str
+) -> None:
+    """Duplicate approved keys cannot select a different endpoint by parser order."""
+    env_file = tmp_path / ".env"
+    env_file.write_text(
+        "DATABASE_URL=sqlite:///metadata.db\n"
+        "AKSHARE_DATA_DATABASE_URL=sqlite:///warehouse.db\n"
+        f"{target_key}=mysql+pymysql://reader:secret-value@127.0.0.1:3306/decoy\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(RuntimeInventoryError, match="dotenv_target_key_duplicate") as error:
+        _safe_env_urls(env_file)
+    assert "secret-value" not in str(error.value)
+
+
+def test_dotenv_rejects_malformed_unrelated_line_fail_closed(tmp_path: Path) -> None:
+    """Malformed dotenv syntax fails even when it is unrelated to URL keys."""
+    env_file = tmp_path / ".env"
+    env_file.write_text(
+        "DATABASE_URL=sqlite:///metadata.db\n"
+        "AKSHARE_DATA_DATABASE_URL=sqlite:///warehouse.db\n"
+        'UNRELATED_SETTING="unterminated\n',
+        encoding="utf-8",
+    )
+
+    with pytest.raises(RuntimeInventoryError, match="dotenv_file_invalid"):
+        _safe_env_urls(env_file)
+
+
+def test_dotenv_file_is_bounded_before_parsing(tmp_path: Path) -> None:
+    """Oversized dotenv inputs fail before parsing or hashing their contents."""
+    with pytest.raises(RuntimeInventoryError, match="dotenv_file_not_regular"):
+        _safe_env_urls(tmp_path)
+
+    env_file = tmp_path / ".env"
+    env_file.write_bytes(b"x" * (MAX_ENV_FILE_BYTES + 1))
+
+    with pytest.raises(RuntimeInventoryError, match="dotenv_file_exceeds_limit"):
+        _safe_env_urls(env_file)
+
+
+def test_dotenv_urls_and_digest_use_exactly_one_read(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The URL parser and reported digest cannot come from separate file opens."""
+    from opendata import runtime_inventory
+
+    first_content = (
+        b"DATABASE_URL=sqlite:///first.db\nAKSHARE_DATA_DATABASE_URL=sqlite:///first-warehouse.db\n"
+    )
+    read_count = 0
+
+    def read_once(_path: Path) -> bytes:
+        nonlocal read_count
+        read_count += 1
+        if read_count > 1:
+            raise AssertionError("dotenv content must be read once")
+        return first_content
+
+    monkeypatch.setattr(runtime_inventory, "_read_env_file_bytes", read_once)
+    metadata_url, warehouse_url, digest = _safe_env_urls(Path("unused.env"))
+
+    assert metadata_url == "sqlite:///first.db"
+    assert warehouse_url == "sqlite:///first-warehouse.db"
+    assert digest == hashlib.sha256(first_content).hexdigest()
+    assert read_count == 1
+
+
+def test_inventory_api_rejects_disconnected_or_conflicting_env_inputs(tmp_path: Path) -> None:
+    """Callers cannot inject a standalone dotenv digest or combine URL sources."""
+    with pytest.raises(TypeError):
+        build_runtime_inventory(
+            source_root=tmp_path,
+            metadata_url="sqlite://",
+            warehouse_url="sqlite://",
+            env_file_sha256="0" * 64,
+        )  # type: ignore[call-arg]
+
+    with pytest.raises(RuntimeInventoryError, match="database_url_source_conflict"):
+        build_runtime_inventory(
+            source_root=tmp_path,
+            metadata_url="sqlite://",
+            env_file=tmp_path / "not-read.env",
+        )
+
+
+def test_identity_pin_file_is_strict_bounded_and_digest_pinned(tmp_path: Path) -> None:
+    """Reviewed UUID pins bind the two logical databases and reject ambiguity."""
+    pin_file = _write_identity_file(
+        tmp_path / "database-identities.json", warehouse_uuid=_WAREHOUSE_UUID
+    )
+
+    pins, digest = _safe_identity_pins(pin_file)
+
+    assert pins == {"metadata": _MYSQL_UUID, "warehouse": _WAREHOUSE_UUID}
+    assert digest == hashlib.sha256(pin_file.read_bytes()).hexdigest()
+    assert _validate_expected_server_uuids(pins) == pins
+
+    pin_file.write_text(
+        '{"schema_version":1,"metadata":{"database":"ai_for_investor",'
+        '"server_uuid":"123e4567-e89b-12d3-a456-426614174000"},'
+        '"metadata":{"database":"ai_for_investor",'
+        '"server_uuid":"123e4567-e89b-12d3-a456-426614174000"},'
+        '"warehouse":{"database":"akshare_data",'
+        '"server_uuid":"123e4567-e89b-12d3-a456-426614174000"}}',
+        encoding="utf-8",
+    )
+    with pytest.raises(RuntimeInventoryError, match="identity_pin_duplicate_json_key"):
+        _safe_identity_pins(pin_file)
+
+    pin_file.write_bytes(b"x" * (MAX_IDENTITY_PIN_BYTES + 1))
+    with pytest.raises(RuntimeInventoryError, match="identity_pin_file_exceeds_limit"):
+        _safe_identity_pins(pin_file)
+
+
+def test_identity_pin_file_rejects_symlinks_directories_and_unsafe_modes(
+    tmp_path: Path,
+) -> None:
+    """The pin file must be an owned regular file with no group/other write access."""
+    target = _write_identity_file(tmp_path / "target.json")
+    symlink = tmp_path / "pin-link.json"
+    symlink.symlink_to(target)
+    with pytest.raises(RuntimeInventoryError, match="identity_pin_file_symlink_rejected"):
+        _safe_identity_pins(symlink)
+
+    with pytest.raises(RuntimeInventoryError, match="identity_pin_file_not_regular"):
+        _safe_identity_pins(tmp_path)
+
+    target.chmod(0o666)
+    with pytest.raises(RuntimeInventoryError, match="identity_pin_file_writable_by_group_or_other"):
+        _safe_identity_pins(target)
+
+    target.chmod(0o744)
+    with pytest.raises(RuntimeInventoryError, match="identity_pin_file_permissions_not_trusted"):
+        _safe_identity_pins(target)
+
+
+def test_identity_pin_file_rejects_untrusted_owner(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A readable pin file owned by an unrelated account is not trusted."""
+    from types import SimpleNamespace
+
+    from opendata import runtime_inventory
+
+    pin_file = _write_identity_file(tmp_path / "database-identities.json")
+    actual_fstat = runtime_inventory._identity_file_stat
+
+    def wrong_owner(descriptor: int) -> SimpleNamespace:
+        observed = actual_fstat(descriptor)
+        return SimpleNamespace(st_mode=observed.st_mode, st_uid=12345)
+
+    monkeypatch.setattr(runtime_inventory, "_identity_file_stat", wrong_owner)
+    monkeypatch.setattr(runtime_inventory, "_identity_file_effective_uid", lambda: 23456)
+
+    with pytest.raises(RuntimeInventoryError, match="identity_pin_file_owner_not_trusted"):
+        _safe_identity_pins(pin_file)
+
+
+@pytest.mark.parametrize(
+    ("metadata_database", "metadata_uuid"),
+    [("other_database", _MYSQL_UUID), (METADATA_DATABASE, "not-a-uuid")],
+)
+def test_identity_pin_file_rejects_wrong_database_and_invalid_uuid(
+    tmp_path: Path, metadata_database: str, metadata_uuid: str
+) -> None:
+    """A pin cannot be reused for another schema or contain a malformed UUID."""
+    pin_file = tmp_path / "database-identities.json"
+    pin_file.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "metadata": {"database": metadata_database, "server_uuid": metadata_uuid},
+                "warehouse": {"database": WAREHOUSE_DATABASE, "server_uuid": _MYSQL_UUID},
+            }
+        ),
+        encoding="utf-8",
+    )
+    pin_file.chmod(0o600)
+
+    with pytest.raises(RuntimeInventoryError, match="identity_pin_file_invalid"):
+        _safe_identity_pins(pin_file)
+
+
+def test_expected_server_uuid_mapping_requires_both_canonical_roles() -> None:
+    """A production pin set is complete, role-specific, and canonical."""
+    assert _validate_expected_server_uuids({"metadata": _MYSQL_UUID, "warehouse": _MYSQL_UUID}) == {
+        "metadata": _MYSQL_UUID,
+        "warehouse": _MYSQL_UUID,
+    }
+    for invalid in (
+        {"metadata": _MYSQL_UUID},
+        {"metadata": _MYSQL_UUID, "warehouse": "not-a-uuid"},
+        {"metadata": _MYSQL_UUID.upper(), "warehouse": _MYSQL_UUID},
+    ):
+        with pytest.raises(RuntimeInventoryError, match="mysql_identity_pins_invalid"):
+            _validate_expected_server_uuids(invalid)  # type: ignore[arg-type]
+    assert _validate_expected_server_uuids(None) is None
 
 
 def test_output_refuses_overwrite(tmp_path: Path) -> None:
@@ -255,6 +495,24 @@ def test_mysql_endpoint_accepts_only_empty_query_or_one_utf8mb4_charset() -> Non
         _validate_endpoint(make_url(f"{base}?charset=utf8mb4"), endpoint).query["charset"]
         == "utf8mb4"
     )
+
+
+def test_mysql_runtime_inventory_requires_explicit_pins_before_engine_creation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Production MySQL inventory fails before creating an unpinned connection."""
+    from opendata import runtime_inventory
+
+    def unexpected_connection(*_args: object, **_kwargs: object) -> object:
+        pytest.fail("an unpinned MySQL endpoint must not create an engine")
+
+    monkeypatch.setattr(runtime_inventory, "create_engine", unexpected_connection)
+    with pytest.raises(RuntimeInventoryError, match="mysql_identity_pins_required"):
+        build_runtime_inventory(
+            metadata_url=("mysql+pymysql://reader:private@127.0.0.1:3306/ai_for_investor"),
+            warehouse_url=("mysql+pymysql://reader:private@127.0.0.1:3306/akshare_data"),
+            source_root=tmp_path,
+        )
 
 
 @pytest.mark.parametrize(
@@ -493,6 +751,235 @@ def test_readonly_snapshot_blocks_sqlite_writes_and_unknown_backends() -> None:
         raise AssertionError("unsupported backend must not yield a connection")
 
 
+def test_mysql_snapshot_requires_the_pinned_server_before_yielding() -> None:
+    """A wrong physical MySQL instance is rejected before inventory SQL can run."""
+
+    class Result:
+        def __init__(self, row: tuple[object, ...] | None) -> None:
+            self.row = row
+
+        def scalar_one_or_none(self) -> object | None:
+            return self.row[0] if self.row else None
+
+        def one(self) -> tuple[object, ...]:
+            assert self.row is not None
+            return self.row
+
+        def one_or_none(self) -> tuple[object, ...] | None:
+            return self.row
+
+    class Cursor:
+        def __init__(self) -> None:
+            self.row: tuple[object, ...] = ()
+
+        def execute(self, statement: str) -> None:
+            if statement == "SELECT @@session.transaction_read_only":
+                self.row = (1,)
+            elif statement.startswith("SELECT @@session.transaction_read_only,"):
+                self.row = (1, "REPEATABLE_READ")
+
+        def fetchone(self) -> tuple[object, ...]:
+            return self.row
+
+        def close(self) -> None:
+            return None
+
+    class RawConnection:
+        def __init__(self) -> None:
+            self.cursor_instance = Cursor()
+
+        def cursor(self) -> Cursor:
+            return self.cursor_instance
+
+        def commit(self) -> None:
+            return None
+
+    class Connection:
+        dialect = type("Dialect", (), {"name": "mysql"})()
+
+        def __init__(self, server_uuid: str, database: str = METADATA_DATABASE) -> None:
+            self.raw = RawConnection()
+            self.connection = type("Driver", (), {"driver_connection": self.raw})()
+            self.server_uuid = server_uuid
+            self.database = database
+            self.statements: list[str] = []
+
+        def __enter__(self) -> Connection:
+            return self
+
+        def __exit__(self, *_args: object) -> None:
+            return None
+
+        def execute(self, statement: object) -> Result:
+            sql = str(statement)
+            self.statements.append(sql)
+            if sql == "SELECT DATABASE()":
+                return Result((self.database,))
+            if "@@session.transaction_read_only" in sql:
+                return Result((1, "REPEATABLE_READ"))
+            if "@@server_uuid" in sql:
+                return Result(
+                    (
+                        self.database,
+                        self.server_uuid,
+                        "mysql-fixture",
+                        3306,
+                        "8.0.synthetic",
+                        "MySQL fixture",
+                    )
+                )
+            raise AssertionError("unexpected SQL passed the identity preflight")
+
+    class Engine:
+        dialect = type("Dialect", (), {"name": "mysql"})()
+
+        def __init__(self, connection: Connection) -> None:
+            self.connection = connection
+
+        def connect(self) -> Connection:
+            return self.connection
+
+    wrong = Connection("123e4567-e89b-12d3-a456-426614174001")
+    with (
+        pytest.raises(RuntimeInventoryError, match="mysql_server_uuid_mismatch") as error,
+        _readonly_snapshot(
+            Engine(wrong),
+            expected_database=METADATA_DATABASE,
+            expected_server_uuid=_MYSQL_UUID,
+        ),
+    ):
+        pytest.fail("wrong physical server must not yield a snapshot")
+    assert "123e4567-e89b-12d3-a456-426614174001" not in str(error.value)
+    assert any("@@server_uuid" in statement for statement in wrong.statements)
+    assert not any("ak_scheduled_tasks" in statement for statement in wrong.statements)
+
+    role_pins = {
+        METADATA_DATABASE: _MYSQL_UUID,
+        WAREHOUSE_DATABASE: _WAREHOUSE_UUID,
+    }
+    for database, expected_uuid in role_pins.items():
+        matched = Connection(expected_uuid, database=database)
+        with _readonly_snapshot(
+            Engine(matched),
+            expected_database=database,
+            expected_server_uuid=expected_uuid,
+        ) as (_connection, observed_database, isolation, _captured_at, identity):
+            assert observed_database == database
+            assert isolation == "repeatable-read"
+            assert identity is not None and identity["server_uuid"] == expected_uuid
+
+        crossed_uuid = _WAREHOUSE_UUID if expected_uuid == _MYSQL_UUID else _MYSQL_UUID
+        crossed = Connection(crossed_uuid, database=database)
+        with (
+            pytest.raises(RuntimeInventoryError, match="mysql_server_uuid_mismatch"),
+            _readonly_snapshot(
+                Engine(crossed),
+                expected_database=database,
+                expected_server_uuid=expected_uuid,
+            ),
+        ):
+            pytest.fail("the other database role's pin must not be accepted")
+
+
+def test_runtime_inventory_routes_distinct_role_pins_to_each_endpoint(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Metadata and warehouse use their own synthetic UUID pins in the final report."""
+    from opendata import runtime_inventory
+
+    source_root = tmp_path / "afi"
+    source_root.mkdir()
+    identity_file = _write_identity_file(
+        tmp_path / "database-identities.json", warehouse_uuid=_WAREHOUSE_UUID
+    )
+    actual_uuids = {
+        METADATA_DATABASE: _MYSQL_UUID,
+        WAREHOUSE_DATABASE: _WAREHOUSE_UUID,
+    }
+    received_pins: dict[str, str | None] = {}
+
+    class Engine:
+        dialect = type("Dialect", (), {"name": "mysql"})()
+
+        def dispose(self) -> None:
+            return None
+
+    @contextmanager
+    def fake_snapshot(
+        _engine: Engine,
+        *,
+        expected_database: str,
+        expected_server_uuid: str | None = None,
+    ):
+        received_pins[expected_database] = expected_server_uuid
+        if actual_uuids[expected_database] != expected_server_uuid:
+            raise RuntimeInventoryError("mysql_server_uuid_mismatch")
+        identity = {"server_uuid": actual_uuids[expected_database]}
+        yield object(), expected_database, "repeatable-read", "2026-10-28T00:00:00+00:00", identity
+
+    def metadata_inventory(
+        _connection: object, *, database: str, source_root: Path
+    ) -> dict[str, object]:
+        del source_root
+        return {
+            "database": database,
+            "task_map_tasks": [],
+            "runtime_table_engine_check": {
+                "status": "VERIFIED",
+                "check": "BOTH_SCHEDULER_TABLES_ARE_BASE_INNODB",
+                "source": "information_schema.TABLES",
+                "database": database,
+                "tables": {
+                    TASK_TABLE: {"table_type": "BASE TABLE", "engine": "InnoDB"},
+                    SCRIPT_TABLE: {"table_type": "BASE TABLE", "engine": "InnoDB"},
+                },
+            },
+            "scheduled_tasks": {
+                "row_count_exact": 0,
+                "active_count_exact": 0,
+                "inactive_count_exact": 0,
+            },
+            "data_scripts": {
+                "row_count_exact": 0,
+                "active_count_exact": 0,
+                "inactive_count_exact": 0,
+            },
+        }
+
+    monkeypatch.setattr(runtime_inventory, "create_engine", lambda *_args, **_kwargs: Engine())
+    monkeypatch.setattr(runtime_inventory, "_readonly_snapshot", fake_snapshot)
+    monkeypatch.setattr(runtime_inventory, "_metadata_inventory", metadata_inventory)
+    monkeypatch.setattr(runtime_inventory, "_warehouse_schema", lambda *_args: {"table_count": 0})
+    monkeypatch.setattr(runtime_inventory, "_code_hashes", lambda: {})
+
+    def build() -> dict[str, object]:
+        return build_runtime_inventory(
+            metadata_url=("mysql+pymysql://reader:private@127.0.0.1:3306/ai_for_investor"),
+            warehouse_url=("mysql+pymysql://reader:private@127.0.0.1:3306/akshare_data"),
+            source_root=source_root,
+            identity_file=identity_file,
+        )
+
+    report = build()
+
+    assert received_pins == {
+        METADATA_DATABASE: _MYSQL_UUID,
+        WAREHOUSE_DATABASE: _WAREHOUSE_UUID,
+    }
+    endpoints = report["endpoints"]
+    assert endpoints["metadata"]["server_identity"]["server_uuid"] == _MYSQL_UUID
+    assert endpoints["metadata"]["server_uuid_pin_matched"] is True
+    assert endpoints["warehouse"]["server_identity"]["server_uuid"] == _WAREHOUSE_UUID
+    assert endpoints["warehouse"]["server_uuid_pin_matched"] is True
+    assert report["runtime_table_engine_check"]["status"] == "VERIFIED"
+
+    received_pins.clear()
+    actual_uuids[WAREHOUSE_DATABASE] = _MYSQL_UUID
+    with pytest.raises(RuntimeInventoryError, match="mysql_server_uuid_mismatch"):
+        build()
+    assert received_pins[WAREHOUSE_DATABASE] == _WAREHOUSE_UUID
+
+
 def test_row_reader_and_source_path_mapping_keep_unknowns_explicit(tmp_path: Path) -> None:
     """Invalid identifiers fail, while supported module spellings map exactly."""
     source_root = tmp_path / "afi"
@@ -644,6 +1131,210 @@ def test_metadata_inventory_rejects_missing_legacy_tables(tmp_path: Path) -> Non
         engine.dispose()
 
 
+@pytest.mark.parametrize(
+    ("bad_table", "definitions", "error_code"),
+    [
+        (
+            TASK_TABLE,
+            [{"TABLE_NAME": TASK_TABLE, "TABLE_TYPE": "BASE TABLE", "ENGINE": "MyISAM"}],
+            "metadata_runtime_table_not_innodb",
+        ),
+        (
+            SCRIPT_TABLE,
+            [{"TABLE_NAME": SCRIPT_TABLE, "TABLE_TYPE": "VIEW", "ENGINE": None}],
+            "metadata_runtime_table_not_base_table",
+        ),
+        (TASK_TABLE, [], "metadata_runtime_table_metadata_missing"),
+        (
+            SCRIPT_TABLE,
+            [
+                {"TABLE_NAME": SCRIPT_TABLE, "TABLE_TYPE": "BASE TABLE", "ENGINE": "InnoDB"},
+                {"TABLE_NAME": SCRIPT_TABLE, "TABLE_TYPE": "BASE TABLE", "ENGINE": "InnoDB"},
+            ],
+            "metadata_runtime_table_metadata_missing",
+        ),
+    ],
+)
+def test_mysql_metadata_inventory_rejects_non_innodb_runtime_tables_before_rows(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    bad_table: str,
+    definitions: list[dict[str, object]],
+    error_code: str,
+) -> None:
+    """Task and script rows are never read unless both source tables are InnoDB."""
+    from opendata import runtime_inventory
+
+    columns_by_table = {
+        TASK_TABLE: [
+            {"name": name}
+            for name in (
+                "id",
+                "script_id",
+                "schedule_type",
+                "expression",
+                "is_active",
+                "last_execution_at",
+                "next_execution_at",
+                "timeout",
+                "max_retries",
+                "task_kind",
+                "parameters",
+            )
+        ],
+        SCRIPT_TABLE: [
+            {"name": name}
+            for name in (
+                "script_id",
+                "module_path",
+                "function_name",
+                "target_table",
+                "is_active",
+                "source",
+                "parameters",
+            )
+        ],
+    }
+    metadata = {
+        TASK_TABLE: [{"TABLE_NAME": TASK_TABLE, "TABLE_TYPE": "BASE TABLE", "ENGINE": "InnoDB"}],
+        SCRIPT_TABLE: [
+            {"TABLE_NAME": SCRIPT_TABLE, "TABLE_TYPE": "BASE TABLE", "ENGINE": "InnoDB"}
+        ],
+    }
+    metadata[bad_table] = definitions
+    row_reads: list[str] = []
+
+    class Result:
+        def __init__(self, rows: list[dict[str, object]]) -> None:
+            self.rows = rows
+
+        def mappings(self) -> list[dict[str, object]]:
+            return self.rows
+
+    class Connection:
+        dialect = type("Dialect", (), {"name": "mysql"})()
+
+        def execute(self, _statement: object, parameters: dict[str, object]) -> Result:
+            return Result(metadata[str(parameters["table"])])
+
+    monkeypatch.setattr(
+        runtime_inventory,
+        "_table_columns",
+        lambda _connection, _database, table: columns_by_table[table],
+    )
+
+    def record_row_read(
+        _connection: object,
+        *,
+        table: str,
+        resolved: object,
+        order_by: str,
+    ) -> list[dict[str, object]]:
+        del resolved, order_by
+        row_reads.append(table)
+        return []
+
+    monkeypatch.setattr(runtime_inventory, "_read_rows", record_row_read)
+    with pytest.raises(RuntimeInventoryError, match=error_code):
+        _metadata_inventory(Connection(), database=METADATA_DATABASE, source_root=tmp_path)
+    assert row_reads == []
+
+
+def test_mysql_metadata_inventory_reads_rows_after_both_innodb_checks(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Both engine checks precede task/script row reads in the same connection."""
+    from opendata import runtime_inventory
+
+    metadata = {
+        TASK_TABLE: [{"TABLE_NAME": TASK_TABLE, "TABLE_TYPE": "BASE TABLE", "ENGINE": "InnoDB"}],
+        SCRIPT_TABLE: [
+            {"TABLE_NAME": SCRIPT_TABLE, "TABLE_TYPE": "BASE TABLE", "ENGINE": "InnoDB"}
+        ],
+    }
+    checks: list[str] = []
+    row_reads: list[str] = []
+    columns_by_table = {
+        TASK_TABLE: [
+            {"name": name}
+            for name in (
+                "id",
+                "script_id",
+                "schedule_type",
+                "expression",
+                "is_active",
+                "last_execution_at",
+                "next_execution_at",
+                "timeout",
+                "max_retries",
+                "task_kind",
+                "parameters",
+            )
+        ],
+        SCRIPT_TABLE: [
+            {"name": name}
+            for name in (
+                "script_id",
+                "module_path",
+                "function_name",
+                "target_table",
+                "is_active",
+                "source",
+                "parameters",
+            )
+        ],
+    }
+
+    class Result:
+        def __init__(self, rows: list[dict[str, object]]) -> None:
+            self.rows = rows
+
+        def mappings(self) -> list[dict[str, object]]:
+            return self.rows
+
+    class Connection:
+        dialect = type("Dialect", (), {"name": "mysql"})()
+
+        def execute(self, _statement: object, parameters: dict[str, object]) -> Result:
+            table = str(parameters["table"])
+            checks.append(table)
+            return Result(metadata[table])
+
+    monkeypatch.setattr(
+        runtime_inventory,
+        "_table_columns",
+        lambda _connection, _database, table: columns_by_table[table],
+    )
+
+    def record_row_read(
+        _connection: object,
+        *,
+        table: str,
+        resolved: object,
+        order_by: str,
+    ) -> list[dict[str, object]]:
+        del resolved, order_by
+        row_reads.append(table)
+        return []
+
+    monkeypatch.setattr(runtime_inventory, "_read_rows", record_row_read)
+    report = _metadata_inventory(Connection(), database=METADATA_DATABASE, source_root=tmp_path)
+
+    assert checks == [TASK_TABLE, SCRIPT_TABLE]
+    assert row_reads == [TASK_TABLE, SCRIPT_TABLE]
+    assert report["scheduled_tasks"]["row_count_exact"] == 0  # type: ignore[index]
+    assert report["runtime_table_engine_check"] == {
+        "status": "VERIFIED",
+        "check": "BOTH_SCHEDULER_TABLES_ARE_BASE_INNODB",
+        "source": "information_schema.TABLES",
+        "database": METADATA_DATABASE,
+        "tables": {
+            TASK_TABLE: {"table_type": "BASE TABLE", "engine": "InnoDB"},
+            SCRIPT_TABLE: {"table_type": "BASE TABLE", "engine": "InnoDB"},
+        },
+    }
+
+
 def test_source_path_rejects_symlinks_that_escape_the_afi_root(tmp_path: Path) -> None:
     """A known namespace cannot resolve through a symlink outside the source tree."""
     source_root = tmp_path / "afi"
@@ -709,6 +1400,7 @@ def test_dotenv_missing_keys_and_main_error_output_are_sanitized(
 
     source_root = tmp_path / "afi"
     source_root.mkdir()
+    identity_file = _write_identity_file(tmp_path / "database-identities.json")
 
     def explode(**_kwargs: object) -> dict[str, object]:
         raise ValueError("mysql://reader:do-not-print@private.example/database")
@@ -722,6 +1414,8 @@ def test_dotenv_missing_keys_and_main_error_output_are_sanitized(
             "mysql+pymysql://reader:private@127.0.0.1:3306/akshare_data",
             "--source-root",
             str(source_root),
+            "--identity-file",
+            str(identity_file),
             "--output",
             str(tmp_path / "failed.json"),
         ]
@@ -747,6 +1441,7 @@ def test_cli_env_file_path_writes_a_redacted_report_without_opening_databases(
     source_root = tmp_path / "afi"
     source_root.mkdir()
     output = tmp_path / "reports" / "runtime.json"
+    identity_file = _write_identity_file(tmp_path / "database-identities.json")
     report = {"counts": {"scheduled_tasks": 2, "warehouse_tables": 1}}
     observed: dict[str, object] = {}
 
@@ -761,6 +1456,8 @@ def test_cli_env_file_path_writes_a_redacted_report_without_opening_databases(
             str(env_file),
             "--source-root",
             str(source_root),
+            "--identity-file",
+            str(identity_file),
             "--output",
             str(output),
         ]
@@ -768,10 +1465,9 @@ def test_cli_env_file_path_writes_a_redacted_report_without_opening_databases(
 
     assert exit_code == 0
     assert observed == {
-        "metadata_url": "mysql+pymysql://reader:private@127.0.0.1:3306/ai_for_investor",
-        "warehouse_url": "mysql+pymysql://reader:private@127.0.0.1:3306/akshare_data",
         "source_root": source_root,
-        "env_file_sha256": hashlib.sha256(env_file.read_bytes()).hexdigest(),
+        "env_file": env_file,
+        "identity_file": identity_file,
     }
     assert json.loads(output.read_text(encoding="utf-8")) == report
     captured = capsys.readouterr()
@@ -796,6 +1492,24 @@ def test_cli_requires_warehouse_url_for_explicit_metadata_url(tmp_path: Path) ->
     assert error.value.code == 2
 
 
+def test_cli_requires_an_identity_pin_file(tmp_path: Path) -> None:
+    """The production CLI cannot start without explicit reviewed UUID pins."""
+    with pytest.raises(SystemExit) as error:
+        _parse_args(
+            [
+                "--metadata-url",
+                "mysql+pymysql://reader:private@127.0.0.1:3306/ai_for_investor",
+                "--warehouse-url",
+                "mysql+pymysql://reader:private@127.0.0.1:3306/akshare_data",
+                "--source-root",
+                str(tmp_path),
+                "--output",
+                str(tmp_path / "report.json"),
+            ]
+        )
+    assert error.value.code == 2
+
+
 def test_cli_reports_expected_inventory_errors_without_raw_details(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -804,6 +1518,7 @@ def test_cli_reports_expected_inventory_errors_without_raw_details(
 
     source_root = tmp_path / "afi"
     source_root.mkdir()
+    identity_file = _write_identity_file(tmp_path / "database-identities.json")
 
     def fail_closed(**_kwargs: object) -> dict[str, object]:
         raise RuntimeInventoryError("endpoint_query_not_approved")
@@ -817,6 +1532,8 @@ def test_cli_reports_expected_inventory_errors_without_raw_details(
             "mysql+pymysql://reader:private@127.0.0.1:3306/akshare_data",
             "--source-root",
             str(source_root),
+            "--identity-file",
+            str(identity_file),
             "--output",
             str(tmp_path / "rejected.json"),
         ]
