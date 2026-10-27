@@ -111,7 +111,11 @@ def _client(
         backoff_base_seconds=0,
         backoff_jitter_seconds=0,
         sleep=sleep,
-        rate_limiter=rate_limiter,
+        rate_limiter=(
+            rate_limiter
+            if rate_limiter is not None
+            else FuyaoRateLimiter(rate_per_second=1_000.0, burst=1_000)
+        ),
         raw_response_cache=raw_response_cache,
     )
 

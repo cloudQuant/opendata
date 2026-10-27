@@ -34,6 +34,8 @@ from opendata.data.providers.ths.endpoints import (
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
+    from opendata.data.source_attempt_gate import SourceAttemptGate
+
 
 #: 股票代码的交易所后缀（指数等其它后缀不参与解析）。
 _STOCK_EXCHANGE_SUFFIXES = frozenset({"SH", "SZ", "BJ"})
@@ -84,21 +86,37 @@ def credentials() -> FuyaoCredentials:
 
 
 @contextmanager
-def client(*, timeout_seconds: float | None = None) -> Iterator[FuyaoHttpClient]:
+def client(
+    *,
+    timeout_seconds: float | None = None,
+    source_attempt_gate: SourceAttemptGate | None = None,
+) -> Iterator[FuyaoHttpClient]:
     """Build a short-lived client for one fetch call.
 
     Args:
         timeout_seconds: Optional per-call timeout override.
+        source_attempt_gate: Optional explicitly injected durable gate. The
+            caller must provide a matching trusted request-scope binding; this
+            helper never discovers a gate or authorization from API input.
 
     Yields:
         A configured client, closed on exit.
     """
     resolved = credentials()
-    active = (
-        FuyaoHttpClient(credentials=resolved)
-        if timeout_seconds is None
-        else FuyaoHttpClient(credentials=resolved, timeout_seconds=timeout_seconds)
-    )
+    if source_attempt_gate is None:
+        active = (
+            FuyaoHttpClient(credentials=resolved)
+            if timeout_seconds is None
+            else FuyaoHttpClient(credentials=resolved, timeout_seconds=timeout_seconds)
+        )
+    elif timeout_seconds is None:
+        active = FuyaoHttpClient(credentials=resolved, source_attempt_gate=source_attempt_gate)
+    else:
+        active = FuyaoHttpClient(
+            credentials=resolved,
+            timeout_seconds=timeout_seconds,
+            source_attempt_gate=source_attempt_gate,
+        )
     try:
         yield active
     finally:

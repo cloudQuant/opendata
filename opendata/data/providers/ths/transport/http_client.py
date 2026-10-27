@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import logging
 import random
+import ssl
 import threading
 import time
 import uuid
@@ -35,12 +36,20 @@ from opendata.data.request_budget import (
     RequestBudgetError,
     RequestExecutionDeadlineError,
     RequestExecutionScope,
+    RequestOperation,
     RequestRedirectError,
+    SourceAttemptBinding,
     authorize_request,
     check_scope_liveness,
     current_request_scopes,
     reserve_scoped_attempt,
     scoped_host_slot,
+)
+from opendata.data.source_attempt_gate import (
+    AttemptReservation,
+    ReservationStatus,
+    SourceAttemptGate,
+    TransportAttempt,
 )
 
 if TYPE_CHECKING:
@@ -113,6 +122,7 @@ class FuyaoHttpClient:
         max_response_bytes: int = DEFAULT_MAX_RESPONSE_BYTES,
         sleep: Callable[[float], None] = time.sleep,
         raw_response_cache: RawResponseCache | None = None,
+        source_attempt_gate: SourceAttemptGate | None = None,
     ) -> None:
         """构造客户端.
 
@@ -130,6 +140,8 @@ class FuyaoHttpClient:
             max_response_bytes: 响应体上限。
             sleep: 退避等待实现（测试注入，避免真实休眠）。
             raw_response_cache: 显式缓存注入；缺省时仅在应用设置启用后使用。
+            source_attempt_gate: 显式的 SQLite 持久发送门禁。它只接受来自可信
+                ``RequestExecutionScope`` 的绑定，不创建授权或默认数据库。
         """
         if max_attempts < 1:
             raise ValueError("max_attempts must be >= 1")
@@ -137,6 +149,8 @@ class FuyaoHttpClient:
             raise ValueError("client and mock_transport are mutually exclusive")
         if mock_transport is not None and type(mock_transport) is not httpx.MockTransport:
             raise ValueError("mock_transport must be an exact httpx.MockTransport")
+        if source_attempt_gate is not None and type(source_attempt_gate) is not SourceAttemptGate:
+            raise TypeError("source_attempt_gate must be a SourceAttemptGate or None")
         self.credentials = credentials
         self._owns_client = client is None
         if client is not None:
@@ -156,6 +170,9 @@ class FuyaoHttpClient:
                 follow_redirects=False,
             )
             self._scoped_transport_verified = True
+        self._scoped_transport = (
+            self._client._transport if self._scoped_transport_verified else None
+        )
         host = urlsplit(credentials.base_url).hostname or "unknown"
         self._limiter = rate_limiter or (
             get_shared_rate_limiter(host) if self._owns_client else FuyaoRateLimiter()
@@ -168,6 +185,7 @@ class FuyaoHttpClient:
         self._sleep = sleep
         self._concurrency_host = host
         self._raw_response_cache_override = raw_response_cache
+        self._source_attempt_gate = source_attempt_gate
         self._request_lock = threading.RLock()
 
     def close(self) -> None:
@@ -209,6 +227,7 @@ class FuyaoHttpClient:
         # identity. Keep preparation and its matching request in one critical
         # section so another call cannot change that state between the two.
         scopes = current_request_scopes()
+        self._validate_source_attempt_mode(scopes)
         if scopes:
             while not self._request_lock.acquire(timeout=0.05):
                 check_scope_liveness(scopes)
@@ -243,11 +262,13 @@ class FuyaoHttpClient:
         scopes: tuple[RequestExecutionScope, ...],
     ) -> FuyaoHttpResponse:
         """Run one GET while holding the client-state lock."""
+        self._validate_source_attempt_mode(scopes)
         last_error: FuyaoError | None = None
         request_id = uuid.uuid4().hex
         url = f"{self.credentials.base_url}{endpoint}"
-        raw_cache = self._raw_response_cache_override
-        if raw_cache is None:
+        gate_enabled = self._source_attempt_gate is not None
+        raw_cache = None if gate_enabled else self._raw_response_cache_override
+        if raw_cache is None and not gate_enabled:
             raw_cache = _get_configured_raw_response_cache()
         cache_headers = {API_KEY_HEADER: self.credentials.api_key}
         cache_identity = (
@@ -354,6 +375,24 @@ class FuyaoHttpClient:
                         timeout = self._scoped_timeout(scopes)
                         prepared_request.extensions["timeout"] = httpx.Timeout(timeout).as_dict()
                         reserve_scoped_attempt(scopes, "ths", request_host)
+                        if gate_enabled:
+                            self._reserve_source_attempt(
+                                scopes,
+                                host=request_host,
+                                request_id=request_id,
+                                attempt_no=attempt,
+                            )
+                            check_scope_liveness(scopes)
+                            authorize_request(scopes, "ths", request_host)
+                            # Recheck the complete client configuration after
+                            # the durable reservation, immediately before send.
+                            # The reservation boundary may invoke storage code;
+                            # mutable httpx state must not change in that gap.
+                            self._validate_scoped_client(require_attempt_gate=gate_enabled)
+                            timeout = self._scoped_timeout(scopes)
+                            prepared_request.extensions["timeout"] = httpx.Timeout(
+                                timeout
+                            ).as_dict()
                         response = self._client.send(prepared_request, follow_redirects=False)
                         check_scope_liveness(scopes)
                 else:
@@ -457,17 +496,133 @@ class FuyaoHttpClient:
             raise RequestAuthorizationError("scoped requests require an exact HTTPS host")
         return parts.hostname.lower()
 
-    def _validate_scoped_client(self) -> None:
+    def _validate_scoped_client(self, *, require_attempt_gate: bool = False) -> None:
         """Fail closed on opaque clients or callbacks that can add sends."""
         if not self._scoped_transport_verified:
             raise RequestAuthorizationError("scoped request transport is not verified")
+        if type(self._client) is not httpx.Client:
+            raise RequestAuthorizationError("scoped request client type is not verified")
         if self._client.is_closed:
             raise RequestAuthorizationError("scoped request client is closed")
+        if self._client._transport is not self._scoped_transport:
+            raise RequestAuthorizationError("scoped request transport has changed")
         if self._client.auth is not None:
             raise RequestAuthorizationError("scoped client authentication is not allowed")
+        if self._client.trust_env or self._client.follow_redirects or self._client._mounts:
+            raise RequestAuthorizationError("scoped client routing is not allowed")
         hooks = self._client.event_hooks
         if any(hooks.values()):
             raise RequestAuthorizationError("scoped client event hooks are not allowed")
+        if self._source_attempt_gate is not None or require_attempt_gate:
+            self._validate_attempt_gated_client()
+
+    def _validate_attempt_gated_client(self) -> None:
+        """Verify the gate-bound client cannot proxy, retry, or skip TLS checks."""
+        transport = self._scoped_transport
+        if transport is None or self._client._transport is not transport:
+            raise RequestAuthorizationError("source attempt transport is not verified")
+        if type(transport) is httpx.MockTransport:
+            # MockTransport is an explicit offline-only constructor seam.
+            return
+        if type(transport) is not httpx.HTTPTransport:
+            raise RequestAuthorizationError("source attempt transport is not verified")
+        pool = getattr(transport, "_pool", None)
+        ssl_context = getattr(pool, "_ssl_context", None)
+        if (
+            pool is None
+            or getattr(pool, "_retries", None) != 0
+            or getattr(pool, "_proxy", None) is not None
+            or ssl_context is None
+            or getattr(ssl_context, "verify_mode", None) != ssl.CERT_REQUIRED
+            or getattr(ssl_context, "check_hostname", None) is not True
+        ):
+            raise RequestAuthorizationError("source attempt TLS transport is not verified")
+
+    def _validate_source_attempt_mode(self, scopes: tuple[RequestExecutionScope, ...]) -> None:
+        """Require durable gate and binding to be configured as one trusted pair."""
+        if self._source_attempt_gate is None:
+            if any(scope.source_attempt_binding is not None for scope in scopes):
+                raise RequestAuthorizationError(
+                    "source attempt binding requires a configured durable gate"
+                )
+            return
+        self._validated_source_attempt_scope(scopes)
+
+    @staticmethod
+    def _validated_source_attempt_scope(
+        scopes: tuple[RequestExecutionScope, ...],
+    ) -> tuple[SourceAttemptBinding, str, RequestOperation]:
+        """Return one exact binding after checking the entire trusted scope stack."""
+        if not scopes:
+            raise RequestAuthorizationError(
+                "source attempt gate requires consistent trusted request scopes"
+            )
+        first = scopes[0]
+        binding = first.source_attempt_binding
+        canonical_model = first.canonical_model
+        operation = first.operation
+        if (
+            type(first.source) is not str
+            or first.source != "ths"
+            or type(canonical_model) is not str
+            or not canonical_model
+            or canonical_model != canonical_model.strip()
+            or type(operation) is not RequestOperation
+            or type(binding) is not SourceAttemptBinding
+        ):
+            raise RequestAuthorizationError(
+                "source attempt gate requires consistent trusted request scopes"
+            )
+        for scope in scopes:
+            if (
+                scope.source != first.source
+                or scope.canonical_model != canonical_model
+                or scope.operation is not operation
+                or type(scope.source_attempt_binding) is not SourceAttemptBinding
+                or scope.source_attempt_binding != binding
+            ):
+                raise RequestAuthorizationError(
+                    "source attempt gate requires consistent trusted request scopes"
+                )
+        return binding, canonical_model, operation
+
+    def _reserve_source_attempt(
+        self,
+        scopes: tuple[RequestExecutionScope, ...],
+        *,
+        host: str,
+        request_id: str,
+        attempt_no: int,
+    ) -> None:
+        """Persist a one-use reservation immediately before one physical send."""
+        gate = self._source_attempt_gate
+        if gate is None:  # pragma: no cover - guarded by _validate_source_attempt_mode
+            raise RequestAuthorizationError("source attempt gate is not configured")
+        try:
+            binding, canonical_model, operation = self._validated_source_attempt_scope(scopes)
+            attempt = TransportAttempt(
+                attempt_id=uuid.uuid4().hex,
+                request_id=request_id,
+                attempt_no=attempt_no,
+                grant_id=binding.grant_id,
+                expected_revision=binding.expected_revision,
+                source="ths",
+                canonical_model=canonical_model,
+                operation=operation.value,
+                principal_scope=binding.principal_scope,
+                host=host,
+                run_key=binding.run_key,
+            )
+            reservation = gate.reserve_attempt(attempt)
+        except Exception:
+            raise RequestAuthorizationError(
+                "source attempt gate did not authorize transport"
+            ) from None
+        if (
+            type(reservation) is not AttemptReservation
+            or reservation.status is not ReservationStatus.RESERVED_NEW
+        ):
+            raise RequestAuthorizationError("source attempt gate did not authorize transport")
 
     @staticmethod
     @contextmanager
