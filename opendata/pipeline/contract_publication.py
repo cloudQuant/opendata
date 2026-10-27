@@ -176,9 +176,15 @@ class ValidatedPublicationWriter:
         self, batch: NormalizedBatch, contract: DatasetContract
     ) -> tuple[PublishedRecordInput, ...]:
         profile = _publication_selection_profile(contract)
-        return tuple(
-            _validate_record_for_profile(record, contract, profile) for record in batch.records
-        )
+        records: list[PublishedRecordInput] = []
+        seen_business_keys: set[str] = set()
+        for record in batch.records:
+            validated = _validate_record_for_profile(record, contract, profile)
+            if validated.business_key in seen_business_keys:
+                raise ContractPublicationError("batch contains duplicate business keys") from None
+            seen_business_keys.add(validated.business_key)
+            records.append(validated)
+        return tuple(records)
 
 
 def _validate_record(record: NormalizedRecord, contract: DatasetContract) -> PublishedRecordInput:
