@@ -18,6 +18,7 @@ from datetime import date
 from typing import Any, get_type_hints
 
 import pytest
+from fastapi import HTTPException
 from sqlalchemy import (
     Column,
     Date,
@@ -31,6 +32,7 @@ from sqlalchemy import (
     pool,
     text,
 )
+from sqlalchemy.exc import OperationalError
 
 from opendata.api import data_query
 from opendata.api.dependencies import Principal
@@ -186,6 +188,76 @@ def _bar(symbol: str, day: date, flag: int) -> dict:
 
 def _principal(scopes: tuple[str, ...] | None = None) -> Principal:
     return Principal(user=User(id=1, username="catalog-probe"), api_key_id=None, scopes=scopes)
+
+
+class _UnavailableWarehouse:
+    """Raise a driver failure without opening a database connection."""
+
+    def connect(self) -> None:
+        raise OperationalError(
+            "SELECT MAX(`trade_date`) FROM `dwd_stock_daily`",
+            {},
+            RuntimeError("private database address"),
+        )
+
+
+async def test_domain_freshness_returns_503_for_database_failure_without_leaking_details(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fixed_expected(_engine: object, *, on: date | None = None) -> date:
+        del on
+        return EXPECTED
+
+    monkeypatch.setattr(data_query, "_expected_data_date", fixed_expected)
+
+    with pytest.raises(HTTPException) as failure:
+        await data_query.domain_freshness(
+            "stock_daily",
+            principal=_principal(("stock_daily",)),
+            source=None,
+            engine=_UnavailableWarehouse(),
+        )
+
+    assert failure.value.status_code == 503
+    assert failure.value.detail == "Freshness data is temporarily unavailable"
+    assert "private database address" not in str(failure.value.detail)
+
+
+async def test_catalog_source_leg_returns_503_for_database_failure() -> None:
+    with pytest.raises(HTTPException) as failure:
+        await data_query._source_leg(
+            _UnavailableWarehouse(),
+            "stock_daily",
+            "akshare",
+            verified=True,
+            expected=EXPECTED,
+        )
+
+    assert failure.value.status_code == 503
+    assert failure.value.detail == "Freshness data is temporarily unavailable"
+
+
+async def test_catalog_does_not_turn_a_database_failure_into_missing_status(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fixed_expected(_engine: object, *, on: date | None = None) -> date:
+        del on
+        return EXPECTED
+
+    async def no_diff_reports(_engine: object) -> None:
+        return None
+
+    monkeypatch.setattr(data_query, "_expected_data_date", fixed_expected)
+    monkeypatch.setattr(data_query, "_diff_report_counts", no_diff_reports)
+
+    with pytest.raises(HTTPException) as failure:
+        await data_query.data_catalog(
+            principal=_principal(("stock_daily",)),
+            engine=_UnavailableWarehouse(),
+        )
+
+    assert failure.value.status_code == 503
+    assert failure.value.detail == "Freshness data is temporarily unavailable"
 
 
 async def _catalog(engine, scopes: tuple[str, ...] | None = None) -> dict:

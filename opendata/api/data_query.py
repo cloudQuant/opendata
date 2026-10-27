@@ -31,6 +31,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.routing import APIRoute
 from loguru import logger
 from sqlalchemy import create_engine, text
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.pool import NullPool
 from starlette.responses import Response
 
@@ -1578,7 +1579,13 @@ async def _freshness(
     try:
         if source:
             report = await asyncio.to_thread(
-                ods_freshness, engine, domain, source, table=table, expected=expected
+                ods_freshness,
+                engine,
+                domain,
+                source,
+                table=table,
+                expected=expected,
+                raise_on_query_error=True,
             )
         else:
             report = await asyncio.to_thread(
@@ -1588,10 +1595,19 @@ async def _freshness(
                 source=None,
                 table=table,
                 expected=expected,
+                raise_on_query_error=True,
             )
-    except Exception as exc:
-        logger.debug("freshness unavailable for {}: {}", table, exc)
-        return None
+    except LookupError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Freshness is not available for the requested source mapping",
+        ) from exc
+    except SQLAlchemyError as exc:
+        logger.warning("freshness query failed for {} ({})", domain, type(exc).__name__)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Freshness data is temporarily unavailable",
+        ) from exc
     if report.status == STATUS_MISSING:
         return None
     return {
@@ -1628,10 +1644,22 @@ async def _source_leg(
     base = {"source": source, "verified": verified, "table": table}
     try:
         report = await asyncio.to_thread(
-            ods_freshness, engine, domain, source, table=table, expected=expected
+            ods_freshness,
+            engine,
+            domain,
+            source,
+            table=table,
+            expected=expected,
+            raise_on_query_error=True,
         )
     except LookupError as exc:
         return {**base, "status": "unmapped", "reason": str(exc), "latest": None, "lag_days": None}
+    except SQLAlchemyError as exc:
+        logger.warning("freshness query failed for {} ({})", domain, type(exc).__name__)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Freshness data is temporarily unavailable",
+        ) from exc
     return {
         **base,
         "status": report.status,

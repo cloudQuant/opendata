@@ -19,6 +19,7 @@ this module only decides.
 
 from __future__ import annotations
 
+import sqlite3
 from dataclasses import dataclass
 from datetime import date
 from typing import TYPE_CHECKING
@@ -205,6 +206,7 @@ def check_freshness(
     table: str,
     expected: date,
     field: str | None = None,
+    raise_on_query_error: bool = False,
 ) -> FreshnessReport:
     """Read one table's latest date and compare it with the expectation.
 
@@ -216,10 +218,20 @@ def check_freshness(
         expected: Date the data should have reached (the last trading
             day, supplied by the caller / calendar).
         field: Date column override; defaults to the derived field.
+        raise_on_query_error: Re-raise database query errors other than a
+            positively identified missing table. API callers enable this so
+            warehouse failures cannot appear as missing data; pipeline and
+            alert callers retain the legacy report-on-error default.
 
     Returns:
-        The freshness report; a missing table yields ``missing``
-        rather than an exception.
+        The freshness report; an empty or unparseable result and a
+        positively identified missing table yield ``missing``. Other
+        SQLAlchemy errors either raise or yield ``missing`` according to
+        ``raise_on_query_error``.
+
+    Note:
+        This query uses MySQL-compatible backtick quoting (also accepted by
+        SQLite); this reader does not claim PostgreSQL runtime support.
     """
     column = field or freshness_field(domain)
     from sqlalchemy.exc import SQLAlchemyError
@@ -229,7 +241,9 @@ def check_freshness(
             latest = connection.execute(
                 text(f"SELECT MAX(`{column}`) FROM `{table}`")  # noqa: S608  # nosec B608  # col=contract/mapping field; tbl=ods_table()
             ).scalar()
-    except SQLAlchemyError:  # absent table/column: report, never raise
+    except SQLAlchemyError as exc:
+        if raise_on_query_error and not _is_missing_table_error(exc):
+            raise
         return FreshnessReport(
             domain=domain,
             source=source,
@@ -269,6 +283,7 @@ def ods_freshness(
     *,
     table: str,
     expected: date,
+    raise_on_query_error: bool = False,
 ) -> FreshnessReport:
     """Freshness of one source's ods table.
 
@@ -282,6 +297,8 @@ def ods_freshness(
         source: Source identifier.
         table: The ods table to check.
         expected: Date the data should have reached.
+        raise_on_query_error: Passed to :func:`check_freshness`; defaults to
+            the legacy report-on-error behavior used by pipeline callers.
 
     Returns:
         The freshness report.
@@ -305,22 +322,65 @@ def ods_freshness(
         table=table,
         expected=expected,
         field=mapping.fields[field].source_column,
+        raise_on_query_error=raise_on_query_error,
     )
 
 
-def dwd_freshness(engine: Engine, domain: str, *, expected: date) -> FreshnessReport:
+def dwd_freshness(
+    engine: Engine,
+    domain: str,
+    *,
+    expected: date,
+    raise_on_query_error: bool = False,
+) -> FreshnessReport:
     """Convenience wrapper for the dwd view of a domain.
 
     Args:
         engine: Warehouse engine.
         domain: Registered domain identifier.
         expected: Date the data should have reached.
+        raise_on_query_error: Passed to :func:`check_freshness`; defaults to
+            the legacy report-on-error behavior used by pipeline callers.
 
     Returns:
         The freshness report of ``dwd_<domain>``.
     """
     return check_freshness(
-        engine, domain=domain, source=None, table=dwd_table(domain), expected=expected
+        engine,
+        domain=domain,
+        source=None,
+        table=dwd_table(domain),
+        expected=expected,
+        raise_on_query_error=raise_on_query_error,
+    )
+
+
+def _is_missing_table_error(exc: Exception) -> bool:
+    """Return whether a driver error positively identifies a missing table.
+
+    MySQL/MariaDB's structured driver codes, SQLite's specific ``no such
+    table`` diagnostic, and SQLAlchemy's explicit ``NoSuchTableError`` count.
+    Missing columns, connection failures, permissions, timeouts, and unknown
+    driver errors are not treated as absent datasets by strict API callers.
+    The reader SQL is not PostgreSQL-compatible today, so PostgreSQL SQLSTATEs
+    are intentionally not interpreted as proof of a missing table.
+    """
+    from sqlalchemy.exc import NoSuchTableError
+
+    if isinstance(exc, NoSuchTableError):
+        return True
+
+    original = getattr(exc, "orig", exc)
+    sqlstate = getattr(original, "sqlstate", None) or getattr(original, "pgcode", None)
+    if sqlstate == "42S02":  # MySQL/MariaDB base table or view not found
+        return True
+
+    driver_args = getattr(original, "args", ())
+    if driver_args and driver_args[0] == 1146:  # MySQL/MariaDB ER_NO_SUCH_TABLE
+        return True
+
+    return isinstance(original, sqlite3.Error) and str(original).lower().startswith(
+        "no such table:"
     )
 
 

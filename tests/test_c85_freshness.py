@@ -10,6 +10,7 @@ mis-classified page is exactly the failure this module exists to prevent.
 from __future__ import annotations
 
 import importlib
+import sqlite3
 from collections import namedtuple
 from contextlib import contextmanager
 from datetime import date, datetime, timezone
@@ -519,9 +520,70 @@ class TestDriverValueCoercion:
         assert report.latest == date(2024, 1, 5)
 
     def test_absent_table_is_a_missing_report_not_an_exception(self):
-        from sqlalchemy.exc import SQLAlchemyError
+        from sqlalchemy.exc import OperationalError
 
-        engine = _FakeEngine(error=SQLAlchemyError("(1146) Table doesn't exist"))
+        error = OperationalError(
+            "SELECT MAX(`trade_date`) FROM `ods_stock_daily_akshare`",
+            {},
+            Exception(1146, "Table doesn't exist"),
+        )
+        engine = _FakeEngine(error=error)
+
+        report = check_freshness(
+            engine,
+            domain="stock_daily",
+            source="akshare",
+            table="ods_stock_daily_akshare",
+            expected=EXPECTED,
+            field="trade_date",
+            raise_on_query_error=True,
+        )
+
+        assert report.status == "missing"
+        assert report.field == "trade_date"
+
+    def test_strict_mode_keeps_a_proven_sqlite_missing_table_as_missing(self):
+        from sqlalchemy.exc import OperationalError
+
+        error = OperationalError(
+            "SELECT MAX(`trade_date`) FROM `ods_stock_daily_akshare`",
+            {},
+            sqlite3.OperationalError("no such table: ods_stock_daily_akshare"),
+        )
+
+        report = check_freshness(
+            _FakeEngine(error=error),
+            domain="stock_daily",
+            source="akshare",
+            table="ods_stock_daily_akshare",
+            expected=EXPECTED,
+            field="trade_date",
+            raise_on_query_error=True,
+        )
+
+        assert report.status == "missing"
+        assert report.latest is None
+
+    def test_strict_mode_reraises_unknown_database_errors_but_default_is_unchanged(self):
+        from sqlalchemy.exc import OperationalError
+
+        error = OperationalError(
+            "SELECT MAX(`trade_date`) FROM `ods_stock_daily_akshare`",
+            {},
+            RuntimeError("connection refused"),
+        )
+        engine = _FakeEngine(error=error)
+
+        with pytest.raises(OperationalError):
+            check_freshness(
+                engine,
+                domain="stock_daily",
+                source="akshare",
+                table="ods_stock_daily_akshare",
+                expected=EXPECTED,
+                field="trade_date",
+                raise_on_query_error=True,
+            )
 
         report = check_freshness(
             engine,
@@ -531,9 +593,7 @@ class TestDriverValueCoercion:
             expected=EXPECTED,
             field="trade_date",
         )
-
         assert report.status == "missing"
-        assert report.field == "trade_date"
 
     def test_empty_table_reads_as_missing(self):
         engine = _FakeEngine(latest=None)
