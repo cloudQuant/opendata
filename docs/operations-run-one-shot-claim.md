@@ -2,12 +2,28 @@
 
 ## Status and scope
 
-This document defines the deployment and incident-handling requirements for
-`claim_policy` on `od_run_ledger`. It is an operations guide, not evidence that
-revision `0020_run_ledger_claim_policy`, its tests, or a warehouse migration has
-passed. Keep rollout blocked until the exact implementation has completed its
-isolated acceptance checks and those results are recorded. A production schema
-is accepted only after its own migration and post-migration checks complete.
+This document defines deployment and incident-handling requirements for
+`claim_policy` on `od_run_ledger` and the reviewed one-shot CLI/runtime path.
+The frozen v11 candidate passed 532 isolated tests. Its statement-plus-branch
+coverage was 92.36% for `opendata/reviewed_cli.py` (544/589, zero excluded
+lines), 94.44% for `opendata/pipeline/runtime_roles.py` (102/108, zero
+excluded), and 94.95% for `opendata/pipeline/reviewed_runtime.py` (301/317,
+zero excluded). Its evidence is under
+`/tmp/od204-one-shot-cli-runtime-v11-20261029-ce74/evidence`; the snapshot is
+based on commit `ce74c25399ead699f4af8fcf63dc1cdf098c9ddc`. The subsequent v12
+snapshot, on the same base and with the same test selection, also passed 532
+isolated tests with the same coverage results. Its evidence is under
+`/tmp/od204-one-shot-cli-runtime-v12-20261029-ce74/evidence`. In v11,
+`reviewed_runtime.py` had SHA-256
+`1f475d52681acb25811472f2295f6736f6a480c6ef3514236867af1d3fd077c2`; v12 has
+SHA-256 `3a43c27b5055da83377cbf994015fee2a9797fe382a993b3f6a5d6caf9b84bd4`.
+The v12 runtime change adds `one_shot_submitter` to `_require_role`'s type
+annotation; the current file matches that accepted v12 snapshot. These test
+results accept the frozen candidates only within their isolated test scope.
+They do not prove that a candidate is deployed, that a production warehouse
+has been migrated, or that a production data-source request is authorized. A
+production schema is accepted only after its own migration and post-migration
+checks complete.
 
 The supported policies are:
 
@@ -27,12 +43,13 @@ The order below is required because an old worker does not read `claim_policy`.
 It may still see a one-shot row as ordinary queued or expired work and claim it
 through the older broad-claim path.
 
-1. **Wait for implementation acceptance.** Review the exact migration and
-   runtime code version. Record isolated migration evidence for SQLite and the
-   supported MySQL version, including a successful upgrade and the expected
-   failure and retry states. A source review or this document does not satisfy
-   that gate. Revision 0020 is online-only and supports SQLite and MySQL 8.0.16+
-   within MySQL 8; it refuses MariaDB and offline SQL generation.
+1. **Review the accepted candidate and production migration separately.** The
+   isolated v11 and v12 evidence covers the frozen candidates described above,
+   not a production rollout. Review the exact migration and runtime artifact
+   for the target environment, then record migration evidence for each intended
+   warehouse, including a successful upgrade and the expected failure and
+   retry states. Revision 0020 is online-only and supports SQLite and MySQL
+   8.0.16+ within MySQL 8; it refuses MariaDB and offline SQL generation.
 2. **Inventory every warehouse and process that can touch its ledger.** Include
    workers on every host, schedulers, manual dispatchers, and any process that
    can invoke broad queue claims. Freeze new run submission and dispatch during
@@ -128,44 +145,83 @@ and expected pre-migration state before retrying.
 
 ## One-shot execution and uncertain outcomes
 
-There is no production HTTP endpoint, operator CLI command, or configuration
-switch for one-shot submission or execution. The strict offline
-`opendata.reviewed_cli` currently accepts `scheduled`, `manual`, `backfill`,
-and `worker_once`; its `manual` operation calls `dispatch_manual`, which rejects
-`one_shot_only` jobs. The standalone CLI also fails closed without an injected
-reviewed application. Do not treat it as a one-shot operator interface.
+The frozen v11 candidate adds the JSON operations `one_shot_submit` and
+`one_shot_run` to the strict offline `opendata.reviewed_cli` protocol. These are
+injected Python interfaces for a reviewed composition root, not an enabled
+production command, HTTP endpoint, environment switch, or Fuyao integration.
+The standalone `main()` always calls the CLI with `application=None` and has no
+environment or import-string factory. With arguments exactly in the
+`--request PATH` form, it exits 78 with `reviewed_application_required` before
+reading the JSON; missing or malformed CLI arguments exit 2 before that check.
+Until a separately reviewed composition root is implemented, do not present
+`python -m opendata.reviewed_cli` as an operator interface.
 
-The internal Python interfaces are `RunDispatcher.dispatch_one_shot`,
-`RunService.submit_one_shot` / `RunService.run_one_shot`, and
-`PersistentRunWorker.submit_one_shot` / `PersistentRunWorker.run_one_shot`.
-`dispatch_one_shot` creates only a `manual` request. An effective
-`one_shot_only` `ReviewedJob` must have `reviewed=True`, `task.enabled=False`,
-and `task.schedule=None`; the registry rejects enabled or scheduled one-shot
-jobs, while the one-shot dispatch and service paths reject an unreviewed job.
-Ordinary `dispatch_manual`, `dispatch_scheduled`, `dispatch_backfill`, and
-APScheduler callback paths reject a `one_shot_only` job. The dry-run option
-validates and returns a safe identity without writing a ledger row.
+The CLI accepts one version-1 JSON request from stdin or a regular file passed
+as `--request PATH` (`--request -` reads stdin). Its one-shot request shapes
+are:
 
-`RunService.submit_one_shot` is a lower-level service method: for a job marked
-`one_shot_only`, it enforces the disabled, unscheduled, reviewed, manual-only
-contract; for another reviewed enabled job, it can also persist an explicitly
-requested one-shot policy. Production composition must use the dedicated
-dispatcher path for `one_shot_only` jobs so ordinary dispatch cannot bypass
-that separation.
+```json
+{"schema_version":1,"operation":"one_shot_submit","job_id":"manual","version":"v1","payload":{"idempotency_key":"once-01"},"dry_run":true}
+{"schema_version":1,"operation":"one_shot_run","run_key":"<64 lowercase hex>","dry_run":true}
+```
 
-A runtime-bound `dispatch_one_shot` must require a `profile="reviewed"`
-runtime, its `api` role, and an open runtime, under the same lifecycle lock as
-manual dispatch. This guard is implemented in
-`opendata/pipeline/reviewed_runtime.py` at source SHA
-`13bd0bd657636735febd1de9b76b575e11e93c9aeba831479211fc573e44e982`. The v10
-fixed isolated test selection passed 401 tests, with coverage targets met for
-all five reported modules. The selection covered temporary SQLite, synthetic
-handlers, and offline MySQL/TLS checks. This accepts the guard within that test
-scope. Production CLI and Fuyao composition, compatibility with every old
-worker, and deployment rollout remain unaccepted. This runtime guard does not
-add a production CLI, HTTP endpoint, or Fuyao job wiring. A plain
-`RunDispatcher` has no runtime profile, role plan, or open/closed lifecycle to
-check, so it must not be presented as providing those runtime protections.
+The schema rejects extra fields, malformed run keys, and named execution
+selectors such as `command`, `module`, `script`, `shell`, or `sql`. It also
+checks a defined set of connection-selector and credential patterns. These
+checks do not identify arbitrary SQL or every possible URL or credential
+embedded in a string; they are not a general-purpose sanitizer. A CLI
+`one_shot_submit` request is accepted only by the dedicated
+`one_shot_submitter` role; it calls `RunDispatcher.dispatch_one_shot`. An API
+role cannot submit this operation through the CLI, although code with direct
+dispatcher access may call `dispatch_one_shot`. The job must be in the reviewed
+catalog with `reviewed=True`, `one_shot_only=True`, `task.enabled=False`, and
+`task.schedule=None`. Ordinary manual, scheduled, backfill, and APScheduler
+dispatch paths reject that job. A submit dry run validates the request and
+returns its safe run identity without writing a ledger row.
+
+`one_shot_run` is available only to the `one_shot_executor` role and calls the
+exact-key `PersistentRunWorker.run_one_shot` path. It accepts any run key with
+64 lowercase hexadecimal characters; the CLI does not verify that the key is
+bound to a prior submission receipt. Operators should use the run key returned
+by `one_shot_submit` and verify that receipt before invoking the executor. The
+runtime requires a reviewed role plan with explicit config and sink
+identifiers. `one_shot_submitter` and
+`one_shot_executor` are each exclusive process roles: a plan containing either
+must contain that role alone, with no API, scheduler, general worker, or legacy
+role. The executor requires a fixed worker identity, lease duration, heartbeat
+interval, and database I/O timeout, plus a verified worker Engine that is the
+same Engine object used by the run ledger. The executor dry run validates and
+reports the key without claiming or executing it. A submitter role has no
+ordinary manual, scheduled, or backfill dispatch permission; the API role can
+also submit one-shot work through the dedicated dispatcher method.
+
+The dispatcher path accepts only a reviewed `one_shot_only` job. It builds a
+manual run request and persists it with `claim_policy="one_shot"`. The run key
+returned by submission identifies the queued row operators should pass to the
+executor. The general queue claim excludes these rows, and the exact-key claim
+is never reclaimed after execution starts.
+
+The CLI reports `succeeded` only when the returned record matches the requested
+key, has `claim_policy="one_shot"`, fencing token 1, a finished timestamp, and
+durable `succeeded` status. A `None` result is reported as `not_claimed`; this
+may mean the key is absent, already claimed, or terminal. Every other result
+that does not prove the exact success condition is `uncertain`, including
+worker exceptions and interruption after entering the worker boundary
+(interruption keeps exit code 130). **Neither `not_claimed` nor `uncertain`
+means retry is safe.** Reconcile the run key with domain evidence before
+deciding how to record the outcome.
+
+The v11 and v12 frozen selections each passed 532 tests across 22 test modules
+and 17 exact offline MySQL nodes. The nodes do not use a live MySQL fixture.
+They cover temporary SQLite, synthetic handlers, local subprocesses, and
+offline MySQL transport/TLS/DDL checks. The coverage figures above are per
+exact target with no excluded lines. This evidence accepts the candidate
+CLI/runtime behavior in that isolated test scope; it does not accept its
+production composition, an actual Fuyao request, source authorization, or
+fleet rollout.
+A plain `RunDispatcher` has no runtime profile, role plan, or open/closed
+lifecycle to check, so only the runtime-bound adapter provides those guards.
+
 
 The exact-type `RunLedger` check on one-shot submission and exact-key claim
 also has a limited scope. It rejects duck-typed ledgers and detects replacement
@@ -196,9 +252,12 @@ completed the request.
 
 The Fuyao manual composition currently provides preflight only. It does not
 construct or enable a `ReviewedJob`, enqueue a run, start a worker or scheduler,
-reserve a source attempt, or call Fuyao. A successful preflight is not evidence
-that a live one-shot request is authorized or executable; the separate source
-attempt gate remains authoritative for any future physical request.
+reserve a source attempt, or call Fuyao. The v11/v12 CLI/runtime acceptance
+does not provide or prove a Fuyao authorization grant, vendor rights, an actual
+provider request, or complete A-share history. A successful preflight is not
+evidence that a live one-shot request is authorized or executable; the
+separate source attempt gate remains authoritative for any future physical
+request.
 
 Fencing tokens prevent stale workers from committing protected warehouse
 transitions after losing a lease. They do not control an upstream provider and

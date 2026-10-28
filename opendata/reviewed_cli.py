@@ -16,6 +16,10 @@ Request examples (UTF-8 JSON on stdin or in a regular file)::
      "backfill_start":"2026-10-01","backfill_end":"2026-10-26"}}
     {"schema_version":1,"operation":"worker_once","worker":"worker-01",
      "lease_seconds":60}
+    {"schema_version":1,"operation":"one_shot_submit","job_id":"manual",
+     "version":"v1","payload":{"idempotency_key":"once-01"},"dry_run":true}
+    {"schema_version":1,"operation":"one_shot_run","run_key":"<64 lowercase hex>",
+     "dry_run":true}
 
 An application calls ``run_reviewed_cli(argv, application=...)`` after it has
 constructed its reviewed catalog, dispatcher, database engine, and role plan.
@@ -41,7 +45,7 @@ from urllib.parse import parse_qsl, urlsplit
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, model_validator
 
 from opendata.pipeline.run_dispatch import DispatchReceipt, RunDispatcher
-from opendata.pipeline.run_ledger import RunLedgerConflictError
+from opendata.pipeline.run_ledger import RunLedgerConflictError, RunRecord
 from opendata.pipeline.run_service import RunOutcome
 from opendata.pipeline.runtime_roles import RuntimeRolePlan
 
@@ -49,12 +53,13 @@ if TYPE_CHECKING:  # pragma: no cover
     from collections.abc import Mapping, Sequence
     from typing import TextIO
 
-    from opendata.pipeline.runtime_roles import WorkerOnceSPI
+    from opendata.pipeline.runtime_roles import OneShotWorkerSPI, WorkerOnceSPI
 MAX_REQUEST_BYTES = 65_536
 MAX_REQUEST_DEPTH = 12
 MAX_REQUEST_NODES = 8_192
 _IDENTIFIER = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:/+-]{0,127}$")
 _WORKER = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:@+-]{0,254}$")
+_RUN_KEY = re.compile(r"^[0-9a-f]{64}$")
 _EXECUTION_FIELDS = frozenset(
     {
         "command",
@@ -130,6 +135,10 @@ _REQUEST_FIELDS: Mapping[str, frozenset[str]] = {
         {"schema_version", "operation", "job_id", "version", "payload", "dry_run"}
     ),
     "worker_once": frozenset({"schema_version", "operation", "worker", "lease_seconds"}),
+    "one_shot_submit": frozenset(
+        {"schema_version", "operation", "job_id", "version", "payload", "dry_run"}
+    ),
+    "one_shot_run": frozenset({"schema_version", "operation", "run_key", "dry_run"}),
 }
 
 
@@ -139,7 +148,9 @@ class _CLIRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True, frozen=True)
 
     schema_version: Literal[1]
-    operation: Literal["scheduled", "manual", "backfill", "worker_once"]
+    operation: Literal[
+        "scheduled", "manual", "backfill", "worker_once", "one_shot_submit", "one_shot_run"
+    ]
     job_id: str | None = Field(default=None, min_length=1, max_length=128)
     version: str | None = Field(default=None, min_length=1, max_length=128)
     occurrence: str | None = Field(default=None, min_length=20, max_length=40)
@@ -147,6 +158,7 @@ class _CLIRequest(BaseModel):
     dry_run: bool = False
     worker: str | None = Field(default=None, min_length=1, max_length=255)
     lease_seconds: int | None = Field(default=None, ge=1, le=86_400)
+    run_key: str | None = None
 
     @model_validator(mode="after")
     def validate_operation_shape(self) -> _CLIRequest:
@@ -162,6 +174,11 @@ class _CLIRequest(BaseModel):
                 raise ValueError("worker identity is invalid")
             return self
 
+        if self.operation == "one_shot_run":
+            if self.run_key is None or not _RUN_KEY.fullmatch(self.run_key):
+                raise ValueError("one-shot run key must be 64 lowercase hexadecimal characters")
+            return self
+
         if self.job_id is None or self.version is None:
             raise ValueError("dispatch request requires job_id and version")
         if not _IDENTIFIER.fullmatch(self.job_id) or not _IDENTIFIER.fullmatch(self.version):
@@ -172,6 +189,8 @@ class _CLIRequest(BaseModel):
             raise ValueError("only scheduled requests accept occurrence")
         if self.operation in {"manual", "backfill"} and self.payload is None:
             raise ValueError("manual and backfill requests require payload")
+        if self.operation == "one_shot_submit" and self.payload is None:
+            raise ValueError("one-shot submit requests require payload")
         _reject_execution_fields(self.payload)
         return self
 
@@ -183,6 +202,7 @@ class ReviewedCLIApplication:
     runtime_plan: RuntimeRolePlan
     dispatcher: RunDispatcher | None = None
     worker_once: WorkerOnceSPI | None = None
+    one_shot_run: OneShotWorkerSPI | None = None
 
     def __post_init__(self) -> None:
         """Require explicit reviewed roles and their injected runtime boundaries."""
@@ -190,7 +210,7 @@ class ReviewedCLIApplication:
             raise TypeError("runtime_plan must be a RuntimeRolePlan")
         if self.runtime_plan.profile != "reviewed":
             raise ValueError("reviewed CLI requires an explicit reviewed runtime plan")
-        if self.runtime_plan.roles & {"api", "scheduler"}:
+        if self.runtime_plan.roles & {"api", "scheduler", "one_shot_submitter"}:
             if not isinstance(self.dispatcher, RunDispatcher):
                 raise ValueError("enabled dispatch roles require an injected RunDispatcher")
         elif self.dispatcher is not None:
@@ -200,6 +220,11 @@ class ReviewedCLIApplication:
                 raise ValueError("enabled worker role requires an injected worker-once SPI")
         elif self.worker_once is not None:
             raise ValueError("worker-once SPI was supplied while worker role is disabled")
+        if "one_shot_executor" in self.runtime_plan.roles:
+            if not callable(self.one_shot_run):
+                raise ValueError("enabled one-shot executor role requires an injected one-shot SPI")
+        elif self.one_shot_run is not None:
+            raise ValueError("one-shot SPI was supplied while one-shot executor role is disabled")
 
 
 @dataclass(frozen=True, slots=True)
@@ -461,6 +486,30 @@ def _uri_query_has_sensitive_selector(query: str) -> bool:
 
 def _execute_request(request: _CLIRequest, application: ReviewedCLIApplication) -> _CLIResult:
     """Dispatch one request through reviewed interfaces and redact all payload data."""
+    if request.operation == "one_shot_run":
+        if (
+            not application.runtime_plan.enables("one_shot_executor")
+            or application.one_shot_run is None
+        ):
+            raise _RoleUnavailableError("one-shot executor role is disabled")
+        if request.run_key is None:
+            raise ValueError("one-shot run request is incomplete")
+        if request.dry_run:
+            return _CLIResult(0, {"status": "dry_run", "run_key": request.run_key})
+        try:
+            outcome = application.one_shot_run(request.run_key)
+        except KeyboardInterrupt:
+            # A signal may arrive after a provider has accepted the request.
+            # Keep the process interruption exit status while requiring
+            # reconciliation instead of suggesting a clean cancellation.
+            return _one_shot_uncertain_receipt(request.run_key, exit_code=130)
+        except Exception:
+            # Once the worker boundary was entered, an exception cannot prove
+            # that a remote side effect did not happen. Preserve one-shot
+            # semantics by requiring reconciliation instead of a retry.
+            return _one_shot_uncertain_receipt(request.run_key)
+        return _one_shot_worker_receipt(outcome, request.run_key)
+
     if request.operation == "worker_once":
         if not application.runtime_plan.enables("worker") or application.worker_once is None:
             raise _RoleUnavailableError("worker role is disabled")
@@ -487,12 +536,22 @@ def _execute_request(request: _CLIRequest, application: ReviewedCLIApplication) 
         )
         return _dispatch_receipt(receipt)
 
-    if not application.runtime_plan.enables("api"):
+    if request.operation == "one_shot_submit":
+        if not application.runtime_plan.enables("one_shot_submitter"):
+            raise _RoleUnavailableError("one-shot submitter role is disabled")
+    elif not application.runtime_plan.enables("api"):
         raise _RoleUnavailableError("API dispatch role is disabled")
     if request.job_id is None or request.version is None:
         raise ValueError("dispatch request is incomplete")
     payload = _payload(request)
-    if request.operation == "manual":
+    if request.operation == "one_shot_submit":
+        receipt = dispatcher.dispatch_one_shot(
+            request.job_id,
+            request.version,
+            payload,
+            dry_run=request.dry_run,
+        )
+    elif request.operation == "manual":
         receipt = dispatcher.dispatch_manual(
             request.job_id,
             request.version,
@@ -577,6 +636,42 @@ def _worker_receipt(outcome: RunOutcome | None) -> _CLIResult:
     else:
         exit_code = 1
     return _CLIResult(exit_code, {"status": record.status, "run_key": record.run_key})
+
+
+def _one_shot_worker_receipt(outcome: RunOutcome | None, run_key: str) -> _CLIResult:
+    """Return only confirmed success; classify every ambiguous result as uncertain."""
+    if outcome is None:
+        # None can mean absent, already claimed, or terminal. Do not infer a
+        # successful or retryable state from this deliberately narrow SPI.
+        return _CLIResult(
+            1,
+            {"status": "not_claimed", "code": "one_shot_not_claimed", "run_key": run_key},
+        )
+    if not isinstance(outcome, RunOutcome):
+        return _one_shot_uncertain_receipt(run_key)
+    record = outcome.record
+    if not isinstance(record, RunRecord) or record.run_key != run_key:
+        return _one_shot_uncertain_receipt(run_key)
+    if (
+        record.status == "succeeded"
+        and record.claim_policy == "one_shot"
+        and record.fencing_token == 1
+        and record.finished_at is not None
+    ):
+        return _CLIResult(0, {"status": "succeeded", "run_key": run_key})
+    return _one_shot_uncertain_receipt(run_key)
+
+
+def _one_shot_uncertain_receipt(run_key: str, *, exit_code: int = 1) -> _CLIResult:
+    """Encode one fixed uncertain outcome without exposing exception details."""
+    return _CLIResult(
+        exit_code,
+        {
+            "status": "uncertain",
+            "code": "one_shot_outcome_uncertain",
+            "run_key": run_key,
+        },
+    )
 
 
 def _emit(result: _CLIResult, stream: TextIO) -> int:
