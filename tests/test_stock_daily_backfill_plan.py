@@ -365,18 +365,22 @@ def test_delisted_boundary_is_included_in_candidate_and_semantics_remain_blocked
     )
 
 
-def test_bj_candidate_matches_job_request_shape_but_is_blocked_for_provider_routing() -> None:
+def test_bj_alias_is_blocked_before_candidate_request_generation() -> None:
     lifecycle = _lifecycle("CN:830001", known_start_date=START)
     mapping = _alias("830001.BJ", "CN:830001", valid_from=START, valid_through=AS_OF)
 
     plan = _build((lifecycle,), (mapping,))
 
-    chunk = plan.candidate_chunks[0]
-    assert chunk.request.query["symbol"] == "830001.BJ"
-    assert chunk.request.shard == "830001"
-    assert chunk.provider_symbol == "830001"
+    assert plan.candidate_chunks == ()
     assert any(
         blocker.reason is BackfillBlockReason.BJ_PROVIDER_MAPPING_UNVERIFIED
+        and blocker.range_start == START
+        and blocker.range_end == AS_OF
+        and blocker.evidence_refs == (mapping.evidence_ref,)
+        for blocker in plan.instruments[0].blockers
+    )
+    assert not any(
+        blocker.reason is BackfillBlockReason.INVALID_PROVIDER_SYMBOL
         for blocker in plan.instruments[0].blockers
     )
     assert plan.execution_authorized is False
