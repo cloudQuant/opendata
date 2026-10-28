@@ -70,6 +70,7 @@ from opendata.data.request_budget import (
     SourceAttemptBinding,
     request_execution_scope,
 )
+from opendata.data.request_summary import request_summary_sha256
 from opendata.data.source_attempt_gate import SourceAttemptGate
 
 if TYPE_CHECKING:
@@ -502,6 +503,13 @@ def test_fetch_uses_one_fixed_source_request_and_binds_result_to_raw_response(
         "period": "annual",
         "limit": "5",
     }
+    assert result.request_summary_sha256 == (
+        "89ff89c09c896b7107b658371b38755a3beb20eb03b1aee793f26bc5b381e412"
+    )
+    assert result.request_summary_sha256 == request_summary_sha256(
+        {"thscode": INSTRUMENT_ID, "period": "annual", "limit": 5},
+        allowed_fields={"thscode", "period", "start", "end", "limit"},
+    )
     reservations = _attempt_rows(engine)
     assert len(reservations) == 1
     assert reservations[0]["outcome"] == "RESERVED"
@@ -518,6 +526,76 @@ def test_fetch_uses_one_fixed_source_request_and_binds_result_to_raw_response(
     assert "raw_body" not in repr(result)
     assert "observations=" not in repr(result)
     assert "quarantined_rows=" not in repr(result)
+    assert "synthetic-key-not-a-credential" not in repr(result)
+
+    legacy_result = FinancialObservationFetchResult(
+        instrument_id=result.instrument_id,
+        statement_type=result.statement_type,
+        periodicity=result.periodicity,
+        source_request_id=result.source_request_id,
+        body_sha256=result.body_sha256,
+        observed_at=result.observed_at,
+        status_code=result.status_code,
+        unit_mapping_version_declared=result.unit_mapping_version_declared,
+        unit_mapping_sha256_declared=result.unit_mapping_sha256_declared,
+        unit_mapping_evidence_kind=result.unit_mapping_evidence_kind,
+        coverage_assessment=result.coverage_assessment,
+        usability_status=result.usability_status,
+        raw_body=result.raw_body,
+        observations=result.observations,
+        quarantined_rows=result.quarantined_rows,
+    )
+    assert legacy_result.request_summary_sha256 is None
+    assert legacy_result == result
+
+
+def test_request_summary_is_one_caller_digest_for_identical_transport_retries(
+    gate_engine: Any,
+) -> None:
+    """A logical fetch retains one parameter digest across physical retries."""
+    _seed_gate(gate_engine)
+    gate = SourceAttemptGate(gate_engine)
+    requests: list[httpx.Request] = []
+
+    def timeout_first_attempt(request: httpx.Request) -> None:
+        if len(requests) == 1:
+            raise httpx.ConnectTimeout("synthetic offline timeout")
+
+    fetcher, observed_requests, _credentials = _fetcher(
+        _financial_body(),
+        gate=gate,
+        send_observer=timeout_first_attempt,
+    )
+    requests = observed_requests
+    try:
+        with request_execution_scope(
+            source=SOURCE,
+            canonical_model=MODEL,
+            operation=RequestOperation.QUERY,
+            budget=_request_budget(),
+            source_attempt_binding=_binding(),
+        ):
+            result = fetcher.fetch(
+                instrument_id=INSTRUMENT_ID,
+                statement_type="income",
+                periodicity="annual",
+                limit=2,
+            )
+
+        assert len(requests) == 2
+        assert requests[0].url.params == requests[1].url.params
+        assert dict(requests[0].url.params) == {
+            "thscode": INSTRUMENT_ID,
+            "period": "annual",
+            "limit": "2",
+        }
+        assert result.request_summary_sha256 == request_summary_sha256(
+            {"thscode": INSTRUMENT_ID, "period": "annual", "limit": 2},
+            allowed_fields={"thscode", "period", "start", "end", "limit"},
+        )
+        assert len(_attempt_rows(gate_engine)) == 2
+    finally:
+        fetcher.close()
 
 
 def test_scope_and_registered_identity_fail_before_mock_transport_send(dependencies: Any) -> None:
@@ -694,6 +772,10 @@ def test_each_statement_supports_quarterly_request_and_registry_identity(
             "period": "quarterly",
             "limit": "1",
         }
+        assert result.request_summary_sha256 == request_summary_sha256(
+            {"thscode": INSTRUMENT_ID, "period": "quarterly", "limit": 1},
+            allowed_fields={"thscode", "period", "start", "end", "limit"},
+        )
         assert result.statement_type == statement_type
         assert result.periodicity == "quarterly"
         assert result.observations[0].observation.report_period == quarter_end
@@ -730,6 +812,18 @@ def test_window_parameters_and_validation_include_both_closed_endpoints(
             "start": str(shanghai_midnight_millis(REPORT_PERIOD)),
             "end": str(shanghai_midnight_millis(REPORT_PERIOD)),
         }
+        assert result.request_summary_sha256 == (
+            "4353794516213a5c4a2cadeac6d83676d9aea983a80884b6c3b0a2d6c3d4a90a"
+        )
+        assert result.request_summary_sha256 == request_summary_sha256(
+            {
+                "thscode": INSTRUMENT_ID,
+                "period": "annual",
+                "start": shanghai_midnight_millis(REPORT_PERIOD),
+                "end": shanghai_midnight_millis(REPORT_PERIOD),
+            },
+            allowed_fields={"thscode", "period", "start", "end", "limit"},
+        )
         assert result.observations[0].observation.report_period == REPORT_PERIOD
     finally:
         fetcher.close()
@@ -1534,6 +1628,45 @@ def test_upstream_request_builder_exception_is_sanitized_before_any_send(
     assert _attempt_rows(engine) == []
 
 
+def test_upstream_request_parameters_must_match_validated_query_before_send(
+    dependencies: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Reject mutated builder parameters before a reservation or physical send."""
+    engine, _gate, requests, fetcher, _body, _observed_times = dependencies
+    monkeypatch.setattr(
+        fetcher_module,
+        "build_financial_statements_request",
+        lambda **_kwargs: {
+            "thscode": INSTRUMENT_ID,
+            "period": "annual",
+            "limit": 2,
+            "unexpected": "not in the validated query",
+        },
+    )
+    with (
+        request_execution_scope(
+            source=SOURCE,
+            canonical_model=MODEL,
+            operation=RequestOperation.QUERY,
+            budget=_request_budget(),
+            source_attempt_binding=_binding(),
+        ),
+        pytest.raises(
+            FinancialObservationFetchError,
+            match="upstream_request_parameters_invalid",
+        ),
+    ):
+        fetcher.fetch(
+            instrument_id=INSTRUMENT_ID,
+            statement_type="income",
+            periodicity="annual",
+            limit=1,
+        )
+    assert requests == []
+    assert _attempt_rows(engine) == []
+
+
 def _successful_result(dependencies: Any) -> FinancialObservationFetchResult:
     """Return one fixture result through the real MockTransport and strict decoder."""
     fetcher = dependencies[3]
@@ -1557,6 +1690,7 @@ def _successful_result(dependencies: Any) -> FinancialObservationFetchResult:
     [
         ("raw_body", b"", "raw_body"),
         ("raw_body", bytearray(b"{}"), "raw_body"),
+        ("request_summary_sha256", "invalid", "lowercase SHA-256 or None"),
         ("body_sha256", "0" * 64, "does not match raw_body"),
         ("source_request_id", " padded ", "nonempty trimmed token"),
         ("source_request_id", "", "nonempty trimmed token"),

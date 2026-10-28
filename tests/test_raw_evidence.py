@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING
 import pytest
 from pydantic import ValidationError
 
+import opendata.data.request_summary as request_summary
 import opendata.pipeline.raw_evidence as raw_evidence
 from opendata.pipeline.raw_evidence import (
     ArtifactIntegrityError,
@@ -147,6 +148,24 @@ def test_request_summary_hash_is_canonical_allowlisted_and_never_persisted() -> 
 
     with pytest.raises(RawEvidenceError, match="item count"):
         request_summary_sha256(RepeatedItems(), allowed_fields={"symbol"})
+
+
+def test_request_summary_v1_legacy_exports_keep_identity_and_golden_encoding() -> None:
+    """Keep the old import path and v1 error/hash contract over the pure helper."""
+    assert raw_evidence.RawEvidenceError is request_summary.RawEvidenceError
+    assert raw_evidence.RequestValue is request_summary.RequestValue
+    assert raw_evidence.request_summary_sha256 is request_summary.request_summary_sha256
+
+    digest = request_summary_sha256(
+        {"symbol": "600000.SH", "start_date": date(2024, 1, 1), "adjustment": "none"},
+        allowed_fields={"symbol", "start_date", "adjustment"},
+    )
+    assert digest == "c9e33fe736a7ec6cabfdb32d6baca47f579afc0a4f319912ef306b4c0f7de76f"
+
+    with pytest.raises(raw_evidence.RawEvidenceError, match="credential-like"):
+        request_summary.request_summary_sha256(
+            {"api_key": "never-write-me"}, allowed_fields={"api_key"}
+        )
 
 
 def test_capture_streams_to_private_content_and_manifest_paths(tmp_path: Path) -> None:

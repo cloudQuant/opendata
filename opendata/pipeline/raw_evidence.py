@@ -10,14 +10,25 @@ from __future__ import annotations
 
 import hashlib
 import json
-import math
+
+# Keep the helper's former module dependencies visible for callers that imported
+# names such as ``math``, ``Mapping``, or ``date`` from this module directly or via
+# ``import *``.
+import math as math
 import os
 import re
 import secrets
 import stat
-from collections.abc import Iterable, Mapping
+
+# Keep this runtime import: ``Iterable`` appears in public annotations that callers
+# may resolve with ``typing.get_type_hints``.
+from collections.abc import Iterable  # noqa: TC003
+
+# Explicit same-name aliases retain these legacy module exports after extraction.
+from collections.abc import Mapping as Mapping
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import date as date
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal, TypeAlias
 
@@ -31,31 +42,27 @@ from pydantic import (
     field_validator,
 )
 
+# Retain the legacy request-summary exports while keeping digest users out of the
+# pipeline package's application-settings and database initialization path.
+from opendata.data.request_summary import (
+    RawEvidenceError,
+)
+from opendata.data.request_summary import (
+    RequestValue as RequestValue,
+)
+from opendata.data.request_summary import (
+    request_summary_sha256 as request_summary_sha256,
+)
+
 RetentionClass: TypeAlias = Literal["unknown", "ephemeral", "restricted", "durable_candidate"]
 HistoryLimit: TypeAlias = Literal[
     "unknown", "provider_retention_window", "snapshot_only", "partial_history", "none_documented"
 ]
-RequestValue: TypeAlias = str | int | float | bool | date | None
-
 _SHA256_PATTERN = r"^[0-9a-f]{64}$"
 _IDENTIFIER_PATTERN = r"^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
-_REQUEST_KEY_PATTERN = re.compile(r"^[a-z][a-z0-9_]{0,63}$")
-_CREDENTIAL_KEY_PATTERN = re.compile(
-    r"(?:^|_)(?:api_?key|access_?key|secret|token|auth|authorization|cookie|header|"
-    r"password|credential|signature|session)(?:_|$)",
-    re.IGNORECASE,
-)
-_MAX_REQUEST_SUMMARY_BYTES = 32 * 1024
-_MAX_REQUEST_ALLOWLIST_FIELDS = 128
-_MAX_REQUEST_PARAMETER_ITEMS = 256
-_MAX_REQUEST_INTEGER_BITS = 256
 _MAX_MANIFEST_BYTES = 16 * 1024
 _DEFAULT_MAX_RESPONSE_BYTES = 16 * 1024 * 1024
 _MAX_CONFIGURED_RESPONSE_BYTES = 1024 * 1024 * 1024
-
-
-class RawEvidenceError(ValueError):
-    """Raised when capture input or local artifact storage is unsafe."""
 
 
 class ResponseTooLargeError(RawEvidenceError):
@@ -90,7 +97,8 @@ class RawResponseManifest(BaseModel):
         default_factory=lambda: secrets.token_hex(16), pattern=r"^[0-9a-f]{32}$"
     )
     source: RawResponseSource
-    request_summary_sha256: StrictStr = Field(pattern=_SHA256_PATTERN)
+    # Same identifier as the helper re-export; this is a distinct manifest field.
+    request_summary_sha256: StrictStr = Field(pattern=_SHA256_PATTERN)  # noqa: F811
     captured_at_utc: datetime
     http_status: StrictInt = Field(ge=100, le=599)
     response_sha256: StrictStr = Field(pattern=_SHA256_PATTERN)
@@ -115,85 +123,6 @@ class CapturedRawResponse:
     manifest: RawResponseManifest
     artifact_path: Path
     manifest_path: Path
-
-
-def request_summary_sha256(
-    parameters: Mapping[str, RequestValue], *, allowed_fields: Iterable[str]
-) -> str:
-    """Hash explicitly allowlisted scalar request parameters without storing them.
-
-    The allowlist is source/job specific and mandatory. Credential-like keys are
-    rejected even if included in it. Values are encoded only into the digest input;
-    the raw mapping is never copied into the response manifest or written to disk.
-    """
-    if not isinstance(parameters, Mapping):
-        raise RawEvidenceError("request parameters must be a mapping")
-    try:
-        parameter_count = len(parameters)
-    except (TypeError, OverflowError) as exc:
-        raise RawEvidenceError("request parameter count is unavailable") from exc
-    if parameter_count > _MAX_REQUEST_PARAMETER_ITEMS:
-        raise RawEvidenceError("request parameter item count exceeds its limit")
-    if isinstance(allowed_fields, (str, bytes)):
-        raise RawEvidenceError("request allowlist must be an iterable of field names")
-    try:
-        allowed_iterator = iter(allowed_fields)
-    except TypeError as exc:
-        raise RawEvidenceError("request allowlist must be iterable") from exc
-
-    allowed: set[str] = set()
-    for index, key in enumerate(allowed_iterator):
-        if index >= _MAX_REQUEST_ALLOWLIST_FIELDS:
-            raise RawEvidenceError("request allowlist exceeds its field-count limit")
-        if not isinstance(key, str) or _REQUEST_KEY_PATTERN.fullmatch(key) is None:
-            raise RawEvidenceError("request allowlist contains an invalid field name")
-        if _CREDENTIAL_KEY_PATTERN.search(key):
-            raise RawEvidenceError("credential-like request field is forbidden")
-        if key in allowed:
-            raise RawEvidenceError("request allowlist contains a duplicate field")
-        allowed.add(key)
-
-    normalized: dict[str, str | int | float | bool | None] = {}
-    for index, (key, value) in enumerate(parameters.items()):
-        if index >= _MAX_REQUEST_PARAMETER_ITEMS:
-            raise RawEvidenceError("request parameter item count exceeds its limit")
-        if not isinstance(key, str) or _REQUEST_KEY_PATTERN.fullmatch(key) is None:
-            raise RawEvidenceError("request parameter name is invalid")
-        if _CREDENTIAL_KEY_PATTERN.search(key):
-            raise RawEvidenceError("credential-like request field is forbidden")
-        if key not in allowed:
-            raise RawEvidenceError("request parameter is outside the explicit allowlist")
-        if key in normalized:
-            raise RawEvidenceError("request parameters contain a duplicate field")
-        if isinstance(value, datetime):
-            raise RawEvidenceError("datetime request values are not supported; use a business date")
-        if isinstance(value, date):
-            normalized[key] = value.isoformat()
-        elif value is None or isinstance(value, (str, bool)):
-            if isinstance(value, str) and len(value.encode("utf-8")) > 1024:
-                raise RawEvidenceError("request parameter value exceeds the bounded summary limit")
-            normalized[key] = value
-        elif isinstance(value, int):
-            if int.bit_length(value) > _MAX_REQUEST_INTEGER_BITS:
-                raise RawEvidenceError("integer request parameter exceeds its bit-length limit")
-            normalized[key] = value
-        elif isinstance(value, float):
-            if not math.isfinite(value):
-                raise RawEvidenceError("non-finite request parameter values are forbidden")
-            normalized[key] = value
-        else:
-            raise RawEvidenceError("request parameters must be bounded scalar values")
-
-    encoded = json.dumps(
-        {"parameters": normalized, "version": 1},
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-        allow_nan=False,
-    ).encode("utf-8")
-    if len(encoded) > _MAX_REQUEST_SUMMARY_BYTES:
-        raise RawEvidenceError("canonical request summary exceeds its size limit")
-    return hashlib.sha256(encoded).hexdigest()
 
 
 class RawResponseArtifactWriter:
@@ -225,7 +154,8 @@ class RawResponseArtifactWriter:
         chunks: Iterable[bytes],
         *,
         source: RawResponseSource,
-        request_summary_sha256: str,
+        # Preserve the established capture argument name alongside the helper export.
+        request_summary_sha256: str,  # noqa: F811
         http_status: int,
         retention_class: RetentionClass,
         source_history_limit: HistoryLimit,
