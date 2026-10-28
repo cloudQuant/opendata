@@ -5,19 +5,22 @@ Python callables. This module never imports job paths, reads process settings,
 opens provider connections, or executes legacy scripts. Fetch and normalization
 run outside the warehouse transaction; publication and the succeeded ledger
 transition are delegated to one fenced transaction callback.
+An optional exact-bytes sidecar is validated before that callback and is carried
+only by the in-memory normalized batch for the current run.
 """
 
 from __future__ import annotations
 
 import hashlib
+import inspect
 import json
 import math
 import re
 from collections.abc import Callable, Iterable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta, timezone
-from types import MappingProxyType
-from typing import TYPE_CHECKING, Protocol, TypeAlias
+from types import FunctionType, MappingProxyType
+from typing import TYPE_CHECKING, Protocol, TypeAlias, TypeGuard, cast
 
 from pydantic import JsonValue
 
@@ -31,9 +34,11 @@ if TYPE_CHECKING:  # pragma: no cover
 
 MAX_RESULT_RECORDS = 50_000
 MAX_RESULT_BYTES = 16 * 1024 * 1024
+MAX_COMMIT_PAYLOAD_BYTES = 16 * 1024 * 1024
 MAX_RESULT_DEPTH = 8
 MAX_RESULT_NODES = 1_000_000
 MAX_RESULT_TEXT = 4_096
+_UNSET_COMMIT_PAYLOAD = object()
 _ERROR_NAME = re.compile(r"^_?[A-Za-z][A-Za-z0-9_]{0,79}$")
 _SECRET_KEY_MARKERS = (
     "accesskey",
@@ -154,7 +159,13 @@ class NormalizedRecord:
 
 @dataclass(frozen=True, slots=True)
 class NormalizedBatch:
-    """Normalized records plus explicit semantics required for publication."""
+    """Normalized facts plus an optional, in-memory transaction sidecar.
+
+    ``commit_payload`` is omitted from representations and ledger snapshots.
+    A registered job must provide exact ``bytes`` on every run; the runner
+    validates the payload and its declared size outside the transaction before
+    exposing it to the publisher.
+    """
 
     records: tuple[NormalizedRecord, ...]
     schema_version: str
@@ -164,6 +175,7 @@ class NormalizedBatch:
     quality: JsonObject
     provenance: JsonObject
     watermark: JsonObject | None = None
+    commit_payload: bytes | None = field(default=None, repr=False)
 
 
 @dataclass(frozen=True, slots=True)
@@ -177,13 +189,23 @@ class PublicationReceipt:
 
 @dataclass(frozen=True, slots=True)
 class ReviewedJob:
-    """A specific reviewed job version and its explicitly supplied handlers."""
+    """A reviewed job and an optional bounded sidecar contract.
+
+    Sidecar support is all-or-nothing: declare the exact ``bytes`` type, a
+    synchronous validator that returns the literal boolean ``True``, and the
+    per-job byte limit. Once declared, every run must return a payload. Jobs
+    without these fields reject non-``None`` payloads and remain compatible
+    with batches whose payload is ``None``.
+    """
 
     task: TaskDefinition
     fetch: FetchHandler
     normalize: NormalizeHandler
     publish: PublishHandler
     reviewed: bool = False
+    commit_payload_type: type[bytes] | None = None
+    validate_commit_payload: Callable[[bytes], bool] | None = None
+    max_commit_payload_bytes: int | None = None
 
 
 class ReviewedJobRegistry:
@@ -199,6 +221,7 @@ class ReviewedJobRegistry:
                 raise TypeError("reviewed job task must be a TaskDefinition")
             if not callable(job.fetch) or not callable(job.normalize) or not callable(job.publish):
                 raise TypeError("reviewed job handlers must be explicit callables")
+            _validate_commit_payload_declaration(job)
             key = (job.task.job_id, job.task.version)
             if key in indexed:
                 raise ValueError("duplicate job_id and version in reviewed job registry")
@@ -312,7 +335,16 @@ class RunService:
             context.checkpoint()
             batch = job.normalize(raw, request, context)
             context.checkpoint()
-            batch = self._validate_batch(batch, checkpoint=context.checkpoint_cooperatively)
+            if type(batch) is not NormalizedBatch:
+                raise _ResultInvalidError("normalized_batch_invalid")
+            commit_payload = batch.commit_payload
+            commit_payload_validator = self._preflight_commit_payload(job, commit_payload)
+            batch = self._validate_batch(
+                batch,
+                checkpoint=context.checkpoint_cooperatively,
+                commit_payload=commit_payload,
+            )
+            self._validate_commit_payload(commit_payload, commit_payload_validator)
             context.checkpoint()
 
             def publish(connection: Connection) -> PublicationReceipt:
@@ -423,10 +455,16 @@ class RunService:
         batch: NormalizedBatch,
         *,
         checkpoint: Callable[[], None] | None = None,
+        commit_payload: object = _UNSET_COMMIT_PAYLOAD,
     ) -> NormalizedBatch:
         """Copy and enforce record, field, credential, and encoded-size bounds."""
-        if not isinstance(batch, NormalizedBatch):
+        if type(batch) is not NormalizedBatch:
             raise _ResultInvalidError("normalized_batch_invalid")
+        sidecar = (
+            batch.commit_payload if commit_payload is _UNSET_COMMIT_PAYLOAD else commit_payload
+        )
+        if sidecar is not None and type(sidecar) is not bytes:
+            raise _ResultInvalidError("commit_payload_type_invalid")
         if not isinstance(batch.records, tuple):
             raise _ResultInvalidError("normalized_records_must_be_immutable")
         if len(batch.records) > self._max_records:
@@ -522,7 +560,52 @@ class RunService:
             quality=safe_quality,
             provenance=safe_provenance,
             watermark=safe_watermark,
+            commit_payload=cast("bytes | None", sidecar),
         )
+
+    @staticmethod
+    def _preflight_commit_payload(
+        job: ReviewedJob, payload: bytes | None
+    ) -> Callable[[bytes], bool] | None:
+        """Check sidecar presence and bounds before copying normalized records."""
+        if payload is not None and type(payload) is not bytes:
+            raise _ResultInvalidError("commit_payload_type_invalid")
+
+        payload_type = job.commit_payload_type
+        validator = job.validate_commit_payload
+        max_bytes = job.max_commit_payload_bytes
+        if payload_type is None and validator is None and max_bytes is None:
+            if payload is not None:
+                raise _CommitPayloadInvalidError("commit_payload_not_registered")
+            return None
+        if payload_type is not bytes or not _is_sync_validator(validator):
+            raise _CommitPayloadInvalidError("commit_payload_not_registered")
+        if payload is None:
+            raise _CommitPayloadInvalidError("commit_payload_missing")
+        if (
+            type(max_bytes) is not int
+            or not 1 <= max_bytes <= MAX_COMMIT_PAYLOAD_BYTES
+            or len(payload) > max_bytes
+        ):
+            raise _CommitPayloadInvalidError("commit_payload_size_invalid")
+        return validator
+
+    @staticmethod
+    def _validate_commit_payload(
+        payload: bytes | None,
+        validator: Callable[[bytes], bool] | None,
+    ) -> None:
+        """Run the registered semantic validator outside the commit transaction."""
+        if validator is None:
+            return
+        if type(payload) is not bytes:
+            raise _CommitPayloadInvalidError("commit_payload_type_invalid")
+        try:
+            accepted = validator(payload)
+        except Exception:
+            raise _CommitPayloadInvalidError("commit_payload_validation_failed") from None
+        if type(accepted) is not bool or accepted is not True:
+            raise _CommitPayloadInvalidError("commit_payload_validation_failed")
 
     def _now(self) -> datetime:
         """Require the injected clock to return an aware UTC instant."""
@@ -546,6 +629,36 @@ class _SnapshotInvalidError(RuntimeError):
 
 class _ResultInvalidError(RuntimeError):
     """Internal, sanitized refusal for an invalid or oversized result."""
+
+
+class _CommitPayloadInvalidError(RuntimeError):
+    """Internal, sanitized refusal for an invalid ephemeral commit payload."""
+
+
+def _validate_commit_payload_declaration(job: ReviewedJob) -> None:
+    """Require an all-or-nothing, bounded declaration for transaction sidecars."""
+    payload_type = job.commit_payload_type
+    validator = job.validate_commit_payload
+    max_bytes = job.max_commit_payload_bytes
+    if payload_type is None and validator is None and max_bytes is None:
+        return
+    if payload_type is not bytes:
+        raise TypeError("commit payload type must be exactly bytes")
+    if not _is_sync_validator(validator):
+        raise TypeError("commit payload validator must be an explicit function")
+    if type(max_bytes) is not int or not 1 <= max_bytes <= MAX_COMMIT_PAYLOAD_BYTES:
+        raise ValueError(
+            f"max_commit_payload_bytes must be between 1 and {MAX_COMMIT_PAYLOAD_BYTES}"
+        )
+
+
+def _is_sync_validator(value: object) -> TypeGuard[Callable[[bytes], bool]]:
+    """Recognize plain synchronous functions without invoking custom callables."""
+    return type(value) is FunctionType and not (
+        inspect.iscoroutinefunction(value)
+        or inspect.isgeneratorfunction(value)
+        or inspect.isasyncgenfunction(value)
+    )
 
 
 def _supports_ledger_protocol(value: object) -> bool:
@@ -984,6 +1097,7 @@ def _safe_error_code(error: BaseException) -> str:
 
 
 __all__ = [
+    "MAX_COMMIT_PAYLOAD_BYTES",
     "MAX_RESULT_BYTES",
     "MAX_RESULT_RECORDS",
     "NormalizedBatch",
