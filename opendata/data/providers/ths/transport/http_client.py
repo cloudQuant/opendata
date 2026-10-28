@@ -18,7 +18,7 @@ import uuid
 from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 from urllib.parse import urlsplit
 
 import httpx
@@ -79,6 +79,31 @@ DEFAULT_TIMEOUT_SECONDS = 20.0
 
 
 @dataclass(frozen=True)
+class FuyaoTransportAttemptTrace:
+    """Local-only observation for one reserved THS attempt on a successful call.
+
+    This record describes what this client reserved and observed. It is not an
+    upstream receipt and cannot prove that the source received or processed a
+    request. Identifiers are local to the client/gate; source request IDs stay
+    in their own field and are never substituted for local IDs. The record is
+    exposed only when a request returns a successful response. Terminal errors
+    have no trace carrier, and gate reservations alone do not prove a send or
+    its outcome; this type is not a complete audit trail.
+    """
+
+    transport_request_id: str
+    attempt_id: str
+    attempt_no: int
+    reserved_at_us: int | None
+    gate_status: str
+    request_budget_reserved: bool
+    http_status: int | None
+    outcome: Literal["response_observed", "outcome_unknown"]
+    failure_category: str | None = None
+    source_request_id: str | None = field(default=None, repr=False)
+
+
+@dataclass(frozen=True)
 class FuyaoHttpResponse:
     """一次成功请求的传输层结果.
 
@@ -89,12 +114,18 @@ class FuyaoHttpResponse:
         raw_content: HTTPX 已缓冲并解压的实体 body bytes，而非线上压缩 wire bytes。
             HTTPX 在本模块应用体积上限前已完成 buffering。该字段随成功结果返回，
             本模块不会把响应体写入日志或持久化。
+        attempt_trace: 仅随成功响应返回的本地 request/attempt 预留及观察记录，不是上游
+            回执，也不是完整审计轨迹。终止失败从原异常中无法取得 trace；gate reservation
+            只证明本地预留。不要对整个响应对象执行通用序列化，因为响应还包含原始实体和解析数据。
     """
 
     status_code: int
     envelope: FuyaoEnvelope
     elapsed_seconds: float
     raw_content: bytes = field(default=b"", repr=False, compare=False)
+    attempt_trace: tuple[FuyaoTransportAttemptTrace, ...] = field(
+        default=(), repr=False, compare=False
+    )
 
 
 @dataclass(frozen=True)
@@ -331,6 +362,35 @@ class FuyaoHttpClient:
                         cache_hit=True,
                     )
                     return result
+        attempt_traces: list[FuyaoTransportAttemptTrace] = []
+
+        def record_attempt_trace(
+            reservation: tuple[str, AttemptReservation] | None,
+            *,
+            send_started: bool,
+            already_recorded: bool,
+            attempt_no: int,
+            http_status: int | None,
+            failure_category: str | None,
+            source_request_id: object = None,
+        ) -> bool:
+            """Append one local gated attempt observation and report if recorded."""
+            if reservation is None or not send_started or already_recorded:
+                return already_recorded
+            attempt_id, gate_reservation = reservation
+            attempt_traces.append(
+                _make_attempt_trace(
+                    transport_request_id=request_id,
+                    attempt_id=attempt_id,
+                    attempt_no=attempt_no,
+                    reservation=gate_reservation,
+                    http_status=http_status,
+                    failure_category=failure_category,
+                    source_request_id=source_request_id,
+                )
+            )
+            return True
+
         for attempt in range(1, self._max_attempts + 1):
             started = time.monotonic()
             try:
@@ -352,6 +412,10 @@ class FuyaoHttpClient:
                 raise
             response_status: int | None = None
             request_event_logged = False
+            gate_reservation: tuple[str, AttemptReservation] | None = None
+            send_started = False
+            trace_recorded = False
+
             try:
                 if scopes:
                     request_host = self._scoped_host(url)
@@ -380,7 +444,7 @@ class FuyaoHttpClient:
                         prepared_request.extensions["timeout"] = httpx.Timeout(timeout).as_dict()
                         reserve_scoped_attempt(scopes, "ths", request_host)
                         if gate_enabled:
-                            self._reserve_source_attempt(
+                            gate_reservation = self._reserve_source_attempt(
                                 scopes,
                                 host=request_host,
                                 request_id=request_id,
@@ -397,7 +461,9 @@ class FuyaoHttpClient:
                             prepared_request.extensions["timeout"] = httpx.Timeout(
                                 timeout
                             ).as_dict()
+                        send_started = True
                         response = self._client.send(prepared_request, follow_redirects=False)
+                        response_status = response.status_code
                         check_scope_liveness(scopes)
                 else:
                     with shared_host_request(self._concurrency_host):
@@ -434,6 +500,15 @@ class FuyaoHttpClient:
                         failure_category=exc.category,
                     )
                     request_event_logged = True
+                    trace_recorded = record_attempt_trace(
+                        gate_reservation,
+                        send_started=send_started,
+                        already_recorded=trace_recorded,
+                        attempt_no=attempt,
+                        http_status=response_status,
+                        failure_category=exc.category,
+                        source_request_id=exc.request_id,
+                    )
                     if not exc.retryable:
                         raise
                 else:
@@ -461,6 +536,23 @@ class FuyaoHttpClient:
                         status=response.status_code,
                         failure_category=None,
                     )
+                    trace_recorded = record_attempt_trace(
+                        gate_reservation,
+                        send_started=send_started,
+                        already_recorded=trace_recorded,
+                        attempt_no=attempt,
+                        http_status=response_status,
+                        failure_category=None,
+                        source_request_id=result.envelope.request_id,
+                    )
+                    if attempt_traces:
+                        result = FuyaoHttpResponse(
+                            status_code=result.status_code,
+                            envelope=result.envelope,
+                            elapsed_seconds=result.elapsed_seconds,
+                            raw_content=result.raw_content,
+                            attempt_trace=tuple(attempt_traces),
+                        )
                     return result
             if not request_event_logged:
                 self._log_request_event(
@@ -472,6 +564,15 @@ class FuyaoHttpClient:
                     status=response_status,
                     failure_category=(last_error.category if last_error is not None else "unknown"),
                 )
+            record_attempt_trace(
+                gate_reservation,
+                send_started=send_started,
+                already_recorded=trace_recorded,
+                attempt_no=attempt,
+                http_status=response_status,
+                failure_category=(last_error.category if last_error is not None else "unknown"),
+                source_request_id=(last_error.request_id if last_error is not None else None),
+            )
             if attempt >= self._max_attempts:
                 break
             if scopes:
@@ -597,8 +698,8 @@ class FuyaoHttpClient:
         host: str,
         request_id: str,
         attempt_no: int,
-    ) -> None:
-        """Persist a one-use reservation immediately before one physical send."""
+    ) -> tuple[str, AttemptReservation]:
+        """Persist and return the local one-use reservation immediately before send."""
         gate = self._source_attempt_gate
         if gate is None:  # pragma: no cover - guarded by _validate_source_attempt_mode
             raise RequestAuthorizationError("source attempt gate is not configured")
@@ -627,6 +728,7 @@ class FuyaoHttpClient:
             or reservation.status is not ReservationStatus.RESERVED_NEW
         ):
             raise RequestAuthorizationError("source attempt gate did not authorize transport")
+        return attempt.attempt_id, reservation
 
     @staticmethod
     @contextmanager
@@ -826,4 +928,43 @@ __all__ = [
     "DEFAULT_TIMEOUT_SECONDS",
     "FuyaoHttpClient",
     "FuyaoHttpResponse",
+    "FuyaoTransportAttemptTrace",
 ]
+
+
+def _make_attempt_trace(
+    *,
+    transport_request_id: str,
+    attempt_id: str,
+    attempt_no: int,
+    reservation: AttemptReservation,
+    http_status: int | None,
+    failure_category: str | None,
+    source_request_id: object,
+) -> FuyaoTransportAttemptTrace:
+    """Build the public allowlist projection of a local attempt reservation."""
+    return FuyaoTransportAttemptTrace(
+        transport_request_id=transport_request_id,
+        attempt_id=attempt_id,
+        attempt_no=attempt_no,
+        reserved_at_us=reservation.reserved_at_us,
+        gate_status=reservation.status.value,
+        request_budget_reserved=True,
+        http_status=http_status,
+        outcome="response_observed" if http_status is not None else "outcome_unknown",
+        failure_category=failure_category,
+        source_request_id=_safe_source_request_id(source_request_id),
+    )
+
+
+def _safe_source_request_id(value: object) -> str | None:
+    """Keep a bounded printable source ID distinct from local transport IDs."""
+    if (
+        type(value) is not str
+        or not value
+        or len(value) > 256
+        or not value.isascii()
+        or not value.isprintable()
+    ):
+        return None
+    return value

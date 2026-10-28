@@ -11,7 +11,7 @@ import logging
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 
 import httpx
 import pytest
@@ -32,7 +32,9 @@ from opendata.data.providers.ths import (
     load_error_messages,
     parse_envelope,
 )
+from opendata.data.providers.ths.transport import http_client as http_client_module
 from opendata.data.providers.ths.transport.errors import ErrorTableError
+from opendata.data.source_attempt_gate import AttemptReservation, ReservationStatus
 
 HTTP_CLIENT_LOGGER = FuyaoHttpClient.__module__
 
@@ -56,6 +58,37 @@ def _client(handler, **kwargs) -> FuyaoHttpClient:
         sleep=lambda seconds: None,  # 退避不真实休眠
         **kwargs,
     )
+
+
+def _enable_synthetic_attempt_gate(monkeypatch, client: FuyaoHttpClient) -> None:
+    """Exercise trace assembly without opening a database or authorizing a real request."""
+    monkeypatch.setattr(http_client_module, "current_request_scopes", lambda: (object(),))
+    monkeypatch.setattr(http_client_module, "check_scope_liveness", lambda _scopes: None)
+    monkeypatch.setattr(http_client_module, "authorize_request", lambda *_args: None)
+    monkeypatch.setattr(http_client_module, "reserve_scoped_attempt", lambda *_args: None)
+    monkeypatch.setattr(http_client_module, "scoped_host_slot", lambda *_args: nullcontext())
+    monkeypatch.setattr(client, "_validate_source_attempt_mode", lambda _scopes: None)
+    monkeypatch.setattr(client, "_validate_scoped_client", lambda **_kwargs: None)
+    monkeypatch.setattr(client, "_scoped_timeout", lambda _scopes: client._timeout_seconds)
+    monkeypatch.setattr(
+        client,
+        "_scoped_shared_host_request",
+        lambda *_args: nullcontext(),
+    )
+    client._source_attempt_gate = object()
+
+    def reserve(_scopes, *, request_id: str, attempt_no: int, host: str):
+        assert request_id
+        assert host == "fuyao.test"
+        return (
+            f"local-attempt-{attempt_no}",
+            AttemptReservation(
+                status=ReservationStatus.RESERVED_NEW,
+                reserved_at_us=1_000 + attempt_no,
+            ),
+        )
+
+    monkeypatch.setattr(client, "_reserve_source_attempt", reserve)
 
 
 class TestCredentials:
@@ -368,6 +401,93 @@ class TestRateLimiter:
 
 
 class TestHttpClient:
+    def test_response_constructor_keeps_legacy_three_and_four_argument_forms(self):
+        envelope = parse_envelope({"code": 0, "message": "ok", "request_id": "source-1"})
+
+        without_body = http_client_module.FuyaoHttpResponse(200, envelope, 0.1)
+        with_body = http_client_module.FuyaoHttpResponse(200, envelope, 0.1, b"body")
+
+        assert without_body.raw_content == b""
+        assert with_body.raw_content == b"body"
+        assert without_body.attempt_trace == ()
+        assert with_body.attempt_trace == ()
+
+    def test_gated_timeout_then_success_keeps_distinct_local_attempt_traces(self, monkeypatch):
+        calls = 0
+
+        def handler(_request: httpx.Request) -> httpx.Response:
+            nonlocal calls
+            calls += 1
+            if calls == 1:
+                raise httpx.ReadTimeout("synthetic timeout")
+            return httpx.Response(200, content=_envelope(items=[{"close": 2.0}]))
+
+        with _client(handler, max_attempts=2) as client:
+            _enable_synthetic_attempt_gate(monkeypatch, client)
+            result = client.get("/api/a-share/prices")
+
+        first, second = result.attempt_trace
+        assert calls == 2
+        assert first.transport_request_id == second.transport_request_id
+        assert first.attempt_id == "local-attempt-1"
+        assert second.attempt_id == "local-attempt-2"
+        assert first.attempt_id != second.attempt_id
+        assert (first.attempt_no, second.attempt_no) == (1, 2)
+        assert (first.reserved_at_us, second.reserved_at_us) == (1_001, 1_002)
+        assert first.gate_status == second.gate_status == "RESERVED_NEW"
+        assert first.request_budget_reserved is second.request_budget_reserved is True
+        assert first.outcome == "outcome_unknown"
+        assert first.http_status is None
+        assert first.failure_category == "timeout"
+        assert second.outcome == "response_observed"
+        assert second.http_status == result.status_code == 200
+        assert second.source_request_id == "req-abc"
+        assert second.source_request_id != second.transport_request_id
+        trace_repr = repr(result.attempt_trace)
+        assert "req-abc" not in trace_repr
+        for secret_or_route in ("fuyao-test-key", "X-api-key", "fuyao.test", "/api/"):
+            assert secret_or_route not in trace_repr
+
+    def test_gated_retryable_response_is_separate_from_final_success(self, monkeypatch):
+        calls = 0
+
+        def handler(_request: httpx.Request) -> httpx.Response:
+            nonlocal calls
+            calls += 1
+            if calls == 1:
+                return httpx.Response(200, content=_envelope(5001, message="temporary"))
+            return httpx.Response(200, content=_envelope(items=[{"close": 3.0}]))
+
+        with _client(handler, max_attempts=2) as client:
+            _enable_synthetic_attempt_gate(monkeypatch, client)
+            result = client.get("/api/a-share/prices")
+
+        first, final = result.attempt_trace
+        assert first.attempt_id != final.attempt_id
+        assert (first.attempt_no, final.attempt_no) == (1, 2)
+        assert first.outcome == final.outcome == "response_observed"
+        assert first.http_status == final.http_status == 200
+        assert first.failure_category == "transient"
+        assert final.failure_category is None
+        assert first.source_request_id == final.source_request_id == "req-abc"
+
+    def test_terminal_gated_timeouts_remain_errors_without_a_success_trace(self, monkeypatch):
+        calls = 0
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            nonlocal calls
+            calls += 1
+            raise httpx.ReadTimeout("synthetic timeout", request=request)
+
+        with _client(handler, max_attempts=2) as client:
+            _enable_synthetic_attempt_gate(monkeypatch, client)
+            with pytest.raises(FuyaoError) as exc:
+                client.get("/api/a-share/prices")
+
+        assert calls == 2
+        assert exc.value.category == "timeout"
+        assert not hasattr(exc.value, "attempt_trace")
+
     def test_successful_get_sends_the_key_header_and_parses(self):
         seen: dict[str, str] = {}
 
