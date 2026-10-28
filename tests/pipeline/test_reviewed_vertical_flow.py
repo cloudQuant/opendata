@@ -20,7 +20,11 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy import create_engine, func, select
 
 from opendata.api.dependencies import Principal, get_current_principal
-from opendata.api.published_access import DatasetGrant, DatasetGrantRegistry
+from opendata.api.published_access import (
+    DatasetGrant,
+    DatasetGrantRegistry,
+    require_published_access,
+)
 from opendata.api.published_data import (
     get_dataset_contracts,
     get_dataset_grants,
@@ -51,6 +55,7 @@ from opendata.pipeline.publication_store import (
     PUBLICATION_METADATA,
     PUBLICATIONS,
     PUBLISHED_FACT_VERSIONS,
+    SNAPSHOTS,
     PublicationStore,
 )
 from opendata.pipeline.raw_evidence import RawResponseArtifactWriter
@@ -237,7 +242,7 @@ def _published_app(
                 dataset_id=DATASET_ID,
                 domain="equity",
                 source_id=SOURCE_ID,
-                permitted_operations=("data.read", "snapshot.create"),
+                permitted_operations=("data.read", "snapshot.create", "snapshot.read"),
                 purposes=("research",),
                 valid_from=datetime(2026, 1, 1, tzinfo=UTC),
                 valid_until=datetime(2027, 1, 1, tzinfo=UTC),
@@ -265,6 +270,7 @@ def _published_app(
 @pytest.mark.asyncio
 async def test_reviewed_cli_to_stock_publication_rest_coverage_and_failed_run_fence(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Prove successful end-to-end wiring and that a bad response cannot advance data."""
     database_path = tmp_path / "vertical-flow.sqlite"
@@ -437,34 +443,52 @@ async def test_reviewed_cli_to_stock_publication_rest_coverage_and_failed_run_fe
         assert success_record is not None and success_record.status == "succeeded"
         assert parameter_modes == ["vertical-success"]
 
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-            response = await client.get(
-                f"/api/v2/datasets/{DATASET_ID}/records",
-                params={
-                    "start_date": START.isoformat(),
-                    "end_date": END_EXCLUSIVE.isoformat(),
-                    "page_size": 10,
-                },
-            )
-        assert response.status_code == 200, response.text
-        page = response.json()
-        assert page["window"] == {
-            "start": START.isoformat(),
-            "end": END_EXCLUSIVE.isoformat(),
-            "end_exclusive": True,
-        }
-        assert page["count"] == page["record_count"] == 2
-        assert [row["payload"]["close"] for row in page["rows"]] == [11.0, 11.2]
-        assert {row["observed_at"] for row in page["rows"]} == {"2026-10-27T08:15:00+00:00"}
-        assert page["rows"][0]["publication_id"] == page["publication_id"]
-        assert page["rows"][0]["payload"]["volume"] == 1_200.0
-        assert page["adjustment_basis"] == "raw"
-        assert page["source"]["source_id"] == SOURCE_ID
-        assert page["meta"]["snapshot"]["snapshot_id"] == page["snapshot_id"]
-        publication = store.get_publication(page["publication_id"])
+        publications = store.list_publications(DATASET_ID)
+        assert len(publications) == 1
+        publication = publications[0]
         assert publication is not None
+        assert publication.record_count == 2
+        assert publication.sequence == 1
         assert publication.provenance["source_verification"] == "not_performed"
         assert publication.provenance["source_history_limit"] == "unknown"
+        facts = store.read_coverage_records(DATASET_ID, publication.publication_id)
+        assert facts is not None
+        assert len(facts) == 2
+        assert [fact.publication_id for fact in facts] == [
+            publication.publication_id,
+            publication.publication_id,
+        ]
+        assert [fact.publication_sequence for fact in facts] == [1, 1]
+        assert [fact.business_key for fact in facts] == [
+            '["cn","600519","2026-10-26"]',
+            '["cn","600519","2026-10-27"]',
+        ]
+        assert [fact.business_date for fact in facts] == [START, date(2026, 10, 27)]
+        assert [fact.observed_at for fact in facts] == [OBSERVED_AT, OBSERVED_AT]
+        assert [fact.payload for fact in facts] == [
+            {
+                "amount": 134.0,
+                "close": 11.0,
+                "high": 11.5,
+                "low": 9.5,
+                "market": "cn",
+                "open": 10.0,
+                "symbol": "600519",
+                "trade_date": "2026-10-26",
+                "volume": 1_200.0,
+            },
+            {
+                "amount": 145.0,
+                "close": 11.2,
+                "high": 11.8,
+                "low": 10.7,
+                "market": "cn",
+                "open": 11.0,
+                "symbol": "600519",
+                "trade_date": "2026-10-27",
+                "volume": 1_300.0,
+            },
+        ]
 
         reference_registry = InstrumentReferenceRegistry(
             registry_version="fixture-instrument-v1",
@@ -496,20 +520,20 @@ async def test_reviewed_cli_to_stock_publication_rest_coverage_and_failed_run_fe
                 ),
             ),
         )
-        snapshot_id = page["snapshot_id"]
-        assert isinstance(snapshot_id, str)
         publication_observations = PublicationObservations(
             dataset_id=DATASET_ID,
             source_id=SOURCE_ID,
             instrument_id="CN:600519",
-            publication_id=page["publication_id"],
-            publication_version=f"sequence-{page['sequence']}",
-            evidence_ref=f"api-snapshot:{snapshot_id}",
+            publication_id=publication.publication_id,
+            publication_version=f"sequence-{publication.sequence}",
+            evidence_ref=f"publication-store:{publication.publication_id}",
             scope="business_history",
-            observed_dates=tuple(date.fromisoformat(row["business_date"]) for row in page["rows"]),
-            scope_start=date.fromisoformat(page["window"]["start"]),
-            scope_end_exclusive=date.fromisoformat(page["window"]["end"]),
-            scope_evidence_ref=f"api-snapshot-window:{snapshot_id}",
+            observed_dates=tuple(
+                fact.business_date for fact in facts if fact.business_date is not None
+            ),
+            scope_start=START,
+            scope_end_exclusive=END_EXCLUSIVE,
+            scope_evidence_ref=f"reviewed-run-window:{success_key}",
         )
         coverage = InstrumentCoverageService(reference_registry).evaluate(
             CoverageQuery(
@@ -536,10 +560,75 @@ async def test_reviewed_cli_to_stock_publication_rest_coverage_and_failed_run_fe
         )
         assert coverage.status.name == "COMPLETE"
         assert coverage.instrument_id == "CN:600519"
-        assert coverage.publication_id == page["publication_id"]
+        assert coverage.publication_id == publication.publication_id
         assert coverage.coverage.expected_dates == (START, date(2026, 10, 27))
         assert coverage.coverage.observed_row_count == 2
         assert coverage.coverage.covered_expected_date_count == 2
+
+        principal = app.dependency_overrides[get_current_principal]()
+        grants = app.dependency_overrides[get_dataset_grants]()
+        read_access = require_published_access(
+            principal,
+            DATASET_ID,
+            "snapshot.read",
+            grants,
+            now=OBSERVED_AT,
+        )
+        internal_snapshot = store.create_snapshot(
+            DATASET_ID,
+            publication_id=publication.publication_id,
+            start_date=START,
+            end_date=END_EXCLUSIVE,
+            page_size=10,
+            access_scope=read_access.binding_sha256,
+        )
+        public_store_calls: list[str] = []
+        original_create_snapshot = store.create_snapshot
+        original_read_page = store.read_page
+
+        def record_snapshot_create(*args: object, **kwargs: object) -> object:
+            public_store_calls.append("create_snapshot")
+            return original_create_snapshot(*args, **kwargs)
+
+        def record_page_read(*args: object, **kwargs: object) -> object:
+            public_store_calls.append("read_page")
+            return original_read_page(*args, **kwargs)
+
+        monkeypatch.setattr(store, "create_snapshot", record_snapshot_create)
+        monkeypatch.setattr(store, "read_page", record_page_read)
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            records_response = await client.get(
+                f"/api/v2/datasets/{DATASET_ID}/records",
+                params={
+                    "start_date": START.isoformat(),
+                    "end_date": END_EXCLUSIVE.isoformat(),
+                    "page_size": 10,
+                },
+            )
+            create_snapshot_response = await client.post(
+                "/api/v2/snapshots",
+                json={
+                    "dataset_id": DATASET_ID,
+                    "start_date": START.isoformat(),
+                    "end_date": END_EXCLUSIVE.isoformat(),
+                    "page_size": 10,
+                },
+            )
+            snapshot_metadata_response = await client.get(
+                f"/api/v2/snapshots/{internal_snapshot.snapshot_id}",
+                params={"dataset_id": DATASET_ID},
+            )
+            snapshot_page_response = await client.get(
+                f"/api/v2/datasets/{DATASET_ID}/records",
+                params={"snapshot_id": internal_snapshot.snapshot_id},
+            )
+        assert [
+            records_response.status_code,
+            create_snapshot_response.status_code,
+            snapshot_metadata_response.status_code,
+            snapshot_page_response.status_code,
+        ] == [404, 404, 404, 404]
+        assert public_store_calls == []
 
         with read_engine.connect() as connection:
             before_failure = (
@@ -555,9 +644,10 @@ async def test_reviewed_cli_to_stock_publication_rest_coverage_and_failed_run_fe
                 ),
                 connection.scalar(select(func.count()).select_from(PUBLICATIONS)),
                 connection.scalar(select(func.count()).select_from(PUBLISHED_FACT_VERSIONS)),
+                connection.scalar(select(func.count()).select_from(SNAPSHOTS)),
             )
         assert before_failure[0] == 1
-        assert before_failure[2:] == (1, 2)
+        assert before_failure[2:] == (1, 2, 1)
 
         failed_submit_code, failed_submit = _cli_call(
             application, _manual_request("vertical-failure")
@@ -586,6 +676,7 @@ async def test_reviewed_cli_to_stock_publication_rest_coverage_and_failed_run_fe
                 ),
                 connection.scalar(select(func.count()).select_from(PUBLICATIONS)),
                 connection.scalar(select(func.count()).select_from(PUBLISHED_FACT_VERSIONS)),
+                connection.scalar(select(func.count()).select_from(SNAPSHOTS)),
             )
         assert after_failure == before_failure
     finally:

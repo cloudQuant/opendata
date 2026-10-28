@@ -72,6 +72,15 @@ if TYPE_CHECKING:  # pragma: no cover
 
 MAX_MANIFEST_BYTES = 16 * 1024
 _QUALITY_REPORT_ID = "stock-daily-offline-normalization-v1"
+_NORMALIZATION_EVIDENCE_VERSION = "stock-daily-normalization-evidence-v1"
+_NORMALIZATION_RULESET_VERSION = "stock-daily-local-validation-v1"
+_NORMALIZATION_CHECKS = (
+    "canonical_single_symbol_window",
+    "capture_manifest_request_binding_and_content_hash",
+    "eastmoney_wire_json_identity_and_row_shape",
+    "akshare_stock_daily_transform_validates_every_row",
+    "normalized_bar_identity_and_row_count_preservation",
+)
 _OPERATION_ID = STOCK_DAILY_PROCESS_OPERATION_ID
 _QUERY_FIELDS = frozenset({"source", "market", "symbol", "start_date", "end_date", "adjust"})
 _EXPECTED_FIELD_TYPES = {
@@ -108,7 +117,11 @@ _UTC = timezone.utc
 
 @dataclass(frozen=True, slots=True)
 class StockDailyJsonResponse:
-    """One bounded raw response plus its independently observed UTC instant."""
+    """One bounded raw response plus the response timestamp supplied to this adapter.
+
+    The timestamp is not verified as an upstream publication time, provider
+    observation, or business date.
+    """
 
     body: bytes
     status_code: int
@@ -119,13 +132,13 @@ class StockDailyResponseSource(Protocol):
     """Explicit code-level source for one validated stock query."""
 
     def __call__(self, query: StockDailyQuery) -> StockDailyJsonResponse:
-        """Return raw JSON and the source observation time for a query."""
+        """Return raw JSON and its supplied response timestamp."""
         ...  # pragma: no cover
 
 
 @dataclass(frozen=True, slots=True)
 class CapturedStockDailyResponse:
-    """Raw evidence reference paired with the source observation timestamp."""
+    """Raw evidence reference paired with the response timestamp supplied to this adapter."""
 
     capture: CapturedRawResponse
     observed_at: datetime
@@ -312,6 +325,38 @@ def build_stock_daily_job(
             _record_for_bar(bar, market=query.market or "cn", observed_at=observed_at)
             for bar in bars
         )
+        if len(records) != len(source_frame):
+            raise ValueError("stock daily normalization did not preserve the observed row count")
+        query_start_date = query.start_date
+        query_end_date = query.end_date
+        if query_start_date is None or query_end_date is None:
+            raise ValueError("stock daily normalization requires an explicit inclusive date window")
+        normalization_evidence: dict[str, JsonValue] = {
+            "evidence_version": _NORMALIZATION_EVIDENCE_VERSION,
+            "status": "warning",
+            "local_normalization_status": "passed",
+            "ruleset_version": _NORMALIZATION_RULESET_VERSION,
+            "scope": {
+                "kind": "one_symbol_inclusive_window",
+                "market": query.market or "cn",
+                "symbol": query.symbol,
+                "start_date": query_start_date.isoformat(),
+                "end_date": query_end_date.isoformat(),
+            },
+            "wire_rows_seen": len(source_frame),
+            "accepted_row_count": len(records),
+            "executed_checks": list(_NORMALIZATION_CHECKS),
+            "unknown": {
+                "source_semantics": "unknown",
+                "source_authenticity": "unknown",
+                "source_history_boundary": "unknown",
+                "trading_calendar_gaps": "unknown",
+                "instrument_universe_coverage": "unknown",
+                "historical_completeness": "unknown",
+                "point_in_time_availability": "unknown",
+                "source_rights": "unknown",
+            },
+        }
         provenance: dict[str, JsonValue] = {
             "acquisition_mode": (
                 "process_bounded_json" if process_source is not None else "injected_offline_json"
@@ -324,12 +369,17 @@ def build_stock_daily_job(
             "source_observed_at": observed_at.isoformat(timespec="microseconds").replace(
                 "+00:00", "Z"
             ),
+            "source_observed_at_semantics": (
+                "adapter_input_response_timestamp_not_verified_as_upstream_observation"
+            ),
             "source_response_sha256": manifest.response_sha256,
             "source_manifest_sha256": manifest_sha256,
             "source_capture_id": manifest.capture_id,
             "source_retention_class": manifest.retention_class,
+            "source_retention_semantics": "classification_only_not_an_enforced_ttl",
             "source_history_limit": manifest.source_history_limit,
             "source_verification": "not_performed",
+            "normalization_evidence": normalization_evidence,
         }
         return NormalizedBatch(
             records=records,
