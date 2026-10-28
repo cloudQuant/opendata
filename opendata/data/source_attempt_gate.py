@@ -201,6 +201,101 @@ class GrantRevocationStatus(str, Enum):
     NOT_REVOCABLE = "NOT_REVOCABLE"
 
 
+class SourceGrantInspectionStatus(str, Enum):
+    """Outcome of an advisory, read-only inspection of one source grant."""
+
+    MATCHED = "MATCHED"
+    REJECTED = "REJECTED"
+    INDETERMINATE = "INDETERMINATE"
+
+
+class SourceGrantInspectionReason(str, Enum):
+    """Fixed, non-sensitive result codes for manual source-grant inspection."""
+
+    GRANT_MATCHED = "grant_matched"
+    GRANT_NOT_FOUND = "grant_not_found"
+    GRANT_NOT_ALLOWED = "grant_not_allowed"
+    GRANT_INVALID = "grant_invalid"
+    GRANT_REVISION_MISMATCH = "grant_revision_mismatch"
+    GRANT_SCOPE_MISMATCH = "grant_scope_mismatch"
+    GRANT_NOT_YET_VALID = "grant_not_yet_valid"
+    GRANT_EXPIRED = "grant_expired"
+    GRANT_EVIDENCE_INCOMPLETE = "grant_evidence_incomplete"
+    GRANT_CONDITIONS_INVALID = "grant_conditions_invalid"
+    GRANT_CONDITIONS_UNRESOLVED = "grant_conditions_unresolved"
+    GRANT_HOSTS_UNSEALED = "grant_hosts_unsealed"
+    GRANT_HOSTS_INVALID = "grant_hosts_invalid"
+    GRANT_HOST_MISMATCH = "grant_host_mismatch"
+    DATABASE_UNAVAILABLE = "database_unavailable"
+    SCHEMA_UNAVAILABLE = "schema_unavailable"
+    CLOCK_INVALID = "clock_invalid"
+    GRANT_RECORD_UNVERIFIABLE = "grant_record_unverifiable"
+    GRANT_SEAL_UNVERIFIABLE = "grant_seal_unverifiable"
+
+
+_GRANT_INSPECTION_DENIAL_REASONS = {
+    reason.value: reason
+    for reason in (
+        SourceGrantInspectionReason.GRANT_NOT_FOUND,
+        SourceGrantInspectionReason.GRANT_NOT_ALLOWED,
+        SourceGrantInspectionReason.GRANT_REVISION_MISMATCH,
+        SourceGrantInspectionReason.GRANT_SCOPE_MISMATCH,
+        SourceGrantInspectionReason.GRANT_NOT_YET_VALID,
+        SourceGrantInspectionReason.GRANT_EXPIRED,
+        SourceGrantInspectionReason.GRANT_CONDITIONS_UNRESOLVED,
+        SourceGrantInspectionReason.GRANT_HOST_MISMATCH,
+    )
+}
+_GRANT_INSPECTION_UNVERIFIABLE_REASONS = {
+    "grant_invalid": SourceGrantInspectionReason.GRANT_RECORD_UNVERIFIABLE,
+    "grant_evidence_incomplete": SourceGrantInspectionReason.GRANT_RECORD_UNVERIFIABLE,
+    "grant_conditions_invalid": SourceGrantInspectionReason.GRANT_RECORD_UNVERIFIABLE,
+    "grant_hosts_unsealed": SourceGrantInspectionReason.GRANT_SEAL_UNVERIFIABLE,
+    "grant_hosts_invalid": SourceGrantInspectionReason.GRANT_SEAL_UNVERIFIABLE,
+}
+
+
+@dataclass(frozen=True, slots=True)
+class SourceGrantInspectionRequest:
+    """Exact caller-supplied scope for an advisory inspection of a persisted grant."""
+
+    grant_id: str
+    revision: int
+    source: str
+    canonical_model: str
+    operation: str
+    principal_scope: str
+    host: str
+
+    def __post_init__(self) -> None:
+        """Validate bounded identifiers before any database access."""
+        for field_name in (
+            "grant_id",
+            "source",
+            "canonical_model",
+            "principal_scope",
+        ):
+            _validate_identifier(getattr(self, field_name), field_name)
+        if type(self.revision) is not int or not 1 <= self.revision <= MAX_REVISION:
+            raise SourceAttemptInputError("revision is outside the supported range")
+        if not isinstance(self.operation, str) or self.operation not in {
+            "query",
+            "store",
+            "export",
+            "subscribe",
+        }:
+            raise SourceAttemptInputError("operation is not supported")
+        object.__setattr__(self, "host", _normalize_host(self.host))
+
+
+@dataclass(frozen=True, slots=True)
+class SourceGrantInspectionResult:
+    """Status and fixed reason for one advisory source-grant inspection."""
+
+    status: SourceGrantInspectionStatus
+    reason: SourceGrantInspectionReason
+
+
 class AttemptLookupReasonCode(str, Enum):
     """Fixed, non-sensitive reasons why a strict v2 lookup is indeterminate."""
 
@@ -540,6 +635,382 @@ class SourceAttemptGate:
             with suppress(sqlite3.Error):
                 connection.rollback()
             connection.close()
+
+    def inspect_grant(self, request: SourceGrantInspectionRequest) -> SourceGrantInspectionResult:
+        """Inspect one persisted grant in a read-only snapshot for human review.
+
+        ``MATCHED`` means only that the current snapshot's grant declaration and
+        sealed host scope match the supplied identity. This advisory result is
+        never a transport permit; every transport must perform a fresh
+        ``reserve_attempt`` call. The method does not mutate gate rows, reserve
+        quota, schedule work, access the network, or load application settings.
+        SQLite may manage its own WAL lock sidecars while opening a read-only
+        snapshot. File identity checks still cannot prevent same-user
+        swap-and-restore races.
+        """
+        if type(request) is not SourceGrantInspectionRequest:
+            raise SourceAttemptInputError("request must be a SourceGrantInspectionRequest")
+        try:
+            connection = self._open_readonly_connection()
+        except Exception:
+            return _grant_inspection_indeterminate(SourceGrantInspectionReason.DATABASE_UNAVAILABLE)
+        try:
+            if not self._source_gate_snapshot_schema_valid(connection):
+                return _grant_inspection_indeterminate(
+                    SourceGrantInspectionReason.SCHEMA_UNAVAILABLE
+                )
+            effective_now = self._readonly_effective_now_us(connection)
+            if effective_now is None:
+                return _grant_inspection_indeterminate(SourceGrantInspectionReason.CLOCK_INVALID)
+
+            grant_rows = self._query_rows(
+                connection,
+                "SELECT * FROM od_source_grants WHERE grant_id = :grant_id",
+                {"grant_id": request.grant_id},
+            )
+            if len(grant_rows) > 1:
+                return _grant_inspection_indeterminate(
+                    SourceGrantInspectionReason.GRANT_RECORD_UNVERIFIABLE
+                )
+            if not grant_rows:
+                return _grant_inspection_rejected(SourceGrantInspectionReason.GRANT_NOT_FOUND)
+
+            attempt = TransportAttempt(
+                attempt_id="grant-inspection",
+                request_id="grant-inspection",
+                attempt_no=1,
+                grant_id=request.grant_id,
+                expected_revision=request.revision,
+                source=request.source,
+                canonical_model=request.canonical_model,
+                operation=request.operation,
+                principal_scope=request.principal_scope,
+                host=request.host,
+            )
+            denial = self._grant_denial(connection, grant_rows[0], attempt, effective_now)
+            if denial is not None:
+                reason = _GRANT_INSPECTION_DENIAL_REASONS.get(denial)
+                if reason is not None:
+                    return _grant_inspection_rejected(reason)
+                reason = _GRANT_INSPECTION_UNVERIFIABLE_REASONS.get(denial)
+                if reason is not None:
+                    return _grant_inspection_indeterminate(reason)
+                return _grant_inspection_indeterminate(
+                    SourceGrantInspectionReason.GRANT_RECORD_UNVERIFIABLE
+                )
+            if not self._grant_seal_event_matches(connection, request):
+                return _grant_inspection_indeterminate(
+                    SourceGrantInspectionReason.GRANT_SEAL_UNVERIFIABLE
+                )
+            return SourceGrantInspectionResult(
+                SourceGrantInspectionStatus.MATCHED,
+                SourceGrantInspectionReason.GRANT_MATCHED,
+            )
+        except (sqlite3.Error, SQLAlchemyError):
+            return _grant_inspection_indeterminate(SourceGrantInspectionReason.DATABASE_UNAVAILABLE)
+        except Exception:
+            return _grant_inspection_indeterminate(
+                SourceGrantInspectionReason.GRANT_RECORD_UNVERIFIABLE
+            )
+        finally:
+            with suppress(sqlite3.Error):
+                connection.rollback()
+            connection.close()
+
+    def _source_gate_snapshot_schema_valid(self, connection: sqlite3.Connection) -> bool:
+        """Require the pinned full v1/v2 schema on the current read snapshot."""
+        try:
+            from alembic_source_gate.schema_contract import (
+                V1_TABLES,
+                V2_REVISION,
+                V2_TABLE,
+                VERSION_TABLE,
+                _reference_schema,
+            )
+
+            expected = _reference_schema(include_v2=True)
+        except Exception:
+            return False
+        gate_tables = V1_TABLES | {V2_TABLE}
+        if not self._readonly_gate_objects_match(connection, expected):
+            return False
+        encoding = self._query_rows(connection, "PRAGMA encoding", {})
+        if len(encoding) != 1 or encoding[0].get("encoding") != "UTF-8":
+            return False
+        if not self._readonly_migration_marker_matches(connection, VERSION_TABLE, V2_REVISION):
+            return False
+        violations = self._query_rows(connection, "PRAGMA foreign_key_check", {})
+        if any(violation.get("table") in gate_tables for violation in violations):
+            return False
+        return self._readonly_schema_metadata_complete(
+            connection,
+            gate_tables | {VERSION_TABLE},
+        )
+
+    def _readonly_gate_objects_match(
+        self,
+        connection: sqlite3.Connection,
+        expected: Mapping[tuple[str, str, str], str | None],
+    ) -> bool:
+        """Compare all source-gate tables, indexes, and triggers with the pinned DDL."""
+        actual: dict[tuple[str, str, str], str | None] = {}
+        rows = self._query_rows(
+            connection,
+            "SELECT type, name, tbl_name, sql FROM sqlite_master ORDER BY type, name",
+            {},
+        )
+        for row in rows:
+            object_type = row.get("type")
+            name = row.get("name")
+            table_name = row.get("tbl_name")
+            sql = row.get("sql")
+            if not isinstance(object_type, str) or not isinstance(name, str):
+                continue
+            if not isinstance(table_name, str):
+                table_name = ""
+            if not (
+                _sqlite_ascii_prefix(name, "od_source_")
+                or _sqlite_ascii_prefix(name, "trg_od_source_")
+                or _sqlite_ascii_prefix(table_name, "od_source_")
+            ):
+                continue
+            normalized_sql = None
+            if isinstance(sql, str):
+                normalized_sql = re.sub(r"\s+", " ", sql).strip().rstrip(";")
+            actual[(object_type, name, table_name)] = normalized_sql
+        return actual == expected
+
+    def _readonly_migration_marker_matches(
+        self,
+        connection: sqlite3.Connection,
+        table_name: str,
+        expected_revision: str,
+    ) -> bool:
+        """Validate the isolated source-gate revision marker, including its key index."""
+        marker_tables = self._query_rows(
+            connection,
+            "SELECT type, sql FROM sqlite_master WHERE name = :table_name",
+            {"table_name": table_name},
+        )
+        marker_sql = marker_tables[0].get("sql") if len(marker_tables) == 1 else None
+        expected_sql = (
+            "CREATE TABLE alembic_version_source_gate ( version_num VARCHAR(32) NOT NULL, "
+            "CONSTRAINT alembic_version_source_gate_pkc PRIMARY KEY (version_num))"
+        )
+        if (
+            len(marker_tables) != 1
+            or marker_tables[0].get("type") != "table"
+            or not isinstance(marker_sql, str)
+            or re.sub(r"\s+", " ", marker_sql).strip().rstrip(";") != expected_sql
+        ):
+            return False
+        literal = _quote_sqlite_literal(table_name)
+        columns = self._query_rows(
+            connection,
+            f"PRAGMA table_xinfo({literal})",
+            {},
+        )
+        if (
+            len(columns) != 1
+            or columns[0].get("cid") != 0
+            or columns[0].get("name") != "version_num"
+            or str(columns[0].get("type", "")).upper() != "VARCHAR(32)"
+            or columns[0].get("notnull") != 1
+            or columns[0].get("dflt_value") is not None
+            or columns[0].get("pk") != 1
+            or columns[0].get("hidden") != 0
+        ):
+            return False
+        indexes = self._query_rows(connection, f"PRAGMA index_list({literal})", {})
+        if (
+            len(indexes) != 1
+            or indexes[0].get("unique") != 1
+            or indexes[0].get("origin") != "pk"
+            or indexes[0].get("partial") != 0
+            or not isinstance(indexes[0].get("name"), str)
+        ):
+            return False
+        index_name = _quote_sqlite_literal(str(indexes[0]["name"]))
+        index_info = self._query_rows(connection, f"PRAGMA index_info({index_name})", {})
+        index_xinfo = self._query_rows(connection, f"PRAGMA index_xinfo({index_name})", {})
+        key_rows = tuple(row for row in index_xinfo if row.get("key") == 1)
+        auxiliary_rows = tuple(row for row in index_xinfo if row.get("key") == 0)
+        if (
+            len(index_info) != 1
+            or index_info[0].get("name") != "version_num"
+            or len(key_rows) != 1
+            or key_rows[0].get("cid") != 0
+            or key_rows[0].get("name") != "version_num"
+            or key_rows[0].get("desc") != 0
+            or key_rows[0].get("coll") != "BINARY"
+            or len(auxiliary_rows) != 1
+            or auxiliary_rows[0].get("cid") != -1
+            or auxiliary_rows[0].get("name") is not None
+            or auxiliary_rows[0].get("desc") != 0
+            or auxiliary_rows[0].get("coll") != "BINARY"
+        ):
+            return False
+        triggers = self._query_rows(
+            connection,
+            "SELECT name FROM sqlite_master WHERE type = 'trigger' AND tbl_name = :table_name",
+            {"table_name": table_name},
+        )
+        if triggers:
+            return False
+        if table_name != SOURCE_GATE_VERSION_TABLE:
+            return False
+        versions = self._query_rows(
+            connection,
+            "SELECT version_num FROM alembic_version_source_gate",
+            {},
+        )
+        return len(versions) == 1 and versions[0].get("version_num") == expected_revision
+
+    def _readonly_schema_metadata_complete(
+        self,
+        connection: sqlite3.Connection,
+        table_names: frozenset[str],
+    ) -> bool:
+        """Check generated columns and every pinned index key on the same snapshot."""
+        try:
+            for table_name in sorted(table_names):
+                literal = _quote_sqlite_literal(table_name)
+                table_columns = self._query_rows(
+                    connection,
+                    f"PRAGMA table_xinfo({literal})",
+                    {},
+                )
+                if not table_columns or any(column.get("hidden") != 0 for column in table_columns):
+                    return False
+                indexes = self._query_rows(
+                    connection,
+                    f"PRAGMA index_list({literal})",
+                    {},
+                )
+                for index in indexes:
+                    index_name = index.get("name")
+                    if (
+                        index.get("unique") != 1
+                        or index.get("partial") != 0
+                        or index.get("origin") not in {"pk", "u"}
+                        or not isinstance(index_name, str)
+                    ):
+                        return False
+                    index_literal = _quote_sqlite_literal(index_name)
+                    info_rows = self._query_rows(
+                        connection,
+                        f"PRAGMA index_info({index_literal})",
+                        {},
+                    )
+                    xinfo_rows = self._query_rows(
+                        connection,
+                        f"PRAGMA index_xinfo({index_literal})",
+                        {},
+                    )
+                    key_rows = tuple(row for row in xinfo_rows if row.get("key") == 1)
+                    key_names = tuple(row.get("name") for row in key_rows)
+                    auxiliary_rows = tuple(row for row in xinfo_rows if row.get("key") == 0)
+                    info_names = tuple(row.get("name") for row in info_rows)
+                    if not info_names or info_names != key_names or len(auxiliary_rows) > 1:
+                        return False
+                    for row in key_rows:
+                        column_id = row.get("cid")
+                        if (
+                            not isinstance(row.get("name"), str)
+                            or type(column_id) is not int
+                            or column_id < 0
+                            or row.get("desc") != 0
+                            or row.get("coll") != "BINARY"
+                        ):
+                            return False
+                    for row in auxiliary_rows:
+                        if (
+                            row.get("cid") != -1
+                            or row.get("name") is not None
+                            or row.get("desc") != 0
+                            or row.get("coll") != "BINARY"
+                        ):
+                            return False
+        except (sqlite3.Error, SQLAlchemyError):
+            return False
+        except Exception:
+            return False
+        return True
+
+    def _readonly_effective_now_us(self, connection: sqlite3.Connection) -> int | None:
+        """Read the high-water mark and SQLite clock without updating gate state."""
+        clock_rows = self._query_rows(
+            connection,
+            "SELECT clock_id, highwater_us FROM od_source_gate_clock ORDER BY clock_id",
+            {},
+        )
+        highwater = (
+            _bounded_int_or_none(clock_rows[0].get("highwater_us"), 0, MAX_TIMESTAMP_US)
+            if len(clock_rows) == 1
+            else None
+        )
+        if len(clock_rows) != 1 or clock_rows[0].get("clock_id") != 1 or highwater is None:
+            return None
+        now_rows = self._query_rows(
+            connection,
+            "SELECT CAST(ROUND((julianday('now') - 2440587.5) * "
+            "86400000000.0) AS INTEGER) AS now_us",
+            {},
+        )
+        if len(now_rows) != 1:
+            return None
+        database_now = _bounded_int_or_none(now_rows[0].get("now_us"), 1, MAX_TIMESTAMP_US)
+        if database_now is None:
+            return None
+        return max(database_now, highwater)
+
+    def _grant_seal_event_matches(
+        self,
+        connection: sqlite3.Connection,
+        request: SourceGrantInspectionRequest,
+    ) -> bool:
+        """Bind an allowed grant's host seal to its single immutable audit event."""
+        host_sets = self._query_rows(
+            connection,
+            "SELECT revision, host_count, sealed_at_us, sealed_by, reason_code "
+            "FROM od_source_grant_host_sets WHERE grant_id = :grant_id",
+            {"grant_id": request.grant_id},
+        )
+        if len(host_sets) != 1:
+            return False
+        host_set = host_sets[0]
+        revision = _bounded_int_or_none(host_set.get("revision"), 1, MAX_REVISION)
+        sealed_at = _bounded_int_or_none(host_set.get("sealed_at_us"), 0, MAX_TIMESTAMP_US)
+        sealed_by = host_set.get("sealed_by")
+        reason_code = host_set.get("reason_code")
+        if (
+            revision != request.revision
+            or _bounded_int_or_none(host_set.get("host_count"), 1, 10_000) is None
+            or sealed_at is None
+            or not _valid_identifier(sealed_by)
+            or not _valid_identifier(reason_code)
+        ):
+            return False
+
+        events = self._query_rows(
+            connection,
+            "SELECT event_id, event_type, old_revision, new_revision, actor, reason_code, "
+            "occurred_at_us FROM od_source_grant_events WHERE grant_id = :grant_id "
+            "ORDER BY event_id",
+            {"grant_id": request.grant_id},
+        )
+        if len(events) != 1:
+            return False
+        event = events[0]
+        return (
+            _bounded_int_or_none(event.get("event_id"), 1, 9_223_372_036_854_775_807) is not None
+            and event.get("event_type") == "HOSTS_SEALED"
+            and _bounded_int_or_none(event.get("old_revision"), 1, MAX_REVISION) == revision
+            and _bounded_int_or_none(event.get("new_revision"), 1, MAX_REVISION) == revision
+            and event.get("actor") == sealed_by
+            and event.get("reason_code") == reason_code
+            and _bounded_int_or_none(event.get("occurred_at_us"), 0, MAX_TIMESTAMP_US) == sealed_at
+        )
 
     def revoke_grant(
         self,
@@ -1492,7 +1963,7 @@ class SourceAttemptGate:
 
     def _grant_denial(
         self,
-        connection: Connection,
+        connection: Connection | sqlite3.Connection,
         grant: Mapping[str, object] | None,
         attempt: TransportAttempt,
         effective_now: int,
@@ -1728,16 +2199,27 @@ class SourceAttemptGate:
         )
 
     def _fetch_one(
-        self, connection: Connection, statement: str, parameters: dict[str, object]
+        self,
+        connection: Connection | sqlite3.Connection,
+        statement: str,
+        parameters: dict[str, object],
     ) -> dict[str, object] | None:
         """Execute a parameterized query and return its first mapping row."""
+        if isinstance(connection, sqlite3.Connection):
+            rows = self._query_rows(connection, statement, parameters)
+            return None if not rows else rows[0]
         result = connection.execute(text(statement), parameters).mappings().first()
         return None if result is None else dict(result)
 
     def _fetch_all(
-        self, connection: Connection, statement: str, parameters: dict[str, object]
+        self,
+        connection: Connection | sqlite3.Connection,
+        statement: str,
+        parameters: dict[str, object],
     ) -> list[dict[str, object]]:
         """Execute a parameterized query and return mapping rows."""
+        if isinstance(connection, sqlite3.Connection):
+            return self._query_rows(connection, statement, parameters)
         result = connection.execute(text(statement), parameters).mappings().all()
         return [dict(row) for row in result]
 
@@ -1951,6 +2433,12 @@ def _valid_identifier(value: object) -> bool:
     return isinstance(value, str) and _IDENTIFIER_PATTERN.fullmatch(value) is not None
 
 
+def _sqlite_ascii_prefix(value: str, prefix: str) -> bool:
+    """Match SQLite schema-name prefixes using its ASCII case rules."""
+    candidate = value[: len(prefix)]
+    return len(value) >= len(prefix) and candidate.isascii() and candidate.lower() == prefix
+
+
 def _normalize_host(value: object) -> str:
     """Normalize an exact DNS hostname and reject URLs, ports, paths, and wildcards."""
     if not isinstance(value, str) or not value or value != value.strip() or len(value) > 253:
@@ -2062,6 +2550,20 @@ def _valid_allowed_declaration(grant: Mapping[str, object], effective_now: int) 
     )
 
 
+def _grant_inspection_rejected(
+    reason: SourceGrantInspectionReason,
+) -> SourceGrantInspectionResult:
+    """Build a fixed rejection without returning persisted grant contents."""
+    return SourceGrantInspectionResult(SourceGrantInspectionStatus.REJECTED, reason)
+
+
+def _grant_inspection_indeterminate(
+    reason: SourceGrantInspectionReason,
+) -> SourceGrantInspectionResult:
+    """Build a fixed indeterminate result without exposing storage diagnostics."""
+    return SourceGrantInspectionResult(SourceGrantInspectionStatus.INDETERMINATE, reason)
+
+
 __all__ = [
     "AttemptLookupAbsent",
     "AttemptLookupDenied",
@@ -2080,5 +2582,9 @@ __all__ = [
     "SourceAttemptGateUnavailableError",
     "SourceAttemptInputError",
     "SourceAttemptScopeV2",
+    "SourceGrantInspectionReason",
+    "SourceGrantInspectionRequest",
+    "SourceGrantInspectionResult",
+    "SourceGrantInspectionStatus",
     "TransportAttempt",
 ]
