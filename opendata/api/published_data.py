@@ -59,6 +59,10 @@ from opendata.data.dataset_contract_registry import (
     canonical_sha256,
     load_dataset_contract_registry,
 )
+from opendata.data.market_symbol_selection import MarketSymbolSelectionError
+from opendata.data.market_symbol_selection import (
+    selection_profile as market_symbol_selection_profile,
+)
 from opendata.data.platform_contracts import (
     AdjustmentBasis,
     AssetClass,
@@ -122,6 +126,9 @@ _ATEMPORAL_TABLE_BUSINESS_DATE_SEMANTICS = (
 _ROUTER_PREFIX = "/api/v2"
 _SINA_FZB_DATASET_ID = "sina_fzb_report_observations"
 _SINA_FZB_INSTRUMENT_PATTERN = re.compile(r"[0-9]{6}\.(?:SH|SZ)\Z", re.ASCII)
+# Market-symbol publication reads stay unavailable until production query-plan
+# evidence establishes an acceptable snapshot-creation scan budget.
+_MARKET_SYMBOL_API_ENABLED = False
 # Discovery stays unavailable until a covering index and production query-plan
 # evidence establish a physical scan budget. This hard gate is deliberately not
 # runtime-configurable so deployment settings cannot enable an unreviewed query.
@@ -131,6 +138,16 @@ _SINA_CAPTURE_DISCOVERY_ENABLED = False
 def _require_capture_discovery_enabled() -> None:
     """Fail closed before resolving authorization or store dependencies."""
     if not _SINA_CAPTURE_DISCOVERY_ENABLED:
+        raise _not_found()
+
+
+def _require_market_symbol_api_enabled(contract: DatasetContract) -> None:
+    """Hard-disable market-symbol reads until a production scan budget is reviewed."""
+    try:
+        profile = market_symbol_selection_profile(contract)
+    except MarketSymbolSelectionError:
+        raise _service_unavailable() from None
+    if profile == "market_symbol_v1" and not _MARKET_SYMBOL_API_ENABLED:
         raise _not_found()
 
 
@@ -803,7 +820,7 @@ async def get_dataset_records(
     )
     _validate_hex_id(publication_id, "publication_id")
     _validate_hex_id(snapshot_id, "snapshot_id")
-    _validate_selection_input(instrument_id=instrument_id, capture_id=capture_id)
+    _validate_selection_families(instrument_id=instrument_id, capture_id=capture_id)
     selector_was_supplied = (
         "instrument_id" in request.query_params or "capture_id" in request.query_params
     )
@@ -823,6 +840,7 @@ async def get_dataset_records(
             raise _service_unavailable()
         publication = await _publication_for_request(store, dataset_id, publication_id, data_access)
         contract, contract_hash = _resolve_contract(contracts, data_access, publication)
+        _require_market_symbol_api_enabled(contract)
         selection = _request_selection(
             contract,
             instrument_id=instrument_id,
@@ -875,6 +893,7 @@ async def get_dataset_records(
         snapshot = existing_snapshot
         publication = await _publication_for_snapshot(store, snapshot, data_access)
         contract, contract_hash = _resolve_contract(contracts, data_access, publication)
+        _require_market_symbol_api_enabled(contract)
         selection = _validate_snapshot_selection_request(
             contract,
             snapshot,
@@ -990,7 +1009,7 @@ async def create_snapshot(
             "unsupported_header",
             "Idempotency-Key is not supported for snapshot creation",
         )
-    _validate_selection_input(
+    _validate_selection_families(
         instrument_id=body.instrument_id,
         capture_id=body.capture_id,
     )
@@ -1002,6 +1021,7 @@ async def create_snapshot(
         store, body.dataset_id, body.publication_id, context
     )
     contract, contract_hash = _resolve_contract(contracts, context, publication)
+    _require_market_symbol_api_enabled(contract)
     selection = _request_selection(
         contract,
         instrument_id=body.instrument_id,
@@ -1059,6 +1079,7 @@ async def get_snapshot(
         raise _not_found()
     publication = await _publication_for_snapshot(store, snapshot, context)
     contract, contract_hash = _resolve_contract(contracts, context, publication)
+    _require_market_symbol_api_enabled(contract)
     _snapshot_selection(contract, snapshot)
     return _success_response(_snapshot_payload(publication, contract, contract_hash, snapshot))
 
@@ -1548,8 +1569,13 @@ def _resolve_contract(
         raise _service_unavailable()
     try:
         selection_profile(contract)
+        market_profile = market_symbol_selection_profile(contract)
     except InstrumentCaptureSelectionError:
         raise _service_unavailable() from None
+    except MarketSymbolSelectionError:
+        raise _service_unavailable() from None
+    if market_profile == "market_symbol_v1" and _is_sina_contract(contract):
+        raise _service_unavailable()
     _quality_receipt(publication)
     return contract, contract_hash
 
@@ -1634,8 +1660,12 @@ def _capture_candidate_page_payload(
     }
 
 
-def _validate_selection_input(*, instrument_id: object | None, capture_id: object | None) -> None:
-    """Reject malformed selector syntax before an authorized request reads the store."""
+def _validate_selection_families(
+    *,
+    instrument_id: object | None,
+    capture_id: object | None,
+) -> None:
+    """Reject malformed instrument/capture pairs before store access."""
     try:
         validate_selector_pair(instrument_id=instrument_id, capture_id=capture_id)
     except InstrumentCaptureSelectionError:
@@ -1719,6 +1749,15 @@ def _validate_rows_match_selection(
             or record.payload.get("capture_id") != selection.capture_id
         ):
             raise _service_unavailable()
+
+
+def _is_sina_contract(contract: DatasetContract) -> bool:
+    """Recognize the source identity that must remain capture-pair only."""
+    return (
+        contract.dataset_id == _SINA_FZB_DATASET_ID
+        or contract.source.source_id.casefold() == "sina-fzb"
+        or contract.source.source.casefold() == "sina"
+    )
 
 
 def _require_supported_record_contract(
@@ -2023,12 +2062,11 @@ def _snapshot_payload(
         "selection_sha256": snapshot.selection_sha256,
         "content_sha256": snapshot.content_sha256,
     }
-    if snapshot.instrument_id is not None or snapshot.capture_id is not None:
-        if snapshot.instrument_id is None or snapshot.capture_id is None:
-            raise _service_unavailable()
+    capture_selection = _snapshot_selection(contract, snapshot)
+    if capture_selection is not None:
         payload["selection"] = {
-            "instrument_id": snapshot.instrument_id,
-            "capture_id": snapshot.capture_id,
+            "instrument_id": capture_selection.instrument_id,
+            "capture_id": capture_selection.capture_id,
         }
     return payload
 

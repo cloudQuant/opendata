@@ -5,6 +5,16 @@ snapshot mechanics. It is not a substitute for domain-specific DWD schemas,
 constraints, or financial semantics. Callers supply the domain's stable
 business key and retain business dates separately from observation timestamps.
 The caller owns migrations and database lifetime; no table is created here.
+
+Market/symbol snapshots fail closed when any as-of revision, including a
+tombstone, lacks materialized selector columns or changes its selector across
+revisions. Existing NULL selector rows cannot be repaired by re-publishing the
+same business key because selector metadata is immutable; they require a new
+dataset or a separately reviewed full-history rebuild. Each selected snapshot
+currently scans and aggregates the dataset's full as-of revision history before
+reading pages. This path is unbenchmarked and is not production-ready for
+full-A-scale reads until query plans and representative history volumes pass
+acceptance.
 """
 
 from __future__ import annotations
@@ -19,7 +29,7 @@ from collections.abc import Iterable, Mapping
 from contextlib import suppress
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 from uuid import uuid4
 
 from sqlalchemy import (
@@ -51,7 +61,18 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from opendata.data.capture_selection import (
     InstrumentCaptureSelection,
     InstrumentCaptureSelectionError,
-    validate_selector_pair,
+)
+from opendata.data.capture_selection import (
+    validate_selector_pair as validate_capture_selector_pair,
+)
+from opendata.data.market_symbol_selection import (
+    MAX_MARKET_LENGTH,
+    MAX_SYMBOL_LENGTH,
+    MarketSymbolSelection,
+    MarketSymbolSelectionError,
+)
+from opendata.data.market_symbol_selection import (
+    validate_selector_pair as validate_market_symbol_selector_pair,
 )
 from opendata.pipeline.publication_outbox import (
     _build_publication_event,
@@ -202,6 +223,8 @@ PUBLISHED_FACT_VERSIONS = Table(
     Column("publication_sequence", BigInteger, nullable=False),
     Column("instrument_id", _key_type(MAX_ID_LENGTH), nullable=True),
     Column("capture_id", _key_type(64), nullable=True),
+    Column("market", _key_type(MAX_MARKET_LENGTH), nullable=True),
+    Column("symbol", _key_type(MAX_SYMBOL_LENGTH), nullable=True),
     Column("business_date", Date, nullable=True),
     Column("event_at", String(40), nullable=True),
     Column("observed_at", String(40), nullable=True),
@@ -215,6 +238,14 @@ PUBLISHED_FACT_VERSIONS = Table(
         "(instrument_id IS NULL AND capture_id IS NULL) OR "
         "(instrument_id IS NOT NULL AND capture_id IS NOT NULL)",
         name="ck_od_fact_capture_pair",
+    ),
+    CheckConstraint(
+        "(market IS NULL AND symbol IS NULL) OR (market IS NOT NULL AND symbol IS NOT NULL)",
+        name="ck_od_fact_market_symbol_pair",
+    ),
+    CheckConstraint(
+        "(instrument_id IS NULL AND capture_id IS NULL) OR (market IS NULL AND symbol IS NULL)",
+        name="ck_od_fact_selector_profile",
     ),
     Index(
         "ix_od_published_fact_asof",
@@ -236,6 +267,13 @@ PUBLISHED_FACT_VERSIONS = Table(
         "capture_id",
         "publication_sequence",
     ),
+    Index(
+        "ix_od_fact_market_symbol_read",
+        "dataset_id",
+        "market",
+        "symbol",
+        "publication_sequence",
+    ),
     mysql_engine="InnoDB",
 )
 SNAPSHOTS = Table(
@@ -250,6 +288,8 @@ SNAPSHOTS = Table(
     Column("publication_sequence", BigInteger, nullable=False),
     Column("instrument_id", _key_type(MAX_ID_LENGTH), nullable=True),
     Column("capture_id", _key_type(64), nullable=True),
+    Column("market", _key_type(MAX_MARKET_LENGTH), nullable=True),
+    Column("symbol", _key_type(MAX_SYMBOL_LENGTH), nullable=True),
     Column("start_date", Date, nullable=True),
     Column("end_date", Date, nullable=True),
     Column("page_size", Integer, nullable=False),
@@ -267,6 +307,14 @@ SNAPSHOTS = Table(
         "(instrument_id IS NOT NULL AND capture_id IS NOT NULL)",
         name="ck_od_snapshot_capture_pair",
     ),
+    CheckConstraint(
+        "(market IS NULL AND symbol IS NULL) OR (market IS NOT NULL AND symbol IS NOT NULL)",
+        name="ck_od_snapshot_market_symbol_pair",
+    ),
+    CheckConstraint(
+        "(instrument_id IS NULL AND capture_id IS NULL) OR (market IS NULL AND symbol IS NULL)",
+        name="ck_od_snapshot_selector_profile",
+    ),
     Index("ix_od_snapshot_expiry", "expires_at_us"),
 )
 
@@ -278,8 +326,9 @@ class PublishedRecordInput:
     ``business_date`` is a date bucket and cannot be a datetime. The three
     timestamps preserve independent event, source-publication, observation, and
     platform-availability semantics; none is inferred from another. Selector
-    metadata is an explicit trusted storage hint and must match the payload.
-    Payload fields alone never materialize indexed selector columns.
+    metadata is an explicit trusted storage hint and must match the payload
+    and canonical business key. Payload fields alone never materialize indexed
+    selector columns.
     """
 
     business_key: str
@@ -291,6 +340,8 @@ class PublishedRecordInput:
     event_at: datetime | None = None
     instrument_id: str | None = None
     capture_id: str | None = None
+    market: str | None = None
+    symbol: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -353,6 +404,8 @@ class SnapshotRecord:
     as_of: datetime
     instrument_id: str | None = None
     capture_id: str | None = None
+    market: str | None = None
+    symbol: str | None = None
 
     @property
     def selection_hash(self) -> str:
@@ -691,7 +744,7 @@ def publish_in_connection(
                 raced_event = _find_existing_event(connection, PUBLICATION_OUTBOX_EVENTS, event)
                 if raced_event is None:
                     raise
-                _require_exact_event_replay(raced_event, event)
+                _require_exact_event_replay(cast("Mapping[str, Any]", raced_event), event)
     except IntegrityError:
         raced = (
             connection.execute(
@@ -952,7 +1005,7 @@ class PublicationStore:
                 for row in rows:
                     capture_id = row["capture_id"]
                     try:
-                        selector = validate_selector_pair(
+                        selector = validate_capture_selector_pair(
                             instrument_id=instrument,
                             capture_id=capture_id,
                         )
@@ -1398,6 +1451,8 @@ class PublicationStore:
         ttl: timedelta = timedelta(hours=24),
         instrument_id: str | None = None,
         capture_id: str | None = None,
+        market: str | None = None,
+        symbol: str | None = None,
     ) -> SnapshotRecord:
         """Pin a publication and compute a content hash for its scoped subset.
 
@@ -1406,8 +1461,12 @@ class PublicationStore:
         so the hash covers the actual subset rather than publication metadata.
         """
         dataset = _identifier(dataset_id, "dataset_id")
-        selection = _validated_capture_selection(
-            instrument_id, capture_id, error_type=SnapshotError
+        capture_selection, market_selection = _validated_snapshot_selectors(
+            instrument_id,
+            capture_id,
+            market=market,
+            symbol=symbol,
+            error_type=SnapshotError,
         )
         start, end = _validate_date_window(start_date, end_date)
         page = _page_limit(page_size, "page_size", max_value=MAX_PAGE_SIZE)
@@ -1449,6 +1508,13 @@ class PublicationStore:
             if row is None:
                 raise SnapshotError("dataset has no matching published version")
             publication = _publication_from_row(row)
+            if market_selection is not None:
+                _require_market_symbol_history(
+                    connection,
+                    dataset,
+                    publication.sequence,
+                    error_type=SnapshotError,
+                )
             digest, record_count = _snapshot_content_hash(
                 connection,
                 dataset,
@@ -1457,8 +1523,14 @@ class PublicationStore:
                 end,
                 scope,
                 page,
-                instrument_id=selection.instrument_id if selection is not None else None,
-                capture_id=selection.capture_id if selection is not None else None,
+                instrument_id=(
+                    capture_selection.instrument_id if capture_selection is not None else None
+                ),
+                capture_id=(
+                    capture_selection.capture_id if capture_selection is not None else None
+                ),
+                market=market_selection.market if market_selection is not None else None,
+                symbol=market_selection.symbol if market_selection is not None else None,
             )
             selection_hash = _snapshot_selection_hash(
                 dataset,
@@ -1467,8 +1539,14 @@ class PublicationStore:
                 end,
                 scope,
                 page,
-                instrument_id=selection.instrument_id if selection is not None else None,
-                capture_id=selection.capture_id if selection is not None else None,
+                instrument_id=(
+                    capture_selection.instrument_id if capture_selection is not None else None
+                ),
+                capture_id=(
+                    capture_selection.capture_id if capture_selection is not None else None
+                ),
+                market=market_selection.market if market_selection is not None else None,
+                symbol=market_selection.symbol if market_selection is not None else None,
             )
             connection.execute(
                 insert(SNAPSHOTS).values(
@@ -1477,8 +1555,14 @@ class PublicationStore:
                     publication_id=publication.publication_id,
                     schema_version=publication.schema_version,
                     publication_sequence=publication.sequence,
-                    instrument_id=selection.instrument_id if selection is not None else None,
-                    capture_id=selection.capture_id if selection is not None else None,
+                    instrument_id=(
+                        capture_selection.instrument_id if capture_selection is not None else None
+                    ),
+                    capture_id=(
+                        capture_selection.capture_id if capture_selection is not None else None
+                    ),
+                    market=market_selection.market if market_selection is not None else None,
+                    symbol=market_selection.symbol if market_selection is not None else None,
                     start_date=start,
                     end_date=end,
                     page_size=page,
@@ -1496,7 +1580,9 @@ class PublicationStore:
                 .mappings()
                 .one()
             )
-        return _snapshot_from_row(snapshot_row)
+            snapshot = _snapshot_from_row(snapshot_row)
+            _verify_snapshot_selection_binding(snapshot, publication)
+        return snapshot
 
     def get_snapshot(
         self, snapshot_id: str, *, access_scope: str = "default"
@@ -1515,9 +1601,28 @@ class PublicationStore:
                 .mappings()
                 .first()
             )
-        if row is None:
-            return None
-        snapshot = _snapshot_from_row(row)
+            if row is None:
+                return None
+            snapshot = _snapshot_from_row(row)
+            publication_row = (
+                connection.execute(
+                    select(PUBLICATIONS).where(
+                        PUBLICATIONS.c.dataset_id == snapshot.dataset_id,
+                        PUBLICATIONS.c.publication_id == snapshot.publication_id,
+                    )
+                )
+                .mappings()
+                .first()
+            )
+        if publication_row is None:
+            raise SnapshotError("snapshot publication metadata is missing")
+        try:
+            publication = _publication_from_row(publication_row)
+            _verify_snapshot_selection_binding(snapshot, publication)
+        except SnapshotError:
+            raise
+        except (KeyError, TypeError, ValueError, OverflowError) as exc:
+            raise SnapshotError("snapshot selection metadata is invalid") from exc
         _require_unexpired(snapshot)
         return snapshot
 
@@ -1669,7 +1774,7 @@ class PublicationStore:
         if any(payload.get(key) != value for key, value in expected_binding.items()):
             raise CaptureDiscoveryCursorError("capture cursor belongs to another request scope")
         try:
-            capture = validate_selector_pair(
+            capture = validate_capture_selector_pair(
                 instrument_id=instrument,
                 capture_id=payload.get("capture_id"),
             )
@@ -1689,13 +1794,18 @@ class PublicationStore:
         self, snapshot: SnapshotRecord, last_date: date | None, last_key: str
     ) -> str:
         """Create an authenticated continuation token for one snapshot page."""
-        selection = _validated_capture_selection(
+        capture_selection, market_selection = _validated_snapshot_selectors(
             snapshot.instrument_id,
             snapshot.capture_id,
+            market=snapshot.market,
+            symbol=snapshot.symbol,
             error_type=SnapshotError,
         )
+        cursor_version = (
+            3 if market_selection is not None else 2 if capture_selection is not None else 1
+        )
         payload = {
-            "version": 2 if selection is not None else 1,
+            "version": cursor_version,
             "snapshot_id": snapshot.snapshot_id,
             "dataset_id": snapshot.dataset_id,
             "publication_id": snapshot.publication_id,
@@ -1712,9 +1822,13 @@ class PublicationStore:
             "last_business_date": last_date.isoformat() if last_date else None,
             "last_business_key": last_key,
         }
-        if selection is not None:
-            payload["instrument_id"] = selection.instrument_id
-            payload["capture_id"] = selection.capture_id
+        if capture_selection is not None:
+            payload["instrument_id"] = capture_selection.instrument_id
+            payload["capture_id"] = capture_selection.capture_id
+        if market_selection is not None:
+            payload["selection_profile"] = "market_symbol_v1"
+            payload["market"] = market_selection.market
+            payload["symbol"] = market_selection.symbol
         encoded = _base64url(_canonical_json(payload).encode("utf-8"))
         signature = _base64url(
             hmac.new(self._cursor_signing_key, encoded.encode("ascii"), hashlib.sha256).digest()
@@ -1752,13 +1866,18 @@ class PublicationStore:
             raise SnapshotError("cursor payload is invalid") from exc
         if not isinstance(payload, dict):
             raise SnapshotError("cursor payload is invalid")
-        selection = _validated_capture_selection(
+        capture_selection, market_selection = _validated_snapshot_selectors(
             snapshot.instrument_id,
             snapshot.capture_id,
+            market=snapshot.market,
+            symbol=snapshot.symbol,
             error_type=SnapshotError,
         )
+        cursor_version = (
+            3 if market_selection is not None else 2 if capture_selection is not None else 1
+        )
         expected_binding = {
-            "version": 2 if selection is not None else 1,
+            "version": cursor_version,
             "snapshot_id": snapshot.snapshot_id,
             "dataset_id": snapshot.dataset_id,
             "publication_id": snapshot.publication_id,
@@ -1773,9 +1892,13 @@ class PublicationStore:
             "expires_at_us": _datetime_to_us(snapshot.expires_at),
             "sort": "business_date_asc_nulls_last_business_key_asc",
         }
-        if selection is not None:
-            expected_binding["instrument_id"] = selection.instrument_id
-            expected_binding["capture_id"] = selection.capture_id
+        if capture_selection is not None:
+            expected_binding["instrument_id"] = capture_selection.instrument_id
+            expected_binding["capture_id"] = capture_selection.capture_id
+        if market_selection is not None:
+            expected_binding["selection_profile"] = "market_symbol_v1"
+            expected_binding["market"] = market_selection.market
+            expected_binding["symbol"] = market_selection.symbol
         if any(payload.get(key) != value for key, value in expected_binding.items()):
             raise SnapshotError("cursor belongs to a different snapshot, window, or page contract")
         last_key = payload.get("last_business_key")
@@ -1793,15 +1916,18 @@ class PublicationStore:
 
 def _ranked_visible_facts(snapshot: SnapshotRecord) -> Subquery:
     """Build a latest-revision-as-of query shared by pages and hash snapshots."""
-    selection = _validated_capture_selection(
+    capture_selection, market_selection = _validated_snapshot_selectors(
         snapshot.instrument_id,
         snapshot.capture_id,
+        market=snapshot.market,
+        symbol=snapshot.symbol,
         error_type=SnapshotError,
     )
     return _ranked_visible_facts_for(
         snapshot.dataset_id,
         snapshot.publication_sequence,
-        selection=selection,
+        selection=capture_selection,
+        market_selection=market_selection,
     )
 
 
@@ -1810,6 +1936,7 @@ def _ranked_visible_facts_for(
     publication_sequence: int,
     *,
     selection: InstrumentCaptureSelection | None = None,
+    market_selection: MarketSymbolSelection | None = None,
     business_key_collation: str | None = None,
 ) -> Subquery:
     """Rank all facts for a dataset at a sequence, optionally within one selector."""
@@ -1834,6 +1961,13 @@ def _ranked_visible_facts_for(
                 PUBLISHED_FACT_VERSIONS.c.capture_id == selection.capture_id,
             )
         )
+    if market_selection is not None:
+        predicates.extend(
+            (
+                PUBLISHED_FACT_VERSIONS.c.market == market_selection.market,
+                PUBLISHED_FACT_VERSIONS.c.symbol == market_selection.symbol,
+            )
+        )
     return (
         select(
             PUBLISHED_FACT_VERSIONS.c.dataset_id,
@@ -1843,6 +1977,8 @@ def _ranked_visible_facts_for(
             PUBLISHED_FACT_VERSIONS.c.publication_sequence,
             PUBLISHED_FACT_VERSIONS.c.instrument_id,
             PUBLISHED_FACT_VERSIONS.c.capture_id,
+            PUBLISHED_FACT_VERSIONS.c.market,
+            PUBLISHED_FACT_VERSIONS.c.symbol,
             PUBLISHED_FACT_VERSIONS.c.business_date,
             PUBLISHED_FACT_VERSIONS.c.event_at,
             PUBLISHED_FACT_VERSIONS.c.observed_at,
@@ -2173,6 +2309,8 @@ def _coverage_record_storage_size(row: RowMapping) -> int:
         (row["available_at"], 40, "available_at"),
         (row["instrument_id"], MAX_ID_LENGTH, "instrument_id"),
         (row["capture_id"], 64, "capture_id"),
+        (row["market"], MAX_MARKET_LENGTH, "market"),
+        (row["symbol"], MAX_SYMBOL_LENGTH, "symbol"),
     )
     for value, maximum, name in bounded_text:
         if value is None:
@@ -2252,6 +2390,8 @@ def _verified_coverage_record(
             event_at=_parse_timestamp(row["event_at"]),
             instrument_id=row["instrument_id"],
             capture_id=row["capture_id"],
+            market=row["market"],
+            symbol=row["symbol"],
         )
         normalized = _normalize_records((candidate,))
     except Exception as exc:
@@ -2278,6 +2418,8 @@ def _verified_coverage_record(
         or item["available_at"] != row["available_at"]
         or item["instrument_id"] != row["instrument_id"]
         or item["capture_id"] != row["capture_id"]
+        or item["market"] != row["market"]
+        or item["symbol"] != row["symbol"]
         or item["record_json"] != stored_record_json
     ):
         raise CoverageRecordIntegrityError(
@@ -2353,6 +2495,8 @@ def _snapshot_content_hash(
     *,
     instrument_id: str | None = None,
     capture_id: str | None = None,
+    market: str | None = None,
+    symbol: str | None = None,
 ) -> tuple[str, int]:
     """Hash every visible key/revision in a scoped half-open window in order."""
     temporary = SnapshotRecord(
@@ -2374,6 +2518,8 @@ def _snapshot_content_hash(
             page_size,
             instrument_id=instrument_id,
             capture_id=capture_id,
+            market=market,
+            symbol=symbol,
         ),
         content_hash="0" * 64,
         record_count=0,
@@ -2382,6 +2528,8 @@ def _snapshot_content_hash(
         as_of=publication.published_at,
         instrument_id=instrument_id,
         capture_id=capture_id,
+        market=market,
+        symbol=symbol,
     )
     ranked = _ranked_visible_facts(temporary)
     statement = select(
@@ -2419,6 +2567,8 @@ def _snapshot_content_hash(
         page_size,
         instrument_id=instrument_id,
         capture_id=capture_id,
+        market=market,
+        symbol=symbol,
     )
     digest.update(_canonical_json(header).encode("utf-8"))
     digest.update(b"\n")
@@ -2499,6 +2649,8 @@ def _snapshot_selection_hash(
     *,
     instrument_id: str | None = None,
     capture_id: str | None = None,
+    market: str | None = None,
+    symbol: str | None = None,
 ) -> str:
     """Hash the immutable selection semantics, including source/schema identity."""
     selection = {
@@ -2515,20 +2667,72 @@ def _snapshot_selection_hash(
         "page_size": page_size,
         "sort": "business_date_asc_nulls_last_business_key_asc",
     }
-    selector = _validated_capture_selection(
+    capture_selector, market_selector = _validated_snapshot_selectors(
         instrument_id,
         capture_id,
+        market=market,
+        symbol=symbol,
         error_type=SnapshotError,
     )
-    if selector is not None:
+    if capture_selector is not None:
         selection.update(
             {
                 "selection_version": 2,
-                "instrument_id": selector.instrument_id,
-                "capture_id": selector.capture_id,
+                "instrument_id": capture_selector.instrument_id,
+                "capture_id": capture_selector.capture_id,
+            }
+        )
+    if market_selector is not None:
+        selection.update(
+            {
+                "selection_profile": "market_symbol_v1",
+                "selection_version": 3,
+                "market": market_selector.market,
+                "symbol": market_selector.symbol,
             }
         )
     return _sha256(_canonical_json(selection).encode("utf-8"))
+
+
+def _verify_snapshot_selection_binding(
+    snapshot: SnapshotRecord,
+    publication: PublicationRecord,
+) -> None:
+    """Reject persisted selector or snapshot identity changes before serving metadata/pages."""
+    if (
+        snapshot.dataset_id != publication.dataset_id
+        or snapshot.publication_id != publication.publication_id
+        or type(snapshot.publication_sequence) is not int
+        or snapshot.publication_sequence != publication.sequence
+        or snapshot.schema_version != publication.schema_version
+        or _datetime_to_us(snapshot.as_of) != _datetime_to_us(publication.published_at)
+    ):
+        raise SnapshotError("snapshot publication identity is inconsistent")
+
+    try:
+        start, end = _validate_date_window(snapshot.start_date, snapshot.end_date)
+        page_size = _page_limit(snapshot.page_size, "page_size", max_value=MAX_PAGE_SIZE)
+        access_scope = _label(snapshot.access_scope, "access_scope", MAX_ID_LENGTH)
+        stored_hash = _sha256_value(snapshot.selection_sha256, "snapshot.selection_sha256")
+        expected_hash = _snapshot_selection_hash(
+            snapshot.dataset_id,
+            publication,
+            start,
+            end,
+            access_scope,
+            page_size,
+            instrument_id=snapshot.instrument_id,
+            capture_id=snapshot.capture_id,
+            market=snapshot.market,
+            symbol=snapshot.symbol,
+        )
+    except SnapshotError:
+        raise
+    except (TypeError, ValueError, OverflowError) as exc:
+        raise SnapshotError("snapshot selection metadata is invalid") from exc
+
+    if not hmac.compare_digest(stored_hash, expected_hash):
+        raise SnapshotError("snapshot selection metadata does not match its stored hash")
 
 
 def _ensure_head(connection: Connection, dataset_id: str) -> None:
@@ -2582,7 +2786,14 @@ def _append_changed_revision(
     if existing is not None and (
         existing["instrument_id"],
         existing["capture_id"],
-    ) != (record["instrument_id"], record["capture_id"]):
+        existing["market"],
+        existing["symbol"],
+    ) != (
+        record["instrument_id"],
+        record["capture_id"],
+        record["market"],
+        record["symbol"],
+    ):
         raise PublicationContractConflictError(
             "fact selector metadata is immutable for each business key"
         )
@@ -2598,6 +2809,8 @@ def _append_changed_revision(
             publication_sequence=sequence,
             instrument_id=record["instrument_id"],
             capture_id=record["capture_id"],
+            market=record["market"],
+            symbol=record["symbol"],
             business_date=record["business_date"],
             event_at=record["event_at"],
             observed_at=record["observed_at"],
@@ -2618,9 +2831,125 @@ def _validated_capture_selection(
 ) -> InstrumentCaptureSelection | None:
     """Validate one paired storage selector with a caller-safe exception type."""
     try:
-        return validate_selector_pair(instrument_id=instrument_id, capture_id=capture_id)
+        return validate_capture_selector_pair(instrument_id=instrument_id, capture_id=capture_id)
     except InstrumentCaptureSelectionError as exc:
         raise error_type(str(exc)) from None
+
+
+def _validated_market_symbol_selection(
+    market: object | None,
+    symbol: object | None,
+    *,
+    error_type: type[ValueError] = ValueError,
+) -> MarketSymbolSelection | None:
+    """Validate one exact market/symbol pair with a caller-safe exception type."""
+    try:
+        return validate_market_symbol_selector_pair(market=market, symbol=symbol)
+    except MarketSymbolSelectionError as exc:
+        raise error_type(str(exc)) from None
+
+
+def _validated_snapshot_selectors(
+    instrument_id: object | None,
+    capture_id: object | None,
+    *,
+    market: object | None,
+    symbol: object | None,
+    error_type: type[ValueError] = ValueError,
+) -> tuple[InstrumentCaptureSelection | None, MarketSymbolSelection | None]:
+    """Validate one supported selector profile and reject mixed selector metadata."""
+    capture_selection = _validated_capture_selection(
+        instrument_id,
+        capture_id,
+        error_type=error_type,
+    )
+    market_selection = _validated_market_symbol_selection(
+        market,
+        symbol,
+        error_type=error_type,
+    )
+    if capture_selection is not None and market_selection is not None:
+        raise error_type("selection profiles are mutually exclusive")
+    return capture_selection, market_selection
+
+
+def _require_market_symbol_history(
+    connection: Connection,
+    dataset_id: str,
+    publication_sequence: int,
+    *,
+    error_type: type[ValueError] = ValueError,
+) -> None:
+    """Fail closed unless every as-of fact revision has stable materialized keys.
+
+    The check deliberately includes tombstones and all prior revisions through
+    the pinned sequence. Only after it succeeds may the read query push the
+    requested pair below row-number ranking without risking older-version
+    resurrection. Its full-history work has not been benchmarked on production
+    data volumes.
+    """
+    versions = PUBLISHED_FACT_VERSIONS
+    as_of = and_(
+        versions.c.dataset_id == dataset_id,
+        versions.c.publication_sequence <= publication_sequence,
+    )
+    missing = connection.execute(
+        select(versions.c.business_key)
+        .where(
+            as_of,
+            or_(versions.c.market.is_(None), versions.c.symbol.is_(None)),
+        )
+        .limit(1)
+    ).first()
+    if missing is not None:
+        raise error_type("market/symbol selection requires complete stored history")
+
+    inconsistent = connection.execute(
+        select(versions.c.business_key)
+        .where(as_of)
+        .group_by(versions.c.business_key)
+        .having(
+            or_(
+                func.min(versions.c.market) != func.max(versions.c.market),
+                func.min(versions.c.symbol) != func.max(versions.c.symbol),
+            )
+        )
+        .limit(1)
+    ).first()
+    if inconsistent is not None:
+        raise error_type("market/symbol selector changed across published revisions")
+
+
+def _require_market_symbol_business_key(
+    business_key: str,
+    selection: MarketSymbolSelection,
+    *,
+    name: str,
+) -> None:
+    """Require both exact selector values as separate elements of a canonical JSON key."""
+    try:
+        values = json.loads(business_key, object_pairs_hook=_reject_duplicate_keys)
+        if not isinstance(values, list) or _canonical_json(values) != business_key:
+            raise ValueError
+    except (TypeError, ValueError, json.JSONDecodeError) as exc:
+        raise ValueError(f"{name} must be a canonical JSON array containing its selectors") from exc
+
+    market_positions = [
+        index
+        for index, value in enumerate(values)
+        if type(value) is str and value == selection.market
+    ]
+    symbol_positions = [
+        index
+        for index, value in enumerate(values)
+        if type(value) is str and value == selection.symbol
+    ]
+    if not any(
+        market_index != symbol_index
+        for market_index in market_positions
+        for symbol_index in symbol_positions
+    ):
+        raise ValueError(f"{name} must contain exact market and symbol values in separate elements")
 
 
 def _normalize_records(records: Iterable[PublishedRecordInput]) -> list[dict[str, Any]]:
@@ -2649,14 +2978,30 @@ def _normalize_records(records: Iterable[PublishedRecordInput]) -> list[dict[str
             isinstance(item.business_date, datetime) or not isinstance(item.business_date, date)
         ):
             raise ValueError(f"records[{index}].business_date must be datetime.date")
-        selection = _validated_capture_selection(item.instrument_id, item.capture_id)
+        capture_selection, market_selection = _validated_snapshot_selectors(
+            item.instrument_id,
+            item.capture_id,
+            market=item.market,
+            symbol=item.symbol,
+        )
         payload_json = _json_object(item.payload, f"records[{index}].payload", MAX_RECORD_BYTES)
         payload = json.loads(payload_json)
-        if selection is not None and (
-            payload.get("instrument_id") != selection.instrument_id
-            or payload.get("capture_id") != selection.capture_id
+        if capture_selection is not None and (
+            payload.get("instrument_id") != capture_selection.instrument_id
+            or payload.get("capture_id") != capture_selection.capture_id
         ):
             raise ValueError(f"records[{index}] selector metadata does not match its payload")
+        if market_selection is not None:
+            if (
+                payload.get("market") != market_selection.market
+                or payload.get("symbol") != market_selection.symbol
+            ):
+                raise ValueError(f"records[{index}] selector metadata does not match its payload")
+            _require_market_symbol_business_key(
+                business_key,
+                market_selection,
+                name=f"records[{index}].business_key",
+            )
         observed_at = _timestamp(item.observed_at, f"records[{index}].observed_at")
         source_published_at = _timestamp(
             item.source_published_at, f"records[{index}].source_published_at"
@@ -2672,10 +3017,16 @@ def _normalize_records(records: Iterable[PublishedRecordInput]) -> list[dict[str
             "available_at": available_at,
             "payload": payload,
         }
-        if selection is not None:
+        if capture_selection is not None:
             canonical["selection"] = {
-                "instrument_id": selection.instrument_id,
-                "capture_id": selection.capture_id,
+                "instrument_id": capture_selection.instrument_id,
+                "capture_id": capture_selection.capture_id,
+            }
+        if market_selection is not None:
+            canonical["selection"] = {
+                "market": market_selection.market,
+                "profile": "market_symbol_v1",
+                "symbol": market_selection.symbol,
             }
         record_hash = _sha256(_canonical_json(canonical).encode("utf-8"))
         size = len(payload_json.encode("utf-8")) + len(business_key.encode("utf-8")) + 256
@@ -2692,8 +3043,14 @@ def _normalize_records(records: Iterable[PublishedRecordInput]) -> list[dict[str
                 "observed_at": observed_at,
                 "source_published_at": source_published_at,
                 "available_at": available_at,
-                "instrument_id": selection.instrument_id if selection is not None else None,
-                "capture_id": selection.capture_id if selection is not None else None,
+                "instrument_id": (
+                    capture_selection.instrument_id if capture_selection is not None else None
+                ),
+                "capture_id": (
+                    capture_selection.capture_id if capture_selection is not None else None
+                ),
+                "market": market_selection.market if market_selection is not None else None,
+                "symbol": market_selection.symbol if market_selection is not None else None,
                 "record_json": payload_json,
                 "record_hash": record_hash,
                 "canonical": canonical,
@@ -2808,9 +3165,11 @@ def _publication_from_row(row: RowMapping) -> PublicationRecord:
 
 def _snapshot_from_row(row: RowMapping) -> SnapshotRecord:
     """Parse one persisted snapshot row into its public immutable model."""
-    selection = _validated_capture_selection(
+    capture_selection, market_selection = _validated_snapshot_selectors(
         row["instrument_id"],
         row["capture_id"],
+        market=row["market"],
+        symbol=row["symbol"],
         error_type=SnapshotError,
     )
     return SnapshotRecord(
@@ -2829,8 +3188,10 @@ def _snapshot_from_row(row: RowMapping) -> SnapshotRecord:
         created_at=_us_to_datetime(row["created_at_us"]),
         expires_at=_us_to_datetime(row["expires_at_us"]),
         as_of=_us_to_datetime(row["as_of_us"]),
-        instrument_id=selection.instrument_id if selection is not None else None,
-        capture_id=selection.capture_id if selection is not None else None,
+        instrument_id=(capture_selection.instrument_id if capture_selection is not None else None),
+        capture_id=capture_selection.capture_id if capture_selection is not None else None,
+        market=market_selection.market if market_selection is not None else None,
+        symbol=market_selection.symbol if market_selection is not None else None,
     )
 
 

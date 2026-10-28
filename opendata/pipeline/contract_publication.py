@@ -15,14 +15,29 @@ from datetime import date, datetime, timezone
 from typing import TYPE_CHECKING, Literal, Protocol
 
 from opendata.data.capture_selection import (
+    INSTRUMENT_CAPTURE_FILTER_FIELDS,
     InstrumentCaptureSelectionError,
-    selection_profile,
-    validate_selector_pair,
+)
+from opendata.data.capture_selection import (
+    selection_profile as instrument_capture_selection_profile,
+)
+from opendata.data.capture_selection import (
+    validate_selector_pair as validate_instrument_capture_pair,
 )
 from opendata.data.dataset_contract_registry import (
     DatasetContractRegistry,
     DatasetContractRegistryError,
     canonical_sha256,
+)
+from opendata.data.market_symbol_selection import (
+    MARKET_SYMBOL_FILTER_FIELDS,
+    MarketSymbolSelectionError,
+)
+from opendata.data.market_symbol_selection import (
+    selection_profile as market_symbol_selection_profile,
+)
+from opendata.data.market_symbol_selection import (
+    validate_selector_pair as validate_market_symbol_pair,
 )
 from opendata.data.platform_contracts import DatasetContract, FieldContract
 from opendata.pipeline.publication_store import (
@@ -52,7 +67,7 @@ class ContractPublicationError(ValueError):
     """Raised when run output conflicts with its registered data contract."""
 
 
-_SelectionProfile = Literal["dataset", "instrument_capture_v1"]
+_SelectionProfile = Literal["dataset", "instrument_capture_v1", "market_symbol_v1"]
 
 
 class ValidatedPublicationWriter:
@@ -197,11 +212,28 @@ def _validate_record(record: NormalizedRecord, contract: DatasetContract) -> Pub
 
 
 def _publication_selection_profile(contract: DatasetContract) -> _SelectionProfile:
-    """Resolve the shared profile and translate failures to a safe writer error."""
+    """Resolve both reserved profiles and reject malformed or conflicting contracts."""
     try:
-        return selection_profile(contract)
-    except InstrumentCaptureSelectionError:
+        capture_profile = instrument_capture_selection_profile(contract)
+        market_profile = market_symbol_selection_profile(contract)
+    except (InstrumentCaptureSelectionError, MarketSymbolSelectionError):
         raise ContractPublicationError("dataset selection profile is invalid") from None
+
+    if capture_profile == "instrument_capture_v1" and market_profile == "market_symbol_v1":
+        raise ContractPublicationError("dataset selection profiles conflict")
+    if capture_profile not in ("dataset", "instrument_capture_v1"):
+        raise ContractPublicationError("dataset selection profile is invalid")
+    if market_profile not in ("dataset", "market_symbol_v1"):
+        raise ContractPublicationError("dataset selection profile is invalid")
+    if market_profile == "market_symbol_v1":
+        if contract.filter_fields != MARKET_SYMBOL_FILTER_FIELDS:
+            raise ContractPublicationError("dataset selection profiles conflict")
+        return "market_symbol_v1"
+    if capture_profile == "instrument_capture_v1":
+        if contract.filter_fields != INSTRUMENT_CAPTURE_FILTER_FIELDS:
+            raise ContractPublicationError("dataset selection profiles conflict")
+        return "instrument_capture_v1"
+    return "dataset"
 
 
 def _validate_record_for_profile(
@@ -231,16 +263,27 @@ def _validate_record_for_profile(
         contract,
     )
     source_published_at = _source_available_at(canonical_payload, record, contract)
-    selection = None
+    capture_selection = None
+    market_symbol_selection = None
     if profile == "instrument_capture_v1":
         try:
-            selection = validate_selector_pair(
+            capture_selection = validate_instrument_capture_pair(
                 instrument_id=canonical_payload.get("instrument_id"),
                 capture_id=canonical_payload.get("capture_id"),
             )
         except InstrumentCaptureSelectionError:
             raise ContractPublicationError("record selector values are invalid") from None
-        if selection is None:
+        if capture_selection is None:
+            raise ContractPublicationError("record selector values are required")
+    elif profile == "market_symbol_v1":
+        try:
+            market_symbol_selection = validate_market_symbol_pair(
+                market=canonical_payload.get("market"),
+                symbol=canonical_payload.get("symbol"),
+            )
+        except MarketSymbolSelectionError:
+            raise ContractPublicationError("record selector values are invalid") from None
+        if market_symbol_selection is None:
             raise ContractPublicationError("record selector values are required")
     return PublishedRecordInput(
         business_key=expected_key,
@@ -250,8 +293,10 @@ def _validate_record_for_profile(
         observed_at=observed_at,
         source_published_at=source_published_at,
         available_at=record.available_at,
-        instrument_id=selection.instrument_id if selection is not None else None,
-        capture_id=selection.capture_id if selection is not None else None,
+        instrument_id=(capture_selection.instrument_id if capture_selection is not None else None),
+        capture_id=capture_selection.capture_id if capture_selection is not None else None,
+        market=market_symbol_selection.market if market_symbol_selection is not None else None,
+        symbol=market_symbol_selection.symbol if market_symbol_selection is not None else None,
     )
 
 
