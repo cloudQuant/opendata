@@ -19,10 +19,28 @@ if TYPE_CHECKING:  # pragma: no cover
 
     from opendata.pipeline.run_service import RunOutcome
 
-RuntimeRole = Literal["api", "scheduler", "worker", "legacy"]
+RuntimeRole = Literal[
+    "api",
+    "scheduler",
+    "worker",
+    "legacy",
+    "one_shot_submitter",
+    "one_shot_executor",
+]
 RuntimeProfile = Literal["legacy_compatible", "reviewed"]
 
-_ROLE_VALUES = frozenset({"api", "scheduler", "worker", "legacy"})
+_ROLE_VALUES = frozenset(
+    {
+        "api",
+        "scheduler",
+        "worker",
+        "legacy",
+        "one_shot_submitter",
+        "one_shot_executor",
+    }
+)
+_ONE_SHOT_ROLES = frozenset({"one_shot_submitter", "one_shot_executor"})
+_ONE_SHOT_SINK_ROLES = frozenset({"scheduler", "worker", *_ONE_SHOT_ROLES})
 _CONFIG_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:/+-]{0,127}$")
 
 
@@ -31,6 +49,14 @@ class WorkerOnceSPI(Protocol):  # pragma: no cover
 
     def __call__(self, worker: str, ttl: timedelta) -> RunOutcome | None:
         """Claim and execute at most one already-queued reviewed run."""
+        ...
+
+
+class OneShotWorkerSPI(Protocol):  # pragma: no cover
+    """Injected one-shot worker boundary keyed by an already reviewed run id."""
+
+    def __call__(self, run_key: str) -> RunOutcome | None:
+        """Execute only the specified one-shot run and return its safe outcome."""
         ...
 
 
@@ -53,6 +79,8 @@ class RuntimeRolePlan:
             raise ValueError("runtime roles contain an unsupported value")
         if not isinstance(self.reviewed_sink_ids, frozenset):
             raise ValueError("reviewed sink ids must be a frozen set")
+        if any(not isinstance(sink, str) for sink in self.reviewed_sink_ids):
+            raise ValueError("reviewed sink id must be a string")
         if any(not _CONFIG_ID.fullmatch(sink) for sink in self.reviewed_sink_ids):
             raise ValueError("reviewed sink id is invalid")
 
@@ -65,12 +93,18 @@ class RuntimeRolePlan:
 
         if "legacy" in self.roles:
             raise ValueError("legacy and reviewed runtime roles are mutually exclusive")
+        selected_one_shot_roles = self.roles & _ONE_SHOT_ROLES
+        if selected_one_shot_roles and self.roles not in {
+            frozenset({"one_shot_submitter"}),
+            frozenset({"one_shot_executor"}),
+        }:
+            raise ValueError("one-shot runtime roles must run as a dedicated process role")
         if not isinstance(self.reviewed_config_id, str) or not _CONFIG_ID.fullmatch(
             self.reviewed_config_id
         ):
             raise ValueError("reviewed roles require an explicit reviewed config id")
-        if (self.roles & {"scheduler", "worker"}) and not self.reviewed_sink_ids:
-            raise ValueError("reviewed scheduler and worker roles require declared sink ids")
+        if (self.roles & _ONE_SHOT_SINK_ROLES) and not self.reviewed_sink_ids:
+            raise ValueError("reviewed writer and one-shot roles require declared sink ids")
 
     def enables(self, role: RuntimeRole) -> bool:
         """Return whether the selected deployment plan enables one role."""
@@ -89,8 +123,9 @@ def build_runtime_role_plan(
     """Build a checked role plan without reading environment or application state.
 
     With no arguments, the result preserves the existing API and legacy
-    collector roles. Reviewed scheduler or worker roles require an explicit
-    ``profile="reviewed"``, config id, and declared write-sink set.
+    collector roles. Reviewed scheduler, worker, and dedicated one-shot roles
+    require an explicit ``profile="reviewed"``, config id, and declared
+    write-sink set. One-shot submitter and executor roles each run alone.
 
     Args:
         profile: Mutually exclusive compatibility or reviewed deployment mode.
@@ -102,9 +137,14 @@ def build_runtime_role_plan(
         A validated immutable deployment plan.
 
     Raises:
-        TypeError: If a role or sink collection is not iterable.
-        ValueError: If the role selection could start an unreviewed writer.
+        TypeError: If a role or sink collection is not iterable or is a string.
+        ValueError: If the role selection could start an unreviewed writer or
+            combine a one-shot role with another runtime role.
     """
+    if isinstance(roles, (str, bytes)):
+        raise TypeError("roles must be an iterable of role names, not a string or bytes")
+    if isinstance(reviewed_sink_ids, (str, bytes)):
+        raise TypeError("reviewed_sink_ids must be an iterable of sink ids, not a string or bytes")
     if roles is None:
         if profile != "legacy_compatible":
             raise ValueError("reviewed profile requires an explicit role selection")

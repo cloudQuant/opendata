@@ -27,7 +27,7 @@ from opendata.pipeline.run_dispatch import (
     RunDispatcher,
 )
 from opendata.pipeline.run_ledger import MAX_TTL, MIN_TTL, RunLedger
-from opendata.pipeline.runtime_roles import RuntimeRolePlan, WorkerOnceSPI
+from opendata.pipeline.runtime_roles import OneShotWorkerSPI, RuntimeRolePlan, WorkerOnceSPI
 from opendata.reviewed_cli import ReviewedCLIApplication
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -37,6 +37,7 @@ if TYPE_CHECKING:  # pragma: no cover
     from opendata.pipeline.run_service import RunOutcome
 
 _WORKER_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:@+-]{0,254}$")
+_RUN_KEY = re.compile(r"^[0-9a-f]{64}$")
 _MIN_WORKER_INTERVAL_SECONDS = 0.01
 _MAX_HEARTBEAT_INTERVAL_SECONDS = 60.0
 _MAX_DATABASE_IO_TIMEOUT_SECONDS = 30.0
@@ -87,6 +88,34 @@ class _WorkerOnceAdapter:
             self.lifecycle.worker_running = True
         try:
             return self.binding.worker.run_once()
+        finally:
+            with self.lifecycle.lock:
+                self.lifecycle.worker_running = False
+
+
+@dataclass(frozen=True, slots=True)
+class _OneShotWorkerAdapter:
+    """Expose only exact-key execution through the one-shot CLI SPI."""
+
+    lifecycle: _RuntimeLifecycle
+    binding: _WorkerBinding
+
+    def __call__(self, run_key: str) -> RunOutcome | None:
+        """Execute only the explicitly named one-shot run under lifecycle guards."""
+        with self.lifecycle.lock:
+            if self.lifecycle.worker is not self.binding:
+                raise ValueError("reviewed runtime worker is not active")
+            if self.lifecycle.closed:
+                raise ValueError("reviewed runtime is closed")
+            if not isinstance(run_key, str) or not _RUN_KEY.fullmatch(run_key):
+                raise ValueError("one-shot run key must be 64 lowercase hexadecimal characters")
+            if self.lifecycle.worker_running:
+                raise RuntimeError("reviewed runtime worker is already running")
+            self.lifecycle.worker_running = True
+        try:
+            # Intentionally never fall back to run_once(): a missing or unknown
+            # key must not turn into broad queue claiming.
+            return self.binding.worker.run_one_shot(run_key)
         finally:
             with self.lifecycle.lock:
                 self.lifecycle.worker_running = False
@@ -146,13 +175,20 @@ class _RuntimeRunDispatcher(RunDispatcher):
         *,
         dry_run: bool = False,
     ) -> DispatchReceipt:
-        """Enqueue a dedicated one-shot request only from an open reviewed API.
+        """Enqueue one dedicated request from an API or one-shot submitter.
 
-        The base dispatcher exposes this separate method, so it must pass the
-        same lifecycle and role boundary as the other API dispatch methods.
+        One-shot submitters do not gain the regular manual, scheduled, or
+        backfill dispatch methods. The base dispatcher exposes this separate
+        method, so it must pass the same lifecycle and role boundary.
         """
         with self._runtime_lifecycle.lock:
-            self._require_role("api")
+            if self._runtime_lifecycle.runtime_plan.enables("api"):
+                self._require_role("api")
+            elif self._runtime_lifecycle.runtime_plan.enables("one_shot_submitter"):
+                self._require_role("one_shot_submitter")
+            else:
+                # Preserve the established error for API-less reviewed plans.
+                self._require_role("api")
             if self._runtime_lifecycle.runtime_plan.profile != "reviewed":
                 raise ValueError("one-shot dispatch requires a reviewed runtime profile")
             return super().dispatch_one_shot(
@@ -187,7 +223,10 @@ class _RuntimeRunDispatcher(RunDispatcher):
             self._require_role("scheduler")
             return super().apscheduler_callback(job_id, version, payload=payload)
 
-    def _require_role(self, role: Literal["api", "scheduler"]) -> None:
+    def _require_role(
+        self,
+        role: Literal["api", "scheduler", "one_shot_submitter"],
+    ) -> None:
         """Reject dispatch when the runtime is closed or lacks its role."""
         if self._runtime_lifecycle.closed:
             raise RuntimeError("reviewed runtime is closed")
@@ -253,11 +292,12 @@ class ReviewedRuntime:
     ) -> ReviewedCLIApplication:
         """Adapt this runtime to the strict reviewed CLI without starting roles.
 
-        Scheduler plans receive the shared dispatcher but never create or start
-        APScheduler. Worker plans require an existing Engine registered by a
-        verified worker-engine factory and fixed worker timing values. The
-        worker is created at most once for this runtime and reused by later
-        adapters, preventing duplicate SQLAlchemy guard listeners.
+        Scheduler and one-shot submitter plans receive the shared dispatcher
+        but never create or start APScheduler. Worker and one-shot executor
+        plans require an existing Engine registered by a verified worker-engine
+        factory and fixed worker timing values. The worker is created at most
+        once for this runtime and reused by later adapters, preventing duplicate
+        SQLAlchemy guard listeners.
 
         Args:
             worker_engine: Caller-owned Engine already verified by
@@ -276,8 +316,8 @@ class ReviewedRuntime:
 
         Raises:
             TypeError: If an injected Engine has the wrong type.
-            ValueError: If the enabled worker role lacks bounded fixed settings,
-                or a previously bound worker is reconfigured.
+            ValueError: If a worker or one-shot executor lacks bounded fixed
+                settings, or a previously bound worker is reconfigured.
             RuntimeError: If this runtime has already been closed.
         """
         with self._lifecycle.lock:
@@ -291,11 +331,13 @@ class ReviewedRuntime:
                 heartbeat_interval_seconds,
                 database_io_timeout_seconds,
             )
-            worker_enabled = self.runtime_plan.enables("worker")
+            one_shot_executor_enabled = self.runtime_plan.enables("one_shot_executor")
+            worker_enabled = self.runtime_plan.enables("worker") or one_shot_executor_enabled
             if not worker_enabled and any(value is not None for value in worker_options):
                 raise ValueError("worker options require an enabled worker role")
 
             worker_once: WorkerOnceSPI | None = None
+            one_shot_run = None
             if worker_enabled:
                 if any(value is None for value in worker_options):
                     raise ValueError("enabled worker role requires all fixed worker options")
@@ -338,15 +380,21 @@ class ReviewedRuntime:
                     heartbeat_interval,
                     database_io_timeout,
                 )
-                worker_once = self._worker_once(worker)
+                if one_shot_executor_enabled:
+                    one_shot_run = self._one_shot_worker(worker)
+                else:
+                    worker_once = self._worker_once(worker)
 
-            dispatch_enabled = self.runtime_plan.enables("api") or self.runtime_plan.enables(
-                "scheduler"
+            dispatch_enabled = (
+                self.runtime_plan.enables("api")
+                or self.runtime_plan.enables("scheduler")
+                or self.runtime_plan.enables("one_shot_submitter")
             )
             return ReviewedCLIApplication(
                 runtime_plan=self.runtime_plan,
                 dispatcher=self.dispatcher if dispatch_enabled else None,
                 worker_once=worker_once,
+                one_shot_run=one_shot_run,
             )
 
     @property
@@ -360,7 +408,7 @@ class ReviewedRuntime:
 
         Worker connection guards remain attached to their Engine for the
         Engine's lifetime because ``PersistentRunWorker`` exposes no public
-        listener-removal operation. An in-flight ``run_once`` is not cancelled
+        listener-removal operation. An in-flight worker call is not cancelled
         or fenced by close and may finish normally; the caller owns the Engine
         lifecycle and any durable cancellation through the run ledger.
         """
@@ -410,6 +458,10 @@ class ReviewedRuntime:
     def _worker_once(self, binding: _WorkerBinding) -> WorkerOnceSPI:
         """Return a fixed-identity one-run adapter for the strict CLI SPI."""
         return _WorkerOnceAdapter(self._lifecycle, binding)
+
+    def _one_shot_worker(self, binding: _WorkerBinding) -> OneShotWorkerSPI:
+        """Return a fixed-identity adapter that accepts only one explicit key."""
+        return _OneShotWorkerAdapter(self._lifecycle, binding)
 
 
 def build_reviewed_runtime(
@@ -478,7 +530,12 @@ def _validate_catalog_sinks(
     catalog: ReviewedTaskCatalog,
 ) -> None:
     """Keep scheduler and worker catalogs inside declared sink ownership."""
-    if not (runtime_plan.enables("scheduler") or runtime_plan.enables("worker")):
+    if not (
+        runtime_plan.enables("scheduler")
+        or runtime_plan.enables("worker")
+        or runtime_plan.enables("one_shot_submitter")
+        or runtime_plan.enables("one_shot_executor")
+    ):
         return
     catalog_sink_ids = {task.dataset_id for task in catalog.tasks()}
     if not catalog_sink_ids.issubset(runtime_plan.reviewed_sink_ids):
