@@ -165,7 +165,8 @@ class RunDispatcher:
 
     The current ``RunService.submit`` policy requires every run mode to use an
     enabled and reviewed job version; manual and backfill dispatch preserve
-    that same policy.
+    that same policy. Jobs explicitly marked one-shot-only use a separate
+    manual entry point and are never accepted by ordinary dispatch methods.
     """
 
     def __init__(
@@ -227,6 +228,24 @@ class RunDispatcher:
         request = _build_request("manual", None, payload)
         return self._submit(task, request, dry_run=dry_run)
 
+    def dispatch_one_shot(
+        self,
+        job_id: str,
+        version: str,
+        payload: Mapping[str, object],
+        *,
+        dry_run: bool = False,
+    ) -> DispatchReceipt:
+        """Preview or enqueue one manual request for a reviewed one-shot-only job.
+
+        One-shot jobs must be explicitly marked in the reviewed registry and
+        remain disabled and unscheduled. A dry run builds the same validated
+        request and safe identity but never calls the service or writes a row.
+        """
+        task = self._require_one_shot_task(job_id, version)
+        request = _build_request("manual", None, payload)
+        return self._submit_one_shot(task, request, dry_run=dry_run)
+
     def dispatch_backfill(
         self,
         job_id: str,
@@ -260,14 +279,28 @@ class RunDispatcher:
         scheduled: bool = False,
     ) -> TaskDefinition:
         """Resolve reviewed/enabled metadata before validating a request."""
-        task = self._catalog.resolve(job_id, version)
-        if task is None:
+        job = self._catalog.registry.resolve(job_id, version)
+        if job is None:
             raise ValueError("job version is not in the reviewed catalog")
+        if job.one_shot_only is True:
+            raise ValueError("one-shot-only jobs require the dedicated one-shot dispatcher")
+        task = job.task
         if not task.enabled:
             raise ValueError("job version is disabled")
         if scheduled and task.schedule is None:
             raise ValueError("scheduled runs require explicit schedule metadata")
         return task
+
+    def _require_one_shot_task(self, job_id: str, version: str) -> TaskDefinition:
+        """Resolve a reviewed one-shot job without enabling ordinary dispatch."""
+        job = self._catalog.registry.resolve(job_id, version)
+        if job is None:
+            raise ValueError("job version is not in the reviewed catalog")
+        if job.reviewed is not True or job.one_shot_only is not True:
+            raise ValueError("job version is not approved for one-shot dispatch")
+        if job.task.enabled is not False or job.task.schedule is not None:
+            raise ValueError("one-shot-only jobs must be disabled and unscheduled")
+        return job.task
 
     def _submit(
         self,
@@ -284,6 +317,23 @@ class RunDispatcher:
         if dry_run:
             return DispatchReceipt(safe_identity, "dry_run", None)
         record = self._service.submit(task.job_id, task.version, request)
+        return DispatchReceipt(safe_identity, record.status, record.created_at)
+
+    def _submit_one_shot(
+        self,
+        task: TaskDefinition,
+        request: RunRequest,
+        *,
+        dry_run: bool,
+    ) -> DispatchReceipt:
+        """Submit only through the service's persisted one-shot policy."""
+        if not isinstance(dry_run, bool):
+            raise ValueError("dry_run must be a boolean")
+        identity = build_run_identity(task, request)
+        safe_identity = _safe_identity(identity, task)
+        if dry_run:
+            return DispatchReceipt(safe_identity, "dry_run", None)
+        record = self._service.submit_one_shot(task.job_id, task.version, request)
         return DispatchReceipt(safe_identity, record.status, record.created_at)
 
 
@@ -323,6 +373,9 @@ class APSchedulerSubmissionCallback:
             raise TypeError("dispatcher must be a RunDispatcher")
         if not isinstance(task, TaskDefinition):
             raise TypeError("task must be a TaskDefinition")
+        reviewed_job = dispatcher._catalog.registry.resolve(task.job_id, task.version)
+        if reviewed_job is not None and reviewed_job.one_shot_only is True:
+            raise ValueError("one-shot-only jobs cannot use the APScheduler callback")
         if not isinstance(payload, Mapping):
             raise ValueError("run payload must be a JSON object")
         _validate_payload_shape("scheduled", payload)

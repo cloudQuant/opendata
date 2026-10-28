@@ -138,6 +138,30 @@ class _RuntimeRunDispatcher(RunDispatcher):
             self._require_role("api")
             return super().dispatch_manual(job_id, version, payload, dry_run=dry_run)
 
+    def dispatch_one_shot(
+        self,
+        job_id: str,
+        version: str,
+        payload: Mapping[str, object],
+        *,
+        dry_run: bool = False,
+    ) -> DispatchReceipt:
+        """Enqueue a dedicated one-shot request only from an open reviewed API.
+
+        The base dispatcher exposes this separate method, so it must pass the
+        same lifecycle and role boundary as the other API dispatch methods.
+        """
+        with self._runtime_lifecycle.lock:
+            self._require_role("api")
+            if self._runtime_lifecycle.runtime_plan.profile != "reviewed":
+                raise ValueError("one-shot dispatch requires a reviewed runtime profile")
+            return super().dispatch_one_shot(
+                job_id,
+                version,
+                payload,
+                dry_run=dry_run,
+            )
+
     def dispatch_backfill(
         self,
         job_id: str,
