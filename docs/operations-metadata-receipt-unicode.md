@@ -70,9 +70,11 @@ service.
 
 ## Evidence and limits
 
-The supplied isolated acceptance record reports 89 synthetic SQLite tests
-passing, with branch-inclusive coverage of 98% for the receipt writer, 100% for
-the schema module, and 90% for the migration. These tests use synthetic data.
+The supplied isolated acceptance record reports 89 synthetic offline tests
+passing, including SQLite fixtures and simulated MySQL DDL, with branch-inclusive
+coverage of 98% for the receipt writer, 100% for the schema module, and 90% for
+the migration. These tests use synthetic data; the actual MySQL run is reported
+separately below.
 
 A disposable MySQL 8.4 acceptance run also passed using a synthetic `0007`
 version marker followed by the actual `0008` and `0009` migration bodies. It
@@ -104,8 +106,9 @@ output included a warning that the optional `component_reference_cache.so`
 could not be loaded, although the service started and stopped successfully. It
 also included a self-signed CA warning while network access was disabled; this
 warning is recorded as environment output and is not treated as a failed
-acceptance result. The evidence directory is mode `0700`, while its log and
-data files are mode `0640`; filesystem permissions do not make the report a
+acceptance result. The original MySQL runtime directory's data and log files
+were mode `0640`; the retained archive copies are mode `0600` under a parent
+directory with mode `0700`. Filesystem permissions do not make the report a
 cryptographically signed artifact.
 
 These runs use synthetic data and a synthetic `0007` marker. They do not
