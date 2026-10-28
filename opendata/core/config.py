@@ -160,7 +160,10 @@ class Settings(BaseSettings):
     # fuyao (同花顺扶摇) transport credentials (A3.1/A3.2). Read from .env by
     # pydantic-settings so the app path has the key without exporting it.
     fuyao_api_key: str | None = Field(
-        default=None, description="FUYAO_API_KEY: fuyao (THS) API key; unset disables fuyao"
+        default=None,
+        repr=False,
+        exclude=True,
+        description="FUYAO_API_KEY: fuyao (THS) API key; unset disables fuyao",
     )
     fuyao_api_base_url: str | None = Field(
         default=None,
@@ -190,6 +193,7 @@ class Settings(BaseSettings):
         ge=1,
         description="KEY_EXPIRY_WARNING_DAYS: days before expiry to raise a warning",
     )
+
     key_health_observation_ttl_hours: int = Field(
         default=24,
         ge=1,
