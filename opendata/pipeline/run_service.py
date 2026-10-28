@@ -5,8 +5,9 @@ Python callables. This module never imports job paths, reads process settings,
 opens provider connections, or executes legacy scripts. Fetch and normalization
 run outside the warehouse transaction; publication and the succeeded ledger
 transition are delegated to one fenced transaction callback.
-An optional exact-bytes sidecar is validated before that callback and is carried
-only by the in-memory normalized batch for the current run.
+An optional exact-bytes sidecar is validated or decoded before that callback;
+any decoded transaction context is carried only by the in-memory normalized
+batch for the current run.
 """
 
 from __future__ import annotations
@@ -17,7 +18,7 @@ import json
 import math
 import re
 from collections.abc import Callable, Iterable, Mapping
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import date, datetime, timedelta, timezone
 from types import FunctionType, MappingProxyType
 from typing import TYPE_CHECKING, Protocol, TypeAlias, TypeGuard, cast
@@ -159,12 +160,14 @@ class NormalizedRecord:
 
 @dataclass(frozen=True, slots=True)
 class NormalizedBatch:
-    """Normalized facts plus an optional, in-memory transaction sidecar.
+    """Normalized facts plus optional, in-memory commit sidecars.
 
-    ``commit_payload`` is omitted from representations and ledger snapshots.
-    A registered job must provide exact ``bytes`` on every run; the runner
-    validates the payload and its declared size outside the transaction before
-    exposing it to the publisher.
+    ``commit_payload`` and ``commit_context`` are omitted from representations
+    and ledger snapshots. Jobs may set only ``commit_payload``. A registered
+    sidecar job must provide exact ``bytes`` on every run; the runner validates
+    its declared size and decodes or validates it outside the transaction.
+    ``commit_context`` is reserved for the runner to attach a decoded,
+    allowlisted immutable object to the publisher's in-memory batch.
     """
 
     records: tuple[NormalizedRecord, ...]
@@ -176,6 +179,7 @@ class NormalizedBatch:
     provenance: JsonObject
     watermark: JsonObject | None = None
     commit_payload: bytes | None = field(default=None, repr=False)
+    commit_context: object | None = field(default=None, repr=False, compare=False)
 
 
 @dataclass(frozen=True, slots=True)
@@ -191,11 +195,12 @@ class PublicationReceipt:
 class ReviewedJob:
     """A reviewed job and an optional bounded sidecar contract.
 
-    Sidecar support is all-or-nothing: declare the exact ``bytes`` type, a
-    synchronous validator that returns the literal boolean ``True``, and the
-    per-job byte limit. Once declared, every run must return a payload. Jobs
-    without these fields reject non-``None`` payloads and remain compatible
-    with batches whose payload is ``None``.
+    Sidecar support uses exactly one of two all-or-nothing contracts: exact
+    ``bytes`` plus a synchronous validator returning literal ``True``, or
+    exact ``bytes`` plus the allowlisted prepared-capture decoder and output
+    type. Both require a per-job byte limit. Once declared, every run must
+    return a payload. Jobs without these fields reject non-``None`` payloads
+    and remain compatible with batches whose payload is ``None``.
     """
 
     task: TaskDefinition
@@ -206,6 +211,17 @@ class ReviewedJob:
     commit_payload_type: type[bytes] | None = None
     validate_commit_payload: Callable[[bytes], bool] | None = None
     max_commit_payload_bytes: int | None = None
+    decode_commit_payload: Callable[[bytes], object] | None = None
+    commit_context_type: type[object] | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class _CommitPayloadContract:
+    """One validated sidecar contract captured for a single run only."""
+
+    validator: Callable[[bytes], bool] | None = None
+    decoder: Callable[[bytes], object] | None = None
+    context_type: type[object] | None = None
 
 
 class ReviewedJobRegistry:
@@ -337,14 +353,22 @@ class RunService:
             context.checkpoint()
             if type(batch) is not NormalizedBatch:
                 raise _ResultInvalidError("normalized_batch_invalid")
+            if batch.commit_context is not None:
+                raise _CommitPayloadInvalidError("commit_context_prepopulated")
             commit_payload = batch.commit_payload
-            commit_payload_validator = self._preflight_commit_payload(job, commit_payload)
+            commit_contract = self._preflight_commit_payload(job, commit_payload)
+            decoded_context: object | None = None
+            if commit_contract.validator is not None:
+                self._validate_commit_payload(commit_payload, commit_contract.validator)
+            elif commit_contract.decoder is not None:
+                decoded_context = self._decode_commit_payload(commit_payload, commit_contract)
             batch = self._validate_batch(
                 batch,
                 checkpoint=context.checkpoint_cooperatively,
                 commit_payload=commit_payload,
             )
-            self._validate_commit_payload(commit_payload, commit_payload_validator)
+            if decoded_context is not None:
+                batch = replace(batch, commit_payload=None, commit_context=decoded_context)
             context.checkpoint()
 
             def publish(connection: Connection) -> PublicationReceipt:
@@ -460,6 +484,8 @@ class RunService:
         """Copy and enforce record, field, credential, and encoded-size bounds."""
         if type(batch) is not NormalizedBatch:
             raise _ResultInvalidError("normalized_batch_invalid")
+        if batch.commit_context is not None:
+            raise _CommitPayloadInvalidError("commit_context_prepopulated")
         sidecar = (
             batch.commit_payload if commit_payload is _UNSET_COMMIT_PAYLOAD else commit_payload
         )
@@ -566,29 +592,26 @@ class RunService:
     @staticmethod
     def _preflight_commit_payload(
         job: ReviewedJob, payload: bytes | None
-    ) -> Callable[[bytes], bool] | None:
-        """Check sidecar presence and bounds before copying normalized records."""
+    ) -> _CommitPayloadContract:
+        """Check payload declaration, presence, and size before record copies."""
         if payload is not None and type(payload) is not bytes:
             raise _ResultInvalidError("commit_payload_type_invalid")
 
-        payload_type = job.commit_payload_type
-        validator = job.validate_commit_payload
-        max_bytes = job.max_commit_payload_bytes
-        if payload_type is None and validator is None and max_bytes is None:
+        contract = _validate_commit_payload_declaration(job)
+        if contract is None:
             if payload is not None:
                 raise _CommitPayloadInvalidError("commit_payload_not_registered")
-            return None
-        if payload_type is not bytes or not _is_sync_validator(validator):
-            raise _CommitPayloadInvalidError("commit_payload_not_registered")
+            return _CommitPayloadContract()
         if payload is None:
             raise _CommitPayloadInvalidError("commit_payload_missing")
+        max_bytes = job.max_commit_payload_bytes
         if (
             type(max_bytes) is not int
             or not 1 <= max_bytes <= MAX_COMMIT_PAYLOAD_BYTES
             or len(payload) > max_bytes
         ):
             raise _CommitPayloadInvalidError("commit_payload_size_invalid")
-        return validator
+        return contract
 
     @staticmethod
     def _validate_commit_payload(
@@ -606,6 +629,26 @@ class RunService:
             raise _CommitPayloadInvalidError("commit_payload_validation_failed") from None
         if type(accepted) is not bool or accepted is not True:
             raise _CommitPayloadInvalidError("commit_payload_validation_failed")
+
+    @staticmethod
+    def _decode_commit_payload(
+        payload: bytes | None,
+        contract: _CommitPayloadContract,
+    ) -> object:
+        """Decode one bounded payload into its exact allowlisted immutable DTO."""
+        decoder = contract.decoder
+        context_type = contract.context_type
+        if type(payload) is not bytes:
+            raise _CommitPayloadInvalidError("commit_payload_type_invalid")
+        if decoder is None or context_type is None:
+            raise _CommitPayloadInvalidError("commit_payload_not_registered")
+        try:
+            decoded = decoder(payload)
+        except Exception:
+            raise _CommitPayloadInvalidError("commit_payload_validation_failed") from None
+        if type(decoded) is not context_type:
+            raise _CommitPayloadInvalidError("commit_payload_validation_failed")
+        return decoded
 
     def _now(self) -> datetime:
         """Require the injected clock to return an aware UTC instant."""
@@ -635,21 +678,55 @@ class _CommitPayloadInvalidError(RuntimeError):
     """Internal, sanitized refusal for an invalid ephemeral commit payload."""
 
 
-def _validate_commit_payload_declaration(job: ReviewedJob) -> None:
-    """Require an all-or-nothing, bounded declaration for transaction sidecars."""
+def _validate_commit_payload_declaration(job: ReviewedJob) -> _CommitPayloadContract | None:
+    """Validate a complete validator-only or allowlisted decoder contract."""
     payload_type = job.commit_payload_type
     validator = job.validate_commit_payload
     max_bytes = job.max_commit_payload_bytes
-    if payload_type is None and validator is None and max_bytes is None:
-        return
+    decoder = job.decode_commit_payload
+    context_type = job.commit_context_type
+    if (
+        payload_type is None
+        and validator is None
+        and max_bytes is None
+        and decoder is None
+        and context_type is None
+    ):
+        return None
     if payload_type is not bytes:
         raise TypeError("commit payload type must be exactly bytes")
-    if not _is_sync_validator(validator):
-        raise TypeError("commit payload validator must be an explicit function")
     if type(max_bytes) is not int or not 1 <= max_bytes <= MAX_COMMIT_PAYLOAD_BYTES:
         raise ValueError(
             f"max_commit_payload_bytes must be between 1 and {MAX_COMMIT_PAYLOAD_BYTES}"
         )
+    if validator is not None:
+        if decoder is not None or context_type is not None:
+            raise TypeError("sidecar validator and decoder modes cannot be combined")
+        if not _is_sync_validator(validator):
+            raise TypeError("commit payload validator must be an explicit function")
+        return _CommitPayloadContract(validator=validator)
+    if decoder is None or context_type is None:
+        raise TypeError("commit payload decoder and context type must be declared together")
+    expected_decoder, expected_context_type = _prepared_capture_decoder_contract()
+    if type(decoder) is not FunctionType or decoder is not expected_decoder:
+        raise TypeError("commit payload decoder must be the reviewed prepared-capture decoder")
+    if context_type is not expected_context_type:
+        raise TypeError("commit context type must be the exact PreparedCapture type")
+    return _CommitPayloadContract(decoder=decoder, context_type=context_type)
+
+
+def _prepared_capture_decoder_contract() -> tuple[FunctionType, type[object]]:
+    """Lazily load the sole decoder/output pair allowed for transaction context.
+
+    The imports stay inside this helper so importing the generic runner does
+    not create a module cycle with the financial archive store. The caller
+    compares both declarations by identity and never invokes arbitrary job
+    decoders.
+    """
+    from opendata.pipeline.financial_observation_store import PreparedCapture
+    from opendata.pipeline.financial_prepared_codec import decode_prepared_capture
+
+    return decode_prepared_capture, PreparedCapture
 
 
 def _is_sync_validator(value: object) -> TypeGuard[Callable[[bytes], bool]]:
