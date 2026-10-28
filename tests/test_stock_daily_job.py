@@ -480,8 +480,44 @@ def test_run_service_publishes_verified_raw_bars_with_market_and_observation_tim
     }
     assert provenance["source_verification"] == "not_performed"
     assert provenance["source_history_limit"] == "unknown"
+    assert provenance["source_observed_at_semantics"] == (
+        "adapter_input_response_timestamp_not_verified_as_upstream_observation"
+    )
+    assert provenance["source_retention_semantics"] == "classification_only_not_an_enforced_ttl"
     assert len(provenance["source_response_sha256"]) == 64
     assert len(provenance["source_manifest_sha256"]) == 64
+    assert provenance["normalization_evidence"] == {
+        "evidence_version": "stock-daily-normalization-evidence-v1",
+        "status": "warning",
+        "local_normalization_status": "passed",
+        "ruleset_version": "stock-daily-local-validation-v1",
+        "scope": {
+            "kind": "one_symbol_inclusive_window",
+            "market": "cn",
+            "symbol": "600519",
+            "start_date": "2026-10-26",
+            "end_date": "2026-10-27",
+        },
+        "wire_rows_seen": 2,
+        "accepted_row_count": 2,
+        "executed_checks": [
+            "canonical_single_symbol_window",
+            "capture_manifest_request_binding_and_content_hash",
+            "eastmoney_wire_json_identity_and_row_shape",
+            "akshare_stock_daily_transform_validates_every_row",
+            "normalized_bar_identity_and_row_count_preservation",
+        ],
+        "unknown": {
+            "source_semantics": "unknown",
+            "source_authenticity": "unknown",
+            "source_history_boundary": "unknown",
+            "trading_calendar_gaps": "unknown",
+            "instrument_universe_coverage": "unknown",
+            "historical_completeness": "unknown",
+            "point_in_time_availability": "unknown",
+            "source_rights": "unknown",
+        },
+    }
     assert json.loads(publication["quality_json"]) == {
         "status": "warning",
         "report_id": "stock-daily-offline-normalization-v1",
@@ -679,6 +715,21 @@ def test_wire_identity_and_strict_json_errors_fail_normalization(
     )
     captured = job.fetch(_request(), _context())
     with pytest.raises(ValueError, match=message):
+        job.normalize(captured, _request(), _context())
+
+
+def test_normalize_rejects_duplicate_trade_date_without_dropping_a_row(tmp_path: Path) -> None:
+    """The actual stock normalizer refuses repeated source dates as a whole batch."""
+    payload = json.loads(_wire_body())
+    payload["data"]["klines"][1] = payload["data"]["klines"][0]
+    body = json.dumps(payload, separators=(",", ":")).encode()
+    job = _make_job(
+        tmp_path,
+        lambda _query: StockDailyJsonResponse(body, 200, OBSERVED_AT),
+    )
+    captured = job.fetch(_request(), _context())
+
+    with pytest.raises(ValueError, match="duplicate date 2026-10-26"):
         job.normalize(captured, _request(), _context())
 
 
@@ -1755,6 +1806,9 @@ def test_stock_daily_process_decoder_to_parent_normalize_preserves_response_evid
     assert normalized.records[0].business_date != normalized.records[0].observed_at.date()
     assert normalized.provenance["source_verification"] == "not_performed"
     assert normalized.provenance["source_history_limit"] == "unknown"
+    assert normalized.provenance["source_observed_at_semantics"] == (
+        "adapter_input_response_timestamp_not_verified_as_upstream_observation"
+    )
     assert normalized.provenance["acquisition_mode"] == "process_bounded_json"
     manifest_json = json.dumps(captures[0].manifest.model_dump(mode="json"))
     assert encoded_body not in manifest_json
