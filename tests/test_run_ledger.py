@@ -8,11 +8,13 @@ from threading import Barrier
 from typing import TYPE_CHECKING
 
 import pytest
-from sqlalchemy import Engine, create_engine
+from sqlalchemy import Engine, create_engine, update
 from sqlalchemy.exc import OperationalError
 
 from opendata.pipeline.run_ledger import (
     RUN_LEDGER_METADATA,
+    RUN_LEDGER_TABLE,
+    RunExecutionUncertainError,
     RunLedger,
     RunLedgerConflictError,
 )
@@ -54,6 +56,220 @@ def test_enqueue_is_idempotent_and_rejects_snapshot_drift(ledger_setup) -> None:
     with pytest.raises(RunLedgerConflictError, match="different job snapshot"):
         ledger.enqueue("daily:2026-10-26", '{"dataset":"daily","symbol":"000001"}')
     assert ledger.get("daily:2026-10-26") == first
+
+
+def test_enqueue_policy_is_explicit_immutable_and_defaults_to_recovery(ledger_setup) -> None:
+    _, _, ledger = ledger_setup
+
+    legacy = ledger.enqueue("legacy-policy", SNAPSHOT)
+    one_shot = ledger.enqueue("one-shot-policy", SNAPSHOT, claim_policy="one_shot")
+
+    assert legacy.claim_policy == "recover_expired"
+    assert one_shot.claim_policy == "one_shot"
+    assert ledger.enqueue("one-shot-policy", SNAPSHOT, claim_policy="one_shot") == one_shot
+    with pytest.raises(RunLedgerConflictError, match="different claim policy"):
+        ledger.enqueue("one-shot-policy", SNAPSHOT)
+    with pytest.raises(RunLedgerConflictError, match="different claim policy"):
+        ledger.enqueue("legacy-policy", SNAPSHOT, claim_policy="one_shot")
+    with pytest.raises(ValueError, match="claim_policy"):
+        ledger.enqueue("invalid-policy", SNAPSHOT, claim_policy="retry")
+    assert ledger.get("invalid-policy") is None
+
+
+def test_generic_claim_skips_one_shot_runs_even_after_lease_expiry(ledger_setup) -> None:
+    _, _, ledger = ledger_setup
+    one_shot = ledger.enqueue("one-shot-isolation", SNAPSHOT, claim_policy="one_shot")
+    recoverable = ledger.enqueue("recoverable-run", SNAPSHOT)
+
+    generic_claim = ledger.claim("worker", NOW, timedelta(seconds=2))
+
+    assert generic_claim is not None
+    assert generic_claim.run_key == recoverable.run_key
+    assert generic_claim.claim_policy == "recover_expired"
+    assert (
+        ledger.finish(
+            generic_claim.run_key,
+            "worker",
+            generic_claim.fencing_token,
+            NOW + timedelta(seconds=1),
+        )
+        is not None
+    )
+    assert ledger.claim("worker", NOW + timedelta(seconds=3), timedelta(seconds=2)) is None
+    assert ledger.get(one_shot.run_key) == one_shot
+
+
+def test_claim_run_claims_only_first_one_shot_attempt(ledger_setup) -> None:
+    _, _, ledger = ledger_setup
+    queued = ledger.enqueue("exact-one-shot", SNAPSHOT, claim_policy="one_shot")
+
+    assert ledger.claim("generic-worker", NOW, timedelta(seconds=10)) is None
+    assert ledger.claim_run("exact-one-shot", "worker", NOW, timedelta(seconds=10)) is not None
+    claimed = ledger.get(queued.run_key)
+
+    assert claimed is not None
+    assert claimed.status == "running"
+    assert claimed.claim_policy == "one_shot"
+    assert claimed.started_at == NOW
+    assert claimed.fencing_token == 1
+    assert claimed.lease_id is not None
+    assert ledger.claim_run("exact-one-shot", "second-worker", NOW, timedelta(seconds=10)) is None
+    assert (
+        ledger.claim("generic-worker", NOW + timedelta(seconds=11), timedelta(seconds=10)) is None
+    )
+
+
+def test_expired_one_shot_run_is_uncertain_and_never_reclaimed(ledger_setup) -> None:
+    _, _, ledger = ledger_setup
+    ledger.enqueue("uncertain-one-shot", SNAPSHOT, claim_policy="one_shot")
+    claim = ledger.claim_run("uncertain-one-shot", "worker", NOW, timedelta(seconds=2))
+    assert claim is not None
+
+    with pytest.raises(RunExecutionUncertainError) as first_error:
+        ledger.claim_run(
+            "uncertain-one-shot", "retry-worker", NOW + timedelta(seconds=2), timedelta(seconds=2)
+        )
+    assert first_error.value.run_key == claim.run_key
+    assert first_error.value.outcome == "uncertain"
+    assert ledger.get(claim.run_key) == claim
+
+    with pytest.raises(RunExecutionUncertainError):
+        ledger.claim_run(
+            "uncertain-one-shot", "later-worker", NOW + timedelta(days=1), timedelta(seconds=2)
+        )
+    assert ledger.claim("generic-worker", NOW + timedelta(days=1), timedelta(seconds=2)) is None
+    assert ledger.get(claim.run_key) == claim
+
+
+def test_claim_run_fails_closed_for_cancelled_terminal_and_legacy_rows(ledger_setup) -> None:
+    _, _, ledger = ledger_setup
+    legacy = ledger.enqueue("legacy-exact-claim", SNAPSHOT)
+    cancelled = ledger.enqueue("cancelled-one-shot", SNAPSHOT, claim_policy="one_shot")
+    terminal = ledger.enqueue("terminal-one-shot", SNAPSHOT, claim_policy="one_shot")
+
+    assert ledger.claim_run(legacy.run_key, "worker", NOW, timedelta(seconds=10)) is None
+    assert ledger.cancel(cancelled.run_key, NOW) is not None
+    running = ledger.claim_run(terminal.run_key, "worker", NOW, timedelta(seconds=10))
+    assert running is not None
+    finished = ledger.finish(
+        terminal.run_key, "worker", running.fencing_token, NOW + timedelta(seconds=1)
+    )
+    assert finished is not None
+    assert ledger.claim_run(cancelled.run_key, "worker", NOW, timedelta(seconds=10)) is None
+    assert ledger.claim_run(terminal.run_key, "worker", NOW, timedelta(seconds=10)) is None
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("fencing_token", 1),
+        ("worker", "stale-worker"),
+        ("lease_id", "stale-lease"),
+        ("lease_expires_at_us", 1),
+        ("started_at_us", 1),
+        ("heartbeat_at_us", 1),
+        ("finished_at_us", 1),
+        ("error_text", "previous failure"),
+    ],
+)
+def test_claim_run_marks_noninitial_queued_one_shot_state_uncertain(
+    ledger_setup, field: str, value: object
+) -> None:
+    _, engine, ledger = ledger_setup
+    queued = ledger.enqueue("noninitial-one-shot", SNAPSHOT, claim_policy="one_shot")
+    with engine.begin() as connection:
+        connection.execute(
+            update(RUN_LEDGER_TABLE)
+            .where(RUN_LEDGER_TABLE.c.run_key == queued.run_key)
+            .values(**{field: value})
+        )
+
+    before_claim = ledger.get(queued.run_key)
+    assert before_claim is not None
+    with pytest.raises(RunExecutionUncertainError) as error:
+        ledger.claim_run(queued.run_key, "worker", NOW, timedelta(seconds=10))
+
+    assert error.value.outcome == "uncertain"
+    assert error.value.run_key == queued.run_key
+    assert ledger.get(queued.run_key) == before_claim
+
+
+def test_expired_one_shot_with_missing_lease_deadline_is_uncertain(ledger_setup) -> None:
+    _, engine, ledger = ledger_setup
+    queued = ledger.enqueue("one-shot-missing-deadline", SNAPSHOT, claim_policy="one_shot")
+    claim = ledger.claim_run(queued.run_key, "worker", NOW, timedelta(seconds=10))
+    assert claim is not None
+    with engine.begin() as connection:
+        connection.execute(
+            update(RUN_LEDGER_TABLE)
+            .where(RUN_LEDGER_TABLE.c.run_key == queued.run_key)
+            .values(lease_expires_at_us=None)
+        )
+
+    before_claim = ledger.get(queued.run_key)
+    assert before_claim is not None
+    assert before_claim.status == "running"
+    assert before_claim.lease_expires_at is None
+    with pytest.raises(RunExecutionUncertainError) as error:
+        ledger.claim_run(queued.run_key, "retry-worker", NOW, timedelta(seconds=10))
+
+    assert error.value.outcome == "uncertain"
+    assert error.value.run_key == queued.run_key
+    assert ledger.get(queued.run_key) == before_claim
+
+
+def test_two_independent_connections_compete_for_one_one_shot_run_with_one_winner(
+    tmp_path: Path,
+) -> None:
+    database_path = tmp_path / "shared-one-shot-ledger.sqlite"
+    setup_engine = _database_engine(database_path)
+    RUN_LEDGER_METADATA.create_all(setup_engine)
+    setup_ledger = RunLedger(setup_engine)
+    setup_ledger.enqueue("one-shot-slot", SNAPSHOT, claim_policy="one_shot")
+
+    first_engine = _database_engine(database_path)
+    second_engine = _database_engine(database_path)
+    first_ledger = RunLedger(first_engine)
+    second_ledger = RunLedger(second_engine)
+    barrier = Barrier(2)
+
+    def claim(ledger: RunLedger, worker: str):
+        barrier.wait(timeout=5)
+        return ledger.claim_run("one-shot-slot", worker, NOW, timedelta(seconds=30))
+
+    try:
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            futures = (
+                pool.submit(claim, first_ledger, "worker-a"),
+                pool.submit(claim, second_ledger, "worker-b"),
+            )
+            results = [future.result(timeout=10) for future in futures]
+    finally:
+        first_engine.dispose()
+        second_engine.dispose()
+        setup_engine.dispose()
+
+    winners = [result for result in results if result is not None]
+    assert len(winners) == 1
+    assert winners[0].run_key == "one-shot-slot"
+    assert winners[0].claim_policy == "one_shot"
+    assert winners[0].fencing_token == 1
+
+
+def test_claim_run_rejects_invalid_arguments_before_ledger_transition(ledger_setup) -> None:
+    _, _, ledger = ledger_setup
+    queued = ledger.enqueue("claim-run-validation", SNAPSHOT, claim_policy="one_shot")
+
+    with pytest.raises(ValueError, match="run_key must be a non-empty"):
+        ledger.claim_run(" ", "worker", NOW, timedelta(seconds=1))
+    with pytest.raises(ValueError, match="worker must be a non-empty"):
+        ledger.claim_run(queued.run_key, " ", NOW, timedelta(seconds=1))
+    with pytest.raises(ValueError, match="timezone-aware"):
+        ledger.claim_run(queued.run_key, "worker", NOW.replace(tzinfo=None), timedelta(seconds=1))
+    with pytest.raises(ValueError, match="ttl"):
+        ledger.claim_run(queued.run_key, "worker", NOW, timedelta(0))
+
+    assert ledger.get(queued.run_key) == queued
 
 
 def test_claim_returns_one_distinct_task_per_call(ledger_setup) -> None:

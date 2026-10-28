@@ -344,6 +344,25 @@ def test_persisted_worker_reuses_completed_state_after_reconstruction(tmp_path: 
     assert _count_facts(database_path) == 1
 
 
+def test_persistent_worker_executes_one_shot_only_by_explicit_key(tmp_path: Path) -> None:
+    """The persistent worker keeps one-shot submission outside its broad queue path."""
+    database_path = tmp_path / "one-shot.sqlite"
+    _setup_database(database_path)
+    worker = _make_worker(database_path, "one-shot-worker")
+    queued = worker.submit_one_shot("fixture-worker-daily", "v1", _request())
+
+    assert queued.claim_policy == "one_shot"
+    assert worker.run_once() is None
+    outcome = worker.run_one_shot(queued.run_key)
+
+    assert outcome is not None and outcome.record is not None
+    assert outcome.record.status == "succeeded"
+    assert outcome.publication == PublicationReceipt("fixture-publication", DATASET, 1)
+    assert worker.run_one_shot(queued.run_key) is None
+    assert worker.ledger.get(queued.run_key) == outcome.record
+    assert _count_facts(database_path) == 1
+
+
 def test_two_independent_workers_compete_for_one_persistent_run(tmp_path: Path) -> None:
     """Two OS workers race on one queued slot and only one publishes the fact."""
     database_path = tmp_path / "competition.sqlite"

@@ -99,6 +99,20 @@ def test_sqlite_database_clock_timestamps_every_ledger_transition(database_setup
     _near_database_time(cancelled.finished_at)
 
 
+def test_database_clock_policy_claims_one_shot_with_warehouse_time(database_setup) -> None:
+    _, ledger = database_setup
+    queued = ledger.enqueue("database-clock-one-shot", SNAPSHOT, claim_policy="one_shot")
+
+    claimed = ledger.claim_run(queued.run_key, "worker-one-shot", PAST, timedelta(seconds=30))
+
+    assert claimed is not None
+    assert claimed.claim_policy == "one_shot"
+    assert claimed.fencing_token == 1
+    assert claimed.started_at is not None
+    _near_database_time(claimed.started_at)
+    assert claimed.lease_expires_at == claimed.started_at + timedelta(seconds=30)
+
+
 def test_database_policy_ignores_worker_clock_skew_for_success_commit(database_setup) -> None:
     _, ledger = database_setup
     queued = ledger.enqueue("skewed-worker", SNAPSHOT)

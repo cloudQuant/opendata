@@ -9,13 +9,15 @@ from typing import TYPE_CHECKING
 from zoneinfo import ZoneInfo
 
 import pytest
+from sqlalchemy import create_engine, update
 
 import opendata.pipeline.run_service as run_service_module
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from pathlib import Path
 
-    from sqlalchemy.engine import Connection
+    from sqlalchemy.engine import Connection, Engine
 
 from opendata.pipeline.run_identity import (
     RunRequest,
@@ -23,7 +25,15 @@ from opendata.pipeline.run_identity import (
     TaskDefinition,
     build_run_identity,
 )
-from opendata.pipeline.run_ledger import RunLedgerConflictError, RunRecord
+from opendata.pipeline.run_ledger import (
+    RUN_LEDGER_METADATA,
+    RUN_LEDGER_TABLE,
+    ClaimPolicy,
+    RunExecutionUncertainError,
+    RunLedger,
+    RunLedgerConflictError,
+    RunRecord,
+)
 from opendata.pipeline.run_service import (
     MAX_RESULT_BYTES,
     MAX_RESULT_RECORDS,
@@ -51,8 +61,11 @@ class FakeLedger:
         self.expire_during_commit = False
         self.cancel_before_commit = False
         self.fail_raises = False
+        self.enqueue_calls = 0
+        self.claim_calls = 0
 
     def enqueue(self, run_key: str, jobsnapshot_json: str) -> RunRecord:
+        self.enqueue_calls += 1
         existing = self.records.get(run_key)
         if existing is not None:
             if existing.job_snapshot_json != jobsnapshot_json:
@@ -77,6 +90,7 @@ class FakeLedger:
         return row
 
     def claim(self, worker: str, now: datetime, ttl: timedelta) -> RunRecord | None:
+        self.claim_calls += 1
         for key, row in self.records.items():
             if row.status == "queued":
                 claimed = replace(
@@ -210,6 +224,56 @@ class FakeLedger:
         return succeeded, result
 
 
+class ExplicitPolicyIgnoringLedger(FakeLedger):
+    """Accept a policy argument but intentionally persist the legacy default."""
+
+    def enqueue(
+        self,
+        run_key: str,
+        jobsnapshot_json: str,
+        *,
+        claim_policy: ClaimPolicy | None = None,
+    ) -> RunRecord:
+        """Ignore the requested policy and return a recoverable legacy row."""
+        return super().enqueue(run_key, jobsnapshot_json)
+
+
+class GenericKeywordFakeLedger(FakeLedger):
+    """Represent a legacy wrapper that accepts but does not declare policy keywords."""
+
+    def enqueue(self, run_key: str, jobsnapshot_json: str, **_kwargs: object) -> RunRecord:
+        """Ignore generic options to prove service preflight does not trust ``**kwargs``."""
+        return super().enqueue(run_key, jobsnapshot_json)
+
+
+class OverriddenRunLedger(RunLedger):
+    """Count overridden one-shot methods on a real subclass backed by test SQLite."""
+
+    def __init__(self, engine: Engine) -> None:
+        """Initialize the real ledger with counters for rejected overrides."""
+        super().__init__(engine, clock_policy="caller")
+        self.enqueue_calls = 0
+        self.claim_run_calls = 0
+
+    def enqueue(
+        self,
+        run_key: str,
+        jobsnapshot_json: str,
+        *,
+        claim_policy: ClaimPolicy | None = None,
+    ) -> RunRecord:
+        """Count subclass insertion calls before delegating to the base ledger."""
+        self.enqueue_calls += 1
+        return super().enqueue(run_key, jobsnapshot_json, claim_policy=claim_policy)
+
+    def claim_run(
+        self, run_key: str, worker: str, now: datetime, ttl: timedelta
+    ) -> RunRecord | None:
+        """Count subclass exact-key claims before delegating to the base ledger."""
+        self.claim_run_calls += 1
+        return super().claim_run(run_key, worker, now, ttl)
+
+
 class _UnusedConnection:
     """Marker passed to publisher callbacks that do not issue SQL in unit tests."""
 
@@ -308,6 +372,25 @@ def make_service(
     return service, selected_ledger, selected_job
 
 
+def make_sqlite_service(
+    database_path: Path,
+    *,
+    job: ReviewedJob | None = None,
+    clock: Callable[[], datetime] | None = None,
+    ledger_type: type[RunLedger] = RunLedger,
+) -> tuple[RunService, RunLedger, Engine]:
+    """Bind a real ledger to a fresh, test-owned SQLite file."""
+    engine = create_engine(f"sqlite:///{database_path}")
+    RUN_LEDGER_METADATA.create_all(engine)
+    ledger = ledger_type(engine)
+    service = RunService(
+        ledger,
+        ReviewedJobRegistry([job or make_job()]),
+        clock=clock or (lambda: NOW),
+    )
+    return service, ledger, engine
+
+
 def test_submit_conflicts_on_changed_request_and_retry_is_idempotent() -> None:
     """A repeated key returns the existing run but cannot hide changed query data."""
     service, ledger, _ = make_service()
@@ -321,6 +404,273 @@ def test_submit_conflicts_on_changed_request_and_retry_is_idempotent() -> None:
 
     with pytest.raises(ValueError, match="not registered"):
         service.submit("unknown-job", "v1", make_request())
+
+
+def test_one_shot_request_type_is_checked_before_ledger_access() -> None:
+    """Invalid requests cannot reach even a legacy ledger's enqueue method."""
+    service, ledger, _ = make_service()
+
+    with pytest.raises(TypeError, match="validated RunRequest"):
+        service.submit_one_shot("stock-daily", "v1", object())  # type: ignore[arg-type]
+
+    assert ledger.enqueue_calls == 0
+    assert ledger.records == {}
+    assert service.submit("stock-daily", "v1", make_request()).claim_policy == "recover_expired"
+
+
+@pytest.mark.parametrize("ledger_type", [ExplicitPolicyIgnoringLedger, GenericKeywordFakeLedger])
+def test_one_shot_rejects_duck_ledgers_before_enqueue(ledger_type: type[FakeLedger]) -> None:
+    """Duck types cannot accept or silently ignore a one-shot policy write."""
+    fetched: list[bool] = []
+    ledger = ledger_type()
+    service, _, _ = make_service(make_job(fetch=lambda *_args: fetched.append(True)), ledger)
+
+    with pytest.raises(TypeError, match="unmodified RunLedger"):
+        service.submit_one_shot("stock-daily", "v1", make_request())
+
+    assert ledger.enqueue_calls == 0
+    assert ledger.records == {}
+    assert fetched == []
+
+
+def test_one_shot_submission_pins_snapshot_and_policy_in_sqlite(tmp_path: Path) -> None:
+    """Real ledger persistence pins both the canonical snapshot and claim policy."""
+    service, ledger, engine = make_sqlite_service(tmp_path / "one-shot-submit.sqlite")
+    try:
+        first = service.submit_one_shot("stock-daily", "v1", make_request())
+        replay = service.submit_one_shot("stock-daily", "v1", make_request())
+
+        assert first.claim_policy == "one_shot"
+        assert replay == first
+        with pytest.raises(RunLedgerConflictError):
+            service.submit_one_shot(
+                "stock-daily", "v1", make_request(query={"symbol": "600000.SH"})
+            )
+        with pytest.raises(RunLedgerConflictError):
+            service.submit("stock-daily", "v1", make_request())
+        assert ledger.get(first.run_key) == first
+    finally:
+        engine.dispose()
+
+
+def test_one_shot_execution_claims_only_the_requested_key_in_sqlite(tmp_path: Path) -> None:
+    """The broad worker skips one-shot rows; exact-key execution runs only its target."""
+    fetched: list[str] = []
+    job = make_job(fetch=lambda _request, context: fetched.append(context.run_key))
+    service, ledger, engine = make_sqlite_service(tmp_path / "one-shot-exact-claim.sqlite", job=job)
+    try:
+        first = service.submit_one_shot("stock-daily", "v1", make_request(key="manual-first"))
+        second = service.submit_one_shot("stock-daily", "v1", make_request(key="manual-second"))
+
+        assert service.run_once("worker-a", TTL) is None
+        outcome = service.run_one_shot(second.run_key, "worker-a", TTL)
+
+        assert outcome is not None and outcome.record is not None
+        assert outcome.record.status == "succeeded"
+        first_record = ledger.get(first.run_key)
+        assert first_record is not None and first_record.status == "queued"
+        assert fetched == [second.run_key]
+        assert service.run_one_shot(second.run_key, "worker-a", TTL) is None
+    finally:
+        engine.dispose()
+
+
+def test_expired_one_shot_lease_is_uncertain_and_unchanged_in_sqlite(tmp_path: Path) -> None:
+    """An expired exact-key lease remains running and cannot be reclaimed."""
+    clock_value = [NOW]
+    service, ledger, engine = make_sqlite_service(
+        tmp_path / "one-shot-expired.sqlite", clock=lambda: clock_value[0]
+    )
+    try:
+        queued = service.submit_one_shot("stock-daily", "v1", make_request())
+        expired_claim = ledger.claim_run(queued.run_key, "worker-before-crash", NOW, TTL)
+        assert expired_claim is not None and expired_claim.lease_expires_at is not None
+        clock_value[0] = expired_claim.lease_expires_at
+
+        with pytest.raises(RunExecutionUncertainError) as caught:
+            service.run_one_shot(queued.run_key, "worker-after-crash", TTL)
+
+        assert caught.value.run_key == queued.run_key
+        assert ledger.get(queued.run_key) == expired_claim
+    finally:
+        engine.dispose()
+
+
+def test_one_shot_lease_expiring_during_commit_is_not_reexecuted_in_sqlite(
+    tmp_path: Path,
+) -> None:
+    """A still-running stale outcome is reported, then exact retry is uncertain."""
+    clock_value = [NOW]
+    fetch_calls: list[str] = []
+
+    def fetch(_request: RunRequest, context: RunExecutionContext) -> object:
+        fetch_calls.append(context.run_key)
+        return {"bars": 1}
+
+    def publish(
+        _connection: Connection,
+        task: TaskDefinition,
+        _request: RunRequest,
+        batch: NormalizedBatch,
+        _run_key: str,
+    ) -> PublicationReceipt:
+        """Expire the lease at the transaction's post-callback check."""
+        clock_value[0] = NOW + TTL
+        return PublicationReceipt("pub-one-shot", task.dataset_id, len(batch.records))
+
+    job = make_job(fetch=fetch, publish=publish)
+    service, ledger, engine = make_sqlite_service(
+        tmp_path / "one-shot-commit-expiry.sqlite",
+        job=job,
+        clock=lambda: clock_value[0],
+    )
+    try:
+        queued = service.submit_one_shot("stock-daily", "v1", make_request())
+        first_outcome = service.run_one_shot(queued.run_key, "worker-a", TTL)
+
+        assert first_outcome is not None and first_outcome.record is not None
+        assert first_outcome.record.status == "running"
+        assert first_outcome.publication is None
+        assert fetch_calls == [queued.run_key]
+        uncertain_row = ledger.get(queued.run_key)
+        assert uncertain_row is not None and uncertain_row.status == "running"
+        assert uncertain_row.lease_expires_at == clock_value[0]
+
+        with pytest.raises(RunExecutionUncertainError) as caught:
+            service.run_one_shot(queued.run_key, "worker-a", TTL)
+
+        assert caught.value.run_key == queued.run_key
+        assert ledger.get(queued.run_key) == uncertain_row
+        assert fetch_calls == [queued.run_key]
+    finally:
+        engine.dispose()
+
+
+def test_one_shot_snapshot_drift_fails_before_fetch_in_sqlite(tmp_path: Path) -> None:
+    """A persisted one-shot snapshot that diverges from review cannot execute."""
+    fetched: list[bool] = []
+    job = make_job(fetch=lambda _request, _context: fetched.append(True))
+    service, ledger, engine = make_sqlite_service(
+        tmp_path / "one-shot-snapshot-drift.sqlite", job=job
+    )
+    try:
+        queued = service.submit_one_shot("stock-daily", "v1", make_request())
+        altered_snapshot = json.loads(queued.job_snapshot_json)
+        altered_snapshot["job"]["provider"] = "changed-provider"
+        engine_snapshot = json.dumps(altered_snapshot, sort_keys=True, separators=(",", ":"))
+        with engine.begin() as connection:
+            connection.execute(
+                update(RUN_LEDGER_TABLE)
+                .where(RUN_LEDGER_TABLE.c.run_key == queued.run_key)
+                .values(job_snapshot_json=engine_snapshot)
+            )
+
+        outcome = service.run_one_shot(queued.run_key, "worker-a", TTL)
+
+        assert outcome is not None and outcome.record is not None
+        assert outcome.record.status == "failed"
+        assert outcome.record.error_text == "execution_failed:_SnapshotInvalidError"
+        assert fetched == []
+    finally:
+        engine.dispose()
+
+
+@pytest.mark.parametrize("operation", ["enqueue", "claim_run"])
+def test_one_shot_rejects_run_ledger_subclasses_before_side_effects(
+    operation: str, tmp_path: Path
+) -> None:
+    """Subclass overrides cannot write or claim one-shot runs through the service."""
+    fetched: list[bool] = []
+    job = make_job(fetch=lambda *_args: fetched.append(True))
+    service, ledger, engine = make_sqlite_service(
+        tmp_path / f"one-shot-subclass-{operation}.sqlite",
+        job=job,
+        ledger_type=OverriddenRunLedger,
+    )
+    try:
+        request = make_request()
+        identity = build_run_identity(job.task, request)
+        if operation == "claim_run":
+            run_service_module._RUN_LEDGER_ENQUEUE_METHOD(
+                ledger,
+                identity.idempotency_key,
+                identity.canonical_json,
+                claim_policy="one_shot",
+            )
+
+        with pytest.raises(TypeError, match="unmodified RunLedger"):
+            if operation == "enqueue":
+                service.submit_one_shot("stock-daily", "v1", request)
+            else:
+                service.run_one_shot(identity.idempotency_key, "worker-a", TTL)
+
+        assert ledger.enqueue_calls == 0
+        assert ledger.claim_run_calls == 0
+        assert fetched == []
+        row = ledger.get(identity.idempotency_key)
+        assert (row is not None) is (operation == "claim_run")
+        if row is not None:
+            assert row.status == "queued"
+    finally:
+        engine.dispose()
+
+
+@pytest.mark.parametrize(
+    ("method_name", "scope"),
+    [
+        ("enqueue", "instance"),
+        ("enqueue", "class"),
+        ("claim_run", "instance"),
+        ("claim_run", "class"),
+    ],
+)
+def test_one_shot_rejects_overridden_run_ledger_methods_before_calls(
+    method_name: str,
+    scope: str,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Captured base methods and instance checks reject runtime method replacement."""
+    fetched: list[bool] = []
+    job = make_job(fetch=lambda *_args: fetched.append(True))
+    service, ledger, engine = make_sqlite_service(
+        tmp_path / f"one-shot-{method_name}-{scope}.sqlite", job=job
+    )
+    replacement_calls: list[bool] = []
+    try:
+        request = make_request()
+        identity = build_run_identity(job.task, request)
+        if method_name == "claim_run":
+            run_service_module._RUN_LEDGER_ENQUEUE_METHOD(
+                ledger,
+                identity.idempotency_key,
+                identity.canonical_json,
+                claim_policy="one_shot",
+            )
+
+        def replacement(*_args: object, **_kwargs: object) -> object:
+            replacement_calls.append(True)
+            raise AssertionError("replaced ledger method must not run")
+
+        if scope == "instance":
+            setattr(ledger, method_name, replacement)
+        else:
+            monkeypatch.setattr(RunLedger, method_name, replacement)
+
+        with pytest.raises(TypeError, match="unmodified RunLedger"):
+            if method_name == "enqueue":
+                service.submit_one_shot("stock-daily", "v1", request)
+            else:
+                service.run_one_shot(identity.idempotency_key, "worker-a", TTL)
+
+        assert replacement_calls == []
+        assert fetched == []
+        row = ledger.get(identity.idempotency_key)
+        assert (row is not None) is (method_name == "claim_run")
+        if row is not None:
+            assert row.status == "queued"
+    finally:
+        engine.dispose()
 
 
 @pytest.mark.parametrize(
