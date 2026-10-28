@@ -6,14 +6,22 @@ import hashlib
 import json
 from dataclasses import replace
 from datetime import date, datetime, timedelta, timezone, tzinfo
+from pathlib import Path
 from types import SimpleNamespace
-from typing import TYPE_CHECKING, cast
+from typing import cast
 from urllib.parse import urlsplit
 
 import pytest
 
 from opendata.data.providers.ths.transport.credentials import DEFAULT_FUYAO_API_BASE_URL
 from opendata.data.request_budget import GrantDecision, RequestOperation
+from opendata.data.source_attempt_gate import (
+    SourceAttemptGate,
+    SourceGrantInspectionReason,
+    SourceGrantInspectionRequest,
+    SourceGrantInspectionResult,
+    SourceGrantInspectionStatus,
+)
 from opendata.data.source_policy import SourcePolicyDocument, SourceUsePolicy
 from opendata.pipeline import fuyao_manual_composition as composition
 from opendata.pipeline.fuyao_manual_composition import (
@@ -23,9 +31,6 @@ from opendata.pipeline.fuyao_manual_composition import (
     prepare_fuyao_manual_preflight,
 )
 from opendata.pipeline.process_executor import FuyaoProcessDeploymentBinding
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 _INSTRUMENT = "999999.BJ"
 _BUNDLE_PIN = "a" * 64
@@ -46,6 +51,38 @@ class _BrokenTimezone(tzinfo):
 
     def utcoffset(self, _dt: datetime | None) -> timedelta | None:
         raise ValueError("synthetic invalid offset")
+
+
+def _install_synthetic_gate(
+    monkeypatch: pytest.MonkeyPatch,
+    binding: FuyaoProcessDeploymentBinding,
+    *,
+    result: SourceGrantInspectionResult | None = None,
+    error_message: str | None = None,
+    gate_path: Path | None = None,
+) -> tuple[SourceAttemptGate, list[SourceGrantInspectionRequest]]:
+    """Make an uninitialized gate stub pinned to a synthetic empty file."""
+    selected_path = gate_path or Path(binding.gate_database_path)
+    selected_path.parent.mkdir(parents=True, exist_ok=True)
+    selected_path.write_bytes(b"synthetic placeholder; never opened as a database")
+    gate = object.__new__(SourceAttemptGate)
+    gate._expected_main_path = selected_path.resolve(strict=True)
+    requests: list[SourceGrantInspectionRequest] = []
+
+    def inspect_grant(
+        _gate: SourceAttemptGate,
+        request: SourceGrantInspectionRequest,
+    ) -> SourceGrantInspectionResult:
+        """Capture the exact synthetic request and return its fixed outcome."""
+        requests.append(request)
+        if error_message is not None:
+            raise RuntimeError(error_message)
+        if result is None:
+            raise RuntimeError("synthetic missing gate result")
+        return result
+
+    monkeypatch.setattr(SourceAttemptGate, "inspect_grant", inspect_grant)
+    return gate, requests
 
 
 def _query() -> FuyaoManualQuery:
@@ -259,7 +296,16 @@ def _write_policy(path: Path, *, decision: GrantDecision = GrantDecision.ALLOWED
 def test_default_preflight_is_disabled_before_reading_any_configuration(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """The no-argument path does not open files or inspect credentials."""
+    """The no-argument path does no file, credential, or gate I/O."""
+    monkeypatch.setattr(
+        composition,
+        "FuyaoCredentials",
+        SimpleNamespace(
+            from_settings=lambda **_kwargs: pytest.fail(
+                "disabled preflight must not inspect credentials"
+            )
+        ),
+    )
     monkeypatch.setattr(
         composition,
         "load_fuyao_financial_bundle",
@@ -280,6 +326,35 @@ def test_default_preflight_is_disabled_before_reading_any_configuration(
     assert report.gate_grant_status == "not_checked"
 
 
+def test_disabled_opt_in_never_calls_an_injected_gate(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Supplying a gate cannot cause I/O while the preflight toggle is off."""
+    gate = object.__new__(SourceAttemptGate)
+
+    def fail_inspect(
+        _gate: SourceAttemptGate,
+        _request: SourceGrantInspectionRequest,
+    ) -> SourceGrantInspectionResult:
+        pytest.fail("disabled preflight must not inspect a gate")
+
+    monkeypatch.setattr(SourceAttemptGate, "inspect_grant", fail_inspect)
+    monkeypatch.setattr(
+        composition,
+        "load_fuyao_financial_bundle",
+        lambda **_kwargs: pytest.fail("disabled preflight must not load a bundle"),
+    )
+    config = FuyaoManualCompositionConfig(source_attempt_gate=gate)
+
+    report = prepare_fuyao_manual_preflight(config)
+
+    assert report.status == "disabled"
+    assert report.gate_grant_status == "not_checked"
+    assert report.dispatch_allowed is False
+    assert report.scheduler_started is False
+    assert report.worker_started is False
+
+
 def test_enabled_preflight_requires_deployment_binding_and_query() -> None:
     """Opt-in without explicit deployment values is refused safely."""
     config = FuyaoManualCompositionConfig(preflight_enabled=True)
@@ -291,7 +366,7 @@ def test_enabled_preflight_requires_deployment_binding_and_query() -> None:
     assert _SYNTHETIC_KEY not in str(error.value)
 
 
-def test_pinned_preflight_returns_summary_without_claiming_gate_grant(
+def test_pinned_preflight_without_injected_gate_is_indeterminate(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -327,10 +402,231 @@ def test_pinned_preflight_returns_summary_without_claiming_gate_grant(
     assert report.dispatch_allowed is False
     assert report.scheduler_started is False
     assert report.worker_started is False
-    assert report.gate_grant_status == "not_checked"
+    assert report.gate_grant_status == "indeterminate"
     assert _SYNTHETIC_KEY not in repr(binding)
     assert _SYNTHETIC_KEY not in repr(config)
     assert _SYNTHETIC_KEY not in repr(report)
+
+
+@pytest.mark.parametrize(
+    ("gate_status", "expected_status", "reason"),
+    [
+        (
+            SourceGrantInspectionStatus.MATCHED,
+            "matched",
+            SourceGrantInspectionReason.GRANT_MATCHED,
+        ),
+        (
+            SourceGrantInspectionStatus.REJECTED,
+            "rejected",
+            SourceGrantInspectionReason.GRANT_SCOPE_MISMATCH,
+        ),
+        (
+            SourceGrantInspectionStatus.INDETERMINATE,
+            "indeterminate",
+            SourceGrantInspectionReason.DATABASE_UNAVAILABLE,
+        ),
+    ],
+)
+def test_injected_gate_returns_only_fixed_advisory_status(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    gate_status: SourceGrantInspectionStatus,
+    expected_status: str,
+    reason: SourceGrantInspectionReason,
+) -> None:
+    """An explicit inspector sees only the bound fixed Fuyao scope."""
+    _install_preflight_fakes(monkeypatch)
+    binding = _binding(tmp_path)
+    gate, requests = _install_synthetic_gate(
+        monkeypatch,
+        binding,
+        result=SourceGrantInspectionResult(gate_status, reason),
+    )
+    config = replace(
+        _enabled_config(tmp_path),
+        deployment_binding=binding,
+        source_attempt_gate=gate,
+    )
+
+    report = prepare_fuyao_manual_preflight(config, now=_NOW)
+
+    expected_host = urlsplit(DEFAULT_FUYAO_API_BASE_URL).hostname
+    assert expected_host is not None
+    assert requests == [
+        SourceGrantInspectionRequest(
+            grant_id=binding.source_attempt_grant_id,
+            revision=binding.source_attempt_expected_revision,
+            source="ths",
+            canonical_model="financial_statement",
+            operation="query",
+            principal_scope=binding.source_attempt_principal_scope,
+            host=expected_host,
+        )
+    ]
+    assert report.gate_grant_status == expected_status
+    assert report.dispatch_allowed is False
+    assert report.scheduler_started is False
+    assert report.worker_started is False
+    safe_result = repr(report)
+    assert binding.source_attempt_grant_id not in safe_result
+    assert binding.source_attempt_principal_scope not in safe_result
+    assert str(tmp_path) not in safe_result
+    assert _SYNTHETIC_KEY not in safe_result
+
+
+def test_gate_inspection_exception_is_content_free_and_indeterminate(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Gate exceptions containing deployment data never escape the report."""
+    _install_preflight_fakes(monkeypatch)
+    binding = _binding(tmp_path)
+    sensitive_message = (
+        f"{binding.source_attempt_grant_id} {binding.source_attempt_principal_scope} "
+        f"{binding.gate_database_path} {_SYNTHETIC_KEY}"
+    )
+    gate, requests = _install_synthetic_gate(
+        monkeypatch,
+        binding,
+        error_message=sensitive_message,
+    )
+    config = replace(
+        _enabled_config(tmp_path),
+        deployment_binding=binding,
+        source_attempt_gate=gate,
+    )
+
+    report = prepare_fuyao_manual_preflight(config, now=_NOW)
+
+    assert report.gate_grant_status == "indeterminate"
+    assert report.dispatch_allowed is False
+    assert report.scheduler_started is False
+    assert report.worker_started is False
+    assert len(requests) == 1
+    safe_result = repr(report)
+    for sensitive_value in (
+        binding.source_attempt_grant_id,
+        binding.source_attempt_principal_scope,
+        binding.gate_database_path,
+        str(tmp_path),
+        _SYNTHETIC_KEY,
+        sensitive_message,
+    ):
+        assert sensitive_value not in safe_result
+
+
+def test_gate_database_path_mismatch_is_indeterminate_without_inspection(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """An injected gate pinned to another file cannot report a match."""
+    _install_preflight_fakes(monkeypatch)
+    binding = _binding(tmp_path)
+    Path(binding.gate_database_path).write_bytes(b"valid synthetic bound-path placeholder")
+    gate, requests = _install_synthetic_gate(
+        monkeypatch,
+        binding,
+        result=SourceGrantInspectionResult(
+            SourceGrantInspectionStatus.MATCHED,
+            SourceGrantInspectionReason.GRANT_MATCHED,
+        ),
+        gate_path=tmp_path / "different-gate.sqlite3",
+    )
+    config = replace(
+        _enabled_config(tmp_path),
+        deployment_binding=binding,
+        source_attempt_gate=gate,
+    )
+
+    report = prepare_fuyao_manual_preflight(config, now=_NOW)
+
+    assert report.gate_grant_status == "indeterminate"
+    assert requests == []
+    assert report.dispatch_allowed is False
+    assert report.scheduler_started is False
+    assert report.worker_started is False
+    assert str(tmp_path) not in repr(report)
+
+
+def test_missing_binding_gate_database_path_is_indeterminate_without_inspection(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A missing bound file cannot reach the inspector or reveal its path."""
+    _install_preflight_fakes(monkeypatch)
+    binding = _binding(tmp_path)
+    gate, requests = _install_synthetic_gate(
+        monkeypatch,
+        binding,
+        result=SourceGrantInspectionResult(
+            SourceGrantInspectionStatus.MATCHED,
+            SourceGrantInspectionReason.GRANT_MATCHED,
+        ),
+        gate_path=tmp_path / "existing-gate.sqlite3",
+    )
+    config = replace(
+        _enabled_config(tmp_path),
+        deployment_binding=binding,
+        source_attempt_gate=gate,
+    )
+
+    report = prepare_fuyao_manual_preflight(config, now=_NOW)
+
+    assert report.gate_grant_status == "indeterminate"
+    assert requests == []
+    assert report.dispatch_allowed is False
+    assert report.scheduler_started is False
+    assert report.worker_started is False
+    assert str(tmp_path) not in repr(report)
+
+
+def test_symlinked_gate_database_binding_fails_closed(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Canonical resolution does not make a symlinked binding acceptable."""
+    _install_preflight_fakes(monkeypatch)
+    binding = _binding(tmp_path)
+    actual_path = tmp_path / "actual-gate.sqlite3"
+    gate, requests = _install_synthetic_gate(
+        monkeypatch,
+        binding,
+        result=SourceGrantInspectionResult(
+            SourceGrantInspectionStatus.MATCHED,
+            SourceGrantInspectionReason.GRANT_MATCHED,
+        ),
+        gate_path=actual_path,
+    )
+    Path(binding.gate_database_path).symlink_to(actual_path)
+    config = replace(
+        _enabled_config(tmp_path),
+        deployment_binding=binding,
+        source_attempt_gate=gate,
+    )
+
+    report = prepare_fuyao_manual_preflight(config, now=_NOW)
+
+    assert report.gate_grant_status == "indeterminate"
+    assert requests == []
+    assert report.dispatch_allowed is False
+    assert report.scheduler_started is False
+    assert report.worker_started is False
+    assert str(tmp_path) not in repr(report)
+
+
+def test_enabled_preflight_without_gate_is_indeterminate(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """No implicit gate is created from the path carried in the binding."""
+    _install_preflight_fakes(monkeypatch)
+    config = _enabled_config(tmp_path)
+
+    report = prepare_fuyao_manual_preflight(config, now=_NOW)
+
+    assert report.gate_grant_status == "indeterminate"
+    assert report.dispatch_allowed is False
 
 
 def test_source_policy_pin_mismatch_fails_with_fixed_error(
@@ -414,7 +710,7 @@ def test_real_synthetic_files_pass_both_external_pins(
     assert report.instrument_id == _INSTRUMENT
     assert report.bundle_sha256 == bundle_pin
     assert report.source_policy_sha256 == policy_pin
-    assert report.gate_grant_status == "not_checked"
+    assert report.gate_grant_status == "indeterminate"
     assert report.dispatch_allowed is False
 
 
