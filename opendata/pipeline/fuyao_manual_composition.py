@@ -2,9 +2,11 @@
 
 This module validates explicitly supplied configuration for one instrument. It
 does not load dotenv, construct a ReviewedJob, promote a disabled job, enqueue a
-run, create a worker or scheduler, access the source-attempt database, reserve
-an attempt, or call Fuyao. A successful result is preflight evidence only; the
-transport gate remains the final authority for a real request.
+run, create a worker or scheduler, reserve an attempt, or call Fuyao. It only
+reads the source-attempt database when an inspector is explicitly injected,
+and then only for an advisory snapshot. A successful result is preflight
+evidence only; the transport gate remains the final authority for a real
+request.
 """
 
 from __future__ import annotations
@@ -13,6 +15,7 @@ import hashlib
 import hmac
 from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Literal
 from urllib.parse import urlsplit
 
@@ -21,6 +24,12 @@ from opendata.data.providers.ths.transport.credentials import (
     FuyaoCredentials,
 )
 from opendata.data.request_budget import GrantDecision, RequestOperation
+from opendata.data.source_attempt_gate import (
+    SourceAttemptGate,
+    SourceGrantInspectionRequest,
+    SourceGrantInspectionResult,
+    SourceGrantInspectionStatus,
+)
 from opendata.data.source_policy import (
     SourcePolicyConfigurationError,
     SourcePolicyDocument,
@@ -39,6 +48,7 @@ from opendata.pipeline.process_executor import FuyaoProcessDeploymentBinding
 _SOURCE = "ths"
 _CANONICAL_MODEL = "financial_statement"
 _FIXED_ERROR = "fuyao_manual_preflight_invalid"
+_GateGrantStatus = Literal["not_checked", "matched", "rejected", "indeterminate"]
 
 
 class FuyaoManualCompositionError(ValueError):
@@ -65,7 +75,7 @@ class FuyaoManualQuery:
 
 @dataclass(frozen=True, slots=True)
 class FuyaoManualCompositionConfig:
-    """Opt-in inputs for offline preflight; the default does no I/O."""
+    """Opt-in inputs for preflight; inspection accepts only an injected gate."""
 
     preflight_enabled: bool = False
     deployment_binding: FuyaoProcessDeploymentBinding | None = field(
@@ -73,6 +83,11 @@ class FuyaoManualCompositionConfig:
         repr=False,
     )
     query: FuyaoManualQuery | None = None
+    source_attempt_gate: SourceAttemptGate | None = field(
+        default=None,
+        repr=False,
+        compare=False,
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -83,7 +98,7 @@ class FuyaoManualPreflightReport:
     dispatch_allowed: Literal[False] = False
     scheduler_started: Literal[False] = False
     worker_started: Literal[False] = False
-    gate_grant_status: Literal["not_checked"] = "not_checked"
+    gate_grant_status: _GateGrantStatus = "not_checked"
     instrument_id: str | None = None
     statement_type: str | None = None
     periodicity: str | None = None
@@ -102,9 +117,9 @@ def prepare_fuyao_manual_preflight(
     The default configuration is disabled and returns before reading files or
     inspecting credentials. When explicitly enabled, the function validates
     the API key, exact bundle and policy pins, instrument identity, query
-    bounds, and the operator-declared source policy. It only checks the grant
-    identity fields structurally; it does not establish that a persisted gate
-    grant is current or allowed.
+    bounds, and the operator-declared source policy. An explicitly injected
+    gate may inspect a persisted grant snapshot for advisory status only.
+    Matching never reserves an attempt or enables dispatch.
 
     Args:
         config: Deployment binding and one explicit query. Omission is a
@@ -114,8 +129,9 @@ def prepare_fuyao_manual_preflight(
 
     Returns:
         A safe disabled or preflight-only report. Both states forbid dispatch,
-        worker startup, scheduler startup, and claim that the gate grant was
-        checked.
+        worker startup, and scheduler startup. An enabled preflight without an
+        injected gate reports an indeterminate grant status; a disabled
+        preflight performs no gate I/O.
 
     Raises:
         FuyaoManualCompositionError: If opt-in inputs, pins, key, bundle,
@@ -169,6 +185,10 @@ def prepare_fuyao_manual_preflight(
 
     return FuyaoManualPreflightReport(
         status="preflight_only",
+        gate_grant_status=_inspect_grant_advisory(
+            selected.source_attempt_gate,
+            binding,
+        ),
         instrument_id=bundle_instrument_id,
         statement_type=query.statement_type,
         periodicity=query.periodicity,
@@ -176,6 +196,66 @@ def prepare_fuyao_manual_preflight(
         bundle_sha256=bundle_sha256,
         source_policy_sha256=binding.source_policy_sha256,
     )
+
+
+def _inspect_grant_advisory(
+    gate: SourceAttemptGate | None,
+    binding: FuyaoProcessDeploymentBinding,
+) -> _GateGrantStatus:
+    """Inspect an explicitly injected grant and collapse details to an enum.
+
+    The request uses identity values from the validated deployment binding and
+    fixed Fuyao scope constants. The result is a human-review hint only;
+    transport must reserve every physical request attempt independently.
+    Exceptions and unknown return shapes collapse to one content-free value.
+    """
+    if gate is None or type(gate) is not SourceAttemptGate:
+        return "indeterminate"
+    try:
+        if not _gate_matches_binding_path(gate, binding):
+            return "indeterminate"
+        host = urlsplit(DEFAULT_FUYAO_API_BASE_URL).hostname
+        if type(host) is not str or not host:
+            return "indeterminate"
+        request = SourceGrantInspectionRequest(
+            grant_id=binding.source_attempt_grant_id,
+            revision=binding.source_attempt_expected_revision,
+            source=_SOURCE,
+            canonical_model=_CANONICAL_MODEL,
+            operation=RequestOperation.QUERY.value,
+            principal_scope=binding.source_attempt_principal_scope,
+            host=host,
+        )
+        result = gate.inspect_grant(request)
+        if type(result) is not SourceGrantInspectionResult:
+            return "indeterminate"
+        if result.status is SourceGrantInspectionStatus.MATCHED:
+            return "matched"
+        if result.status is SourceGrantInspectionStatus.REJECTED:
+            return "rejected"
+        if result.status is SourceGrantInspectionStatus.INDETERMINATE:
+            return "indeterminate"
+    except Exception:
+        return "indeterminate"
+    return "indeterminate"
+
+
+def _gate_matches_binding_path(
+    gate: SourceAttemptGate,
+    binding: FuyaoProcessDeploymentBinding,
+) -> bool:
+    """Require a canonical, non-symlink binding to the gate's pinned file."""
+    try:
+        configured_path = Path(binding.gate_database_path)
+        current_path = Path(configured_path.anchor)
+        for component in configured_path.parts[1:]:
+            current_path /= component
+            if current_path.is_symlink():
+                return False
+        resolved_path = configured_path.resolve(strict=True)
+        return resolved_path == configured_path and resolved_path == gate._expected_main_path
+    except Exception:
+        return False
 
 
 def _validated_binding(
