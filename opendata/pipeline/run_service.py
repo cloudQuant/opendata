@@ -204,6 +204,8 @@ class ReviewedJob:
     type. Both require a per-job byte limit. Once declared, every run must
     return a payload. Jobs without these fields reject non-``None`` payloads
     and remain compatible with batches whose payload is ``None``.
+    ``one_shot_only`` jobs must be disabled and schedule-free; their only
+    accepted request shape is a reviewed manual run with a one-shot ledger row.
     """
 
     task: TaskDefinition
@@ -216,6 +218,7 @@ class ReviewedJob:
     max_commit_payload_bytes: int | None = None
     decode_commit_payload: Callable[[bytes], object] | None = None
     commit_context_type: type[object] | None = None
+    one_shot_only: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -240,6 +243,14 @@ class ReviewedJobRegistry:
                 raise TypeError("reviewed job task must be a TaskDefinition")
             if not callable(job.fetch) or not callable(job.normalize) or not callable(job.publish):
                 raise TypeError("reviewed job handlers must be explicit callables")
+            if type(job.reviewed) is not bool:
+                raise TypeError("reviewed must be a bool")
+            if type(job.one_shot_only) is not bool:
+                raise TypeError("one_shot_only must be a bool")
+            if job.one_shot_only and job.task.enabled:
+                raise ValueError("one-shot-only jobs must be disabled")
+            if job.one_shot_only and job.task.schedule is not None:
+                raise ValueError("one-shot-only jobs must not declare a schedule")
             _validate_commit_payload_declaration(job)
             key = (job.task.job_id, job.task.version)
             if key in indexed:
@@ -335,15 +346,30 @@ class RunService:
     def submit_one_shot(self, job_id: str, version: str, request: RunRequest) -> RunRecord:
         """Enqueue an explicitly requested reviewed run with a no-retry claim policy.
 
-        Legacy ledger doubles remain valid for :meth:`submit`, but the one-shot
-        API requires this module's exact, unmodified :class:`RunLedger` so the
-        policy is persisted by its transactional implementation before the row
-        can be observed. This is a trusted same-process boundary, not protection
-        against code that can replace Python modules or mutate this process.
+        Legacy ledger doubles remain valid for :meth:`submit`, but this API
+        requires the exact :class:`RunLedger` and checks its captured original
+        ``enqueue`` and ``claim_run`` methods before the one-shot policy is
+        written. Execution-time ``heartbeat``, ``commit_result``, ``fail`` and
+        ``get`` calls still use the trusted injected ledger object; this is not
+        protection against malicious code that mutates the running process.
         """
-        job = self._require_runnable(job_id, version)
-        if not isinstance(request, RunRequest):
-            raise TypeError("request must be a validated RunRequest")
+        job = self._registry.resolve(job_id, version)
+        if job is None:
+            raise ValueError("job version is not registered")
+        if not job.reviewed:
+            raise ValueError("job version has not been reviewed")
+        if job.one_shot_only:
+            if not isinstance(request, RunRequest):
+                raise TypeError("request must be a validated RunRequest")
+            if job.task.enabled or job.task.schedule is not None:
+                raise ValueError("one-shot-only job must be disabled and unscheduled")
+            if request.run_type != "manual":
+                raise ValueError("one-shot-only jobs require a manual run request")
+        else:
+            if not job.task.enabled:
+                raise ValueError("job version is disabled")
+            if not isinstance(request, RunRequest):
+                raise TypeError("request must be a validated RunRequest")
         identity = build_run_identity(job.task, request)
         ledger = _require_unmodified_run_ledger(self._ledger)
         record = _RUN_LEDGER_ENQUEUE_METHOD(
@@ -409,7 +435,15 @@ class RunService:
             job, request = self._resolve_snapshot(record)
             if not job.reviewed:
                 raise _JobNotRunnableError("job_not_reviewed")
-            if not job.task.enabled:
+            if job.one_shot_only:
+                if (
+                    job.task.enabled
+                    or job.task.schedule is not None
+                    or request.run_type != "manual"
+                    or record.claim_policy != "one_shot"
+                ):
+                    raise _JobNotRunnableError("one_shot_only_contract_invalid")
+            elif not job.task.enabled:
                 raise _JobNotRunnableError("job_disabled")
             context = self._execution_context(record, worker, ttl)
             context.checkpoint()
@@ -483,6 +517,8 @@ class RunService:
             raise ValueError("job version is not registered")
         if not job.reviewed:
             raise ValueError("job version has not been reviewed")
+        if job.one_shot_only:
+            raise ValueError("job version is one-shot-only")
         if not job.task.enabled:
             raise ValueError("job version is disabled")
         return job
@@ -813,12 +849,11 @@ def _supports_ledger_protocol(value: object) -> bool:
 
 
 def _require_unmodified_run_ledger(value: object) -> RunLedger:
-    """Require the captured RunLedger implementation for exact-key operations.
+    """Require the original enqueue and exact-key claim implementations.
 
-    One-shot execution must fail before enqueue/claim side effects when given a
-    duck type or an overridden implementation. This protects the service
-    contract in a trusted process; it is not a sandbox against same-process
-    code replacement or a malicious local user.
+    One-shot paths fail before enqueue or exact-claim side effects when given a
+    duck type or when ``enqueue`` / ``claim_run`` are overridden. Other ledger
+    methods used during execution remain trusted and are not checked here.
     """
     if type(value) is not RunLedger:
         raise TypeError("one-shot operations require the unmodified RunLedger type")

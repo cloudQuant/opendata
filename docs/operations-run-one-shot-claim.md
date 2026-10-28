@@ -128,12 +128,52 @@ and expected pre-migration state before retrying.
 
 ## One-shot execution and uncertain outcomes
 
-There is currently no HTTP endpoint, CLI command, or configuration switch for
-one-shot submission or execution. The capability is exposed only through the
-internal explicit `RunService.submit_one_shot` / `RunService.run_one_shot` and
-`PersistentRunWorker.submit_one_shot` / `PersistentRunWorker.run_one_shot` methods. The
-execution method requires the exact run key and never falls back to the broad
-queue claim. This document does not describe a public operator interface.
+There is no production HTTP endpoint, operator CLI command, or configuration
+switch for one-shot submission or execution. The strict offline
+`opendata.reviewed_cli` currently accepts `scheduled`, `manual`, `backfill`,
+and `worker_once`; its `manual` operation calls `dispatch_manual`, which rejects
+`one_shot_only` jobs. The standalone CLI also fails closed without an injected
+reviewed application. Do not treat it as a one-shot operator interface.
+
+The internal Python interfaces are `RunDispatcher.dispatch_one_shot`,
+`RunService.submit_one_shot` / `RunService.run_one_shot`, and
+`PersistentRunWorker.submit_one_shot` / `PersistentRunWorker.run_one_shot`.
+`dispatch_one_shot` creates only a `manual` request. An effective
+`one_shot_only` `ReviewedJob` must have `reviewed=True`, `task.enabled=False`,
+and `task.schedule=None`; the registry rejects enabled or scheduled one-shot
+jobs, while the one-shot dispatch and service paths reject an unreviewed job.
+Ordinary `dispatch_manual`, `dispatch_scheduled`, `dispatch_backfill`, and
+APScheduler callback paths reject a `one_shot_only` job. The dry-run option
+validates and returns a safe identity without writing a ledger row.
+
+`RunService.submit_one_shot` is a lower-level service method: for a job marked
+`one_shot_only`, it enforces the disabled, unscheduled, reviewed, manual-only
+contract; for another reviewed enabled job, it can also persist an explicitly
+requested one-shot policy. Production composition must use the dedicated
+dispatcher path for `one_shot_only` jobs so ordinary dispatch cannot bypass
+that separation.
+
+A runtime-bound `dispatch_one_shot` must require a `profile="reviewed"`
+runtime, its `api` role, and an open runtime, under the same lifecycle lock as
+manual dispatch. This guard is implemented in
+`opendata/pipeline/reviewed_runtime.py` at source SHA
+`13bd0bd657636735febd1de9b76b575e11e93c9aeba831479211fc573e44e982`. The v10
+fixed isolated test selection passed 401 tests, with coverage targets met for
+all five reported modules. The selection covered temporary SQLite, synthetic
+handlers, and offline MySQL/TLS checks. This accepts the guard within that test
+scope. Production CLI and Fuyao composition, compatibility with every old
+worker, and deployment rollout remain unaccepted. This runtime guard does not
+add a production CLI, HTTP endpoint, or Fuyao job wiring. A plain
+`RunDispatcher` has no runtime profile, role plan, or open/closed lifecycle to
+check, so it must not be presented as providing those runtime protections.
+
+The exact-type `RunLedger` check on one-shot submission and exact-key claim
+also has a limited scope. It rejects duck-typed ledgers and detects replacement
+or instance-shadowing of the original `enqueue` and `claim_run` methods before
+those operations. Later execution-time `heartbeat`, `commit_result`, `fail`,
+and `get` calls still use the injected ledger instance. This is a trusted
+same-process implementation check, not a sandbox or defense against malicious
+code that can mutate the process or database.
 
 A one-shot claim requires the exact run key and an untouched queued row. Its
 first claim records the worker, lease, start and heartbeat, and increments the
@@ -153,6 +193,12 @@ evidence such as provider request records, response captures, source-attempt
 records, and publication records. A domain owner must decide how to record a
 resolved outcome; the generic ledger cannot infer whether the upstream
 completed the request.
+
+The Fuyao manual composition currently provides preflight only. It does not
+construct or enable a `ReviewedJob`, enqueue a run, start a worker or scheduler,
+reserve a source attempt, or call Fuyao. A successful preflight is not evidence
+that a live one-shot request is authorized or executable; the separate source
+attempt gate remains authoritative for any future physical request.
 
 Fencing tokens prevent stale workers from committing protected warehouse
 transitions after losing a lease. They do not control an upstream provider and
