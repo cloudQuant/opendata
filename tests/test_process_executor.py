@@ -12,6 +12,7 @@ import subprocess
 import sys
 import threading
 import time
+import types
 from contextlib import suppress
 from pathlib import Path
 from typing import cast
@@ -23,6 +24,7 @@ from opendata.pipeline.process_executor import (
     ProcessExecutionCancelledError,
     ProcessExecutionCleanupError,
     ProcessExecutionCrashedError,
+    ProcessExecutionError,
     ProcessExecutionHandlerError,
     ProcessExecutionProtocolError,
     ProcessExecutionTimeoutError,
@@ -33,6 +35,26 @@ from opendata.pipeline.process_executor import (
 
 def _echo(parameters: dict[str, object]) -> dict[str, object]:
     return parameters
+
+
+def _report_child_environment(_parameters: dict[str, object]) -> dict[str, object]:
+    return {
+        "marker": os.environ.get("OPENDATA_EXECUTOR_INHERITANCE_TEST"),
+        "cwd": str(Path.cwd()),
+    }
+
+
+def _report_scoped_test_environment(_parameters: dict[str, object]) -> dict[str, object]:
+    return {
+        "child_value_visible": os.environ.get("OPENDATA_TEST_FUYAO_CHILD_KEY")
+        == "synthetic-secret-for-child-test",
+        "inherited_value": os.environ.get("UNRELATED_PARENT_SECRET"),
+        "cwd": str(Path.cwd()),
+    }
+
+
+def _return_scoped_test_secret(_parameters: dict[str, object]) -> str:
+    return os.environ["OPENDATA_TEST_FUYAO_CHILD_KEY"]
 
 
 def _write_pid_and_wait(parameters: dict[str, object]) -> dict[str, object]:
@@ -101,6 +123,76 @@ def _registry(**operations) -> ReviewedProcessRegistry:
     return ReviewedProcessRegistry(operations)
 
 
+def _fuyao_binding(
+    tmp_path: Path, *, api_key: str = "sk-fuyao-test-only-key"
+) -> process_executor_module.FuyaoProcessDeploymentBinding:
+    return process_executor_module.FuyaoProcessDeploymentBinding(
+        api_key=api_key,
+        financial_bundle_path=str(tmp_path / "financial-bundle.json"),
+        financial_bundle_sha256="a" * 64,
+        source_policy_path=str(tmp_path / "source-policy.json"),
+        source_policy_sha256="b" * 64,
+        gate_database_path=str(tmp_path / "gate.sqlite"),
+        source_attempt_grant_id="fuyao-grant-v1",
+        source_attempt_expected_revision=1,
+        source_attempt_principal_scope="service-opendata",
+        raw_artifact_root=str(tmp_path / "raw-artifacts"),
+        retention_class="ephemeral",
+        source_history_limit="unknown",
+    )
+
+
+def _fuyao_parameters() -> dict[str, object]:
+    return {
+        "instrument_id": "600000.SH",
+        "statement_type": "income",
+        "periodicity": "annual",
+        "start_date": "2016-01-04",
+        "end_date": "2026-01-01",
+        "limit": None,
+        "run_key": "c" * 64,
+    }
+
+
+def _fuyao_registry() -> ReviewedProcessRegistry:
+    from opendata.pipeline.fuyao_financial_process import execute_fuyao_financial_request
+
+    return ReviewedProcessRegistry(
+        {process_executor_module.FUYAO_PROCESS_OPERATION_ID: execute_fuyao_financial_request}
+    )
+
+
+def _fuyao_result_value(
+    binding: process_executor_module.FuyaoProcessDeploymentBinding,
+    parameters: dict[str, object],
+    *,
+    capture: bytes = b'{"prepared":"synthetic"}',
+    unit_version: str = "THS-v1",
+) -> dict[str, object]:
+    return {
+        "attempt_association_status": "caller_declared_unverified",
+        "authorization_status": "operator_policy_allowed_unverified",
+        "capture_manifest_sha256": "a" * 64,
+        "coverage_assessment": "not_assessed",
+        "financial_bundle_sha256": binding.financial_bundle_sha256,
+        "instrument_id": parameters["instrument_id"],
+        "observation_ids": ["c" * 64],
+        "observation_count": 1,
+        "periodicity": parameters["periodicity"],
+        "prepared_capture_b64": base64.b64encode(capture).decode("ascii"),
+        "quarantined_row_count": 0,
+        "request_summary_sha256": "d" * 64,
+        "retention_class": binding.retention_class,
+        "source_history_limit": binding.source_history_limit,
+        "source_policy_sha256": binding.source_policy_sha256,
+        "source_request_id_match_status": "not_checked_no_trace",
+        "statement_type": parameters["statement_type"],
+        "unit_mapping_declaration_status": "operator_declared_unverified",
+        "unit_mapping_sha256_declared": "e" * 64,
+        "unit_mapping_version_declared": unit_version,
+    }
+
+
 def _load_worker_helper():
     helper_path = Path(process_executor_module.__file__).with_name("process_executor_worker.py")
     spec = importlib.util.spec_from_file_location(
@@ -114,6 +206,19 @@ def _load_worker_helper():
 
 def _frame(message: bytes) -> bytes:
     return struct.pack(">I", len(message)) + message
+
+
+def _receive_message(
+    channel: socket.socket,
+    *,
+    allow_fuyao_result_fields: bool = False,
+) -> dict[str, process_executor_module.JsonValue]:
+    header = process_executor_module._read_exact(channel, 4)
+    message_size = struct.unpack(">I", header)[0]
+    return process_executor_module._decode_message(
+        process_executor_module._read_exact(channel, message_size),
+        allow_fuyao_result_fields=allow_fuyao_result_fields,
+    )
 
 
 def _write_test_worker(tmp_path: Path, mode: str, marker: Path | None = None) -> Path:
@@ -1063,6 +1168,28 @@ def test_socket_closes_even_when_a_child_cannot_be_reaped(monkeypatch) -> None:
 
 
 def test_socket_reader_rejects_invalid_and_truncated_frames(monkeypatch) -> None:
+    with pytest.raises(ValueError, match="max_text_bytes"):
+        process_executor_module._JsonSocketReader(
+            cast("socket.socket", object()),
+            process_executor_module.MAX_RESULT_BYTES,
+            max_text_bytes=(
+                process_executor_module.MAX_RESULT_TEXT_BYTES
+                + process_executor_module._MAX_IPC_OVERHEAD
+                + 1
+            ),
+        )
+
+    receiver, sender = socket.socketpair()
+    receiver.setblocking(False)
+    reader = process_executor_module._JsonSocketReader(
+        receiver, process_executor_module.MAX_RESULT_BYTES
+    )
+    assert reader.receive() is None
+    sender.close()
+    assert reader.receive() is None
+    assert reader.eof is True
+    receiver.close()
+
     receiver, sender = socket.socketpair()
     receiver.setblocking(False)
     reader = process_executor_module._JsonSocketReader(
@@ -1080,6 +1207,17 @@ def test_socket_reader_rejects_invalid_and_truncated_frames(monkeypatch) -> None
         reader.receive()
     receiver.close()
     sender.close()
+
+    receiver, sender = socket.socketpair()
+    receiver.setblocking(False)
+    reader = process_executor_module._JsonSocketReader(
+        receiver, process_executor_module.MAX_RESULT_BYTES
+    )
+    sender.sendall(struct.pack(">I", 5) + b"{}")
+    sender.close()
+    with pytest.raises(ProcessExecutionProtocolError, match="truncated"):
+        reader.receive()
+    receiver.close()
 
     receiver, sender = socket.socketpair()
     receiver.setblocking(False)
@@ -1153,6 +1291,7 @@ def test_registry_rejects_invalid_mapping_entries_and_duplicate_ids() -> None:
         ("x" * (4 * 1024 * 1024 + 1), "text_limit"),
         ({1: "invalid-key"}, "object_key"),
         ({"private_key": "value"}, "secret_like"),
+        ({"authorization_status": "operator_policy_allowed_unverified"}, "secret_like"),
         ({"message": "AKIA1234567890ABCDEF"}, "secret_like"),
         ({"url": "postgresql://alice:secret@localhost/db"}, "secret_like"),
         ({"nested": object()}, "type_invalid"),
@@ -1263,6 +1402,29 @@ def test_output_helpers_bound_counts_and_cleanup_platform_branches(monkeypatch) 
     assert process_executor_module._process_group_exists(1) is True
 
 
+def test_process_group_helpers_start_and_skip_empty_groups(monkeypatch) -> None:
+    calls: list[str] = []
+    monkeypatch.setattr(process_executor_module.os, "name", "posix")
+    monkeypatch.setattr(process_executor_module.os, "getpid", lambda: 42)
+    monkeypatch.setattr(process_executor_module.os, "getsid", lambda _pid: 7)
+    monkeypatch.setattr(process_executor_module.os, "setsid", lambda: calls.append("setsid"))
+    assert process_executor_module._start_process_group() is True
+    assert calls == ["setsid"]
+
+    monkeypatch.setattr(process_executor_module, "_process_group_exists", lambda _pid: False)
+    monkeypatch.setattr(
+        process_executor_module,
+        "_signal_process_group",
+        lambda *_args: pytest.fail("empty process group must not be signalled"),
+    )
+    process_executor_module._stop_group_descendants(42, 0.01)
+
+
+def test_utf8_prefix_counter_marks_a_cut_multibyte_character() -> None:
+    assert process_executor_module._utf8_prefix_size("你a", 2) == (2, True)
+    assert process_executor_module._utf8_prefix_size("abc", 3) == (3, False)
+
+
 def test_process_helpers_cover_setup_and_bounded_message_failures(monkeypatch) -> None:
     idle = _FakeProcess()
     process_executor_module._stop_process(idle, isolated_group=False, grace_seconds=0.01)
@@ -1289,6 +1451,116 @@ def test_process_helpers_cover_setup_and_bounded_message_failures(monkeypatch) -
     monkeypatch.setattr(process_executor_module.os, "close", closed.append)
     process_executor_module._redirect_child_output()
     assert closed == [3]
+
+
+def test_parent_command_sender_handles_backpressure_partial_send_and_hooks(monkeypatch) -> None:
+    sent_parts: list[bytes] = []
+
+    class BackpressuredChannel:
+        attempts = 0
+
+        def send(self, value: bytes | memoryview) -> int:
+            self.attempts += 1
+            if self.attempts == 1:
+                raise BlockingIOError
+            size = min(3, len(value))
+            sent_parts.append(bytes(value[:size]))
+            return size
+
+    monkeypatch.setattr(process_executor_module.time, "monotonic", lambda: 1.0)
+    monkeypatch.setattr(process_executor_module.time, "sleep", lambda _duration: None)
+    checkpoints: list[str] = []
+    returned_checkpoint = process_executor_module._send_parent_command(
+        BackpressuredChannel(),
+        b"bounded-command-frame",
+        process=_FakeProcess(stays_alive=True),
+        deadline=5.0,
+        next_checkpoint=0.0,
+        poll_interval=0.01,
+        checkpoint_interval=1.0,
+        checkpoint=lambda: checkpoints.append("heartbeat"),
+        cancelled=None,
+    )
+
+    assert b"".join(sent_parts) == b"bounded-command-frame"
+    assert checkpoints == ["heartbeat"]
+    assert returned_checkpoint == 2.0
+
+    with pytest.raises(ProcessExecutionCancelledError, match="cancelled"):
+        process_executor_module._send_parent_command(
+            BackpressuredChannel(),
+            b"frame",
+            process=_FakeProcess(stays_alive=True),
+            deadline=5.0,
+            next_checkpoint=5.0,
+            poll_interval=0.01,
+            checkpoint_interval=1.0,
+            checkpoint=None,
+            cancelled=lambda: True,
+        )
+
+    with pytest.raises(ProcessExecutionCrashedError, match="exited_before_command"):
+        process_executor_module._send_parent_command(
+            BackpressuredChannel(),
+            b"frame",
+            process=_FakeProcess(),
+            deadline=5.0,
+            next_checkpoint=5.0,
+            poll_interval=0.01,
+            checkpoint_interval=1.0,
+            checkpoint=None,
+            cancelled=None,
+        )
+
+
+def test_parent_command_sender_sanitizes_deadline_and_socket_errors(monkeypatch) -> None:
+    monkeypatch.setattr(process_executor_module.time, "monotonic", lambda: 5.0)
+    with pytest.raises(ProcessExecutionTimeoutError, match="process_execution_timeout"):
+        process_executor_module._send_parent_command(
+            cast("socket.socket", object()),
+            b"frame",
+            process=_FakeProcess(stays_alive=True),
+            deadline=5.0,
+            next_checkpoint=10.0,
+            poll_interval=0.01,
+            checkpoint_interval=1.0,
+            checkpoint=None,
+            cancelled=None,
+        )
+
+    monkeypatch.setattr(process_executor_module.time, "monotonic", lambda: 1.0)
+
+    class BrokenChannel:
+        def send(self, _value: bytes | memoryview) -> int:
+            raise OSError("synthetic socket failure")
+
+    with pytest.raises(ProcessExecutionCrashedError, match="command_send_failed"):
+        process_executor_module._send_parent_command(
+            BrokenChannel(),
+            b"frame",
+            process=_FakeProcess(stays_alive=True),
+            deadline=5.0,
+            next_checkpoint=10.0,
+            poll_interval=0.01,
+            checkpoint_interval=1.0,
+            checkpoint=None,
+            cancelled=None,
+        )
+
+
+def test_executor_sanitizes_process_start_failure_and_platform_rejection(monkeypatch) -> None:
+    executor = ReviewedProcessExecutor(_registry(echo=_echo))
+
+    def fail_to_start(*_args: object, **_kwargs: object) -> None:
+        raise OSError("synthetic launch details")
+
+    monkeypatch.setattr(process_executor_module.subprocess, "Popen", fail_to_start)
+    with pytest.raises(ProcessExecutionCrashedError, match="process_start_failed"):
+        executor.run("echo", {}, timeout_seconds=1)
+
+    monkeypatch.setattr(process_executor_module.os, "name", "nt")
+    with pytest.raises(ProcessExecutionError, match="platform_unsupported"):
+        executor.run("echo", {}, timeout_seconds=1)
 
 
 def test_process_group_cleanup_kills_a_descendant_after_success(monkeypatch) -> None:
@@ -1358,3 +1630,1023 @@ def test_registry_and_parameters_reject_unreviewed_or_non_json_inputs() -> None:
         ReviewedProcessExecutor(_registry(echo=_echo), max_parameter_bytes=8).run(
             "echo", {"payload": "too-large"}, timeout_seconds=1
         )
+
+
+def test_handler_resolver_rejects_unreviewed_module_and_export(monkeypatch) -> None:
+    with pytest.raises(TypeError, match="handler reference is invalid"):
+        process_executor_module._resolve_handler("invalid..module", "handler")
+
+    monkeypatch.setattr(
+        process_executor_module.importlib,
+        "import_module",
+        lambda _module_name: types.SimpleNamespace(handler=object()),
+    )
+    with pytest.raises(TypeError, match="handler reference is invalid"):
+        process_executor_module._resolve_handler("reviewed.fake", "handler")
+
+    monkeypatch.setattr(
+        process_executor_module.importlib,
+        "import_module",
+        lambda _module_name: types.SimpleNamespace(_echo=_echo),
+    )
+    with pytest.raises(TypeError, match="handler reference is invalid"):
+        process_executor_module._resolve_handler("reviewed.fake", "_echo")
+
+
+def test_fixed_fuyao_handler_import_errors_are_sanitized(monkeypatch) -> None:
+    def fail_import(module_name: str) -> object:
+        assert module_name == process_executor_module.FUYAO_PROCESS_HANDLER_MODULE
+        raise ImportError("synthetic import secret")
+
+    monkeypatch.setattr(process_executor_module.importlib, "import_module", fail_import)
+    with pytest.raises(ValueError, match="fixed Fuyao handler is unavailable") as error:
+        process_executor_module._load_fixed_fuyao_handler()
+    assert "synthetic import secret" not in str(error.value)
+
+
+def test_generic_process_path_keeps_legacy_inherited_environment_and_working_directory(
+    monkeypatch,
+) -> None:
+    marker = "only-inherited-by-the-generic-operation"
+    monkeypatch.setenv("OPENDATA_EXECUTOR_INHERITANCE_TEST", marker)
+    expected_cwd = str(Path.cwd())
+    executor = ReviewedProcessExecutor(_registry(report=_report_child_environment))
+
+    result = executor.run("report", {}, timeout_seconds=5)
+
+    assert result.value == {"marker": marker, "cwd": expected_cwd}
+
+
+def test_generic_process_protocol_still_round_trips_json() -> None:
+    payload = {"nested": ["safe", 3, None], "enabled": True}
+
+    result = ReviewedProcessExecutor(_registry(echo=_echo)).run("echo", payload, timeout_seconds=5)
+
+    assert result.value == payload
+
+
+def test_private_launch_uses_only_explicit_environment_and_working_directory(
+    tmp_path: Path, monkeypatch
+) -> None:
+    parent_secret = "must-not-be-inherited"
+    monkeypatch.setenv("UNRELATED_PARENT_SECRET", parent_secret)
+    executor = ReviewedProcessExecutor(_registry(report=_report_scoped_test_environment))
+    private_cwd = tmp_path / "empty-child-cwd"
+    private_cwd.mkdir(mode=0o700)
+    child_environment = {
+        "OPENDATA_TEST_FUYAO_CHILD_KEY": "synthetic-secret-for-child-test",
+        "TMPDIR": str(private_cwd),
+        "TMP": str(private_cwd),
+        "TEMP": str(private_cwd),
+    }
+
+    result = executor._run_registered(
+        "report",
+        {},
+        timeout_seconds=5,
+        _child_environment=child_environment,
+        _child_cwd=str(private_cwd),
+    )
+
+    assert result.value == {
+        "child_value_visible": True,
+        "inherited_value": None,
+        "cwd": str(private_cwd),
+    }
+
+
+def test_private_launch_rejects_exact_secret_in_result(tmp_path: Path) -> None:
+    secret = "synthetic-secret-for-child-test"
+    executor = ReviewedProcessExecutor(_registry(secret=_return_scoped_test_secret))
+
+    with pytest.raises(ProcessExecutionHandlerError, match="process_result_rejected"):
+        executor._run_registered(
+            "secret",
+            {},
+            timeout_seconds=5,
+            _child_environment={"OPENDATA_TEST_FUYAO_CHILD_KEY": secret},
+            _child_cwd=str(tmp_path),
+            _reject_secret=secret.encode(),
+        )
+
+
+def test_fuyao_binding_uses_closed_non_secret_child_config_and_hides_key(
+    tmp_path: Path, monkeypatch
+) -> None:
+    binding = _fuyao_binding(tmp_path)
+    secret = binding.api_key
+    config = process_executor_module._encode_fuyao_binding(binding)
+    assert secret.encode() not in config
+    assert secret not in repr(binding)
+    assert json.loads(config) == {
+        "schema_version": 1,
+        "financial_bundle_path": binding.financial_bundle_path,
+        "financial_bundle_sha256": binding.financial_bundle_sha256,
+        "source_policy_path": binding.source_policy_path,
+        "source_policy_sha256": binding.source_policy_sha256,
+        "gate_database_path": binding.gate_database_path,
+        "source_attempt_grant_id": binding.source_attempt_grant_id,
+        "source_attempt_expected_revision": binding.source_attempt_expected_revision,
+        "source_attempt_principal_scope": binding.source_attempt_principal_scope,
+        "raw_artifact_root": binding.raw_artifact_root,
+        "retention_class": binding.retention_class,
+        "source_history_limit": binding.source_history_limit,
+    }
+
+    monkeypatch.setenv(process_executor_module.FUYAO_PROCESS_API_KEY_ENV, secret)
+    monkeypatch.setenv(process_executor_module.FUYAO_PROCESS_BINDING_ENV, config.decode())
+    monkeypatch.setenv("UNRELATED_PARENT_SECRET", "must-not-be-read-by-the-loader")
+    loaded = process_executor_module.FuyaoProcessDeploymentBinding.from_child_environment()
+
+    assert loaded.api_key == secret
+    assert loaded == binding
+    assert "UNRELATED_PARENT_SECRET" not in repr(loaded)
+
+
+@pytest.mark.parametrize(
+    "invalid_overrides",
+    [
+        {"financial_bundle_sha256": "A" * 64},
+        {"source_policy_path": "relative/policy.json"},
+        {"gate_database_path": "/"},
+        {"source_attempt_expected_revision": True},
+        {"source_attempt_expected_revision": 0},
+        {"source_attempt_grant_id": "invalid grant id"},
+        {"source_attempt_principal_scope": ""},
+        {"retention_class": "allowed"},
+        {"source_history_limit": "complete"},
+        {"raw_artifact_root": "/tmp/artifact\nroot"},
+        {"api_key": "key-with\nline-break"},
+    ],
+)
+def test_fuyao_binding_rejects_unpinned_or_unbounded_values(
+    tmp_path: Path, invalid_overrides: dict[str, object]
+) -> None:
+    values = {
+        "api_key": "sk-fuyao-test-only-key",
+        "financial_bundle_path": str(tmp_path / "financial-bundle.json"),
+        "financial_bundle_sha256": "a" * 64,
+        "source_policy_path": str(tmp_path / "source-policy.json"),
+        "source_policy_sha256": "b" * 64,
+        "gate_database_path": str(tmp_path / "gate.sqlite"),
+        "source_attempt_grant_id": "fuyao-grant-v1",
+        "source_attempt_expected_revision": 1,
+        "source_attempt_principal_scope": "service-opendata",
+        "raw_artifact_root": str(tmp_path / "raw-artifacts"),
+        "retention_class": "ephemeral",
+        "source_history_limit": "unknown",
+    }
+    values.update(invalid_overrides)
+
+    with pytest.raises(ValueError):
+        process_executor_module.FuyaoProcessDeploymentBinding(**values)
+
+
+def test_fuyao_child_binding_loader_rejects_duplicate_and_extra_json_keys(
+    monkeypatch,
+) -> None:
+    secret = "sk-fuyao-test-only-key"
+    monkeypatch.setenv(process_executor_module.FUYAO_PROCESS_API_KEY_ENV, secret)
+    monkeypatch.setenv(
+        process_executor_module.FUYAO_PROCESS_BINDING_ENV,
+        '{"financial_bundle_path":"/tmp/bundle","financial_bundle_path":"/tmp/other"}',
+    )
+    with pytest.raises(ValueError, match="fuyao_process_binding_invalid"):
+        process_executor_module.FuyaoProcessDeploymentBinding.from_child_environment()
+
+
+def test_fuyao_child_binding_loader_rejects_missing_oversized_and_invalid_config(
+    monkeypatch,
+) -> None:
+    binding_env = process_executor_module.FUYAO_PROCESS_BINDING_ENV
+    api_key_env = process_executor_module.FUYAO_PROCESS_API_KEY_ENV
+    config = json.loads(process_executor_module._encode_fuyao_binding(_fuyao_binding(Path("/tmp"))))
+    monkeypatch.setenv(api_key_env, "synthetic-child-key")
+
+    monkeypatch.delenv(binding_env, raising=False)
+    with pytest.raises(ValueError, match="fuyao_process_binding_invalid"):
+        process_executor_module.FuyaoProcessDeploymentBinding.from_child_environment()
+
+    monkeypatch.setenv(binding_env, json.dumps(config, separators=(",", ":")))
+    monkeypatch.delenv(api_key_env, raising=False)
+    with pytest.raises(ValueError, match="fuyao_process_binding_invalid"):
+        process_executor_module.FuyaoProcessDeploymentBinding.from_child_environment()
+
+    monkeypatch.setenv(api_key_env, "synthetic-child-key")
+    malformed_configs = [
+        "{" * (process_executor_module._FUYAO_BINDING_MAX_BYTES + 1),
+        "not-json",
+        json.dumps({**config, "schema_version": 2}),
+        json.dumps({**config, "schema_version": True}),
+        json.dumps({**config, "financial_bundle_sha256": float("nan")}),
+    ]
+    for raw_config in malformed_configs:
+        monkeypatch.setenv(binding_env, raw_config)
+        with pytest.raises(ValueError, match="fuyao_process_binding_invalid"):
+            process_executor_module.FuyaoProcessDeploymentBinding.from_child_environment()
+
+    config = json.loads(process_executor_module._encode_fuyao_binding(_fuyao_binding(Path("/tmp"))))
+    config["unreviewed"] = True
+    monkeypatch.setenv(
+        process_executor_module.FUYAO_PROCESS_BINDING_ENV,
+        json.dumps(config, separators=(",", ":")),
+    )
+    with pytest.raises(ValueError, match="fuyao_process_binding_invalid"):
+        process_executor_module.FuyaoProcessDeploymentBinding.from_child_environment()
+
+
+def test_fuyao_executor_requires_fixed_operation_before_starting_child(tmp_path: Path) -> None:
+    executor = ReviewedProcessExecutor(_registry(echo=_echo))
+    with pytest.raises(ValueError, match="fixed Fuyao operation"):
+        executor.run_fuyao(_fuyao_binding(tmp_path), _fuyao_parameters(), timeout_seconds=5)
+
+
+def test_fuyao_executor_rejects_untrusted_binding_type_and_registry(tmp_path: Path) -> None:
+    with pytest.raises(TypeError, match="FuyaoProcessDeploymentBinding"):
+        ReviewedProcessExecutor(_fuyao_registry()).run_fuyao(
+            cast("process_executor_module.FuyaoProcessDeploymentBinding", object()),
+            _fuyao_parameters(),
+            timeout_seconds=5,
+        )
+
+    from opendata.pipeline.fuyao_financial_process import execute_fuyao_financial_request
+
+    class DerivedRegistry(ReviewedProcessRegistry):
+        pass
+
+    operation_id = process_executor_module.FUYAO_PROCESS_OPERATION_ID
+    fixed_operations = {operation_id: execute_fuyao_financial_request}
+    with pytest.raises(ValueError, match="not registered"):
+        ReviewedProcessExecutor(DerivedRegistry(fixed_operations)).run_fuyao(
+            _fuyao_binding(tmp_path), _fuyao_parameters(), timeout_seconds=5
+        )
+
+    with pytest.raises(ValueError, match="not registered"):
+        ReviewedProcessExecutor(
+            _registry(**{process_executor_module.FUYAO_PROCESS_OPERATION_ID: _echo})
+        ).run_fuyao(_fuyao_binding(tmp_path), _fuyao_parameters(), timeout_seconds=5)
+
+
+def test_fixed_fuyao_handler_cannot_use_generic_inherited_environment_path() -> None:
+    from opendata.pipeline.fuyao_financial_process import execute_fuyao_financial_request
+
+    operation_id = process_executor_module.FUYAO_PROCESS_OPERATION_ID
+    with pytest.raises(ValueError, match="run_fuyao"):
+        ReviewedProcessExecutor(
+            ReviewedProcessRegistry({operation_id: execute_fuyao_financial_request})
+        ).run(operation_id, _fuyao_parameters(), timeout_seconds=5)
+    with pytest.raises(ValueError, match="reviewed launch path"):
+        ReviewedProcessExecutor(
+            ReviewedProcessRegistry({"fuyao-alias": execute_fuyao_financial_request})
+        ).run("fuyao-alias", _fuyao_parameters(), timeout_seconds=5)
+
+
+def test_fuyao_worker_bootstrap_sanitizes_malformed_fixed_command(monkeypatch) -> None:
+    secret = "synthetic-bootstrap-key-never-in-frame"
+    monkeypatch.setenv(process_executor_module.FUYAO_PROCESS_API_KEY_ENV, secret)
+    controller, worker = socket.socketpair()
+    try:
+        command = process_executor_module._encode_message_frame(
+            {
+                "type": "command",
+                "operation_id": process_executor_module.FUYAO_PROCESS_OPERATION_ID,
+            },
+            process_executor_module.MAX_PARAMETER_BYTES,
+        )
+        controller.sendall(command)
+
+        process_executor_module._worker_bootstrap(worker)
+
+        response = _receive_message(controller)
+        assert response["type"] == "result"
+        assert response["ok"] is False
+        assert response["code"] == "worker_setup_failed"
+        assert secret not in json.dumps(response, sort_keys=True)
+    finally:
+        controller.close()
+
+
+def test_fixed_child_entry_rejects_unpinned_handler_before_execution(
+    monkeypatch,
+) -> None:
+    secret = "synthetic-child-entry-key-never-in-frame"
+    monkeypatch.setenv(process_executor_module.FUYAO_PROCESS_API_KEY_ENV, secret)
+    monkeypatch.setattr(process_executor_module, "_redirect_child_output", lambda: None)
+    monkeypatch.setattr(process_executor_module, "_start_process_group", lambda: False)
+    monkeypatch.setattr(process_executor_module.sys, "stdout", process_executor_module.sys.stdout)
+    monkeypatch.setattr(process_executor_module.sys, "stderr", process_executor_module.sys.stderr)
+    controller, child = socket.socketpair()
+    parameters = process_executor_module._encode_json_object(
+        _fuyao_parameters(), process_executor_module.MAX_PARAMETER_BYTES
+    )
+    try:
+        process_executor_module._child_entry(
+            process_executor_module.FUYAO_PROCESS_OPERATION_ID,
+            "unreviewed.provider.module",
+            "execute_unreviewed_provider",
+            parameters,
+            child,
+            process_executor_module.MAX_RESULT_BYTES,
+            process_executor_module.MAX_RESULT_TEXT_BYTES,
+            16,
+            16,
+        )
+
+        ready = _receive_message(controller)
+        failure = _receive_message(controller)
+        assert ready == {"type": "ready", "isolated": False}
+        assert failure["type"] == "result"
+        assert failure["ok"] is False
+        assert failure["code"] == "handler_failed"
+        assert secret not in json.dumps([ready, failure], sort_keys=True)
+    finally:
+        controller.close()
+
+
+def test_child_entry_round_trips_reviewed_generic_handler_without_secret_schema_mode(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(process_executor_module, "_redirect_child_output", lambda: None)
+    monkeypatch.setattr(process_executor_module, "_start_process_group", lambda: False)
+    monkeypatch.setattr(process_executor_module.sys, "stdout", process_executor_module.sys.stdout)
+    monkeypatch.setattr(process_executor_module.sys, "stderr", process_executor_module.sys.stderr)
+    controller, child = socket.socketpair()
+    parameters = {"symbol": "600000.SH", "limit": 3}
+    parameters_json = process_executor_module._encode_json_object(
+        parameters, process_executor_module.MAX_PARAMETER_BYTES
+    )
+    try:
+        process_executor_module._child_entry(
+            "echo",
+            _echo.__module__,
+            _echo.__name__,
+            parameters_json,
+            child,
+            process_executor_module.MAX_RESULT_BYTES,
+            process_executor_module.MAX_JSON_TEXT_BYTES,
+            16,
+            16,
+        )
+
+        ready = _receive_message(controller)
+        result = _receive_message(controller)
+        assert ready == {"type": "ready", "isolated": False}
+        assert result["type"] == "result"
+        assert result["ok"] is True
+        assert result["value"] == parameters
+    finally:
+        controller.close()
+
+
+def test_child_entry_rejects_generic_alias_of_fixed_fuyao_handler(monkeypatch) -> None:
+    monkeypatch.setattr(process_executor_module, "_redirect_child_output", lambda: None)
+    monkeypatch.setattr(process_executor_module, "_start_process_group", lambda: False)
+    monkeypatch.setattr(process_executor_module.sys, "stdout", process_executor_module.sys.stdout)
+    monkeypatch.setattr(process_executor_module.sys, "stderr", process_executor_module.sys.stderr)
+    controller, child = socket.socketpair()
+    parameters = process_executor_module._encode_json_object(
+        {}, process_executor_module.MAX_PARAMETER_BYTES
+    )
+    try:
+        process_executor_module._child_entry(
+            "fuyao-alias",
+            process_executor_module.FUYAO_PROCESS_HANDLER_MODULE,
+            process_executor_module.FUYAO_PROCESS_HANDLER_QUALIFIED_NAME,
+            parameters,
+            child,
+            process_executor_module.MAX_RESULT_BYTES,
+            process_executor_module.MAX_JSON_TEXT_BYTES,
+            16,
+            16,
+        )
+
+        ready = _receive_message(controller)
+        failure = _receive_message(controller)
+        assert ready["type"] == "ready"
+        assert failure["code"] == "handler_failed"
+    finally:
+        controller.close()
+
+
+def test_child_entry_sanitizes_handler_exception_before_ipc(monkeypatch) -> None:
+    monkeypatch.setattr(process_executor_module, "_redirect_child_output", lambda: None)
+    monkeypatch.setattr(process_executor_module, "_start_process_group", lambda: False)
+    monkeypatch.setattr(process_executor_module.sys, "stdout", process_executor_module.sys.stdout)
+    monkeypatch.setattr(process_executor_module.sys, "stderr", process_executor_module.sys.stderr)
+    controller, child = socket.socketpair()
+    parameters = process_executor_module._encode_json_object(
+        {}, process_executor_module.MAX_PARAMETER_BYTES
+    )
+    try:
+        process_executor_module._child_entry(
+            "raises",
+            _raise_with_secret.__module__,
+            _raise_with_secret.__name__,
+            parameters,
+            child,
+            process_executor_module.MAX_RESULT_BYTES,
+            process_executor_module.MAX_JSON_TEXT_BYTES,
+            16,
+            16,
+        )
+
+        ready = _receive_message(controller)
+        failure = _receive_message(controller)
+        assert ready["type"] == "ready"
+        assert failure["code"] == "handler_failed"
+        assert "provider response included" not in json.dumps([ready, failure])
+    finally:
+        controller.close()
+
+
+def test_fuyao_executor_passes_only_allowlisted_environment_and_fixed_query(
+    tmp_path: Path, monkeypatch
+) -> None:
+    binding = _fuyao_binding(tmp_path)
+    executor = ReviewedProcessExecutor(_fuyao_registry())
+    captured: dict[str, object] = {}
+
+    def capture_run(
+        operation_id: str,
+        parameters: dict[str, object],
+        **kwargs: object,
+    ) -> process_executor_module.ProcessExecutionResult:
+        captured["operation_id"] = operation_id
+        captured["parameters"] = parameters
+        captured.update(kwargs)
+        cwd = Path(str(kwargs["_child_cwd"]))
+        captured["cwd_was_private_and_empty"] = cwd.is_dir() and list(cwd.iterdir()) == []
+        return process_executor_module.ProcessExecutionResult(
+            value=_fuyao_result_value(binding, _fuyao_parameters()),
+            stdout_discarded_bytes=0,
+            stderr_discarded_bytes=0,
+            stdout_truncated=False,
+            stderr_truncated=False,
+        )
+
+    monkeypatch.setattr(executor, "_run_registered", capture_run)
+    result = executor.run_fuyao(
+        binding,
+        _fuyao_parameters(),
+        timeout_seconds=7,
+    )
+
+    child_environment = captured["_child_environment"]
+    assert isinstance(child_environment, dict)
+    assert set(child_environment) == {
+        process_executor_module.FUYAO_PROCESS_API_KEY_ENV,
+        process_executor_module.FUYAO_PROCESS_BINDING_ENV,
+        "TMPDIR",
+        "TMP",
+        "TEMP",
+    }
+    assert child_environment[process_executor_module.FUYAO_PROCESS_API_KEY_ENV] == binding.api_key
+    assert (
+        binding.api_key not in child_environment[process_executor_module.FUYAO_PROCESS_BINDING_ENV]
+    )
+    assert captured["operation_id"] == process_executor_module.FUYAO_PROCESS_OPERATION_ID
+    assert captured["parameters"] == _fuyao_parameters()
+    assert captured["_reject_secret"] == binding.api_key.encode()
+    assert captured["cwd_was_private_and_empty"] is True
+    assert not Path(str(captured["_child_cwd"])).exists()
+    assert result.value["instrument_id"] == "600000.SH"
+
+
+def test_fuyao_executor_never_places_exact_api_key_in_business_ipc(
+    tmp_path: Path, monkeypatch
+) -> None:
+    secret = "d" * 64
+    binding = _fuyao_binding(tmp_path, api_key=secret)
+    executor = ReviewedProcessExecutor(_fuyao_registry())
+    monkeypatch.setattr(
+        executor,
+        "_run_registered",
+        lambda *_args, **_kwargs: pytest.fail("secret-bearing IPC must be rejected"),
+    )
+    parameters = _fuyao_parameters()
+    parameters["run_key"] = secret
+
+    with pytest.raises(ValueError, match="Fuyao process inputs are invalid"):
+        executor.run_fuyao(binding, parameters, timeout_seconds=5)
+
+
+def test_fixed_executor_command_guard_stops_secret_before_socket_send(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    secret = "synthetic-command-secret-never-send"
+    binding = _fuyao_binding(tmp_path, api_key=secret)
+    executor = ReviewedProcessExecutor(_fuyao_registry())
+    process = _FakeProcess()
+    launch_arguments: list[list[str]] = []
+
+    def fake_launch(command: list[str], **_kwargs: object) -> _FakeProcess:
+        launch_arguments.append(command)
+        return process
+
+    monkeypatch.setattr(process_executor_module.subprocess, "Popen", fake_launch)
+    monkeypatch.setattr(
+        process_executor_module,
+        "_send_parent_command",
+        lambda *_args, **_kwargs: pytest.fail("secret-bearing command reached IPC sender"),
+    )
+    monkeypatch.setattr(process_executor_module, "_stop_group_descendants", lambda *_args: None)
+    parameters = _fuyao_parameters()
+    parameters["note"] = secret
+    child_environment = {
+        process_executor_module.FUYAO_PROCESS_API_KEY_ENV: secret,
+        process_executor_module.FUYAO_PROCESS_BINDING_ENV: (
+            process_executor_module._encode_fuyao_binding(binding).decode("utf-8")
+        ),
+        "TMPDIR": str(tmp_path),
+        "TMP": str(tmp_path),
+        "TEMP": str(tmp_path),
+    }
+
+    with pytest.raises(ValueError, match="Fuyao process inputs are invalid"):
+        executor._run_registered(
+            process_executor_module.FUYAO_PROCESS_OPERATION_ID,
+            parameters,
+            timeout_seconds=5,
+            _child_environment=child_environment,
+            _child_cwd=str(tmp_path),
+            _reject_secret=secret.encode("utf-8"),
+        )
+
+    assert launch_arguments
+    assert all(secret not in argument for argument in launch_arguments[0])
+    assert process.alive is False
+
+
+def test_fuyao_registry_keeps_the_exact_fixed_handler_callable(tmp_path: Path, monkeypatch) -> None:
+    from opendata.pipeline.fuyao_financial_process import execute_fuyao_financial_request
+
+    registry = _fuyao_registry()
+    assert (
+        registry.registered_handler(process_executor_module.FUYAO_PROCESS_OPERATION_ID)
+        is execute_fuyao_financial_request
+    )
+    executor = ReviewedProcessExecutor(registry)
+    captured: dict[str, object] = {}
+
+    binding = _fuyao_binding(tmp_path)
+
+    def capture_run(
+        operation_id: str,
+        parameters: dict[str, object],
+        **kwargs: object,
+    ) -> process_executor_module.ProcessExecutionResult:
+        captured["operation_id"] = operation_id
+        captured["parameters"] = parameters
+        captured.update(kwargs)
+        return process_executor_module.ProcessExecutionResult(
+            value=_fuyao_result_value(binding, _fuyao_parameters()),
+            stdout_discarded_bytes=0,
+            stderr_discarded_bytes=0,
+            stdout_truncated=False,
+            stderr_truncated=False,
+        )
+
+    monkeypatch.setattr(executor, "_run_registered", capture_run)
+    result = executor.run_fuyao(binding, _fuyao_parameters(), timeout_seconds=5)
+
+    assert captured["operation_id"] == process_executor_module.FUYAO_PROCESS_OPERATION_ID
+    assert result.value["instrument_id"] == "600000.SH"
+
+
+def test_fuyao_parent_rejects_non_allowlisted_child_result(tmp_path: Path, monkeypatch) -> None:
+    binding = _fuyao_binding(tmp_path)
+    executor = ReviewedProcessExecutor(_fuyao_registry())
+    sentinel = "synthetic-child-result-must-not-escape"
+    monkeypatch.setattr(
+        executor,
+        "_run_registered",
+        lambda *_args, **_kwargs: process_executor_module.ProcessExecutionResult(
+            value={"unreviewed": sentinel},
+            stdout_discarded_bytes=0,
+            stderr_discarded_bytes=0,
+            stdout_truncated=False,
+            stderr_truncated=False,
+        ),
+    )
+
+    with pytest.raises(ProcessExecutionHandlerError, match="process_result_rejected") as error:
+        executor.run_fuyao(binding, _fuyao_parameters(), timeout_seconds=5)
+
+    assert sentinel not in str(error.value)
+
+
+@pytest.mark.parametrize("secret_location", ["capture", "json"])
+def test_fuyao_child_rejects_exact_key_before_success_ipc_send(
+    tmp_path: Path, secret_location: str
+) -> None:
+    binding = _fuyao_binding(tmp_path, api_key="synthetic-fuyao-key-never-send")
+    parameters = _fuyao_parameters()
+    capture = b'{"prepared":"synthetic"}'
+    unit_version = "THS-v1"
+    if secret_location == "capture":
+        capture = json.dumps({"prepared": binding.api_key}, separators=(",", ":")).encode("utf-8")
+    else:
+        unit_version = binding.api_key
+    value = _fuyao_result_value(
+        binding,
+        parameters,
+        capture=capture,
+        unit_version=unit_version,
+    )
+    receiver, sender = socket.socketpair()
+    receiver.setblocking(False)
+    try:
+        with pytest.raises(process_executor_module._ProtocolValueError):
+            process_executor_module._send_fuyao_success(
+                sender,
+                value,
+                cast("dict[str, process_executor_module.JsonValue]", parameters),
+                binding,
+                max_result_bytes=process_executor_module.MAX_RESULT_BYTES,
+                max_result_text_bytes=process_executor_module.MAX_RESULT_TEXT_BYTES,
+                stdout_stream=process_executor_module._DiscardingTextStream(16),
+                stderr_stream=process_executor_module._DiscardingTextStream(16),
+            )
+        with pytest.raises(BlockingIOError):
+            receiver.recv(1)
+    finally:
+        receiver.close()
+        sender.close()
+
+
+@pytest.mark.parametrize("message_type", ["ready", "failure"])
+def test_fixed_child_rejects_exact_key_before_ready_or_failure_ipc_send(
+    message_type: str,
+) -> None:
+    secret = b"synthetic-fuyao-frame-key-never-send"
+    receiver, sender = socket.socketpair()
+    receiver.setblocking(False)
+    try:
+        with pytest.raises(process_executor_module._ProtocolValueError):
+            if message_type == "ready":
+                process_executor_module._send_message(
+                    sender,
+                    {"type": "ready", "isolated": False, "diagnostic": secret.decode()},
+                    process_executor_module.MAX_RESULT_BYTES,
+                    _reject_secret=secret,
+                )
+            else:
+                process_executor_module._send_failure(
+                    sender,
+                    secret.decode(),
+                    process_executor_module.MAX_RESULT_BYTES,
+                    _reject_secret=secret,
+                )
+
+        with pytest.raises(BlockingIOError):
+            receiver.recv(1)
+    finally:
+        receiver.close()
+        sender.close()
+
+
+def test_fuyao_child_sends_only_the_fixed_result_schema_after_validation(
+    tmp_path: Path,
+) -> None:
+    binding = _fuyao_binding(tmp_path)
+    parameters = _fuyao_parameters()
+    value = _fuyao_result_value(binding, parameters)
+    receiver, sender = socket.socketpair()
+    try:
+        process_executor_module._send_fuyao_success(
+            sender,
+            value,
+            cast("dict[str, process_executor_module.JsonValue]", parameters),
+            binding,
+            max_result_bytes=process_executor_module.MAX_RESULT_BYTES,
+            max_result_text_bytes=process_executor_module.MAX_RESULT_TEXT_BYTES,
+            stdout_stream=process_executor_module._DiscardingTextStream(16),
+            stderr_stream=process_executor_module._DiscardingTextStream(16),
+        )
+
+        message = _receive_message(receiver, allow_fuyao_result_fields=True)
+        assert message["type"] == "result"
+        assert message["ok"] is True
+        result_value = message["value"]
+        assert isinstance(result_value, dict)
+        assert set(result_value) == process_executor_module._FUYAO_RESULT_FIELDS
+        assert binding.api_key not in json.dumps(message, sort_keys=True)
+    finally:
+        receiver.close()
+        sender.close()
+
+
+def test_parent_reader_accepts_only_fixed_fuyao_status_field_exception(
+    tmp_path: Path,
+) -> None:
+    binding = _fuyao_binding(tmp_path)
+    parameters = _fuyao_parameters()
+    value = _fuyao_result_value(binding, parameters)
+    frame = process_executor_module._encode_message_frame(
+        {
+            "type": "result",
+            "ok": True,
+            "value": value,
+            "stdout_bytes": 0,
+            "stderr_bytes": 0,
+            "stdout_truncated": False,
+            "stderr_truncated": False,
+        },
+        process_executor_module.MAX_RESULT_BYTES,
+    )
+
+    receiver, sender = socket.socketpair()
+    receiver.setblocking(False)
+    reader = process_executor_module._JsonSocketReader(
+        receiver,
+        process_executor_module.MAX_RESULT_BYTES,
+        allow_fuyao_result_fields=True,
+    )
+    try:
+        sender.sendall(frame)
+        message = reader.receive()
+        assert message is not None
+        assert message["value"] == value
+    finally:
+        receiver.close()
+        sender.close()
+
+    receiver, sender = socket.socketpair()
+    receiver.setblocking(False)
+    generic_reader = process_executor_module._JsonSocketReader(
+        receiver, process_executor_module.MAX_RESULT_BYTES
+    )
+    try:
+        sender.sendall(frame)
+        with pytest.raises(ProcessExecutionProtocolError, match="process_message_invalid"):
+            generic_reader.receive()
+    finally:
+        receiver.close()
+        sender.close()
+
+
+def test_fuyao_child_rejects_extra_result_fields_before_ipc_send(
+    tmp_path: Path,
+) -> None:
+    binding = _fuyao_binding(tmp_path)
+    parameters = _fuyao_parameters()
+    value = _fuyao_result_value(binding, parameters)
+    value["unreviewed_field"] = "must-not-cross"
+    receiver, sender = socket.socketpair()
+    receiver.setblocking(False)
+    try:
+        with pytest.raises(process_executor_module._ProtocolValueError):
+            process_executor_module._send_fuyao_success(
+                sender,
+                value,
+                cast("dict[str, process_executor_module.JsonValue]", parameters),
+                binding,
+                max_result_bytes=process_executor_module.MAX_RESULT_BYTES,
+                max_result_text_bytes=process_executor_module.MAX_RESULT_TEXT_BYTES,
+                stdout_stream=process_executor_module._DiscardingTextStream(16),
+                stderr_stream=process_executor_module._DiscardingTextStream(16),
+            )
+        with pytest.raises(BlockingIOError):
+            receiver.recv(1)
+    finally:
+        receiver.close()
+        sender.close()
+
+
+@pytest.mark.parametrize(
+    ("result_cap", "text_cap", "error_code"),
+    [
+        (1, process_executor_module.MAX_RESULT_TEXT_BYTES, "result_limit_exceeded"),
+        (process_executor_module.MAX_RESULT_BYTES, 1, "json_text_limit_exceeded"),
+    ],
+)
+def test_fuyao_child_rejects_oversized_fixed_result_before_ipc_send(
+    tmp_path: Path,
+    result_cap: int,
+    text_cap: int,
+    error_code: str,
+) -> None:
+    binding = _fuyao_binding(tmp_path)
+    parameters = _fuyao_parameters()
+    value = _fuyao_result_value(binding, parameters)
+    receiver, sender = socket.socketpair()
+    receiver.setblocking(False)
+    try:
+        with pytest.raises(process_executor_module._ProtocolValueError, match=error_code):
+            process_executor_module._send_fuyao_success(
+                sender,
+                value,
+                cast("dict[str, process_executor_module.JsonValue]", parameters),
+                binding,
+                max_result_bytes=result_cap,
+                max_result_text_bytes=text_cap,
+                stdout_stream=process_executor_module._DiscardingTextStream(16),
+                stderr_stream=process_executor_module._DiscardingTextStream(16),
+            )
+        with pytest.raises(BlockingIOError):
+            receiver.recv(1)
+    finally:
+        receiver.close()
+        sender.close()
+
+
+@pytest.mark.parametrize(
+    "kind",
+    ["ready", "failure"],
+)
+def test_fuyao_child_rejects_exact_key_in_control_frame_before_socket_send(
+    kind: str,
+) -> None:
+    secret = "synthetic-fuyao-control-frame-secret"
+    receiver, sender = socket.socketpair()
+    receiver.setblocking(False)
+    try:
+        with pytest.raises(process_executor_module._ProtocolValueError):
+            if kind == "ready":
+                process_executor_module._send_message(
+                    sender,
+                    {"type": "ready", "isolated": True, "diagnostic": secret},
+                    process_executor_module.MAX_RESULT_BYTES,
+                    _reject_secret=secret.encode("utf-8"),
+                )
+            else:
+                process_executor_module._send_failure(
+                    sender,
+                    secret,
+                    process_executor_module.MAX_RESULT_BYTES,
+                    _reject_secret=secret.encode("utf-8"),
+                )
+        with pytest.raises(BlockingIOError):
+            receiver.recv(1)
+    finally:
+        receiver.close()
+        sender.close()
+
+
+def test_fuyao_child_sends_fixed_ready_frame_without_secret() -> None:
+    receiver, sender = socket.socketpair()
+    try:
+        process_executor_module._send_message(
+            sender,
+            {"type": "ready", "isolated": True},
+            process_executor_module.MAX_RESULT_BYTES,
+            _reject_secret=b"synthetic-fuyao-control-frame-secret",
+        )
+
+        message = _receive_message(receiver)
+        assert message == {"type": "ready", "isolated": True}
+    finally:
+        receiver.close()
+        sender.close()
+
+
+def test_fuyao_child_sends_fixed_failure_frame_without_secret() -> None:
+    receiver, sender = socket.socketpair()
+    try:
+        process_executor_module._send_failure(
+            sender,
+            "handler_failed",
+            process_executor_module.MAX_RESULT_BYTES,
+            _reject_secret=b"synthetic-fuyao-control-frame-secret",
+        )
+
+        message = _receive_message(receiver)
+        assert message["type"] == "result"
+        assert message["ok"] is False
+        assert message["code"] == "handler_failed"
+    finally:
+        receiver.close()
+        sender.close()
+
+
+def test_fixed_fuyao_worker_uses_real_handler_and_fails_closed_before_network(
+    tmp_path: Path,
+) -> None:
+    binding = _fuyao_binding(tmp_path, api_key="synthetic-process-key")
+    executor = ReviewedProcessExecutor(_fuyao_registry())
+
+    with pytest.raises(ProcessExecutionHandlerError, match="process_handler_failed") as error:
+        executor.run_fuyao(binding, _fuyao_parameters(), timeout_seconds=5)
+
+    assert binding.api_key not in str(error.value)
+    assert not (tmp_path / "raw-artifacts").exists()
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {"unexpected": "value"},
+        {"instrument_id": "all"},
+        {"statement_type": "balance_sheet"},
+        {"periodicity": "monthly"},
+        {"start_date": "2026-2-01"},
+        {"limit": True},
+        {"run_key": "not-a-server-run-key"},
+    ],
+)
+def test_fuyao_executor_rejects_untrusted_or_unbounded_query_fields(
+    tmp_path: Path, overrides: dict[str, object]
+) -> None:
+    executor = ReviewedProcessExecutor(_fuyao_registry())
+    parameters = _fuyao_parameters()
+    parameters.update(overrides)
+
+    with pytest.raises(ValueError):
+        executor.run_fuyao(_fuyao_binding(tmp_path), parameters, timeout_seconds=5)
+
+
+@pytest.mark.parametrize(
+    ("field", "invalid_value", "error_code"),
+    [
+        ("instrument_id", "all", "fuyao_result_binding_invalid"),
+        ("attempt_association_status", "verified", "fuyao_result_status_invalid"),
+        ("source_policy_sha256", "bad-digest", "fuyao_result_digest_invalid"),
+        ("observation_ids", [], "fuyao_result_counts_invalid"),
+        ("observation_count", True, "fuyao_result_counts_invalid"),
+        ("quarantined_row_count", 65, "fuyao_result_counts_invalid"),
+        ("unit_mapping_version_declared", "bad\nversion", "fuyao_result_unit_version_invalid"),
+        ("prepared_capture_b64", "not base64", "fuyao_result_capture_invalid"),
+        ("prepared_capture_b64", "YQ===", "fuyao_result_capture_invalid"),
+        (
+            "prepared_capture_b64",
+            base64.b64encode(b"").decode("ascii"),
+            "fuyao_result_capture_invalid",
+        ),
+    ],
+)
+def test_fuyao_result_validation_rejects_binding_and_payload_mismatches(
+    tmp_path: Path,
+    field: str,
+    invalid_value: object,
+    error_code: str,
+) -> None:
+    binding = _fuyao_binding(tmp_path)
+    parameters = _fuyao_parameters()
+    value = _fuyao_result_value(binding, parameters)
+    value[field] = invalid_value
+
+    with pytest.raises(process_executor_module._ProtocolValueError, match=error_code):
+        process_executor_module._validate_fuyao_child_result(value, parameters, binding)
+
+
+def test_fuyao_result_validation_requires_exact_response_and_query_shapes(
+    tmp_path: Path,
+) -> None:
+    binding = _fuyao_binding(tmp_path)
+    parameters = _fuyao_parameters()
+    value = _fuyao_result_value(binding, parameters)
+
+    with pytest.raises(process_executor_module._ProtocolValueError, match="result_shape_invalid"):
+        process_executor_module._validate_fuyao_child_result(
+            {**value, "extra": True}, parameters, binding
+        )
+    with pytest.raises(
+        process_executor_module._ProtocolValueError,
+        match="parameters_shape_invalid",
+    ):
+        process_executor_module._validate_fuyao_child_result(
+            value, {**parameters, "extra": 1}, binding
+        )
+
+
+def test_fuyao_result_status_name_is_only_allowed_in_the_fixed_schema_mode(
+    tmp_path: Path,
+) -> None:
+    binding = _fuyao_binding(tmp_path)
+    parameters = _fuyao_parameters()
+    value = _fuyao_result_value(binding, parameters)
+
+    with pytest.raises(process_executor_module._ProtocolValueError, match="secret_like"):
+        process_executor_module._encode_json_value(value, process_executor_module.MAX_RESULT_BYTES)
+
+    encoded = process_executor_module._encode_json_value(
+        value,
+        process_executor_module.MAX_RESULT_BYTES,
+        allow_fuyao_result_fields=True,
+    )
+    assert b'"authorization_status"' in encoded
+
+
+@pytest.mark.parametrize(
+    ("overrides", "message"),
+    [
+        ({"start_date": None}, "query bounds"),
+        ({"start_date": "2024-02-30", "end_date": "2024-03-01"}, "date window"),
+        ({"start_date": "2024-2-01", "end_date": "2024-03-01"}, "date window"),
+        ({"start_date": "2016-01-01", "end_date": "2026-01-01"}, "date window"),
+        ({"start_date": "2025-01-01", "end_date": "2024-12-31"}, "date window"),
+        ({"start_date": None, "end_date": None, "limit": 0}, "period limit"),
+        ({"start_date": None, "end_date": None, "limit": 21}, "period limit"),
+        ({"start_date": None, "end_date": None, "limit": True}, "period limit"),
+    ],
+)
+def test_fuyao_query_bounds_reject_calendar_and_limit_edge_cases(
+    overrides: dict[str, object],
+    message: str,
+) -> None:
+    parameters = _fuyao_parameters()
+    parameters.update(overrides)
+
+    with pytest.raises(ValueError, match=message):
+        process_executor_module._validate_fuyao_parameters(parameters)

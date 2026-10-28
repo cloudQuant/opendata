@@ -2,13 +2,16 @@
 
 The executor accepts only explicitly registered top-level callables and plain
 JSON values. It does not pass warehouse connections, run contexts, publishers,
-or arbitrary import paths to a child. This is process lifecycle control, not a
-Python security sandbox: reviewed code still runs with the inherited
-environment and operating-system permissions.
+or arbitrary import paths to a child. The generic operation path retains its
+legacy inherited environment. A separate opt-in Fuyao path supplies a closed
+environment and a private working directory for one fixed handler. This is
+process lifecycle control, not a Python security sandbox: reviewed code still
+runs with the same operating-system permissions as its parent.
 """
 
 from __future__ import annotations
 
+import base64
 import importlib
 import json
 import math
@@ -22,10 +25,12 @@ import sys
 import time
 from collections.abc import Callable, Mapping
 from contextlib import suppress
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from datetime import date, timedelta
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from types import FunctionType, MappingProxyType
-from typing import TypeAlias, cast
+from typing import Literal, TypeAlias, cast
 
 JsonValue: TypeAlias = None | bool | int | float | str | list["JsonValue"] | dict[str, "JsonValue"]
 ReviewedHandler: TypeAlias = Callable[[Mapping[str, JsonValue]], JsonValue]
@@ -60,6 +65,70 @@ _SECRET_VALUE_PATTERNS = (
     re.compile(r"^[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}$"),
     re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*://[^/@:\s]+:[^/@\s]+@"),
 )
+FUYAO_PROCESS_OPERATION_ID = "fuyao-financial-observation-v1"
+FUYAO_PROCESS_HANDLER_MODULE = "opendata.pipeline.fuyao_financial_process"
+FUYAO_PROCESS_HANDLER_QUALIFIED_NAME = "execute_fuyao_financial_request"
+FUYAO_PROCESS_API_KEY_ENV = "FUYAO_API_KEY"
+FUYAO_PROCESS_BINDING_ENV = "OPENDATA_FUYAO_PROCESS_BINDING_JSON"
+_FUYAO_BINDING_MAX_BYTES = 32 * 1024
+_FUYAO_SHA256 = re.compile(r"^[0-9a-f]{64}$")
+_FUYAO_IDENTIFIER = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
+_FUYAO_INSTRUMENT = re.compile(r"^[0-9]{6}\.(?:SH|SZ|BJ)$")
+_FUYAO_RUN_KEY = re.compile(r"^[0-9a-f]{64}$")
+_FUYAO_DATE = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
+_FUYAO_RETENTION_CLASSES = frozenset({"unknown", "ephemeral", "restricted", "durable_candidate"})
+_FUYAO_HISTORY_LIMITS = frozenset(
+    {
+        "unknown",
+        "provider_retention_window",
+        "snapshot_only",
+        "partial_history",
+        "none_documented",
+    }
+)
+_FUYAO_BINDING_FIELDS = frozenset(
+    {
+        "schema_version",
+        "financial_bundle_path",
+        "financial_bundle_sha256",
+        "source_policy_path",
+        "source_policy_sha256",
+        "gate_database_path",
+        "source_attempt_grant_id",
+        "source_attempt_expected_revision",
+        "source_attempt_principal_scope",
+        "raw_artifact_root",
+        "retention_class",
+        "source_history_limit",
+    }
+)
+_FUYAO_RESULT_FIELDS = frozenset(
+    {
+        "attempt_association_status",
+        "authorization_status",
+        "capture_manifest_sha256",
+        "coverage_assessment",
+        "financial_bundle_sha256",
+        "instrument_id",
+        "observation_ids",
+        "observation_count",
+        "periodicity",
+        "prepared_capture_b64",
+        "quarantined_row_count",
+        "request_summary_sha256",
+        "retention_class",
+        "source_history_limit",
+        "source_policy_sha256",
+        "source_request_id_match_status",
+        "statement_type",
+        "unit_mapping_declaration_status",
+        "unit_mapping_sha256_declared",
+        "unit_mapping_version_declared",
+    }
+)
+_FUYAO_SAFE_SECRET_NAMED_FIELDS = frozenset({"authorization_status"})
+_FUYAO_CAPTURE_MAX_BYTES = 5 * 1024 * 1024
+_FUYAO_CAPTURE_B64_MAX_CHARS = 4 * ((_FUYAO_CAPTURE_MAX_BYTES + 2) // 3)
 
 
 class ProcessExecutionError(RuntimeError):
@@ -102,6 +171,104 @@ class ProcessExecutionResult:
 
 
 @dataclass(frozen=True, slots=True)
+class FuyaoProcessDeploymentBinding:
+    """Fixed deployment configuration for the one reviewed Fuyao child.
+
+    The API key is the only secret in this value. It is deliberately excluded
+    from ``repr`` and equality. Never serialize this dataclass wholesale: the
+    child configuration has a closed explicit field list and carries the key
+    only in :data:`FUYAO_PROCESS_API_KEY_ENV`.
+    """
+
+    api_key: str = field(repr=False, compare=False)
+    financial_bundle_path: str
+    financial_bundle_sha256: str
+    source_policy_path: str
+    source_policy_sha256: str
+    gate_database_path: str
+    source_attempt_grant_id: str
+    source_attempt_expected_revision: int
+    source_attempt_principal_scope: str
+    raw_artifact_root: str
+    retention_class: Literal["unknown", "ephemeral", "restricted", "durable_candidate"]
+    source_history_limit: Literal[
+        "unknown",
+        "provider_retention_window",
+        "snapshot_only",
+        "partial_history",
+        "none_documented",
+    ]
+
+    def __post_init__(self) -> None:
+        """Reject unbounded or implicit deployment values without touching files."""
+        if (
+            type(self.api_key) is not str
+            or not self.api_key
+            or len(self.api_key) > 4096
+            or any(ord(character) < 32 for character in self.api_key)
+        ):
+            raise ValueError("Fuyao API key configuration is invalid")
+        for name in (
+            "financial_bundle_path",
+            "source_policy_path",
+            "gate_database_path",
+            "raw_artifact_root",
+        ):
+            _validate_absolute_deployment_path(getattr(self, name), name)
+        for name in ("financial_bundle_sha256", "source_policy_sha256"):
+            value = getattr(self, name)
+            if type(value) is not str or _FUYAO_SHA256.fullmatch(value) is None:
+                raise ValueError(f"{name} must be a lowercase SHA-256 digest")
+        for name in ("source_attempt_grant_id", "source_attempt_principal_scope"):
+            value = getattr(self, name)
+            if type(value) is not str or _FUYAO_IDENTIFIER.fullmatch(value) is None:
+                raise ValueError(f"{name} is invalid")
+        if (
+            type(self.source_attempt_expected_revision) is not int
+            or not 1 <= self.source_attempt_expected_revision <= 2_147_483_647
+        ):
+            raise ValueError("source attempt revision is invalid")
+        if (
+            type(self.retention_class) is not str
+            or self.retention_class not in _FUYAO_RETENTION_CLASSES
+        ):
+            raise ValueError("retention_class is invalid")
+        if (
+            type(self.source_history_limit) is not str
+            or self.source_history_limit not in _FUYAO_HISTORY_LIMITS
+        ):
+            raise ValueError("source_history_limit is invalid")
+
+    @classmethod
+    def from_child_environment(cls) -> FuyaoProcessDeploymentBinding:
+        """Load the closed deployment binding from the fixed Fuyao child env.
+
+        This method is intended for the fixed reviewed child handler only. It
+        does not inspect dotenv files or inherit any parent configuration.
+        """
+        api_key = os.environ.get(FUYAO_PROCESS_API_KEY_ENV)
+        raw_binding = os.environ.get(FUYAO_PROCESS_BINDING_ENV)
+        if api_key is None or raw_binding is None:
+            raise ValueError("fuyao_process_binding_invalid")
+        try:
+            if len(raw_binding.encode("utf-8", errors="strict")) > _FUYAO_BINDING_MAX_BYTES:
+                raise ValueError("binding too large")
+            decoded = json.loads(
+                raw_binding,
+                object_pairs_hook=_reject_duplicate_json_object_keys,
+                parse_constant=_reject_json_constant,
+            )
+            if type(decoded) is not dict or set(decoded) != _FUYAO_BINDING_FIELDS:
+                raise ValueError("binding shape invalid")
+            if type(decoded["schema_version"]) is not int or decoded["schema_version"] != 1:
+                raise ValueError("binding version invalid")
+            decoded.pop("schema_version")
+            return cls(api_key=api_key, **decoded)
+        except Exception:
+            raise ValueError("fuyao_process_binding_invalid") from None
+
+
+@dataclass(frozen=True, slots=True)
 class _ReviewedHandlerReference:
     """Import reference captured from a registered top-level function."""
 
@@ -126,6 +293,7 @@ class ReviewedProcessRegistry:
         if not isinstance(operations, Mapping):
             raise TypeError("operations must be a mapping of reviewed callables")
         indexed: dict[str, _ReviewedHandlerReference] = {}
+        registered: dict[str, ReviewedHandler] = {}
         for operation_id, handler in operations.items():
             if not isinstance(operation_id, str) or _OPERATION_ID.fullmatch(operation_id) is None:
                 raise ValueError("operation ID has an invalid format")
@@ -138,11 +306,17 @@ class ReviewedProcessRegistry:
             if not _module_exports_handler(module, qualified_name, handler):
                 raise TypeError("handler must be exported by its defining module")
             indexed[operation_id] = _ReviewedHandlerReference(module, qualified_name)
+            registered[operation_id] = handler
         self._operations: Mapping[str, _ReviewedHandlerReference] = MappingProxyType(indexed)
+        self._handlers: Mapping[str, ReviewedHandler] = MappingProxyType(registered)
 
     def resolve(self, operation_id: str) -> _ReviewedHandlerReference | None:
         """Return a registry-captured import reference for one operation ID."""
         return self._operations.get(operation_id)
+
+    def registered_handler(self, operation_id: str) -> ReviewedHandler | None:
+        """Return the exact callable object captured when the registry was built."""
+        return self._handlers.get(operation_id)
 
 
 class ReviewedProcessExecutor:
@@ -211,6 +385,93 @@ class ReviewedProcessExecutor:
         checkpoint: Callable[[], None] | None = None,
         cancelled: Callable[[], bool] | None = None,
     ) -> ProcessExecutionResult:
+        """Run a registered operation with the legacy inherited child environment."""
+        if operation_id == FUYAO_PROCESS_OPERATION_ID:
+            raise ValueError("fixed Fuyao operation requires run_fuyao")
+        return self._run_registered(
+            operation_id,
+            parameters,
+            timeout_seconds=timeout_seconds,
+            checkpoint=checkpoint,
+            cancelled=cancelled,
+        )
+
+    def run_fuyao(
+        self,
+        binding: FuyaoProcessDeploymentBinding,
+        parameters: Mapping[str, JsonValue],
+        *,
+        timeout_seconds: float,
+        checkpoint: Callable[[], None] | None = None,
+        cancelled: Callable[[], bool] | None = None,
+    ) -> ProcessExecutionResult:
+        """Run only the fixed Fuyao operation with a closed child environment.
+
+        The process receives the API key only through ``FUYAO_API_KEY``. The
+        bundle, pinned policy, gate, and raw-evidence deployment settings travel
+        through one bounded non-secret environment value. Business parameters
+        remain the only data in the command frame. The child validates the
+        fixed result allowlist and rejects exact key bytes in both canonical
+        JSON and decoded capture bytes before sending anything over IPC. This
+        does not detect arbitrary transformed or encoded secret values.
+        """
+        if type(binding) is not FuyaoProcessDeploymentBinding:
+            raise TypeError("binding must be a FuyaoProcessDeploymentBinding")
+        if type(self._registry) is not ReviewedProcessRegistry:
+            raise ValueError("fixed Fuyao operation is not registered")
+        reference = self._registry.resolve(FUYAO_PROCESS_OPERATION_ID)
+        registered_handler = self._registry.registered_handler(FUYAO_PROCESS_OPERATION_ID)
+        fixed_handler = _load_fixed_fuyao_handler()
+        if (
+            reference is None
+            or registered_handler is not fixed_handler
+            or reference.module != FUYAO_PROCESS_HANDLER_MODULE
+            or reference.qualified_name != FUYAO_PROCESS_HANDLER_QUALIFIED_NAME
+        ):
+            raise ValueError("fixed Fuyao operation is not registered")
+        _validate_fuyao_parameters(parameters)
+        binding_json = _encode_fuyao_binding(binding)
+        api_key_bytes = binding.api_key.encode("utf-8")
+        parameters_json = _encode_json_object(parameters, self._max_parameter_bytes)
+        if api_key_bytes in parameters_json or api_key_bytes in binding_json:
+            raise ValueError("Fuyao process inputs are invalid")
+
+        with TemporaryDirectory(prefix="opendata-fuyao-") as private_cwd:
+            child_environment = {
+                FUYAO_PROCESS_API_KEY_ENV: binding.api_key,
+                FUYAO_PROCESS_BINDING_ENV: binding_json.decode("utf-8"),
+                "TMPDIR": private_cwd,
+                "TMP": private_cwd,
+                "TEMP": private_cwd,
+            }
+            result = self._run_registered(
+                FUYAO_PROCESS_OPERATION_ID,
+                parameters,
+                timeout_seconds=timeout_seconds,
+                checkpoint=checkpoint,
+                cancelled=cancelled,
+                _child_environment=child_environment,
+                _child_cwd=private_cwd,
+                _reject_secret=api_key_bytes,
+            )
+        try:
+            _validate_fuyao_child_result(result.value, parameters, binding)
+        except _ProtocolValueError:
+            raise ProcessExecutionHandlerError("process_result_rejected") from None
+        return result
+
+    def _run_registered(
+        self,
+        operation_id: str,
+        parameters: Mapping[str, JsonValue],
+        *,
+        timeout_seconds: float,
+        checkpoint: Callable[[], None] | None = None,
+        cancelled: Callable[[], bool] | None = None,
+        _child_environment: Mapping[str, str] | None = None,
+        _child_cwd: str | None = None,
+        _reject_secret: bytes | None = None,
+    ) -> ProcessExecutionResult:
         """Run one registered operation and return only validated JSON data.
 
         ``checkpoint`` executes in the parent while the child is active. A
@@ -234,6 +495,27 @@ class ReviewedProcessExecutor:
         handler_reference = self._registry.resolve(operation_id)
         if handler_reference is None:
             raise ValueError("operation ID is not registered")
+        registered_handler = self._registry.registered_handler(operation_id)
+        if registered_handler is None:
+            raise ValueError("operation ID is not registered")
+        if operation_id == FUYAO_PROCESS_OPERATION_ID:
+            fixed_handler = _load_fixed_fuyao_handler()
+            if (
+                type(self._registry) is not ReviewedProcessRegistry
+                or registered_handler is not fixed_handler
+                or handler_reference.module != FUYAO_PROCESS_HANDLER_MODULE
+                or handler_reference.qualified_name != FUYAO_PROCESS_HANDLER_QUALIFIED_NAME
+                or _child_environment is None
+                or _child_cwd is None
+                or _reject_secret is None
+            ):
+                raise ValueError("fixed Fuyao operation requires its reviewed launch path")
+        elif (
+            handler_reference.module == FUYAO_PROCESS_HANDLER_MODULE
+            and handler_reference.qualified_name == FUYAO_PROCESS_HANDLER_QUALIFIED_NAME
+            and registered_handler is _load_fixed_fuyao_handler()
+        ):
+            raise ValueError("fixed Fuyao handler requires its reviewed launch path")
         timeout = _bounded_number(timeout_seconds, "timeout_seconds", 0.01, MAX_TIMEOUT_SECONDS)
         if checkpoint is not None and not callable(checkpoint):
             raise TypeError("checkpoint must be callable")
@@ -256,6 +538,7 @@ class ReviewedProcessExecutor:
             receiver,
             self._max_result_bytes,
             max_text_bytes=self._max_result_text_bytes + _MAX_IPC_OVERHEAD,
+            allow_fuyao_result_fields=operation_id == FUYAO_PROCESS_OPERATION_ID,
         )
         try:
             try:
@@ -268,6 +551,8 @@ class ReviewedProcessExecutor:
                     close_fds=True,
                     pass_fds=(sender.fileno(),),
                     start_new_session=True,
+                    env=(dict(_child_environment) if _child_environment is not None else None),
+                    cwd=_child_cwd if _child_environment is not None else None,
                 )
                 # Popen creates the isolated POSIX session before the worker can
                 # run. Retain this fact even if the worker has not sent `ready`.
@@ -277,6 +562,7 @@ class ReviewedProcessExecutor:
             command_frame = _encode_message_frame(
                 {
                     "type": "command",
+                    "operation_id": operation_id,
                     "handler_module": handler_reference.module,
                     "handler_qualified_name": handler_reference.qualified_name,
                     "parameters": _decode_json_object(parameters_json),
@@ -287,6 +573,8 @@ class ReviewedProcessExecutor:
                 },
                 self._max_parameter_bytes + _MAX_COMMAND_OVERHEAD,
             )
+            if _reject_secret is not None and _reject_secret in command_frame:
+                raise ValueError("Fuyao process inputs are invalid")
             next_checkpoint = _send_parent_command(
                 receiver,
                 command_frame,
@@ -395,10 +683,18 @@ class ReviewedProcessExecutor:
                 response.get("value"),
                 self._max_result_bytes,
                 max_text_bytes=self._max_result_text_bytes,
+                allow_fuyao_result_fields=operation_id == FUYAO_PROCESS_OPERATION_ID,
             )
+            response_value = response.get("value")
+            if _reject_secret is not None and (
+                _reject_secret in value_json
+                or _fuyao_value_contains_exact_secret(response_value, _reject_secret)
+            ):
+                raise ProcessExecutionHandlerError("process_result_rejected")
             value = _decode_json_value(
                 value_json,
                 max_text_bytes=self._max_result_text_bytes,
+                allow_fuyao_result_fields=operation_id == FUYAO_PROCESS_OPERATION_ID,
             )
             stdout_count = _response_counter(response, "stdout_bytes")
             stderr_count = _response_counter(response, "stderr_bytes")
@@ -483,6 +779,7 @@ class _JsonSocketReader:
         max_message_bytes: int,
         *,
         max_text_bytes: int = MAX_JSON_TEXT_BYTES,
+        allow_fuyao_result_fields: bool = False,
     ) -> None:
         if (
             type(max_text_bytes) is not int
@@ -493,6 +790,7 @@ class _JsonSocketReader:
         self._receiver = receiver
         self._max_message_bytes = max_message_bytes + _MAX_IPC_OVERHEAD
         self._max_text_bytes = max_text_bytes
+        self._allow_fuyao_result_fields = allow_fuyao_result_fields
         self._buffer = bytearray()
         self._expected_bytes: int | None = None
         self.eof = False
@@ -509,7 +807,11 @@ class _JsonSocketReader:
                 encoded = bytes(self._buffer)
                 self._buffer.clear()
                 self._expected_bytes = None
-                return _decode_message(encoded, max_text_bytes=self._max_text_bytes)
+                return _decode_message(
+                    encoded,
+                    max_text_bytes=self._max_text_bytes,
+                    allow_fuyao_result_fields=self._allow_fuyao_result_fields,
+                )
 
             if self._expected_bytes is None and len(self._buffer) == 4:
                 self._expected_bytes = struct.unpack(">I", self._buffer)[0]
@@ -543,6 +845,7 @@ class _JsonSocketReader:
 
 
 def _child_entry(
+    operation_id: str,
     handler_module: str,
     handler_qualified_name: str,
     parameters_json: bytes,
@@ -555,48 +858,276 @@ def _child_entry(
     """Resolve and execute one registry-captured callable after output redirection."""
     stdout_stream = _DiscardingTextStream(stdout_limit_bytes)
     stderr_stream = _DiscardingTextStream(stderr_limit_bytes)
+    ipc_secret_bytes: bytes | None = None
     try:
+        if operation_id == FUYAO_PROCESS_OPERATION_ID:
+            raw_api_key = os.environ.get(FUYAO_PROCESS_API_KEY_ENV)
+            if raw_api_key is not None:
+                ipc_secret_bytes = raw_api_key.encode("utf-8", errors="strict")
         _redirect_child_output()
         sys.stdout = stdout_stream
         sys.stderr = stderr_stream
         isolated = _start_process_group()
         parameters = _decode_json_object(parameters_json)
-        _send_message(sender, {"type": "ready", "isolated": isolated}, max_result_bytes)
+        _send_message(
+            sender,
+            {"type": "ready", "isolated": isolated},
+            max_result_bytes,
+            _reject_secret=ipc_secret_bytes,
+        )
         try:
-            handler = _resolve_handler(handler_module, handler_qualified_name)
+            fuyao_binding: FuyaoProcessDeploymentBinding | None = None
+            if operation_id == FUYAO_PROCESS_OPERATION_ID:
+                if (
+                    handler_module != FUYAO_PROCESS_HANDLER_MODULE
+                    or handler_qualified_name != FUYAO_PROCESS_HANDLER_QUALIFIED_NAME
+                ):
+                    raise _ProtocolValueError("handler_identity_invalid")
+                handler = _load_fixed_fuyao_handler()
+                try:
+                    _validate_fuyao_parameters(parameters)
+                except (TypeError, ValueError):
+                    raise _ProtocolValueError("fuyao_parameters_invalid") from None
+                fuyao_binding = FuyaoProcessDeploymentBinding.from_child_environment()
+            elif handler_module == FUYAO_PROCESS_HANDLER_MODULE:
+                raise _ProtocolValueError("handler_identity_invalid")
+            else:
+                handler = _resolve_handler(handler_module, handler_qualified_name)
             value = handler(parameters)
-            _validate_json_value(value, max_text_bytes=max_result_text_bytes)
-            result_json = _encode_json_value(
-                value,
-                max_result_bytes,
-                max_text_bytes=max_result_text_bytes,
-            )
-            result_value = _decode_json_value(
-                result_json,
-                max_text_bytes=max_result_text_bytes,
-            )
-            message = {
-                "type": "result",
-                "ok": True,
-                "value": result_value,
-                "stdout_bytes": stdout_stream.seen_bytes,
-                "stderr_bytes": stderr_stream.seen_bytes,
-                "stdout_truncated": stdout_stream.truncated,
-                "stderr_truncated": stderr_stream.truncated,
-            }
-            _send_message(sender, message, max_result_bytes)
+            if fuyao_binding is not None:
+                _send_fuyao_success(
+                    sender,
+                    value,
+                    parameters,
+                    fuyao_binding,
+                    max_result_bytes=max_result_bytes,
+                    max_result_text_bytes=max_result_text_bytes,
+                    stdout_stream=stdout_stream,
+                    stderr_stream=stderr_stream,
+                )
+            else:
+                _validate_json_value(value, max_text_bytes=max_result_text_bytes)
+                result_json = _encode_json_value(
+                    value,
+                    max_result_bytes,
+                    max_text_bytes=max_result_text_bytes,
+                )
+                result_value = _decode_json_value(
+                    result_json,
+                    max_text_bytes=max_result_text_bytes,
+                )
+                message = {
+                    "type": "result",
+                    "ok": True,
+                    "value": result_value,
+                    "stdout_bytes": stdout_stream.seen_bytes,
+                    "stderr_bytes": stderr_stream.seen_bytes,
+                    "stdout_truncated": stdout_stream.truncated,
+                    "stderr_truncated": stderr_stream.truncated,
+                }
+                _send_message(sender, message, max_result_bytes)
         except _ProtocolValueError as exc:
-            _send_failure(
-                sender, _safe_protocol_error(exc), max_result_bytes, stdout_stream, stderr_stream
-            )
+            with suppress(BaseException):
+                _send_failure(
+                    sender,
+                    _safe_protocol_error(exc),
+                    max_result_bytes,
+                    stdout_stream,
+                    stderr_stream,
+                    _reject_secret=ipc_secret_bytes,
+                )
         except BaseException:
-            _send_failure(sender, "handler_failed", max_result_bytes, stdout_stream, stderr_stream)
+            with suppress(BaseException):
+                _send_failure(
+                    sender,
+                    "handler_failed",
+                    max_result_bytes,
+                    stdout_stream,
+                    stderr_stream,
+                    _reject_secret=ipc_secret_bytes,
+                )
     except BaseException:
         with suppress(BaseException):
-            _send_failure(sender, "worker_setup_failed", max_result_bytes)
+            _send_failure(
+                sender,
+                "worker_setup_failed",
+                max_result_bytes,
+                _reject_secret=ipc_secret_bytes,
+            )
     finally:
         with suppress(OSError):
             sender.close()
+
+
+def _send_fuyao_success(
+    sender: socket.socket,
+    value: object,
+    parameters: Mapping[str, JsonValue],
+    binding: FuyaoProcessDeploymentBinding,
+    *,
+    max_result_bytes: int,
+    max_result_text_bytes: int,
+    stdout_stream: _DiscardingTextStream,
+    stderr_stream: _DiscardingTextStream,
+) -> None:
+    """Validate the fixed Fuyao DTO and exact secret bytes before sending IPC."""
+    capture_bytes = _validate_fuyao_child_result(value, parameters, binding)
+    secret_bytes = binding.api_key.encode("utf-8", errors="strict")
+    if secret_bytes in capture_bytes or _fuyao_value_contains_exact_secret(value, secret_bytes):
+        raise _ProtocolValueError("result_contains_secret_like_value")
+    result_json = _encode_json_value(
+        value,
+        max_result_bytes,
+        max_text_bytes=max_result_text_bytes,
+        allow_fuyao_result_fields=True,
+    )
+    if secret_bytes in result_json:
+        raise _ProtocolValueError("result_contains_secret_like_value")
+    result_value = _decode_json_value(
+        result_json,
+        max_text_bytes=max_result_text_bytes,
+        allow_fuyao_result_fields=True,
+    )
+    _send_message(
+        sender,
+        {
+            "type": "result",
+            "ok": True,
+            "value": result_value,
+            "stdout_bytes": stdout_stream.seen_bytes,
+            "stderr_bytes": stderr_stream.seen_bytes,
+            "stdout_truncated": stdout_stream.truncated,
+            "stderr_truncated": stderr_stream.truncated,
+        },
+        max_result_bytes,
+        _reject_secret=secret_bytes,
+    )
+
+
+def _fuyao_value_contains_exact_secret(value: object, secret_bytes: bytes) -> bool:
+    """Search the fixed result's raw UTF-8 strings before JSON escaping."""
+    if type(value) is str:
+        return secret_bytes in value.encode("utf-8", errors="strict")
+    if type(value) is list:
+        return any(_fuyao_value_contains_exact_secret(item, secret_bytes) for item in value)
+    if type(value) is dict:
+        return any(
+            secret_bytes in key.encode("utf-8", errors="strict")
+            or _fuyao_value_contains_exact_secret(item, secret_bytes)
+            for key, item in value.items()
+        )
+    return False
+
+
+def _validate_fuyao_child_result(
+    value: object,
+    parameters: Mapping[str, JsonValue],
+    binding: FuyaoProcessDeploymentBinding,
+) -> bytes:
+    """Validate the exact fixed Fuyao response schema and decode its bounded capture."""
+    if type(value) is not dict or set(value) != _FUYAO_RESULT_FIELDS:
+        raise _ProtocolValueError("fuyao_result_shape_invalid")
+    if type(parameters) is not dict or set(parameters) != {
+        "instrument_id",
+        "statement_type",
+        "periodicity",
+        "start_date",
+        "end_date",
+        "limit",
+        "run_key",
+    }:
+        raise _ProtocolValueError("fuyao_parameters_shape_invalid")
+    for name in (
+        "attempt_association_status",
+        "authorization_status",
+        "coverage_assessment",
+        "financial_bundle_sha256",
+        "instrument_id",
+        "periodicity",
+        "prepared_capture_b64",
+        "request_summary_sha256",
+        "retention_class",
+        "source_history_limit",
+        "source_policy_sha256",
+        "source_request_id_match_status",
+        "statement_type",
+        "unit_mapping_declaration_status",
+        "unit_mapping_sha256_declared",
+        "unit_mapping_version_declared",
+    ):
+        if type(value[name]) is not str:
+            raise _ProtocolValueError("fuyao_result_field_type_invalid")
+    for name in (
+        "capture_manifest_sha256",
+        "financial_bundle_sha256",
+        "request_summary_sha256",
+        "source_policy_sha256",
+        "unit_mapping_sha256_declared",
+    ):
+        digest = value[name]
+        if type(digest) is not str or _FUYAO_SHA256.fullmatch(digest) is None:
+            raise _ProtocolValueError("fuyao_result_digest_invalid")
+    if (
+        value["instrument_id"] != parameters["instrument_id"]
+        or value["statement_type"] != parameters["statement_type"]
+        or value["periodicity"] != parameters["periodicity"]
+        or value["financial_bundle_sha256"] != binding.financial_bundle_sha256
+        or value["source_policy_sha256"] != binding.source_policy_sha256
+        or value["retention_class"] != binding.retention_class
+        or value["source_history_limit"] != binding.source_history_limit
+    ):
+        raise _ProtocolValueError("fuyao_result_binding_invalid")
+    if (
+        value["authorization_status"] != "operator_policy_allowed_unverified"
+        or value["coverage_assessment"] != "not_assessed"
+        or value["unit_mapping_declaration_status"] != "operator_declared_unverified"
+        or value["attempt_association_status"]
+        not in {"caller_declared_unverified", "local_trace_matched_unverified"}
+        or value["source_request_id_match_status"]
+        not in {"not_checked_no_trace", "matched_unverified", "unavailable_unverified"}
+    ):
+        raise _ProtocolValueError("fuyao_result_status_invalid")
+    observation_ids = value["observation_ids"]
+    observation_count = value["observation_count"]
+    quarantined_count = value["quarantined_row_count"]
+    if (
+        type(observation_ids) is not list
+        or type(observation_count) is not int
+        or not 0 <= observation_count <= 1024
+        or len(observation_ids) != observation_count
+        or type(quarantined_count) is not int
+        or not 0 <= quarantined_count <= 64
+        or any(
+            type(observation_id) is not str or _FUYAO_SHA256.fullmatch(observation_id) is None
+            for observation_id in observation_ids
+        )
+        or len(set(observation_ids)) != len(observation_ids)
+    ):
+        raise _ProtocolValueError("fuyao_result_counts_invalid")
+    version = value["unit_mapping_version_declared"]
+    if (
+        type(version) is not str
+        or not 1 <= len(version) <= 128
+        or any(ord(character) < 32 or ord(character) == 127 for character in version)
+    ):
+        raise _ProtocolValueError("fuyao_result_unit_version_invalid")
+    encoded_capture = value["prepared_capture_b64"]
+    if (
+        type(encoded_capture) is not str
+        or not 1 <= len(encoded_capture) <= _FUYAO_CAPTURE_B64_MAX_CHARS
+    ):
+        raise _ProtocolValueError("fuyao_result_capture_invalid")
+    try:
+        encoded_capture_bytes = encoded_capture.encode("ascii", errors="strict")
+        capture_bytes = base64.b64decode(encoded_capture_bytes, validate=True)
+    except (UnicodeEncodeError, ValueError):
+        raise _ProtocolValueError("fuyao_result_capture_invalid") from None
+    if (
+        not 1 <= len(capture_bytes) <= _FUYAO_CAPTURE_MAX_BYTES
+        or base64.b64encode(capture_bytes) != encoded_capture_bytes
+    ):
+        raise _ProtocolValueError("fuyao_result_capture_invalid")
+    return capture_bytes
 
 
 def _send_failure(
@@ -605,6 +1136,8 @@ def _send_failure(
     max_result_bytes: int,
     stdout_stream: _DiscardingTextStream | None = None,
     stderr_stream: _DiscardingTextStream | None = None,
+    *,
+    _reject_secret: bytes | None = None,
 ) -> None:
     """Send only a fixed error code, never exception text or output contents."""
     _send_message(
@@ -619,6 +1152,7 @@ def _send_failure(
             "stderr_truncated": stderr_stream.truncated if stderr_stream else False,
         },
         max_result_bytes,
+        _reject_secret=_reject_secret,
     )
 
 
@@ -626,9 +1160,14 @@ def _send_message(
     sender: socket.socket,
     message: dict[str, object],
     max_result_bytes: int,
+    *,
+    _reject_secret: bytes | None = None,
 ) -> None:
     """Send one size-checked JSON message over the one-way pipe."""
-    sender.sendall(_encode_message_frame(message, max_result_bytes))
+    frame = _encode_message_frame(message, max_result_bytes)
+    if _reject_secret is not None and _reject_secret in frame:
+        raise _ProtocolValueError("result_contains_secret_like_value")
+    sender.sendall(frame)
 
 
 def _encode_message_frame(message: dict[str, object], max_message_bytes: int) -> bytes:
@@ -684,10 +1223,15 @@ def _decode_message(
     encoded: bytes,
     *,
     max_text_bytes: int = MAX_JSON_TEXT_BYTES,
+    allow_fuyao_result_fields: bool = False,
 ) -> dict[str, JsonValue]:
     """Decode one bounded UTF-8 JSON protocol message."""
     try:
-        parsed = _decode_json_value(encoded, max_text_bytes=max_text_bytes)
+        parsed = _decode_json_value(
+            encoded,
+            max_text_bytes=max_text_bytes,
+            allow_fuyao_result_fields=allow_fuyao_result_fields,
+        )
     except _ProtocolValueError as exc:
         raise ProcessExecutionProtocolError("process_message_invalid") from exc
     if not isinstance(parsed, dict) or not isinstance(parsed.get("type"), str):
@@ -699,14 +1243,20 @@ def _worker_bootstrap(channel: socket.socket) -> None:
     """Read one bounded command frame and invoke the child worker entry point."""
     max_result_bytes = MAX_RESULT_BYTES
     max_result_text_bytes = MAX_JSON_TEXT_BYTES
+    ipc_secret_bytes: bytes | None = None
     try:
         header = _read_exact(channel, 4)
         command_size = struct.unpack(">I", header)[0]
         if command_size > MAX_PARAMETER_BYTES + _MAX_COMMAND_OVERHEAD + _MAX_IPC_OVERHEAD:
             raise ProcessExecutionProtocolError("process_command_size_invalid")
         command = _decode_message(_read_exact(channel, command_size))
+        if command.get("operation_id") == FUYAO_PROCESS_OPERATION_ID:
+            raw_api_key = os.environ.get(FUYAO_PROCESS_API_KEY_ENV)
+            if raw_api_key is not None:
+                ipc_secret_bytes = raw_api_key.encode("utf-8", errors="strict")
         expected_fields = {
             "type",
+            "operation_id",
             "handler_module",
             "handler_qualified_name",
             "parameters",
@@ -717,10 +1267,16 @@ def _worker_bootstrap(channel: socket.socket) -> None:
         }
         if set(command) != expected_fields or command.get("type") != "command":
             raise ProcessExecutionProtocolError("process_command_invalid")
+        operation_id = command.get("operation_id")
         module_name = command.get("handler_module")
         qualified_name = command.get("handler_qualified_name")
         parameters = command.get("parameters")
-        if not isinstance(module_name, str) or not isinstance(qualified_name, str):
+        if (
+            not isinstance(operation_id, str)
+            or _OPERATION_ID.fullmatch(operation_id) is None
+            or not isinstance(module_name, str)
+            or not isinstance(qualified_name, str)
+        ):
             raise ProcessExecutionProtocolError("process_command_invalid")
         if type(parameters) is not dict:
             raise ProcessExecutionProtocolError("process_command_invalid")
@@ -741,6 +1297,7 @@ def _worker_bootstrap(channel: socket.socket) -> None:
             command.get("stderr_limit_bytes"), "stderr_limit_bytes", 0, MAX_STDIO_BYTES
         )
         _child_entry(
+            operation_id,
             module_name,
             qualified_name,
             parameters_json,
@@ -752,7 +1309,12 @@ def _worker_bootstrap(channel: socket.socket) -> None:
         )
     except BaseException:
         with suppress(BaseException):
-            _send_failure(channel, "worker_setup_failed", max_result_bytes)
+            _send_failure(
+                channel,
+                "worker_setup_failed",
+                max_result_bytes,
+                _reject_secret=ipc_secret_bytes,
+            )
     finally:
         with suppress(OSError):
             channel.close()
@@ -790,9 +1352,14 @@ def _encode_json_value(
     max_bytes: int,
     *,
     max_text_bytes: int = MAX_JSON_TEXT_BYTES,
+    allow_fuyao_result_fields: bool = False,
 ) -> bytes:
     """Encode one JSON value after structural and secret-like value checks."""
-    _validate_json_value(value, max_text_bytes=max_text_bytes)
+    _validate_json_value(
+        value,
+        max_text_bytes=max_text_bytes,
+        allow_fuyao_result_fields=allow_fuyao_result_fields,
+    )
     try:
         encoded = json.dumps(
             value,
@@ -821,6 +1388,7 @@ def _decode_json_value(
     encoded: bytes,
     *,
     max_text_bytes: int = MAX_JSON_TEXT_BYTES,
+    allow_fuyao_result_fields: bool = False,
 ) -> JsonValue:
     """Decode one JSON document while rejecting duplicate keys and NaN values."""
 
@@ -843,7 +1411,11 @@ def _decode_json_value(
         )
     except (json.JSONDecodeError, UnicodeDecodeError, RecursionError) as exc:
         raise _ProtocolValueError("json_document_invalid") from exc
-    _validate_json_value(parsed, max_text_bytes=max_text_bytes)
+    _validate_json_value(
+        parsed,
+        max_text_bytes=max_text_bytes,
+        allow_fuyao_result_fields=allow_fuyao_result_fields,
+    )
     return parsed  # type: ignore[return-value]
 
 
@@ -851,6 +1423,7 @@ def _validate_json_value(
     value: object,
     *,
     max_text_bytes: int = MAX_JSON_TEXT_BYTES,
+    allow_fuyao_result_fields: bool = False,
 ) -> None:
     """Enforce plain JSON types, bounded shape, and conservative secret checks."""
     if (
@@ -909,7 +1482,13 @@ def _validate_json_value(
                         raise _ProtocolValueError("json_text_limit_exceeded")
                     normalized_key = key.casefold().replace("_", "").replace("-", "")
                     if any(part in normalized_key for part in _SECRET_KEY_PARTS):
-                        raise _ProtocolValueError("result_contains_secret_like_value")
+                        is_fixed_fuyao_status = (
+                            allow_fuyao_result_fields
+                            and key in _FUYAO_SAFE_SECRET_NAMED_FIELDS
+                            and set(current) == _FUYAO_RESULT_FIELDS
+                        )
+                        if not is_fixed_fuyao_status:
+                            raise _ProtocolValueError("result_contains_secret_like_value")
                     stack.append((child, depth + 1, False))
             elif type(current) is list:
                 if len(current) > MAX_JSON_NODES - node_count:
@@ -1070,6 +1649,23 @@ def _resolve_handler(module_name: str, qualified_name: str) -> ReviewedHandler:
     return resolved_handler
 
 
+def _load_fixed_fuyao_handler() -> ReviewedHandler:
+    """Return the one exact Fuyao handler object exported by its fixed module."""
+    try:
+        module = importlib.import_module(FUYAO_PROCESS_HANDLER_MODULE)
+        handler = getattr(module, FUYAO_PROCESS_HANDLER_QUALIFIED_NAME, None)
+    except Exception:
+        raise ValueError("fixed Fuyao handler is unavailable") from None
+    if (
+        not _is_importable_top_level_function(handler)
+        or getattr(handler, "__module__", None) != FUYAO_PROCESS_HANDLER_MODULE
+        or getattr(handler, "__qualname__", None) != FUYAO_PROCESS_HANDLER_QUALIFIED_NAME
+        or getattr(module, FUYAO_PROCESS_HANDLER_QUALIFIED_NAME, None) is not handler
+    ):
+        raise ValueError("fixed Fuyao handler identity is invalid")
+    return cast("ReviewedHandler", handler)
+
+
 def _bounded_integer(value: object, name: str, minimum: int, maximum: int) -> int:
     """Validate an integer constructor option without accepting booleans."""
     if isinstance(value, bool) or not isinstance(value, int):
@@ -1077,6 +1673,130 @@ def _bounded_integer(value: object, name: str, minimum: int, maximum: int) -> in
     if value < minimum or value > maximum:
         raise ValueError(f"{name} is outside the supported range")
     return value
+
+
+def _validate_absolute_deployment_path(value: object, name: str) -> None:
+    """Validate a bounded absolute deployment path without reading the target."""
+    if (
+        type(value) is not str
+        or not value
+        or len(value) > 4096
+        or any(ord(character) < 32 for character in value)
+    ):
+        raise ValueError(f"{name} must be an absolute path")
+    path = Path(value)
+    if not path.is_absolute() or ".." in path.parts or len(path.parts) <= 1:
+        raise ValueError(f"{name} must be an absolute path")
+
+
+def _reject_duplicate_json_object_keys(pairs: list[tuple[str, object]]) -> dict[str, object]:
+    """Reject duplicate keys when reading the fixed child binding JSON."""
+    result: dict[str, object] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("duplicate child binding key")
+        result[key] = value
+    return result
+
+
+def _reject_json_constant(_value: str) -> None:
+    """Reject non-standard JSON constants in the child binding value."""
+    raise ValueError("non-finite child binding value")
+
+
+def _encode_fuyao_binding(binding: FuyaoProcessDeploymentBinding) -> bytes:
+    """Encode only non-secret, explicitly declared Fuyao deployment fields."""
+    payload = {
+        "schema_version": 1,
+        "financial_bundle_path": binding.financial_bundle_path,
+        "financial_bundle_sha256": binding.financial_bundle_sha256,
+        "source_policy_path": binding.source_policy_path,
+        "source_policy_sha256": binding.source_policy_sha256,
+        "gate_database_path": binding.gate_database_path,
+        "source_attempt_grant_id": binding.source_attempt_grant_id,
+        "source_attempt_expected_revision": binding.source_attempt_expected_revision,
+        "source_attempt_principal_scope": binding.source_attempt_principal_scope,
+        "raw_artifact_root": binding.raw_artifact_root,
+        "retention_class": binding.retention_class,
+        "source_history_limit": binding.source_history_limit,
+    }
+    try:
+        encoded = json.dumps(
+            payload,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        ).encode("utf-8", errors="strict")
+    except (TypeError, UnicodeEncodeError, ValueError):
+        raise ValueError("Fuyao deployment binding is invalid") from None
+    if len(encoded) > _FUYAO_BINDING_MAX_BYTES:
+        raise ValueError("Fuyao deployment binding is too large")
+    return encoded
+
+
+def _validate_fuyao_parameters(parameters: Mapping[str, JsonValue]) -> None:
+    """Require the exact bounded business query accepted by the fixed handler."""
+    expected_fields = {
+        "instrument_id",
+        "statement_type",
+        "periodicity",
+        "start_date",
+        "end_date",
+        "limit",
+        "run_key",
+    }
+    if type(parameters) is not dict or set(parameters) != expected_fields:
+        raise ValueError("Fuyao query shape is invalid")
+    if (
+        type(parameters["instrument_id"]) is not str
+        or _FUYAO_INSTRUMENT.fullmatch(parameters["instrument_id"]) is None
+    ):
+        raise ValueError("Fuyao instrument identity is invalid")
+    if type(parameters["statement_type"]) is not str or parameters["statement_type"] not in {
+        "income",
+        "balance",
+        "cashflow",
+    }:
+        raise ValueError("Fuyao statement type is invalid")
+    if type(parameters["periodicity"]) is not str or parameters["periodicity"] not in {
+        "annual",
+        "quarterly",
+    }:
+        raise ValueError("Fuyao periodicity is invalid")
+    if (
+        type(parameters["run_key"]) is not str
+        or _FUYAO_RUN_KEY.fullmatch(parameters["run_key"]) is None
+    ):
+        raise ValueError("Fuyao run identity is invalid")
+
+    start_date = parameters["start_date"]
+    end_date = parameters["end_date"]
+    limit = parameters["limit"]
+    if (start_date is None) != (end_date is None):
+        raise ValueError("Fuyao query bounds are invalid")
+    if start_date is not None:
+        if (
+            type(start_date) is not str
+            or type(end_date) is not str
+            or _FUYAO_DATE.fullmatch(start_date) is None
+            or _FUYAO_DATE.fullmatch(end_date) is None
+            or limit is not None
+        ):
+            raise ValueError("Fuyao date window is invalid")
+        try:
+            parsed_start = date.fromisoformat(start_date)
+            parsed_end = date.fromisoformat(end_date)
+        except ValueError:
+            raise ValueError("Fuyao date window is invalid") from None
+        if parsed_start.isoformat() != start_date or parsed_end.isoformat() != end_date:
+            raise ValueError("Fuyao date window is invalid")
+        if parsed_start > parsed_end:
+            raise ValueError("Fuyao date window is invalid")
+        if parsed_end - parsed_start > timedelta(days=365 * 10):
+            raise ValueError("Fuyao date window is invalid")
+    elif type(limit) is not int or not 1 <= limit <= 20:
+        raise ValueError("Fuyao period limit is invalid")
 
 
 def _bounded_number(value: float, name: str, minimum: float, maximum: float) -> float:
@@ -1109,6 +1829,12 @@ def _utf8_prefix_size(value: str, max_bytes: int) -> tuple[int, bool]:
 
 
 __all__ = [
+    "FUYAO_PROCESS_API_KEY_ENV",
+    "FUYAO_PROCESS_BINDING_ENV",
+    "FUYAO_PROCESS_HANDLER_MODULE",
+    "FUYAO_PROCESS_HANDLER_QUALIFIED_NAME",
+    "FUYAO_PROCESS_OPERATION_ID",
+    "FuyaoProcessDeploymentBinding",
     "ProcessExecutionCancelledError",
     "ProcessExecutionCleanupError",
     "ProcessExecutionCrashedError",
