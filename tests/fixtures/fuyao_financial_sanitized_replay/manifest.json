@@ -1,0 +1,316 @@
+{
+  "cases": {
+    "balance-annual": {
+      "data_field_types": {
+        "item": "list",
+        "timestamp": "int"
+      },
+      "envelope_field_types": {
+        "code": "int",
+        "data": "dict",
+        "message": "str",
+        "request_id": "str"
+      },
+      "field_count": 15,
+      "fiscal_period": "FY",
+      "fixture_sha256": "94dafefdefedaec58424905fcf2c811342e17dbec7b2f0ede08a1d48237f8069",
+      "item_value_types": {
+        "accounts_receivable": "float",
+        "assets_total": "float",
+        "cash": "float",
+        "holder_equity_total": "float",
+        "non_current_nets_total": "float",
+        "total_current_assets": "float",
+        "total_debt": "float"
+      },
+      "line_item_count": 7,
+      "periodicity": "annual",
+      "row_field_types": {
+        "accounts_receivable": "float",
+        "assets_total": "float",
+        "cash": "float",
+        "currency": "str",
+        "fiscal_period": "str",
+        "fiscal_year": "int",
+        "holder_equity_total": "float",
+        "non_current_nets_total": "float",
+        "period": "str",
+        "period_end_ms": "int",
+        "report_date_ms": "int",
+        "thscode": "str",
+        "ticker": "str",
+        "total_current_assets": "float",
+        "total_debt": "float"
+      },
+      "statement_type": "balance",
+      "synthetic_disclosure_date": "2026-04-12",
+      "synthetic_fiscal_year": 2003,
+      "synthetic_period_end_ms": 1072800000000,
+      "synthetic_report_period": "2003-12-31"
+    },
+    "balance-quarterly": {
+      "data_field_types": {
+        "item": "list",
+        "timestamp": "int"
+      },
+      "envelope_field_types": {
+        "code": "int",
+        "data": "dict",
+        "message": "str",
+        "request_id": "str"
+      },
+      "field_count": 15,
+      "fiscal_period": "Q2",
+      "fixture_sha256": "91e6f7138a919c3849026f2aa55f59b98bf831532566b93f1dfe265735717066",
+      "item_value_types": {
+        "accounts_receivable": "float",
+        "assets_total": "float",
+        "cash": "float",
+        "holder_equity_total": "float",
+        "non_current_nets_total": "float",
+        "total_current_assets": "float",
+        "total_debt": "float"
+      },
+      "line_item_count": 7,
+      "periodicity": "quarterly",
+      "row_field_types": {
+        "accounts_receivable": "float",
+        "assets_total": "float",
+        "cash": "float",
+        "currency": "str",
+        "fiscal_period": "str",
+        "fiscal_year": "int",
+        "holder_equity_total": "float",
+        "non_current_nets_total": "float",
+        "period": "str",
+        "period_end_ms": "int",
+        "report_date_ms": "int",
+        "thscode": "str",
+        "ticker": "str",
+        "total_current_assets": "float",
+        "total_debt": "float"
+      },
+      "statement_type": "balance",
+      "synthetic_disclosure_date": "2026-04-13",
+      "synthetic_fiscal_year": 2004,
+      "synthetic_period_end_ms": 1088524800000,
+      "synthetic_report_period": "2004-06-30"
+    },
+    "cashflow-annual": {
+      "data_field_types": {
+        "item": "list",
+        "timestamp": "int"
+      },
+      "envelope_field_types": {
+        "code": "int",
+        "data": "dict",
+        "message": "str",
+        "request_id": "str"
+      },
+      "field_count": 14,
+      "fiscal_period": "FY",
+      "fixture_sha256": "ca6a63ff0fe5f65f1f44ef2d7fb6cf129edbe8be8c9c30ec4323a38ce5ca4bf6",
+      "item_value_types": {
+        "act_cash_flow_net": "float",
+        "cash_equivalents_net_addition": "float",
+        "financing_cash_flow_net": "float",
+        "invest_cash_flow_net": "float",
+        "pay_dividends_profits_interest_cash": "float",
+        "pay_fixed_assets_etc_cash": "float"
+      },
+      "line_item_count": 6,
+      "periodicity": "annual",
+      "row_field_types": {
+        "act_cash_flow_net": "float",
+        "cash_equivalents_net_addition": "float",
+        "currency": "str",
+        "financing_cash_flow_net": "float",
+        "fiscal_period": "str",
+        "fiscal_year": "int",
+        "invest_cash_flow_net": "float",
+        "pay_dividends_profits_interest_cash": "float",
+        "pay_fixed_assets_etc_cash": "float",
+        "period": "str",
+        "period_end_ms": "int",
+        "report_date_ms": "int",
+        "thscode": "str",
+        "ticker": "str"
+      },
+      "statement_type": "cashflow",
+      "synthetic_disclosure_date": "2026-04-14",
+      "synthetic_fiscal_year": 2005,
+      "synthetic_period_end_ms": 1135958400000,
+      "synthetic_report_period": "2005-12-31"
+    },
+    "cashflow-quarterly": {
+      "data_field_types": {
+        "item": "list",
+        "timestamp": "int"
+      },
+      "envelope_field_types": {
+        "code": "int",
+        "data": "dict",
+        "message": "str",
+        "request_id": "str"
+      },
+      "field_count": 14,
+      "fiscal_period": "Q2",
+      "fixture_sha256": "93e4cf22eaffc20b2914ac3de10d4387badd93e3adda2acb262a202ed55ade58",
+      "item_value_types": {
+        "act_cash_flow_net": "float",
+        "cash_equivalents_net_addition": "float",
+        "financing_cash_flow_net": "float",
+        "invest_cash_flow_net": "float",
+        "pay_dividends_profits_interest_cash": "float",
+        "pay_fixed_assets_etc_cash": "float"
+      },
+      "line_item_count": 6,
+      "periodicity": "quarterly",
+      "row_field_types": {
+        "act_cash_flow_net": "float",
+        "cash_equivalents_net_addition": "float",
+        "currency": "str",
+        "financing_cash_flow_net": "float",
+        "fiscal_period": "str",
+        "fiscal_year": "int",
+        "invest_cash_flow_net": "float",
+        "pay_dividends_profits_interest_cash": "float",
+        "pay_fixed_assets_etc_cash": "float",
+        "period": "str",
+        "period_end_ms": "int",
+        "report_date_ms": "int",
+        "thscode": "str",
+        "ticker": "str"
+      },
+      "statement_type": "cashflow",
+      "synthetic_disclosure_date": "2026-04-15",
+      "synthetic_fiscal_year": 2006,
+      "synthetic_period_end_ms": 1151596800000,
+      "synthetic_report_period": "2006-06-30"
+    },
+    "income-annual": {
+      "data_field_types": {
+        "item": "list",
+        "timestamp": "int"
+      },
+      "envelope_field_types": {
+        "code": "int",
+        "data": "dict",
+        "message": "str",
+        "request_id": "str"
+      },
+      "field_count": 21,
+      "fiscal_period": "FY",
+      "fixture_sha256": "e35f7afc37f5956ede9cabea9f3ace484a6a476827da1cd135d2ab9072b3980c",
+      "item_value_types": {
+        "basic_eps": "float",
+        "income_tax_expense": "float",
+        "interest_expenses": "float",
+        "manage_fee": "float",
+        "net_profit": "float",
+        "operating_costs": "float",
+        "operating_expenses": "float",
+        "operating_income": "float",
+        "operating_profit": "float",
+        "parent_holder_net_profit": "float",
+        "profit_total": "float",
+        "research_and_development_expenses": "float",
+        "sales_fee": "float"
+      },
+      "line_item_count": 13,
+      "periodicity": "annual",
+      "row_field_types": {
+        "basic_eps": "float",
+        "currency": "str",
+        "fiscal_period": "str",
+        "fiscal_year": "int",
+        "income_tax_expense": "float",
+        "interest_expenses": "float",
+        "manage_fee": "float",
+        "net_profit": "float",
+        "operating_costs": "float",
+        "operating_expenses": "float",
+        "operating_income": "float",
+        "operating_profit": "float",
+        "parent_holder_net_profit": "float",
+        "period": "str",
+        "period_end_ms": "int",
+        "profit_total": "float",
+        "report_date_ms": "int",
+        "research_and_development_expenses": "float",
+        "sales_fee": "float",
+        "thscode": "str",
+        "ticker": "str"
+      },
+      "statement_type": "income",
+      "synthetic_disclosure_date": "2026-04-10",
+      "synthetic_fiscal_year": 2001,
+      "synthetic_period_end_ms": 1009728000000,
+      "synthetic_report_period": "2001-12-31"
+    },
+    "income-quarterly": {
+      "data_field_types": {
+        "item": "list",
+        "timestamp": "int"
+      },
+      "envelope_field_types": {
+        "code": "int",
+        "data": "dict",
+        "message": "str",
+        "request_id": "str"
+      },
+      "field_count": 21,
+      "fiscal_period": "Q2",
+      "fixture_sha256": "480879ced2fe29f52d2536c570499a319a9ba736b31d87d5b2003b2fc78627f2",
+      "item_value_types": {
+        "basic_eps": "float",
+        "income_tax_expense": "float",
+        "interest_expenses": "float",
+        "manage_fee": "float",
+        "net_profit": "float",
+        "operating_costs": "float",
+        "operating_expenses": "float",
+        "operating_income": "float",
+        "operating_profit": "float",
+        "parent_holder_net_profit": "float",
+        "profit_total": "float",
+        "research_and_development_expenses": "float",
+        "sales_fee": "float"
+      },
+      "line_item_count": 13,
+      "periodicity": "quarterly",
+      "row_field_types": {
+        "basic_eps": "float",
+        "currency": "str",
+        "fiscal_period": "str",
+        "fiscal_year": "int",
+        "income_tax_expense": "float",
+        "interest_expenses": "float",
+        "manage_fee": "float",
+        "net_profit": "float",
+        "operating_costs": "float",
+        "operating_expenses": "float",
+        "operating_income": "float",
+        "operating_profit": "float",
+        "parent_holder_net_profit": "float",
+        "period": "str",
+        "period_end_ms": "int",
+        "profit_total": "float",
+        "report_date_ms": "int",
+        "research_and_development_expenses": "float",
+        "sales_fee": "float",
+        "thscode": "str",
+        "ticker": "str"
+      },
+      "statement_type": "income",
+      "synthetic_disclosure_date": "2026-04-11",
+      "synthetic_fiscal_year": 2002,
+      "synthetic_period_end_ms": 1025366400000,
+      "synthetic_report_period": "2002-06-30"
+    }
+  },
+  "privacy": "synthetic fixtures derived from six private local response bodies; raw bodies and source hashes are omitted; 999999.SZ is a format-valid synthetic test token, not a real-issuer claim",
+  "schema_version": 1,
+  "scope": "response-shape/parser contract only; no authorization, unit semantics, source completeness, or history claim",
+  "synthetic_transform": "replace identifiers with 999999.SZ / 999999 synthetic tokens, request IDs, financial values, and date timestamps; retain the wire success sentinel, report/cadence labels, and exact field/type/null shape"
+}
