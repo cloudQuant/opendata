@@ -55,7 +55,10 @@ from opendata.data.providers.ths.transport.credentials import (
     DEFAULT_FUYAO_API_BASE_URL,
     FuyaoCredentials,
 )
-from opendata.data.providers.ths.transport.http_client import FuyaoHttpClient
+from opendata.data.providers.ths.transport.http_client import (
+    FuyaoHttpClient,
+    FuyaoTransportAttemptTrace,
+)
 from opendata.data.request_budget import (
     RequestAuthorizationError,
     RequestExecutionScope,
@@ -87,9 +90,7 @@ _SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 _UNIT_VERSION_MAX_CHARS = 128
 _UNIT_EVIDENCE_MAX_CHARS = 512
 _MAX_TRANSPORT_ATTEMPTS = 3
-_FINANCIAL_REQUEST_SUMMARY_FIELDS = frozenset(
-    {"thscode", "period", "start", "end", "limit"}
-)
+_FINANCIAL_REQUEST_SUMMARY_FIELDS = frozenset({"thscode", "period", "start", "end", "limit"})
 _STATEMENT_ENDPOINTS: Mapping[StatementType, str] = MappingProxyType(
     {
         "income": INCOME_STATEMENTS_ENDPOINT,
@@ -108,6 +109,74 @@ class FinancialObservationFetchError(RuntimeError):
         """Create an error without embedding identifiers, response data or secrets."""
         self.code = code
         super().__init__(code)
+
+
+def _validate_local_attempt_trace(
+    value: object,
+    *,
+    status_code: object,
+    source_request_id: object,
+) -> None:
+    """Check local trace consistency without treating it as a source receipt."""
+    if type(value) is not tuple:
+        raise ValueError("attempt_trace must be an immutable tuple")
+    if not value:
+        return
+    if len(value) > _MAX_TRANSPORT_ATTEMPTS:
+        raise ValueError("attempt_trace exceeds the local transport attempt limit")
+
+    request_id: str | None = None
+    attempt_ids: set[str] = set()
+    previous_attempt_no = 0
+    for trace in value:
+        if type(trace) is not FuyaoTransportAttemptTrace:
+            raise ValueError("attempt_trace contains an unsupported local trace type")
+        if (
+            type(trace.transport_request_id) is not str
+            or not trace.transport_request_id
+            or trace.transport_request_id != trace.transport_request_id.strip()
+            or type(trace.attempt_id) is not str
+            or not trace.attempt_id
+            or trace.attempt_id != trace.attempt_id.strip()
+            or type(trace.attempt_no) is not int
+            or not 1 <= trace.attempt_no <= _MAX_TRANSPORT_ATTEMPTS
+            or trace.attempt_no <= previous_attempt_no
+            or type(trace.reserved_at_us) not in {int, type(None)}
+            or type(trace.gate_status) is not str
+            or trace.gate_status != "RESERVED_NEW"
+            or trace.request_budget_reserved is not True
+            or type(trace.http_status) not in {int, type(None)}
+            or (trace.http_status is not None and not 100 <= trace.http_status <= 599)
+            or type(trace.outcome) is not str
+            or trace.outcome
+            != ("response_observed" if trace.http_status is not None else "outcome_unknown")
+            or type(trace.failure_category) not in {str, type(None)}
+            or type(trace.source_request_id) not in {str, type(None)}
+        ):
+            raise ValueError("attempt_trace contains inconsistent local attempt metadata")
+        if request_id is None:
+            request_id = trace.transport_request_id
+        elif trace.transport_request_id != request_id:
+            raise ValueError("attempt_trace spans multiple local transport requests")
+        if trace.attempt_id in attempt_ids:
+            raise ValueError("attempt_trace reuses a local attempt identifier")
+        attempt_ids.add(trace.attempt_id)
+        previous_attempt_no = trace.attempt_no
+
+    final_trace = value[-1]
+    if (
+        final_trace.http_status != status_code
+        or final_trace.outcome != "response_observed"
+        or final_trace.failure_category is not None
+    ):
+        raise ValueError("final local attempt trace does not match the successful response")
+    if (
+        final_trace.source_request_id is not None
+        and final_trace.source_request_id != source_request_id
+    ):
+        raise ValueError(
+            "final local attempt source request identifier does not match decoded response"
+        )
 
 
 def _is_statement_type(value: object) -> TypeGuard[StatementType]:
@@ -263,7 +332,14 @@ class FinancialObservationFetchResult:
     complete or suitable for publishing. ``request_summary_sha256`` is a
     caller-side v1 digest over the validated parameter mapping handed to the
     transport; it is not an independent source receipt or proof of what the
-    provider received.
+    provider received. ``attempt_trace`` carries the transport's local
+    reservations and response observations when the successful transport
+    result provides them. It is not signed, independently authenticated, or
+    proof that a request reached or was processed by the source. An empty
+    trace does not establish that no request was sent. Terminal transport
+    failures and post-response validation errors do not return this result,
+    so their final attempt trace cannot be read from it and the outcome may
+    remain unavailable to this caller.
     """
 
     instrument_id: str
@@ -284,6 +360,9 @@ class FinancialObservationFetchResult:
         repr=False, compare=False
     )
     request_summary_sha256: str | None = field(default=None, compare=False)
+    attempt_trace: tuple[FuyaoTransportAttemptTrace, ...] = field(
+        default=(), repr=False, compare=False
+    )
 
     def __post_init__(self) -> None:
         """Enforce the response-byte, digest, time and decoded-reference binding."""
@@ -324,6 +403,11 @@ class FinancialObservationFetchResult:
             raise ValueError("decoded observations cannot assert completeness")
         if self.usability_status != _usability_status(self.observations, self.quarantined_rows):
             raise ValueError("usability_status does not match decoded rows")
+        _validate_local_attempt_trace(
+            self.attempt_trace,
+            status_code=self.status_code,
+            source_request_id=self.source_request_id,
+        )
 
 
 class ThsFinancialObservationFetcher:
@@ -605,8 +689,7 @@ class ThsFinancialObservationFetcher:
                 expected_params["limit"] = period_limit
             params = MappingProxyType(dict(built_params))
             if params.keys() != expected_params.keys() or any(
-                type(params[key]) is not type(expected_value)
-                or params[key] != expected_value
+                type(params[key]) is not type(expected_value) or params[key] != expected_value
                 for key, expected_value in expected_params.items()
             ):
                 raise ValueError("upstream request parameters differ from the validated query")
@@ -701,6 +784,7 @@ class ThsFinancialObservationFetcher:
             observations=decoded.observations,
             quarantined_rows=decoded.quarantined_rows,
             request_summary_sha256=request_digest,
+            attempt_trace=response.attempt_trace,
         )
 
     def close(self) -> None:

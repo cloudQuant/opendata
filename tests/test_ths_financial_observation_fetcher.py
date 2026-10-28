@@ -56,6 +56,7 @@ from opendata.data.providers.ths.transport.credentials import (
     DEFAULT_FUYAO_API_BASE_URL,
     FuyaoCredentials,
 )
+from opendata.data.providers.ths.transport.errors import FuyaoError
 from opendata.data.providers.ths.transport.rate_limiter import FuyaoRateLimiter
 from opendata.data.request_budget import (
     GrantDecision,
@@ -513,6 +514,16 @@ def test_fetch_uses_one_fixed_source_request_and_binds_result_to_raw_response(
     reservations = _attempt_rows(engine)
     assert len(reservations) == 1
     assert reservations[0]["outcome"] == "RESERVED"
+    assert len(result.attempt_trace) == 1
+    successful_attempt = result.attempt_trace[0]
+    assert successful_attempt.attempt_no == 1
+    assert successful_attempt.gate_status == "RESERVED_NEW"
+    assert successful_attempt.request_budget_reserved is True
+    assert successful_attempt.http_status == result.status_code == 200
+    assert successful_attempt.outcome == "response_observed"
+    assert successful_attempt.failure_category is None
+    assert successful_attempt.source_request_id == result.source_request_id
+    assert successful_attempt.transport_request_id != result.source_request_id
     assert result.raw_body == body
     assert result.body_sha256 == hashlib.sha256(body).hexdigest()
     assert result.source_request_id == "synthetic-financial-request-1"
@@ -526,6 +537,8 @@ def test_fetch_uses_one_fixed_source_request_and_binds_result_to_raw_response(
     assert "raw_body" not in repr(result)
     assert "observations=" not in repr(result)
     assert "quarantined_rows=" not in repr(result)
+    assert "attempt_trace=" not in repr(result)
+    assert successful_attempt.transport_request_id not in repr(result)
     assert "synthetic-key-not-a-credential" not in repr(result)
 
     legacy_result = FinancialObservationFetchResult(
@@ -546,6 +559,7 @@ def test_fetch_uses_one_fixed_source_request_and_binds_result_to_raw_response(
         quarantined_rows=result.quarantined_rows,
     )
     assert legacy_result.request_summary_sha256 is None
+    assert legacy_result.attempt_trace == ()
     assert legacy_result == result
 
 
@@ -593,7 +607,56 @@ def test_request_summary_is_one_caller_digest_for_identical_transport_retries(
             {"thscode": INSTRUMENT_ID, "period": "annual", "limit": 2},
             allowed_fields={"thscode", "period", "start", "end", "limit"},
         )
+        assert len(result.attempt_trace) == 2
+        first, final = result.attempt_trace
+        assert first.transport_request_id == final.transport_request_id
+        assert first.attempt_id != final.attempt_id
+        assert (first.attempt_no, final.attempt_no) == (1, 2)
+        assert first.outcome == "outcome_unknown"
+        assert first.http_status is None
+        assert first.failure_category == "timeout"
+        assert final.outcome == "response_observed"
+        assert final.http_status == result.status_code == 200
+        assert final.source_request_id == result.source_request_id
         assert len(_attempt_rows(gate_engine)) == 2
+    finally:
+        fetcher.close()
+
+
+def test_terminal_transport_failure_has_no_fetch_result_trace(gate_engine: Any) -> None:
+    """A terminal failure keeps its unknown outcome outside successful results."""
+    _seed_gate(gate_engine)
+    gate = SourceAttemptGate(gate_engine)
+
+    def timeout_every_attempt(_request: httpx.Request) -> None:
+        raise httpx.ConnectTimeout("synthetic terminal timeout")
+
+    fetcher, requests, _credentials = _fetcher(
+        _financial_body(),
+        gate=gate,
+        send_observer=timeout_every_attempt,
+    )
+    try:
+        with (
+            request_execution_scope(
+                source=SOURCE,
+                canonical_model=MODEL,
+                operation=RequestOperation.QUERY,
+                budget=_request_budget(),
+                source_attempt_binding=_binding(),
+            ),
+            pytest.raises(FuyaoError) as error,
+        ):
+            fetcher.fetch(
+                instrument_id=INSTRUMENT_ID,
+                statement_type="income",
+                periodicity="annual",
+                limit=1,
+            )
+
+        assert len(requests) == fetcher._client._max_attempts == 3
+        assert len(_attempt_rows(gate_engine)) == 3
+        assert not hasattr(error.value, "attempt_trace")
     finally:
         fetcher.close()
 
@@ -1722,6 +1785,21 @@ def test_fetch_result_rejects_observation_reference_from_another_body(
     altered = replace(result.observations[0], body_sha256="0" * 64)
     with pytest.raises(ValueError, match="not bound to raw_body"):
         replace(result, observations=(altered, *result.observations[1:]))
+
+
+def test_fetch_result_rejects_inconsistent_local_transport_trace(dependencies: Any) -> None:
+    """Reject local trace fields that disagree with this decoded success result."""
+    result = _successful_result(dependencies)
+    final_trace = result.attempt_trace[-1]
+
+    with pytest.raises(ValueError, match="final local attempt trace"):
+        replace(result, attempt_trace=(replace(final_trace, http_status=201),))
+
+    with pytest.raises(ValueError, match="source request identifier"):
+        replace(result, attempt_trace=(replace(final_trace, source_request_id="other-id"),))
+
+    with pytest.raises(ValueError, match="unsupported local trace type"):
+        replace(result, attempt_trace=(object(),))
 
 
 def test_fetch_result_rejects_quarantine_reference_from_different_body(
