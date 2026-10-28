@@ -11,6 +11,9 @@ from opendata.api.data import router as data_router
 from opendata.api.data_query import router as data_query_router
 from opendata.api.data_subscribe import router as data_subscribe_router
 from opendata.api.executions import router as executions_router
+from opendata.api.financial_observation_archive import (
+    router as financial_observation_archive_router,
+)
 from opendata.api.interfaces import router as interfaces_router
 from opendata.api.keys import router as keys_router
 from opendata.api.metrics import router as metrics_router
@@ -31,9 +34,16 @@ from opendata.api.websocket import router as ws_router
 ws_routers = (ws_router, data_subscribe_router)
 
 api_router = APIRouter()
-# Versioned publication routes already carry their /api/v2 prefix and must not
-# be mounted under the legacy /api or /api/v1 compatibility aliases.
-api_v2_router = published_data_router
+# V2 routers carry their own /api/v2 prefixes and must never be mounted under
+# the /api or /api/v1 compatibility aliases. Keep the existing publication
+# routes unchanged while adding new read-only archive endpoints to this group.
+api_v2_router = APIRouter()
+api_v2_router.include_router(published_data_router)
+api_v2_router.include_router(
+    financial_observation_archive_router,
+    prefix="/api/v2/data",
+    tags=["Financial Observation Archive"],
+)
 
 # Include all route modules
 api_router.include_router(auth_router, prefix="/auth", tags=["Authentication"])
