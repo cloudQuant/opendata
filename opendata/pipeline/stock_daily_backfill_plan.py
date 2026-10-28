@@ -13,7 +13,10 @@ import json
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from enum import Enum
-from typing import Final
+from typing import TYPE_CHECKING, Final
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 from opendata.data.instrument_reference import (
     InstrumentAlias,
@@ -34,6 +37,35 @@ from opendata.pipeline.stock_daily_job import (
 
 PLAN_VERSION: Final[str] = "stock-daily-backfill-plan-v1"
 _BJ_PREFIXES: Final[tuple[str, ...]] = ("4", "8", "920")
+_MAX_CANDIDATE_CHUNKS: Final[int] = 25_000
+_MAX_SCOPED_ALIAS_ROWS: Final[int] = 50_000
+_MAX_ALIAS_SEGMENTS: Final[int] = 25_000
+_MAX_ACTIVE_ALIAS_MEMBERSHIPS: Final[int] = 25_000
+
+
+class _CandidateChunkBudgetError(ValueError):
+    """Signal that a planner must refuse before materializing a partial plan."""
+
+
+class _AliasPlanningBudgetError(ValueError):
+    """Signal that alias evidence would exceed bounded planning resources."""
+
+
+@dataclass(frozen=True, slots=True)
+class _PlanResourceEstimate:
+    """Preflight counts for request and alias-segment materialization costs."""
+
+    candidate_chunks: int
+    alias_segments: int
+    active_alias_memberships: int
+
+
+@dataclass(slots=True)
+class _PlanMaterializationBudget:
+    """Counters checked before sorted alias tuples and request chunks are built."""
+
+    alias_segments: int = 0
+    active_alias_memberships: int = 0
 
 
 class BackfillBlockReason(str, Enum):
@@ -170,6 +202,9 @@ def build_stock_daily_backfill_plan(
     start boundary and effective source alias are required before any candidate
     chunk is generated. All windows use inclusive business-date endpoints and
     are validated by the current stock-daily job adapter.
+    A deterministic preflight rejects plans above the candidate-chunk and
+    alias-work budgets before request or sorted alias-tuple materialization;
+    it never returns a truncated plan.
 
     Args:
         registry: Caller-supplied immutable lifecycle and alias registry.
@@ -187,7 +222,8 @@ def build_stock_daily_backfill_plan(
         TypeError: If an input does not have its declared model type.
         ValueError: If the task/contract is not the current stock-daily shape,
             the requested date or limit is invalid, or the registry has no
-            lifecycle rows for the exact dataset/source scope.
+            lifecycle rows for the exact dataset/source scope, or the exact
+            request or alias-segment work exceeds the per-plan resource budget.
     """
     if not isinstance(registry, InstrumentReferenceRegistry):
         raise TypeError("registry must be an InstrumentReferenceRegistry")
@@ -208,7 +244,6 @@ def build_stock_daily_backfill_plan(
     _validate_stock_contract(validated_task, contract)
     task_digest = _sha256(_canonical_json(validated_task.model_dump(mode="json")))
     contract_digest = canonical_sha256(contract)
-    registry_digest = _registry_sha256(registry)
     source_id = contract.source.source_id
     scoped_lifecycles = tuple(
         sorted(
@@ -225,14 +260,47 @@ def build_stock_daily_backfill_plan(
         raise ValueError("registry has no lifecycle rows for the exact dataset/source scope")
 
     aliases_by_instrument: dict[str, list[InstrumentAlias]] = {}
+    scoped_instrument_ids = {lifecycle.instrument_id for lifecycle in scoped_lifecycles}
+    scoped_alias_rows = 0
     for alias in registry.aliases:
-        if alias.dataset_id == validated_task.dataset_id and alias.source_id == source_id:
+        if (
+            alias.dataset_id == validated_task.dataset_id
+            and alias.source_id == source_id
+            and alias.instrument_id in scoped_instrument_ids
+        ):
+            scoped_alias_rows += 1
+            if scoped_alias_rows > _MAX_SCOPED_ALIAS_ROWS:
+                raise _AliasPlanningBudgetError(
+                    _alias_planning_budget_message(
+                        resource="scoped alias rows",
+                        limit=_MAX_SCOPED_ALIAS_ROWS,
+                        observed=scoped_alias_rows,
+                    )
+                )
             aliases_by_instrument.setdefault(alias.instrument_id, []).append(alias)
 
     global_blockers = _global_blockers()
     fetcher = AkshareStockDailyFetcher()
-    results = tuple(
-        _plan_instrument(
+    resource_estimate = _estimate_plan_resources(
+        scoped_lifecycles,
+        aliases_by_instrument=aliases_by_instrument,
+        fetcher=fetcher,
+        task=validated_task,
+        as_of=as_of,
+        max_window_days=max_window_days,
+    )
+    if resource_estimate.candidate_chunks > _MAX_CANDIDATE_CHUNKS:
+        raise _CandidateChunkBudgetError(
+            _candidate_chunk_budget_message(candidate_chunks=resource_estimate.candidate_chunks)
+        )
+
+    registry_digest = _registry_sha256(registry)
+
+    result_rows: list[InstrumentBackfillResult] = []
+    materialized_chunks = 0
+    materialization_budget = _PlanMaterializationBudget()
+    for lifecycle in scoped_lifecycles:
+        result = _plan_instrument(
             lifecycle,
             aliases=tuple(aliases_by_instrument.get(lifecycle.instrument_id, ())),
             task=validated_task,
@@ -242,9 +310,20 @@ def build_stock_daily_backfill_plan(
             task_sha256=task_digest,
             contract_sha256=contract_digest,
             registry_sha256=registry_digest,
+            remaining_chunk_budget=_MAX_CANDIDATE_CHUNKS - materialized_chunks,
+            materialization_budget=materialization_budget,
         )
-        for lifecycle in scoped_lifecycles
-    )
+        result_chunk_count = len(result.candidate_chunks)
+        if materialized_chunks + result_chunk_count > _MAX_CANDIDATE_CHUNKS:
+            raise _CandidateChunkBudgetError(
+                _candidate_chunk_budget_message(
+                    candidate_chunks=materialized_chunks + result_chunk_count,
+                    during_materialization=True,
+                )
+            )
+        materialized_chunks += result_chunk_count
+        result_rows.append(result)
+    results = tuple(result_rows)
     plan_digest = _plan_sha256(
         plan_version=PLAN_VERSION,
         as_of=as_of,
@@ -303,6 +382,8 @@ def _plan_instrument(
     task_sha256: str,
     contract_sha256: str,
     registry_sha256: str,
+    remaining_chunk_budget: int = _MAX_CANDIDATE_CHUNKS,
+    materialization_budget: _PlanMaterializationBudget | None = None,
 ) -> InstrumentBackfillResult:
     """Plan one lifecycle and retain all boundary, status, and alias blockers."""
     blockers: list[BackfillBlocker] = []
@@ -391,7 +472,12 @@ def _plan_instrument(
         )
         return _instrument_result(lifecycle, chunks, blockers)
 
-    segments = _alias_segments(scope_start, candidate_end, aliases)
+    segments = _alias_segments(
+        scope_start,
+        candidate_end,
+        aliases,
+        materialization_budget=materialization_budget,
+    )
     chunk_index = 0
     for segment_start, segment_end, active_aliases in segments:
         if not active_aliases:
@@ -436,13 +522,24 @@ def _plan_instrument(
                 task_sha256=task_sha256,
                 contract_sha256=contract_sha256,
                 registry_sha256=registry_sha256,
+                max_chunks=remaining_chunk_budget - len(chunks),
             )
-        except ValueError:
+        except _CandidateChunkBudgetError:
+            raise
+        except ValueError as exc:
+            is_unverified_bj_route = "STOCK_DAILY_BSE_ROUTE_UNVERIFIED" in str(exc)
             blockers.append(
                 BackfillBlocker(
-                    reason=BackfillBlockReason.INVALID_PROVIDER_SYMBOL,
+                    reason=(
+                        BackfillBlockReason.BJ_PROVIDER_MAPPING_UNVERIFIED
+                        if is_unverified_bj_route
+                        else BackfillBlockReason.INVALID_PROVIDER_SYMBOL
+                    ),
                     detail=(
-                        "The reviewed alias cannot be represented by the existing stock_daily "
+                        "The provider rejects this Beijing alias until its BSE route is verified. "
+                        "No candidate request was emitted."
+                        if is_unverified_bj_route
+                        else "The reviewed alias cannot be represented by the existing stock_daily "
                         "query validator. No provider query was sent."
                     ),
                     instrument_id=lifecycle.instrument_id,
@@ -459,9 +556,9 @@ def _plan_instrument(
                 BackfillBlocker(
                     reason=BackfillBlockReason.BJ_PROVIDER_MAPPING_UNVERIFIED,
                     detail=(
-                        "The existing query model accepts this Beijing code, but the current "
-                        "Eastmoney job maps every non-6 prefix to market 0 and has no verified "
-                        "BJ routing contract. Candidate chunks are not dispatchable."
+                        "The existing query model accepted this Beijing code, but the current "
+                        "Eastmoney route has not been verified for BSE. Candidate chunks are "
+                        "not dispatchable."
                     ),
                     instrument_id=lifecycle.instrument_id,
                     range_start=segment_start,
@@ -507,20 +604,11 @@ def _alias_segments(
     start: date,
     end: date,
     aliases: tuple[InstrumentAlias, ...],
+    *,
+    materialization_budget: _PlanMaterializationBudget | None = None,
 ) -> tuple[tuple[date, date, tuple[InstrumentAlias, ...]], ...]:
     """Partition a closed range into alias-covered, uncovered, and ambiguous pieces."""
-    starts: dict[date, list[InstrumentAlias]] = {}
-    removals: dict[date, list[InstrumentAlias]] = {}
-    for alias in aliases:
-        alias_start = max(start, alias.valid_from or start)
-        alias_end = min(end, alias.valid_through or end)
-        if alias_start > alias_end:
-            continue
-        starts.setdefault(alias_start, []).append(alias)
-        if alias_end < end:
-            removals.setdefault(alias_end + timedelta(days=1), []).append(alias)
-
-    boundaries = sorted({start, *starts, *removals})
+    starts, removals, boundaries = _alias_events(start, end, aliases)
     active: set[InstrumentAlias] = set()
     result: list[tuple[date, date, tuple[InstrumentAlias, ...]]] = []
     for index, boundary in enumerate(boundaries):
@@ -532,6 +620,8 @@ def _alias_segments(
             boundaries[index + 1] - timedelta(days=1) if index + 1 < len(boundaries) else end
         )
         if boundary <= end and segment_end >= boundary:
+            if materialization_budget is not None:
+                _consume_alias_materialization_budget(materialization_budget, len(active))
             effective_aliases = tuple(
                 sorted(
                     active,
@@ -547,6 +637,191 @@ def _alias_segments(
     return tuple(result)
 
 
+def _alias_events(
+    start: date,
+    end: date,
+    aliases: tuple[InstrumentAlias, ...],
+) -> tuple[
+    dict[date, list[InstrumentAlias]],
+    dict[date, list[InstrumentAlias]],
+    tuple[date, ...],
+]:
+    """Build bounded start/removal events with the planner's closed-date rules."""
+    starts: dict[date, list[InstrumentAlias]] = {}
+    removals: dict[date, list[InstrumentAlias]] = {}
+    for alias in aliases:
+        alias_start = max(start, alias.valid_from or start)
+        alias_end = min(end, alias.valid_through or end)
+        if alias_start > alias_end:
+            continue
+        starts.setdefault(alias_start, []).append(alias)
+        if alias_end < end:
+            removals.setdefault(alias_end + timedelta(days=1), []).append(alias)
+    boundaries = sorted({start, *starts, *removals})
+
+    return starts, removals, tuple(boundaries)
+
+
+def _iter_alias_segment_summaries(
+    start: date,
+    end: date,
+    aliases: tuple[InstrumentAlias, ...],
+) -> Iterator[tuple[date, date, int, InstrumentAlias | None]]:
+    """Sweep alias events without copying or sorting the active aliases per segment."""
+    starts, removals, boundaries = _alias_events(start, end, aliases)
+    active: set[InstrumentAlias] = set()
+    for index, boundary in enumerate(boundaries):
+        for alias in removals.get(boundary, ()):
+            active.discard(alias)
+        for alias in starts.get(boundary, ()):
+            active.add(alias)
+        segment_end = (
+            boundaries[index + 1] - timedelta(days=1) if index + 1 < len(boundaries) else end
+        )
+        if boundary <= end and segment_end >= boundary:
+            unique_alias = next(iter(active)) if len(active) == 1 else None
+            yield boundary, segment_end, len(active), unique_alias
+
+
+def _estimate_plan_resources(
+    lifecycles: tuple[InstrumentLifecycle, ...],
+    *,
+    aliases_by_instrument: dict[str, list[InstrumentAlias]],
+    fetcher: AkshareStockDailyFetcher,
+    task: TaskDefinition,
+    as_of: date,
+    max_window_days: int,
+) -> _PlanResourceEstimate:
+    """Count plan work before sorting active aliases or building requests.
+
+    Closed-boundary events and set-based duplicate handling match
+    ``_alias_segments``. This sweep retains only the active set, integer cost
+    counters, and the sole alias when exactly one is effective.
+    """
+    estimated_chunks = 0
+    alias_segments = 0
+    active_alias_memberships = 0
+    for lifecycle in lifecycles:
+        start = lifecycle.known_start_date
+        if start is None:
+            continue
+        end = _candidate_end(lifecycle, as_of)
+        if start > end:
+            continue
+
+        aliases = tuple(aliases_by_instrument.get(lifecycle.instrument_id, ()))
+        for segment_start, segment_end, active_count, unique_alias in _iter_alias_segment_summaries(
+            start, end, aliases
+        ):
+            if alias_segments >= _MAX_ALIAS_SEGMENTS:
+                raise _AliasPlanningBudgetError(
+                    _alias_planning_budget_message(
+                        resource="alias segments",
+                        limit=_MAX_ALIAS_SEGMENTS,
+                        observed=alias_segments + 1,
+                    )
+                )
+            alias_segments += 1
+            next_memberships = active_alias_memberships + active_count
+            if next_memberships > _MAX_ACTIVE_ALIAS_MEMBERSHIPS:
+                raise _AliasPlanningBudgetError(
+                    _alias_planning_budget_message(
+                        resource="active alias memberships",
+                        limit=_MAX_ACTIVE_ALIAS_MEMBERSHIPS,
+                        observed=next_memberships,
+                    )
+                )
+            active_alias_memberships = next_memberships
+            if active_count != 1 or unique_alias is None:
+                continue
+            try:
+                fetcher.transform_query(
+                    source=task.provider,
+                    market="cn",
+                    symbol=unique_alias.alias,
+                    start_date=segment_start.isoformat(),
+                    end_date=segment_start.isoformat(),
+                    adjust="raw",
+                )
+            except ValueError:
+                # The planner preserves this alias as an invalid-symbol blocker
+                # and does not emit candidate requests for this interval.
+                continue
+
+            inclusive_days = (segment_end - segment_start).days + 1
+            estimated_chunks += (inclusive_days + max_window_days - 1) // max_window_days
+    return _PlanResourceEstimate(
+        candidate_chunks=estimated_chunks,
+        alias_segments=alias_segments,
+        active_alias_memberships=active_alias_memberships,
+    )
+
+
+def _consume_alias_materialization_budget(
+    budget: _PlanMaterializationBudget,
+    active_alias_count: int,
+) -> None:
+    """Enforce plan-wide alias limits before sorting an active segment."""
+    if budget.alias_segments >= _MAX_ALIAS_SEGMENTS:
+        raise _AliasPlanningBudgetError(
+            _alias_planning_budget_message(
+                resource="alias segments",
+                limit=_MAX_ALIAS_SEGMENTS,
+                observed=budget.alias_segments + 1,
+                during_materialization=True,
+            )
+        )
+    next_memberships = budget.active_alias_memberships + active_alias_count
+    if next_memberships > _MAX_ACTIVE_ALIAS_MEMBERSHIPS:
+        raise _AliasPlanningBudgetError(
+            _alias_planning_budget_message(
+                resource="active alias memberships",
+                limit=_MAX_ACTIVE_ALIAS_MEMBERSHIPS,
+                observed=next_memberships,
+                during_materialization=True,
+            )
+        )
+    budget.alias_segments += 1
+    budget.active_alias_memberships = next_memberships
+
+
+def _alias_planning_budget_message(
+    *,
+    resource: str,
+    limit: int,
+    observed: int | None = None,
+    during_materialization: bool = False,
+) -> str:
+    """Explain alias-resource refusal without returning a truncated plan."""
+    phase = "while materializing aliases" if during_materialization else "during preflight"
+    amount = f"observed {observed}" if observed is not None else "would exceed"
+    return (
+        f"alias planning budget exceeded {phase}: {resource} {amount}, exceeding the hard "
+        f"per-plan limit of {limit}; no partial plan was returned. Partition by reviewed "
+        "instrument/time scope; separate plans do not establish full universe or history "
+        "completeness."
+    )
+
+
+def _candidate_chunk_budget_message(
+    *, candidate_chunks: int, during_materialization: bool = False
+) -> str:
+    """Explain deterministic refusal without implying a truncated plan is usable."""
+    if during_materialization:
+        count_description = f"at least {candidate_chunks} candidate chunks would be required"
+        phase = " while materializing requests"
+    else:
+        count_description = f"estimated {candidate_chunks} candidate chunks"
+        phase = " during preflight"
+    return (
+        f"candidate chunk budget exceeded{phase}: {count_description}, exceeding the hard "
+        f"per-plan limit of {_MAX_CANDIDATE_CHUNKS}; no partial plan was returned. Partition "
+        "by reviewed instrument/time scope or increase "
+        "max_window_days within its supported limit; separate plans do not establish full "
+        "universe or history completeness."
+    )
+
+
 def _chunks_for_alias(
     lifecycle: InstrumentLifecycle,
     alias: InstrumentAlias,
@@ -560,6 +835,7 @@ def _chunks_for_alias(
     task_sha256: str,
     contract_sha256: str,
     registry_sha256: str,
+    max_chunks: int = _MAX_CANDIDATE_CHUNKS,
 ) -> tuple[StockDailyBackfillChunk, ...]:
     """Create non-overlapping requests for one effective source-alias interval."""
     chunks: list[StockDailyBackfillChunk] = []
@@ -575,6 +851,13 @@ def _chunks_for_alias(
             end_date=chunk_end.isoformat(),
             adjust="raw",
         )
+        if len(chunks) >= max_chunks:
+            raise _CandidateChunkBudgetError(
+                _candidate_chunk_budget_message(
+                    candidate_chunks=_MAX_CANDIDATE_CHUNKS + 1,
+                    during_materialization=True,
+                )
+            )
         chunk_index = first_chunk_index + len(chunks)
         key_material = {
             "plan_version": PLAN_VERSION,
