@@ -46,7 +46,6 @@ _EVENT_KEYS = frozenset(
         "schema_version",
     }
 )
-_IDENTIFIER = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:/+\-]*\Z", re.ASCII)
 _SHA256 = re.compile(r"[0-9a-f]{64}\Z", re.ASCII)
 _MAX_EVENT_BYTES = 8_192
 _MAX_RECEIPT_TEXT_BYTES = 128
@@ -125,12 +124,10 @@ def receive_metadata_publication_receipt(
 
     Producer identity is a caller-supplied external pin, not authentication.
     Contract digest evidence is preserved exactly as absent or caller-supplied
-    unverified. The upstream publication writer currently accepts Unicode
-    ``dataset_id`` and ``schema_version`` labels, while receipt migration 0008
-    documents ASCII ``Identifier`` fields; this receiver rejects Unicode and
-    other non-``Identifier`` values in both fields until the two contracts are
-    reconciled. The existing publication store's ``_label`` is broader than
-    that expression.
+    unverified. Dataset and schema labels use the publication writer's bounded
+    Unicode label contract. This module does not change the receipt table
+    schema; multi-byte MySQL persistence depends on a matching character-length
+    constraint migration and is not established by this receiver change.
 
     Args:
         connection: Active SQLAlchemy connection in a caller-owned transaction.
@@ -216,9 +213,7 @@ def receive_metadata_publication_receipt(
             raise MetadataPublicationReceiptConflictError(
                 "publication ID and dataset sequence resolve to different receipts"
             ) from identity_duplicate
-        stored_received_at_us = _require_exact_replay(
-            matches[0], values, event.event_json_utf8
-        )
+        stored_received_at_us = _require_exact_replay(matches[0], values, event.event_json_utf8)
         return MetadataPublicationReceiptResult(
             producer_identity=producer_identity,
             publication_id=event.publication_id,
@@ -300,17 +295,6 @@ def _validate_event(event_json_utf8: bytes, event_sha256: str) -> _ValidatedEven
             "event values do not satisfy publication outbox version 1"
         ) from error
 
-    # Migration 0008 documents ASCII Identifier fields. The current publisher's
-    # _label accepts Unicode and other non-Identifier labels, so this is an
-    # explicit compatibility boundary until both contracts are reconciled.
-    if not _IDENTIFIER.fullmatch(candidate.dataset_id):
-        raise MetadataPublicationReceiptError(
-            "Unicode or non-Identifier dataset_id is not compatible with receipt schema 0008"
-        )
-    if not _IDENTIFIER.fullmatch(candidate.schema_version):
-        raise MetadataPublicationReceiptError(
-            "non-Identifier schema_version is not compatible with receipt schema 0008"
-        )
     if canonical_bytes != event_json_utf8:
         raise MetadataPublicationReceiptError(
             "event bytes are not the exact canonical publication-outbox representation"
@@ -490,10 +474,7 @@ def _require_exact_replay(
             "stored event bytes differ from the replayed event"
         )
     received_at_us = row["received_at_us"]
-    if (
-        type(received_at_us) is not int
-        or not 0 <= received_at_us <= _MAX_TIMESTAMP_US
-    ):
+    if type(received_at_us) is not int or not 0 <= received_at_us <= _MAX_TIMESTAMP_US:
         raise MetadataPublicationReceiptConflictError(
             "stored first receive time is outside the receipt schema bounds"
         )
