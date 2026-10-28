@@ -7,11 +7,12 @@ transaction. Filesystem publication and SQL commit are separate operations and
 cannot be made atomic by this module.
 
 Request digests, raw-source fields, unit profiles, and source-attempt values are
-caller declarations. A source-attempt declaration is not linked to the response
-by the current fetch-result contract and must not be treated as proof that a
-particular transport sent these bytes. Retention labels do not establish data
-rights. Captured artifacts do not reconstruct historical point-in-time values,
-quarterly cumulative semantics, or coverage.
+caller declarations. A nonempty fetch trace can be compared with the declared
+attempt and successful response fields, but both Python DTOs remain caller
+supplied and the comparison is not proof that a particular transport sent
+these bytes. Retention labels do not establish data rights. Captured artifacts
+do not reconstruct historical point-in-time values, quarterly cumulative
+semantics, or coverage.
 
 This bridge constrains raw-source identity to ``ths / ths_financial_statement /
 {statement_type}_{periodicity}``. That triple is a new bridge-local convention,
@@ -43,6 +44,9 @@ from opendata.data.providers.ths.models.financial_observation_raw import (
     decode_financial_observation_body,
 )
 from opendata.data.providers.ths.transport.credentials import DEFAULT_FUYAO_API_BASE_URL
+from opendata.data.providers.ths.transport.http_client import (
+    FuyaoTransportAttemptTrace,  # noqa: TC001 -- public DTO annotations resolve at runtime
+)
 from opendata.data.source_attempt_gate import (
     AttemptReservation,
     ReservationStatus,
@@ -87,11 +91,12 @@ class FuyaoCaptureProvenance:
 
 @dataclass(frozen=True, slots=True)
 class FuyaoSourceAttemptDeclaration:
-    """Caller-supplied attempt and reservation values without transport proof.
+    """Caller-supplied attempt and reservation values without gate proof.
 
-    The current fetch result does not expose the transport's generated attempt
-    identity. These exact gate DTOs are checked for shape and expected Fuyao
-    scope, but the bridge cannot authenticate that they belong to this response.
+    When a fetch result includes a local trace, the bridge compares its final
+    request/attempt/reservation projection with these values. Both Python DTOs
+    remain caller-supplied, so this equality check cannot authenticate that the
+    gate actually produced the declaration or that Fuyao processed the response.
     """
 
     attempt: TransportAttempt = field(repr=False)
@@ -100,14 +105,26 @@ class FuyaoSourceAttemptDeclaration:
 
 @dataclass(frozen=True, slots=True)
 class PreparedFuyaoObservationCapture:
-    """Prepared SQL values plus addresses and unverified caller declarations."""
+    """Prepared SQL values plus addresses and process-local attempt metadata.
+
+    A nonempty trace is matched only against caller-supplied declaration fields
+    and the fetch result's success metadata. Both DTOs can be constructed or
+    altered by callers; this is not an authenticated gate record or upstream
+    receipt. Trace values are deliberately omitted from ``repr``.
+    """
 
     prepared: PreparedCapture = field(repr=False)
     manifest_sha256: str
     source_attempt_declaration: FuyaoSourceAttemptDeclaration = field(repr=False)
-    attempt_association_status: Literal["caller_declared_unverified"] = field(
-        default="caller_declared_unverified", init=False
+    attempt_trace: tuple[FuyaoTransportAttemptTrace, ...] = field(
+        default=(), repr=False, compare=False
     )
+    attempt_association_status: Literal[
+        "caller_declared_unverified", "local_trace_matched_unverified"
+    ] = "caller_declared_unverified"
+    source_request_id_match_status: Literal[
+        "not_checked_no_trace", "matched_unverified", "unavailable_unverified"
+    ] = "not_checked_no_trace"
 
 
 def prepare_fuyao_observation_capture(
@@ -126,11 +143,21 @@ def prepare_fuyao_observation_capture(
     exact HTTPX entity bytes, then the existing reader and archive preparation
     API verify the newly written manifest and decode references.
 
+    An empty ``attempt_trace`` preserves the legacy caller-declared behavior.
+    When a trace is present, its final local attempt and successful response
+    fields are compared with the supplied declaration and fetch result before
+    any artifact is written. A match only establishes equality among these
+    caller-supplied in-memory values. It does not authenticate either DTO,
+    independently verify the gate, or prove that Fuyao received or processed
+    the request. A missing trace source request ID is reported explicitly as
+    unavailable and is not inferred from the fetch result.
+
     The returned ``prepared`` value is suitable for
     :func:`persist_prepared_financial_observation_capture` inside a transaction
     opened and committed by the caller. The wrapper preserves the caller's
-    source-attempt declaration as explicitly unverified in-memory metadata; the
-    current SQL archive schema does not persist that declaration.
+    source-attempt declaration and any matched local trace as explicitly
+    unverified in-memory metadata; the current SQL archive schema does not
+    persist either value.
 
     Args:
         fetch_result: Exact response DTO returned by the Fuyao fetcher.
@@ -177,6 +204,10 @@ def prepare_fuyao_observation_capture(
     checked_attempt = _validate_source_attempt(
         source_attempt_declaration,
         observed_at_utc=checked_result.observed_at,
+    )
+    attempt_association_status, source_id_match_status = _match_attempt_trace(
+        checked_result,
+        checked_attempt,
     )
     if type(writer) is not RawResponseArtifactWriter:
         raise FuyaoObservationCaptureBridgeError("writer is not the reviewed exact type")
@@ -234,6 +265,9 @@ def prepare_fuyao_observation_capture(
         prepared=prepared,
         manifest_sha256=captured.manifest_path.stem,
         source_attempt_declaration=checked_attempt,
+        attempt_trace=checked_result.attempt_trace,
+        attempt_association_status=attempt_association_status,
+        source_request_id_match_status=source_id_match_status,
     )
 
 
@@ -403,6 +437,59 @@ def _validate_source_attempt(
             reserved_at_us=reservation.reserved_at_us,
         ),
     )
+
+
+def _match_attempt_trace(
+    result: FinancialObservationFetchResult,
+    declaration: FuyaoSourceAttemptDeclaration,
+) -> tuple[
+    Literal["caller_declared_unverified", "local_trace_matched_unverified"],
+    Literal["not_checked_no_trace", "matched_unverified", "unavailable_unverified"],
+]:
+    """Match the successful local trace projection to supplied caller values.
+
+    The fetch-result boundary has already checked that a nonempty trace is a
+    structurally valid immutable tuple with a successful final response. This
+    function adds equality against the separately supplied declaration before
+    the raw evidence writer runs. It provides no authenticity guarantee.
+    """
+    trace = result.attempt_trace
+    if not trace:
+        return "caller_declared_unverified", "not_checked_no_trace"
+
+    final_attempt = trace[-1]
+    attempt = declaration.attempt
+    reservation = declaration.reservation
+    if (
+        final_attempt.transport_request_id != attempt.request_id
+        or final_attempt.attempt_id != attempt.attempt_id
+        or final_attempt.attempt_no != attempt.attempt_no
+        or final_attempt.gate_status != reservation.status.value
+        or final_attempt.request_budget_reserved is not True
+        or final_attempt.reserved_at_us != reservation.reserved_at_us
+    ):
+        raise FuyaoObservationCaptureBridgeError(
+            "final local attempt trace differs from the caller declaration"
+        )
+    if (
+        final_attempt.http_status != result.status_code
+        or final_attempt.outcome != "response_observed"
+        or final_attempt.failure_category is not None
+    ):
+        raise FuyaoObservationCaptureBridgeError(
+            "final local attempt trace differs from the successful fetch result"
+        )
+    if final_attempt.source_request_id is None:
+        source_id_status: Literal["matched_unverified", "unavailable_unverified"] = (
+            "unavailable_unverified"
+        )
+    else:
+        if final_attempt.source_request_id != result.source_request_id:
+            raise FuyaoObservationCaptureBridgeError(
+                "final local attempt trace source request ID differs from the fetch result"
+            )
+        source_id_status = "matched_unverified"
+    return "local_trace_matched_unverified", source_id_status
 
 
 def _epoch_microseconds(value: datetime) -> int:

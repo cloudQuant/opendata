@@ -7,7 +7,7 @@ import json
 from dataclasses import replace
 from datetime import date, datetime, timedelta, timezone
 from types import SimpleNamespace
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, get_type_hints
 from urllib.parse import urlsplit
 
 import pytest
@@ -26,6 +26,7 @@ from opendata.data.providers.ths.models.financial_observation_raw import (
     decode_financial_observation_body,
 )
 from opendata.data.providers.ths.transport.credentials import DEFAULT_FUYAO_API_BASE_URL
+from opendata.data.providers.ths.transport.http_client import FuyaoTransportAttemptTrace
 from opendata.data.source_attempt_gate import (
     AttemptReservation,
     ReservationStatus,
@@ -56,14 +57,20 @@ _OBSERVED_AT = datetime(2025, 4, 2, 4, 0, tzinfo=timezone.utc)
 _INSTRUMENT_ID = "600519.SH"
 
 
-def _source_attempt(*, reserved_at_us: int | None = None) -> FuyaoSourceAttemptDeclaration:
+def _source_attempt(
+    *,
+    attempt_id: str = "capture-attempt-0001",
+    request_id: str = "capture-request-0001",
+    attempt_no: int = 1,
+    reserved_at_us: int | None = None,
+) -> FuyaoSourceAttemptDeclaration:
     """Build a successful but explicitly caller-declared gate attempt."""
     host = urlsplit(DEFAULT_FUYAO_API_BASE_URL).hostname
     assert host is not None
     attempt = TransportAttempt(
-        attempt_id="capture-attempt-0001",
-        request_id="capture-request-0001",
-        attempt_no=1,
+        attempt_id=attempt_id,
+        request_id=request_id,
+        attempt_no=attempt_no,
         grant_id="grant-0001",
         expected_revision=1,
         source="ths",
@@ -110,6 +117,8 @@ def _fetch_result(
     observed_at: datetime = _OBSERVED_AT,
     disclosure_date: date = date(2025, 3, 31),
     include_quarantined_row: bool = False,
+    attempt_trace: tuple[FuyaoTransportAttemptTrace, ...] = (),
+    status_code: int = 200,
 ) -> FinancialObservationFetchResult:
     """Build a synthetic Fuyao-envelope response and its exact decoded result."""
     checked_profile = profile or _profile()
@@ -164,7 +173,7 @@ def _fetch_result(
         source_request_id=decoded.source_request_id,
         body_sha256=hashlib.sha256(body).hexdigest(),
         observed_at=observed_at,
-        status_code=200,
+        status_code=status_code,
         unit_mapping_version_declared=checked_profile.version,
         unit_mapping_sha256_declared=checked_profile.mapping_sha256_declared,
         unit_mapping_evidence_kind=checked_profile.evidence_kind,
@@ -176,6 +185,30 @@ def _fetch_result(
         observations=decoded.observations,
         quarantined_rows=decoded.quarantined_rows,
         request_summary_sha256=request_digest,
+        attempt_trace=attempt_trace,
+    )
+
+
+def _attempt_trace(
+    declaration: FuyaoSourceAttemptDeclaration,
+    *,
+    source_request_id: str | None,
+    attempt_no: int | None = None,
+    http_status: int = 200,
+    failure_category: str | None = None,
+) -> FuyaoTransportAttemptTrace:
+    """Project the synthetic local attempt into the fetcher's trace DTO."""
+    return FuyaoTransportAttemptTrace(
+        transport_request_id=declaration.attempt.request_id,
+        attempt_id=declaration.attempt.attempt_id,
+        attempt_no=(declaration.attempt.attempt_no if attempt_no is None else attempt_no),
+        reserved_at_us=declaration.reservation.reserved_at_us,
+        gate_status=declaration.reservation.status.value,
+        request_budget_reserved=True,
+        http_status=http_status,
+        outcome="response_observed",
+        failure_category=failure_category,
+        source_request_id=source_request_id,
     )
 
 
@@ -193,16 +226,31 @@ def _provenance() -> FuyaoCaptureProvenance:
 
 
 def _prepare(
-    root: Path, result: FinancialObservationFetchResult
+    root: Path,
+    result: FinancialObservationFetchResult,
+    declaration: FuyaoSourceAttemptDeclaration | None = None,
 ) -> PreparedFuyaoObservationCapture:
     """Invoke the bridge with only local synthetic inputs."""
     return prepare_fuyao_observation_capture(
         result,
         unit_profile=_profile(),
         provenance=_provenance(),
-        source_attempt_declaration=_source_attempt(),
+        source_attempt_declaration=declaration or _source_attempt(),
         writer=RawResponseArtifactWriter(root, max_response_bytes=1024 * 1024),
     )
+
+
+def test_capture_wrapper_type_hints_and_legacy_constructor_remain_compatible() -> None:
+    hints = get_type_hints(PreparedFuyaoObservationCapture)
+    legacy_wrapper = PreparedFuyaoObservationCapture(
+        object(),  # type: ignore[arg-type]
+        "a" * 64,
+        _source_attempt(),
+    )
+
+    assert hints["attempt_trace"] == tuple[FuyaoTransportAttemptTrace, ...]
+    assert legacy_wrapper.attempt_trace == ()
+    assert legacy_wrapper.attempt_association_status == "caller_declared_unverified"
 
 
 def test_bridge_archives_exact_entity_and_returns_store_prepared_values(
@@ -216,6 +264,8 @@ def test_bridge_archives_exact_entity_and_returns_store_prepared_values(
 
     assert type(outcome.prepared) is PreparedCapture
     assert outcome.attempt_association_status == "caller_declared_unverified"
+    assert outcome.source_request_id_match_status == "not_checked_no_trace"
+    assert outcome.attempt_trace == ()
     assert len(outcome.manifest_sha256) == 64
     assert outcome.manifest_sha256 in {path.stem for path in (root / "manifests").glob("*/*.json")}
     reader = RawResponseArtifactReader(root)
@@ -310,6 +360,166 @@ def test_attempt_reservation_after_observation_fails_before_writing(
             source_attempt_declaration=_source_attempt(reserved_at_us=reserved_after_response),
             writer=RawResponseArtifactWriter(root),
         )
+
+    assert not root.exists()
+
+
+@pytest.mark.parametrize("status_code", (200, 201))
+def test_matching_single_attempt_trace_is_preserved_as_unverified_metadata(
+    tmp_path: Path,
+    status_code: int,
+) -> None:
+    root = tmp_path / "matched-single-trace"
+    declaration = _source_attempt()
+    fetch_result = _fetch_result(status_code=status_code)
+    trace = _attempt_trace(
+        declaration,
+        source_request_id=fetch_result.source_request_id,
+        http_status=fetch_result.status_code,
+    )
+    fetch_result = replace(fetch_result, attempt_trace=(trace,))
+
+    outcome = _prepare(root, fetch_result, declaration)
+
+    assert outcome.attempt_trace == (trace,)
+    assert outcome.attempt_association_status == "local_trace_matched_unverified"
+    assert outcome.source_request_id_match_status == "matched_unverified"
+    assert "capture-request-0001" not in repr(outcome)
+
+
+def test_retry_trace_matches_only_its_final_successful_attempt(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "matched-retry-trace"
+    declaration = _source_attempt(
+        attempt_id="capture-attempt-0002",
+        attempt_no=2,
+    )
+    fetch_result = _fetch_result()
+    retry = FuyaoTransportAttemptTrace(
+        transport_request_id=declaration.attempt.request_id,
+        attempt_id="capture-attempt-0001",
+        attempt_no=1,
+        reserved_at_us=declaration.reservation.reserved_at_us - 1,
+        gate_status=ReservationStatus.RESERVED_NEW.value,
+        request_budget_reserved=True,
+        http_status=503,
+        outcome="response_observed",
+        failure_category="retryable_http_status",
+    )
+    final = _attempt_trace(
+        declaration,
+        source_request_id=fetch_result.source_request_id,
+        http_status=fetch_result.status_code,
+    )
+    fetch_result = replace(fetch_result, attempt_trace=(retry, final))
+
+    outcome = _prepare(root, fetch_result, declaration)
+
+    assert outcome.attempt_trace == (retry, final)
+    assert outcome.attempt_association_status == "local_trace_matched_unverified"
+    assert outcome.source_request_id_match_status == "matched_unverified"
+
+
+def test_matching_trace_without_source_request_id_marks_id_unavailable(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "missing-source-id-trace"
+    declaration = _source_attempt()
+    fetch_result = _fetch_result()
+    trace = _attempt_trace(
+        declaration,
+        source_request_id=None,
+        http_status=fetch_result.status_code,
+    )
+    fetch_result = replace(fetch_result, attempt_trace=(trace,))
+
+    outcome = _prepare(root, fetch_result, declaration)
+
+    assert outcome.attempt_association_status == "local_trace_matched_unverified"
+    assert outcome.source_request_id_match_status == "unavailable_unverified"
+
+
+@pytest.mark.parametrize(
+    ("attempt_field", "replacement"),
+    (
+        ("request_id", "capture-request-mismatch"),
+        ("attempt_id", "capture-attempt-mismatch"),
+        ("attempt_no", 2),
+    ),
+)
+def test_trace_identity_mismatch_with_declaration_fails_before_artifact_write(
+    tmp_path: Path,
+    attempt_field: str,
+    replacement: str | int,
+) -> None:
+    root = tmp_path / "must-remain-absent"
+    declaration = _source_attempt()
+    fetch_result = _fetch_result()
+    trace = _attempt_trace(
+        declaration,
+        source_request_id=fetch_result.source_request_id,
+    )
+    fetch_result = replace(fetch_result, attempt_trace=(trace,))
+    mismatched_attempt = replace(declaration.attempt, **{attempt_field: replacement})
+    mismatched_declaration = replace(declaration, attempt=mismatched_attempt)
+
+    with pytest.raises(FuyaoObservationCaptureBridgeError, match="differs from the caller"):
+        _prepare(root, fetch_result, mismatched_declaration)
+
+    assert not root.exists()
+
+
+def test_trace_reservation_time_mismatch_fails_before_artifact_write(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "must-remain-absent"
+    declaration = _source_attempt()
+    fetch_result = _fetch_result()
+    trace = _attempt_trace(
+        declaration,
+        source_request_id=fetch_result.source_request_id,
+    )
+    fetch_result = replace(fetch_result, attempt_trace=(trace,))
+    mismatched_declaration = _source_attempt(
+        reserved_at_us=declaration.reservation.reserved_at_us - 1
+    )
+
+    with pytest.raises(FuyaoObservationCaptureBridgeError, match="differs from the caller"):
+        _prepare(root, fetch_result, mismatched_declaration)
+
+    assert not root.exists()
+
+
+@pytest.mark.parametrize(
+    ("trace_field", "replacement", "message"),
+    (
+        ("gate_status", "RESERVED_REPLAY", "boundary validation"),
+        ("request_budget_reserved", False, "boundary validation"),
+        ("http_status", 201, "boundary validation"),
+        ("outcome", "outcome_unknown", "boundary validation"),
+        ("failure_category", "final_failure", "boundary validation"),
+        ("source_request_id", "different-source-id", "boundary validation"),
+    ),
+)
+def test_invalid_final_trace_field_fails_before_artifact_write(
+    tmp_path: Path,
+    trace_field: str,
+    replacement: object,
+    message: str,
+) -> None:
+    root = tmp_path / "must-remain-absent"
+    declaration = _source_attempt()
+    fetch_result = _fetch_result()
+    trace = _attempt_trace(
+        declaration,
+        source_request_id=fetch_result.source_request_id,
+    )
+    fetch_result = replace(fetch_result, attempt_trace=(trace,))
+    object.__setattr__(trace, trace_field, replacement)
+
+    with pytest.raises(FuyaoObservationCaptureBridgeError, match=message):
+        _prepare(root, fetch_result, declaration)
 
     assert not root.exists()
 
