@@ -41,6 +41,7 @@ from sqlalchemy import (
     insert,
     or_,
     select,
+    text,
     update,
 )
 from sqlalchemy.dialects.mysql import MEDIUMTEXT, VARCHAR
@@ -54,7 +55,7 @@ from opendata.data.capture_selection import (
 )
 
 if TYPE_CHECKING:
-    from sqlalchemy.sql.selectable import Subquery
+    from sqlalchemy.sql.selectable import Select, Subquery
 
 MAX_ID_LENGTH = 128
 MAX_IDEMPOTENCY_KEY_LENGTH = 256
@@ -64,6 +65,26 @@ MAX_PUBLICATION_RECORDS = 100_000
 MAX_SNAPSHOT_RECORDS = 100_000
 MAX_COVERAGE_RECORDS = 100_000
 MAX_COVERAGE_SCAN_BYTES = 64 * 1024 * 1024
+MAX_CAPTURE_DISCOVERY_ROWS = 10_000
+_CAPTURE_DISCOVERY_INDEX_NAME = "ix_od_fact_capture_discovery"
+_CAPTURE_DISCOVERY_INDEX_COLUMNS = (
+    "dataset_id",
+    "publication_id",
+    "instrument_id",
+    "publication_sequence",
+    "is_deleted",
+    "observed_at",
+    "capture_id",
+)
+_CAPTURE_DISCOVERY_BINARY_COLUMNS = ("dataset_id", "instrument_id", "capture_id")
+_MYSQL_CAPTURE_DISCOVERY_INDEX_METADATA_SQL = (
+    "SELECT INDEX_NAME, NON_UNIQUE, SEQ_IN_INDEX, COLUMN_NAME, SUB_PART, "
+    "INDEX_TYPE, IS_VISIBLE, COLLATION FROM information_schema.STATISTICS "
+    "WHERE TABLE_SCHEMA = DATABASE() "
+    "AND TABLE_NAME = 'od_published_fact_versions' "
+    "AND INDEX_NAME = :index_name ORDER BY SEQ_IN_INDEX"
+)
+CAPTURE_DISCOVERY_CURSOR_TTL = timedelta(hours=24)
 VISIBLE_RECORD_SET_ALGORITHM = "visible-record-set-v1"
 VISIBLE_RECORD_SET_SORT = "business-date-null-last-date-key:utf8-lex-v1"
 VISIBLE_RECORD_HASH_ALGORITHM = "normalize-records-canonical-v1"
@@ -94,6 +115,7 @@ _BEARER_VALUE = re.compile(r"^\s*bearer\s+\S+", re.IGNORECASE)
 _COMMON_SECRET_VALUE = re.compile(
     r"^(?:sk-[A-Za-z0-9]{16,}|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{20,})$"
 )
+_CAPTURE_DISCOVERY_INSTRUMENT_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:/+\-]*", re.ASCII)
 
 PUBLICATION_METADATA = MetaData()
 
@@ -375,6 +397,22 @@ class PublishedPage:
     snapshot: SnapshotRecord
 
 
+@dataclass(frozen=True, slots=True)
+class CaptureDiscovery:
+    """One capture observed in the exact publication batch."""
+
+    capture_id: str
+    observed_at: datetime
+
+
+@dataclass(frozen=True, slots=True)
+class CaptureDiscoveryPage:
+    """A bounded page of captures from one exact publication batch."""
+
+    items: tuple[CaptureDiscovery, ...]
+    next_cursor: str | None
+
+
 class PublicationConflictError(ValueError):
     """Raised when an idempotency key is reused with changed publication input."""
 
@@ -409,6 +447,26 @@ class CoverageRecordIntegrityError(ValueError):
 
 class CoverageSnapshotConsistencyError(ValueError):
     """Raised when the database cannot provide a stable publication read snapshot."""
+
+
+class CaptureDiscoveryError(ValueError):
+    """Raised when a source-native capture discovery request is invalid."""
+
+
+class CaptureDiscoveryCursorError(CaptureDiscoveryError):
+    """Raised when a capture discovery cursor is malformed or out of scope."""
+
+
+class CaptureDiscoveryLimitError(CaptureDiscoveryError):
+    """Raised instead of returning a partial capture set over the row budget."""
+
+
+class CaptureDiscoveryRecordIntegrityError(CaptureDiscoveryError):
+    """Raised when publication capture metadata is missing or inconsistent."""
+
+
+class CaptureDiscoveryConsistencyError(CaptureDiscoveryError):
+    """Raised when the publication and its facts cannot be read atomically."""
 
 
 def publish_in_connection(
@@ -675,6 +733,254 @@ class PublicationStore:
             else:
                 transaction.commit()
                 return publication
+
+    def list_capture_discovery(
+        self,
+        dataset_id: str,
+        publication_id: str,
+        *,
+        expected_publication: PublicationRecord,
+        expected_contract_sha256: str,
+        instrument_id: str,
+        page_size: int = 100,
+        cursor: str | None = None,
+        access_scope: str = "default",
+    ) -> CaptureDiscoveryPage:
+        """List captures written by one exact publication batch for one instrument.
+
+        This deliberately does not search earlier publication sequences and
+        must not be interpreted as a latest or full-history capture index. A
+        missing instrument in this batch returns an empty page; it does not
+        establish that the instrument has never had data. Results are deduped
+        by capture ID and ordered by source ``observed_at`` descending, then
+        capture ID ascending. Every row for a capture must carry the same
+        canonical UTC observation timestamp. This metadata describes retrieval
+        time and makes no point-in-time availability claim. The expected
+        publication and resolved contract fingerprint are rechecked inside the
+        same stable read transaction as the fact query, closing the gap between
+        API authorization/contract resolution and these rows.
+
+        The publication and returned-row cap is
+        ``MAX_CAPTURE_DISCOVERY_ROWS``; exceeding it fails rather than
+        returning a truncated result. The store verifies the exact 0017 index
+        shape before querying and forces its five-column equality prefix on
+        MySQL. The returned-row cap is not a physical I/O bound: metadata
+        checks and a selected index do not bound pages touched, MVCC visibility
+        work, or engine-level reads. Treat this as an experimental SQL slice;
+        the API remains disabled until a separate MySQL query-plan acceptance
+        validates the deployed plan.
+
+        Args:
+            dataset_id: Dataset containing the pinned publication.
+            publication_id: Exact immutable publication identifier.
+            expected_publication: Publication metadata already resolved and
+                authorized by the API request, which must still match this
+                transaction's publication row exactly.
+            expected_contract_sha256: Canonical fingerprint of the reviewed
+                contract resolved by the API request and pinned in provenance.
+            instrument_id: One source instrument in the publication batch.
+            page_size: Number of capture summaries to return, at most
+                ``MAX_PAGE_SIZE``.
+            cursor: Optional HMAC-authenticated continuation token.
+            access_scope: Caller authorization scope bound into the cursor.
+
+        Returns:
+            A bounded capture page from the exact revalidated publication.
+
+        Raises:
+            CaptureDiscoveryCursorError: If the cursor is malformed, expired,
+                or bound to another publication, instrument, page size, or
+                access scope.
+            CaptureDiscoveryLimitError: If the publication or rows exceed the
+                discovery work budget.
+            CaptureDiscoveryRecordIntegrityError: If source capture metadata
+                is missing, malformed, or inconsistent.
+            CaptureDiscoveryConsistencyError: If the database cannot provide
+                one stable read transaction for publication metadata and rows.
+            PublicationContractConflictError: If publication metadata or its
+                pinned contract fingerprint changed after API preflight.
+            ValueError: If an input identifier or page bound is invalid.
+        """
+        dataset = _identifier(dataset_id, "dataset_id")
+        publication_key = _hex_identifier(publication_id, "publication_id")
+        contract_hash = _sha256_value(expected_contract_sha256, "expected_contract_sha256")
+        instrument = _validate_capture_discovery_instrument(instrument_id)
+        page = _page_limit(page_size, "page_size", max_value=MAX_PAGE_SIZE)
+        scope = _label(access_scope, "access_scope", MAX_ID_LENGTH)
+        if not isinstance(expected_publication, PublicationRecord):
+            raise TypeError("expected_publication must be a PublicationRecord")
+        if (
+            expected_publication.dataset_id != dataset
+            or expected_publication.publication_id != publication_key
+            or expected_publication.provenance.get("contract_sha256") != contract_hash
+        ):
+            raise PublicationContractConflictError(
+                "capture discovery expected publication pin is inconsistent"
+            )
+
+        with self._engine.connect() as connection:
+            try:
+                transaction = _begin_capture_discovery_read_transaction(connection)
+            except CaptureDiscoveryConsistencyError:
+                raise
+            try:
+                if connection.dialect.name == "mysql":
+                    _require_capture_discovery_transactional_tables(connection)
+                _require_capture_discovery_index(connection)
+                publication_row = (
+                    connection.execute(
+                        select(PUBLICATIONS).where(
+                            PUBLICATIONS.c.dataset_id == dataset,
+                            PUBLICATIONS.c.publication_id == publication_key,
+                        )
+                    )
+                    .mappings()
+                    .first()
+                )
+                if publication_row is None:
+                    raise PublicationContractConflictError(
+                        "capture discovery publication disappeared after preflight"
+                    )
+
+                persisted_publication = _publication_from_row(publication_row)
+                if (
+                    persisted_publication != expected_publication
+                    or persisted_publication.provenance.get("contract_sha256") != contract_hash
+                ):
+                    raise PublicationContractConflictError(
+                        "capture discovery publication contract changed after preflight"
+                    )
+
+                sequence = persisted_publication.sequence
+                publication_count = persisted_publication.record_count
+                if type(sequence) is not int or sequence < 1:
+                    raise CaptureDiscoveryRecordIntegrityError(
+                        "stored publication sequence is invalid"
+                    )
+                if type(publication_count) is not int or publication_count < 0:
+                    raise CaptureDiscoveryRecordIntegrityError(
+                        "stored publication row count is invalid"
+                    )
+                if publication_count > MAX_CAPTURE_DISCOVERY_ROWS:
+                    raise CaptureDiscoveryLimitError(
+                        "publication exceeds the capture discovery row budget"
+                    )
+
+                cursor_position = (
+                    self._decode_capture_discovery_cursor(
+                        cursor,
+                        dataset=dataset,
+                        publication_key=publication_key,
+                        sequence=sequence,
+                        instrument=instrument,
+                        page_size=page,
+                        access_scope=scope,
+                    )
+                    if cursor is not None
+                    else None
+                )
+                statement = _capture_discovery_fact_statement(
+                    dataset=dataset,
+                    publication_key=publication_key,
+                    sequence=sequence,
+                    instrument=instrument,
+                    dialect_name=connection.dialect.name,
+                )
+                rows = connection.execute(statement).mappings().all()
+                if len(rows) > MAX_CAPTURE_DISCOVERY_ROWS:
+                    raise CaptureDiscoveryLimitError(
+                        "publication capture rows exceed the discovery row budget"
+                    )
+                if len(rows) > publication_count:
+                    raise CaptureDiscoveryRecordIntegrityError(
+                        "capture rows exceed the stored publication row count"
+                    )
+
+                capture_times: dict[str, datetime] = {}
+                for row in rows:
+                    capture_id = row["capture_id"]
+                    try:
+                        selector = validate_selector_pair(
+                            instrument_id=instrument,
+                            capture_id=capture_id,
+                        )
+                    except InstrumentCaptureSelectionError as exc:
+                        raise CaptureDiscoveryRecordIntegrityError(
+                            "stored capture selector is invalid"
+                        ) from exc
+                    if selector is None:
+                        raise CaptureDiscoveryRecordIntegrityError(
+                            "stored capture selector is missing"
+                        )
+                    observed_at = _capture_discovery_observed_at(row["observed_at"])
+                    previous = capture_times.get(selector.capture_id)
+                    if previous is not None and previous != observed_at:
+                        raise CaptureDiscoveryRecordIntegrityError(
+                            "one capture has inconsistent observation timestamps"
+                        )
+                    capture_times[selector.capture_id] = observed_at
+
+                ordered = sorted(
+                    (
+                        CaptureDiscovery(capture_id=capture_id, observed_at=observed_at)
+                        for capture_id, observed_at in capture_times.items()
+                    ),
+                    key=lambda item: (-_datetime_to_us(item.observed_at), item.capture_id),
+                )
+                if cursor_position is not None:
+                    last_observed_at, last_capture_id = cursor_position
+                    ordered = [
+                        item
+                        for item in ordered
+                        if item.observed_at < last_observed_at
+                        or (
+                            item.observed_at == last_observed_at
+                            and item.capture_id > last_capture_id
+                        )
+                    ]
+
+                has_more = len(ordered) > page
+                items = tuple(ordered[:page])
+                next_cursor = (
+                    self._encode_capture_discovery_cursor(
+                        dataset=dataset,
+                        publication_key=publication_key,
+                        sequence=sequence,
+                        instrument=instrument,
+                        page_size=page,
+                        access_scope=scope,
+                        last=items[-1],
+                    )
+                    if has_more and items
+                    else None
+                )
+            except (
+                CaptureDiscoveryCursorError,
+                CaptureDiscoveryLimitError,
+                CaptureDiscoveryRecordIntegrityError,
+                CaptureDiscoveryConsistencyError,
+                PublicationContractConflictError,
+            ):
+                _rollback_coverage_read(transaction)
+                raise
+            except Exception as exc:
+                _rollback_coverage_read(transaction)
+                if isinstance(exc, SQLAlchemyError):
+                    raise CaptureDiscoveryConsistencyError(
+                        "capture publication and rows could not be read consistently"
+                    ) from exc
+                raise CaptureDiscoveryRecordIntegrityError(
+                    "capture publication metadata could not be verified"
+                ) from exc
+            try:
+                transaction.commit()
+            except Exception as exc:
+                if isinstance(exc, SQLAlchemyError):
+                    raise CaptureDiscoveryConsistencyError(
+                        "capture publication read could not commit consistently"
+                    ) from exc
+                raise
+        return CaptureDiscoveryPage(items=items, next_cursor=next_cursor)
 
     def list_datasets(self, *, limit: int = 1_000) -> tuple[DatasetSummary, ...]:
         """Return current published dataset heads, excluding empty heads."""
@@ -1227,6 +1533,106 @@ class PublicationStore:
             next_cursor = self._encode_cursor(snapshot, last.business_date, last.business_key)
         return PublishedPage(records=records, next_cursor=next_cursor, snapshot=snapshot)
 
+    def _encode_capture_discovery_cursor(
+        self,
+        *,
+        dataset: str,
+        publication_key: str,
+        sequence: int,
+        instrument: str,
+        page_size: int,
+        access_scope: str,
+        last: CaptureDiscovery,
+    ) -> str:
+        """Sign one capture-discovery continuation and all request bindings."""
+        expires_at_us = _datetime_to_us(datetime.now(_UTC) + CAPTURE_DISCOVERY_CURSOR_TTL)
+        payload = {
+            "version": 1,
+            "dataset_id": dataset,
+            "publication_id": publication_key,
+            "publication_sequence": sequence,
+            "instrument_id": instrument,
+            "page_size": page_size,
+            "access_scope": access_scope,
+            "observed_at": _timestamp(last.observed_at, "cursor.observed_at"),
+            "capture_id": last.capture_id,
+            "expires_at_us": expires_at_us,
+        }
+        encoded = _base64url(_canonical_json(payload).encode("utf-8"))
+        signature = _base64url(
+            hmac.new(self._cursor_signing_key, encoded.encode("ascii"), hashlib.sha256).digest()
+        )
+        token = f"{encoded}.{signature}"
+        if len(token) > MAX_CURSOR_BYTES:
+            raise CaptureDiscoveryCursorError("capture cursor exceeds its size limit")
+        return token
+
+    def _decode_capture_discovery_cursor(
+        self,
+        token: str,
+        *,
+        dataset: str,
+        publication_key: str,
+        sequence: int,
+        instrument: str,
+        page_size: int,
+        access_scope: str,
+    ) -> tuple[datetime, str]:
+        """Verify a signed cursor and return its stable keyset position."""
+        if not isinstance(token, str) or not token or len(token) > MAX_CURSOR_BYTES:
+            raise CaptureDiscoveryCursorError("capture cursor is malformed or too large")
+        pieces = token.split(".")
+        if len(pieces) != 2:
+            raise CaptureDiscoveryCursorError("capture cursor is malformed")
+        encoded, signature = pieces
+        base64url_characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+        if (
+            not encoded
+            or len(signature) != 43
+            or any(char not in base64url_characters for char in encoded)
+            or any(char not in base64url_characters for char in signature)
+        ):
+            raise CaptureDiscoveryCursorError("capture cursor encoding is invalid")
+        expected = _base64url(
+            hmac.new(self._cursor_signing_key, encoded.encode("ascii"), hashlib.sha256).digest()
+        )
+        if not hmac.compare_digest(signature, expected):
+            raise CaptureDiscoveryCursorError("capture cursor signature is invalid")
+        try:
+            raw = _base64url_decode(encoded)
+            payload = json.loads(raw.decode("utf-8"), object_pairs_hook=_reject_duplicate_keys)
+        except (ValueError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise CaptureDiscoveryCursorError("capture cursor payload is invalid") from exc
+        if not isinstance(payload, dict):
+            raise CaptureDiscoveryCursorError("capture cursor payload is invalid")
+        expected_binding = {
+            "version": 1,
+            "dataset_id": dataset,
+            "publication_id": publication_key,
+            "publication_sequence": sequence,
+            "instrument_id": instrument,
+            "page_size": page_size,
+            "access_scope": access_scope,
+        }
+        if any(payload.get(key) != value for key, value in expected_binding.items()):
+            raise CaptureDiscoveryCursorError("capture cursor belongs to another request scope")
+        try:
+            capture = validate_selector_pair(
+                instrument_id=instrument,
+                capture_id=payload.get("capture_id"),
+            )
+            observed_at = _capture_discovery_observed_at(payload.get("observed_at"))
+        except (InstrumentCaptureSelectionError, CaptureDiscoveryRecordIntegrityError) as exc:
+            raise CaptureDiscoveryCursorError("capture cursor position is invalid") from exc
+        if capture is None:
+            raise CaptureDiscoveryCursorError("capture cursor position is invalid")
+        expires_at_us = payload.get("expires_at_us")
+        if type(expires_at_us) is not int or expires_at_us <= 0:
+            raise CaptureDiscoveryCursorError("capture cursor expiry is invalid")
+        if _datetime_to_us(datetime.now(_UTC)) >= expires_at_us:
+            raise CaptureDiscoveryCursorError("capture cursor has expired")
+        return observed_at, capture.capture_id
+
     def _encode_cursor(
         self, snapshot: SnapshotRecord, last_date: date | None, last_key: str
     ) -> str:
@@ -1448,6 +1854,184 @@ def _begin_coverage_read_transaction(connection: Connection) -> RootTransaction:
     )
 
 
+def _begin_capture_discovery_read_transaction(connection: Connection) -> RootTransaction:
+    """Start the same physical/repeatable snapshot required for discovery reads."""
+    try:
+        return _begin_coverage_read_transaction(connection)
+    except CoverageSnapshotConsistencyError as exc:
+        raise CaptureDiscoveryConsistencyError(
+            "database cannot provide a stable capture discovery snapshot"
+        ) from exc
+
+
+def _require_capture_discovery_transactional_tables(connection: Connection) -> None:
+    """Require transactional MySQL publication and fact tables for discovery."""
+    try:
+        _require_transactional_coverage_tables(connection)
+    except CoverageSnapshotConsistencyError as exc:
+        raise CaptureDiscoveryConsistencyError(
+            "MySQL capture discovery requires publication and fact tables to use InnoDB"
+        ) from exc
+
+
+def _require_capture_discovery_index(connection: Connection) -> None:
+    """Require the visible, full-column 0017 lookup index on a supported dialect."""
+    dialect_name = connection.dialect.name
+    try:
+        if dialect_name == "sqlite":
+            _require_sqlite_capture_discovery_index(connection)
+            return
+        if dialect_name == "mysql":
+            _require_mysql_capture_discovery_index(connection)
+            return
+        raise CaptureDiscoveryConsistencyError(
+            "capture discovery requires a verified SQLite or MySQL index"
+        )
+    except CaptureDiscoveryConsistencyError:
+        raise
+    except Exception as exc:
+        raise CaptureDiscoveryConsistencyError(
+            "capture discovery index could not be verified"
+        ) from exc
+
+
+def _require_sqlite_capture_discovery_index(connection: Connection) -> None:
+    """Require SQLite's actual index key order and effective comparison rules."""
+    indexes = (
+        connection.exec_driver_sql('PRAGMA index_list("od_published_fact_versions")')
+        .mappings()
+        .all()
+    )
+    matches = [row for row in indexes if row.get("name") == _CAPTURE_DISCOVERY_INDEX_NAME]
+    if (
+        len(matches) != 1
+        or matches[0].get("unique") not in (0, False)
+        or matches[0].get("origin") != "c"
+        or matches[0].get("partial") not in (0, False)
+    ):
+        raise CaptureDiscoveryConsistencyError(
+            "capture discovery requires the reviewed SQLite index shape"
+        )
+
+    parts = (
+        connection.exec_driver_sql(
+            'SELECT seqno, name, "desc" AS descending, coll, "key" AS is_key '
+            "FROM pragma_index_xinfo(:index_name) ORDER BY seqno",
+            {"index_name": _CAPTURE_DISCOVERY_INDEX_NAME},
+        )
+        .mappings()
+        .all()
+    )
+    key_parts = tuple(row for row in parts if row.get("is_key") == 1)
+    if (
+        len(key_parts) != len(_CAPTURE_DISCOVERY_INDEX_COLUMNS)
+        or tuple(row.get("seqno") for row in key_parts)
+        != tuple(range(len(_CAPTURE_DISCOVERY_INDEX_COLUMNS)))
+        or tuple(row.get("name") for row in key_parts) != _CAPTURE_DISCOVERY_INDEX_COLUMNS
+        or any(row.get("descending") not in (0, False) for row in key_parts)
+        or any(str(row.get("coll", "")).casefold() != "binary" for row in key_parts)
+    ):
+        raise CaptureDiscoveryConsistencyError(
+            "capture discovery requires the reviewed SQLite index key order and collation"
+        )
+
+
+def _require_mysql_capture_discovery_index(connection: Connection) -> None:
+    """Require the visible full index and binary identity column contract on MySQL."""
+    rows = (
+        connection.execute(
+            text(_MYSQL_CAPTURE_DISCOVERY_INDEX_METADATA_SQL),
+            {"index_name": _CAPTURE_DISCOVERY_INDEX_NAME},
+        )
+        .mappings()
+        .all()
+    )
+    if len(rows) != len(_CAPTURE_DISCOVERY_INDEX_COLUMNS):
+        raise CaptureDiscoveryConsistencyError(
+            "capture discovery requires the reviewed MySQL index shape"
+        )
+    for position, (row, column_name) in enumerate(
+        zip(rows, _CAPTURE_DISCOVERY_INDEX_COLUMNS, strict=True),
+        start=1,
+    ):
+        if (
+            row.get("INDEX_NAME") != _CAPTURE_DISCOVERY_INDEX_NAME
+            or type(row.get("NON_UNIQUE")) is not int
+            or row.get("NON_UNIQUE") != 1
+            or type(row.get("SEQ_IN_INDEX")) is not int
+            or row.get("SEQ_IN_INDEX") != position
+            or row.get("COLUMN_NAME") != column_name
+            or row.get("SUB_PART") is not None
+            or str(row.get("INDEX_TYPE", "")).upper() != "BTREE"
+            or str(row.get("IS_VISIBLE", "")).upper() != "YES"
+            or str(row.get("COLLATION", "")).upper() != "A"
+        ):
+            raise CaptureDiscoveryConsistencyError(
+                "capture discovery requires the reviewed MySQL index shape"
+            )
+
+    identity_columns = (
+        connection.exec_driver_sql(
+            "SELECT COLUMN_NAME, CHARACTER_SET_NAME, COLLATION_NAME "
+            "FROM information_schema.COLUMNS "
+            "WHERE TABLE_SCHEMA = DATABASE() "
+            "AND TABLE_NAME = 'od_published_fact_versions' "
+            "AND COLUMN_NAME IN ('dataset_id', 'instrument_id', 'capture_id')",
+        )
+        .mappings()
+        .all()
+    )
+    if (
+        len(identity_columns) != len(_CAPTURE_DISCOVERY_BINARY_COLUMNS)
+        or {row.get("COLUMN_NAME") for row in identity_columns}
+        != set(_CAPTURE_DISCOVERY_BINARY_COLUMNS)
+        or any(
+            str(row.get("CHARACTER_SET_NAME", "")).casefold() != "utf8mb4"
+            or str(row.get("COLLATION_NAME", "")).casefold() != "utf8mb4_0900_bin"
+            for row in identity_columns
+        )
+    ):
+        raise CaptureDiscoveryConsistencyError(
+            "capture discovery requires binary MySQL identity column collations"
+        )
+
+
+def _capture_discovery_fact_statement(
+    *,
+    dataset: str,
+    publication_key: str,
+    sequence: int,
+    instrument: str,
+    dialect_name: str,
+) -> Select[tuple[str | None, str | None]]:
+    """Build the exact 0017 equality-prefix query and force it on MySQL."""
+    if dialect_name not in {"sqlite", "mysql"}:
+        raise CaptureDiscoveryConsistencyError(
+            "capture discovery requires a verified SQLite or MySQL query"
+        )
+    statement = (
+        select(
+            PUBLISHED_FACT_VERSIONS.c.capture_id,
+            PUBLISHED_FACT_VERSIONS.c.observed_at,
+        )
+        .where(
+            PUBLISHED_FACT_VERSIONS.c.dataset_id == dataset,
+            PUBLISHED_FACT_VERSIONS.c.publication_id == publication_key,
+            PUBLISHED_FACT_VERSIONS.c.publication_sequence == sequence,
+            PUBLISHED_FACT_VERSIONS.c.instrument_id == instrument,
+            PUBLISHED_FACT_VERSIONS.c.is_deleted.is_(False),
+        )
+        .limit(MAX_CAPTURE_DISCOVERY_ROWS + 1)
+    )
+    if dialect_name == "mysql":
+        return statement.with_hint(
+            PUBLISHED_FACT_VERSIONS,
+            f"FORCE INDEX ({_CAPTURE_DISCOVERY_INDEX_NAME})",
+            dialect_name="mysql",
+        )
+    return statement
+
+
 def _rollback_coverage_read(transaction: RootTransaction) -> None:
     """Roll back a coverage read without hiding its original fail-closed error."""
     with suppress(Exception):
@@ -1468,6 +2052,35 @@ def _require_transactional_coverage_tables(connection: Connection) -> None:
             "MySQL coverage reads require od_publications and "
             "od_published_fact_versions to use InnoDB"
         )
+
+
+def _validate_capture_discovery_instrument(value: object) -> str:
+    """Validate one source instrument without echoing an invalid identifier."""
+    if (
+        type(value) is not str
+        or not 1 <= len(value) <= MAX_ID_LENGTH
+        or _CAPTURE_DISCOVERY_INSTRUMENT_ID.fullmatch(value) is None
+    ):
+        raise ValueError("instrument_id is invalid")
+    return value
+
+
+def _capture_discovery_observed_at(value: object) -> datetime:
+    """Require the exact canonical UTC observation instant persisted by publish."""
+    if not isinstance(value, str) or len(value) > 40:
+        raise CaptureDiscoveryRecordIntegrityError("capture observation timestamp is missing")
+    try:
+        parsed = _parse_timestamp(value)
+        if parsed is None or parsed.tzinfo is None or parsed.utcoffset() != timedelta(0):
+            raise ValueError("timestamp is not UTC")
+        normalized = parsed.astimezone(_UTC)
+        if _timestamp(normalized, "observed_at") != value:
+            raise ValueError("timestamp is not canonical")
+    except (OverflowError, TypeError, ValueError) as exc:
+        raise CaptureDiscoveryRecordIntegrityError(
+            "capture observation timestamp is invalid"
+        ) from exc
+    return normalized
 
 
 def _sha256_value(value: str, name: str) -> str:
