@@ -11,6 +11,7 @@ import asyncio
 import json
 import math
 import os
+import re
 import threading
 from collections.abc import Callable, Coroutine, Mapping
 from datetime import date, datetime, timedelta, timezone
@@ -67,6 +68,9 @@ from opendata.data.platform_contracts import (
     RecordKind,
     TemporalSemantics,
 )
+from opendata.data.providers.sina.financial_statement_publication import (
+    build_sina_fzb_observation_contract,
+)
 from opendata.data.providers.ths.index_daily_publication import (
     INDEX_SOURCE_ID,
     INDEX_SYMBOL_BY_DATASET_ID,
@@ -83,6 +87,12 @@ from opendata.pipeline.history_coverage import CoverageStatus
 from opendata.pipeline.publication_store import (
     MAX_COVERAGE_RECORDS,
     MAX_PAGE_SIZE,
+    CaptureDiscoveryConsistencyError,
+    CaptureDiscoveryCursorError,
+    CaptureDiscoveryError,
+    CaptureDiscoveryLimitError,
+    CaptureDiscoveryPage,
+    CaptureDiscoveryRecordIntegrityError,
     CoverageObservationLimitError,
     CoverageRecordIntegrityError,
     CoverageRecordSet,
@@ -110,6 +120,20 @@ _ATEMPORAL_TABLE_BUSINESS_DATE_SEMANTICS = (
     "null for atemporal table records; not a historical business date"
 )
 _ROUTER_PREFIX = "/api/v2"
+_SINA_FZB_DATASET_ID = "sina_fzb_report_observations"
+_SINA_FZB_INSTRUMENT_PATTERN = re.compile(r"[0-9]{6}\.(?:SH|SZ)\Z", re.ASCII)
+# Discovery stays unavailable until a covering index and production query-plan
+# evidence establish a physical scan budget. This hard gate is deliberately not
+# runtime-configurable so deployment settings cannot enable an unreviewed query.
+_SINA_CAPTURE_DISCOVERY_ENABLED = False
+
+
+def _require_capture_discovery_enabled() -> None:
+    """Fail closed before resolving authorization or store dependencies."""
+    if not _SINA_CAPTURE_DISCOVERY_ENABLED:
+        raise _not_found()
+
+
 _CONFIGURED_STORE: PublicationStore | None = None
 _CONFIGURED_ENGINE: Engine | None = None
 _STORE_LOCK = threading.Lock()
@@ -330,6 +354,33 @@ class DataPageResponse(SnapshotResponse):
     meta: PageMetaResponse
 
 
+class CaptureCandidateResponse(BaseModel):
+    """One capture written by the selected publication, with its observation time."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    capture_id: str = Field(min_length=64, max_length=64, pattern=r"^[0-9a-f]{64}$")
+    observed_at: datetime
+
+
+class CaptureCandidatePageResponse(BaseModel):
+    """Bounded Sina capture candidates from one immutable publication batch."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    dataset_id: Literal["sina_fzb_report_observations"]
+    publication_id: str
+    instrument_id: str
+    page_size: StrictInt
+    items: list[CaptureCandidateResponse]
+    next_cursor: str | None
+    has_more: bool
+    scope: Literal["publication_batch_only"]
+    empty_result_semantics: Literal["no_matching_rows_in_pinned_publication"]
+    observed_at_semantics: Literal["capture_observation_time_not_point_in_time"]
+    pit_policy: Literal["unsupported"]
+
+
 class CoverageRangeResponse(BaseModel):
     """Half-open date range in a coverage request or evidence response."""
 
@@ -448,6 +499,30 @@ class _ErrorEnvelopeRoute(APIRoute):
         async def handler(request: Request) -> Response:
             try:
                 return await route_handler(request)
+            except CaptureDiscoveryCursorError:
+                return _error_response(
+                    422,
+                    "invalid_capture_discovery_cursor",
+                    "Capture discovery cursor is invalid",
+                )
+            except CaptureDiscoveryLimitError:
+                return _error_response(
+                    413,
+                    "capture_discovery_limit_exceeded",
+                    "Capture discovery exceeds the supported query limit",
+                )
+            except (CaptureDiscoveryConsistencyError, CaptureDiscoveryRecordIntegrityError):
+                return _error_response(
+                    503,
+                    "published_data_unavailable",
+                    "Published data service is unavailable",
+                )
+            except CaptureDiscoveryError:
+                return _error_response(
+                    422,
+                    "invalid_capture_discovery_request",
+                    "Capture discovery request is invalid",
+                )
             except PublicationContractConflictError:
                 return _error_response(
                     409,
@@ -820,6 +895,76 @@ async def get_dataset_records(
     return _success_response(
         _page_payload(
             publication, contract, contract_hash, page.snapshot, page.records, page.next_cursor
+        )
+    )
+
+
+@router.get(
+    "/datasets/{dataset_id}/capture-candidates",
+    response_model=CaptureCandidatePageResponse,
+    responses=_ERROR_RESPONSES,
+)
+async def list_sina_capture_candidates(
+    dataset_id: str,
+    request: Request,
+    *,
+    capture_discovery_gate: None = Depends(_require_capture_discovery_enabled),
+    principal: CurrentPrincipal,
+    grants: DatasetGrantRegistry = Depends(get_dataset_grants),
+    contracts: DatasetContractRegistry = Depends(get_dataset_contracts),
+    store: PublicationStore = Depends(get_publication_store),
+    publication_id: str | None = Query(default=None, min_length=32, max_length=32),
+    instrument_id: str | None = Query(default=None, min_length=1, max_length=128),
+    page_size: int = Query(default=100, ge=1, le=MAX_PAGE_SIZE),
+    cursor: str | None = Query(default=None, max_length=8_192),
+) -> Response:
+    """List captures written by one pinned Sina FZB publication batch.
+
+    The result is deliberately scoped to records written by ``publication_id``.
+    An empty page does not establish that the instrument has no captures in
+    earlier publications. ``observed_at`` is the capture observation time and
+    does not imply point-in-time availability of the source information.
+    """
+    del capture_discovery_gate
+    _reject_unknown_query(
+        request,
+        {"publication_id", "instrument_id", "page_size", "cursor"},
+    )
+    _validate_hex_id(publication_id, "publication_id")
+    if publication_id is None or instrument_id is None:
+        raise _http_problem(
+            422,
+            "invalid_request",
+            "publication_id and instrument_id are required",
+        )
+    if not _SINA_FZB_INSTRUMENT_PATTERN.fullmatch(instrument_id):
+        raise _http_problem(422, "invalid_selection", "Instrument selection is invalid")
+
+    if dataset_id != _SINA_FZB_DATASET_ID:
+        raise _not_found()
+    access = _require_access(principal, dataset_id, "data.read", grants)
+    publication = await _publication_for_request(store, dataset_id, publication_id, access)
+    contract, contract_hash = _resolve_contract(contracts, access, publication)
+    _require_sina_fzb_observation_contract(contract)
+
+    page = await asyncio.to_thread(
+        store.list_capture_discovery,
+        dataset_id,
+        publication.publication_id,
+        expected_publication=publication,
+        expected_contract_sha256=contract_hash,
+        instrument_id=instrument_id,
+        page_size=page_size,
+        cursor=cursor,
+        access_scope=access.binding_sha256,
+    )
+    return _success_response(
+        _capture_candidate_page_payload(
+            dataset_id=dataset_id,
+            publication_id=publication.publication_id,
+            instrument_id=instrument_id,
+            page_size=page_size,
+            page=page,
         )
     )
 
@@ -1409,6 +1554,86 @@ def _resolve_contract(
     return contract, contract_hash
 
 
+def _require_sina_fzb_observation_contract(contract: DatasetContract) -> None:
+    """Keep capture discovery confined to the exact source-native Sina FZB contract."""
+    try:
+        expected = build_sina_fzb_observation_contract()
+        contract_matches = canonical_sha256(contract) == canonical_sha256(expected)
+    except (TypeError, ValueError):
+        raise _service_unavailable() from None
+    if contract.dataset_id != _SINA_FZB_DATASET_ID or not contract_matches:
+        raise _service_unavailable()
+
+
+def _capture_candidate_page_payload(
+    *,
+    dataset_id: str,
+    publication_id: str,
+    instrument_id: str,
+    page_size: int,
+    page: CaptureDiscoveryPage,
+) -> dict[str, object]:
+    """Validate the store page before returning its exact publication scope to a client."""
+    if type(page) is not CaptureDiscoveryPage:
+        raise _service_unavailable()
+    items = page.items
+    next_cursor = page.next_cursor
+    if (
+        not isinstance(items, tuple)
+        or len(items) > page_size
+        or (
+            next_cursor is not None
+            and (not isinstance(next_cursor, str) or not next_cursor or len(next_cursor) > 8_192)
+        )
+    ):
+        raise _service_unavailable()
+
+    response_items: list[dict[str, object]] = []
+    seen_capture_ids: set[str] = set()
+    previous_key: tuple[datetime, str] | None = None
+    for item in items:
+        capture_id = item.capture_id
+        observed_at = item.observed_at
+        if (
+            not isinstance(capture_id, str)
+            or re.fullmatch(r"[0-9a-f]{64}", capture_id, re.ASCII) is None
+            or capture_id in seen_capture_ids
+            or type(observed_at) is not datetime
+            or observed_at.tzinfo is None
+        ):
+            raise _service_unavailable()
+        try:
+            offset = observed_at.utcoffset()
+            normalized_observed_at = observed_at.astimezone(timezone.utc)
+        except Exception:
+            raise _service_unavailable() from None
+        if type(offset) is not timedelta or offset != timedelta(0):
+            raise _service_unavailable()
+        ordering_key = (normalized_observed_at, capture_id)
+        if previous_key is not None and (
+            previous_key[0] < ordering_key[0]
+            or (previous_key[0] == ordering_key[0] and previous_key[1] >= ordering_key[1])
+        ):
+            raise _service_unavailable()
+        seen_capture_ids.add(capture_id)
+        previous_key = ordering_key
+        response_items.append({"capture_id": capture_id, "observed_at": _iso(observed_at)})
+
+    return {
+        "dataset_id": dataset_id,
+        "publication_id": publication_id,
+        "instrument_id": instrument_id,
+        "page_size": page_size,
+        "items": response_items,
+        "next_cursor": next_cursor,
+        "has_more": next_cursor is not None,
+        "scope": "publication_batch_only",
+        "empty_result_semantics": "no_matching_rows_in_pinned_publication",
+        "observed_at_semantics": "capture_observation_time_not_point_in_time",
+        "pit_policy": "unsupported",
+    }
+
+
 def _validate_selection_input(*, instrument_id: object | None, capture_id: object | None) -> None:
     """Reject malformed selector syntax before an authorized request reads the store."""
     try:
@@ -1966,6 +2191,8 @@ def _service_unavailable() -> HTTPException:
 
 
 __all__ = [
+    "CaptureCandidatePageResponse",
+    "CaptureCandidateResponse",
     "CreateSnapshotRequest",
     "CoverageResponse",
     "DataPageResponse",
@@ -1986,6 +2213,7 @@ __all__ = [
     "get_dataset_records",
     "get_publication_store",
     "get_snapshot",
+    "list_sina_capture_candidates",
     "list_datasets",
     "router",
 ]
