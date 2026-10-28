@@ -8,6 +8,13 @@ from typing import TYPE_CHECKING
 
 import pytest
 
+import opendata.pipeline.financial_observation_store as observation_store
+import opendata.pipeline.financial_prepared_codec as prepared_codec
+from opendata.pipeline.financial_observation_store import PreparedCapture
+from opendata.pipeline.financial_prepared_codec import (
+    decode_prepared_capture,
+    encode_prepared_capture,
+)
 from opendata.pipeline.run_identity import (
     RunRequest,
     ScheduleMetadata,
@@ -205,7 +212,7 @@ def _task() -> TaskDefinition:
     )
 
 
-def _batch(payload: bytes | None = None) -> NormalizedBatch:
+def _batch(payload: bytes | None = None, *, context: object | None = None) -> NormalizedBatch:
     return NormalizedBatch(
         records=(NormalizedRecord("000001.SZ:2026-10-27", {"close": 7}),),
         schema_version="1",
@@ -215,7 +222,52 @@ def _batch(payload: bytes | None = None) -> NormalizedBatch:
         quality={"rejected_rows": 0},
         provenance={"provider": "provider-cn"},
         commit_payload=payload,
+        commit_context=context,
     )
+
+
+def _prepared_capture_payload(
+    *, capture_id: str = "a" * 32, source_request_id: str = "provider-request-001"
+) -> bytes:
+    """Create a minimal valid immutable capture payload without I/O or a database."""
+    captured_at = NOW.replace(tzinfo=None)
+    capture = {
+        "capture_id": capture_id,
+        "provider_id": "ths",
+        "dataset_id": "ths_financial_statement",
+        "operation_id": "income_annual",
+        "source_id": "ths_fuyao",
+        "instrument_id": "600519.SH",
+        "statement_type": "income",
+        "periodicity": "annual",
+        "observed_at_utc": captured_at,
+        "captured_at_utc": captured_at,
+        "source_request_id": source_request_id,
+        "http_status": 200,
+        "request_summary_sha256": "b" * 64,
+        "raw_object_sha256": "c" * 64,
+        "raw_object_size_bytes": 1024,
+        "raw_object_key": f"cc/{'c' * 64}.blob",
+        "raw_manifest_sha256": "d" * 64,
+        "raw_manifest_size_bytes": 2048,
+        "raw_manifest_key": f"dd/{'d' * 64}.json",
+        "retention_class": "restricted",
+        "source_history_limit": "unknown",
+        "native_unit_mapping_version_declared": "operator-units-v1",
+        "native_unit_mapping_sha256_declared": "e" * 64,
+        "unit_mapping_declaration_status": "operator_declared",
+        "decode_status": "decoded",
+    }
+    prepared = observation_store._freeze_prepared_rows(
+        observation_store._PreparedRows(
+            capture=capture,
+            capture_id=capture_id,
+            observations=(),
+            links_by_observation={},
+            quarantine=(),
+        )
+    )
+    return encode_prepared_capture(prepared)
 
 
 def _job(
@@ -225,6 +277,8 @@ def _job(
     payload_type: type[bytes] | None = None,
     validator: Callable[[bytes], bool] | None = None,
     max_payload_bytes: int | None = None,
+    decoder: Callable[[bytes], object] | None = None,
+    context_type: type[object] | None = None,
 ) -> ReviewedJob:
     return ReviewedJob(
         task=_task(),
@@ -240,6 +294,8 @@ def _job(
         commit_payload_type=payload_type,
         validate_commit_payload=validator,
         max_commit_payload_bytes=max_payload_bytes,
+        decode_commit_payload=decoder,
+        commit_context_type=context_type,
     )
 
 
@@ -474,6 +530,106 @@ def test_async_validator_is_rejected_at_registration() -> None:
         ReviewedJobRegistry([_job(payload_type=bytes, validator=validate, max_payload_bytes=32)])
 
 
+def test_only_exact_prepared_capture_decoder_contract_is_registered() -> None:
+    """Decoder registration is limited to the reviewed codec and exact DTO."""
+    valid_job = _job(
+        payload_type=bytes,
+        max_payload_bytes=128,
+        decoder=decode_prepared_capture,
+        context_type=PreparedCapture,
+    )
+    assert ReviewedJobRegistry([valid_job]).resolve("stock-daily", "v1") is valid_job
+
+    calls: list[str] = []
+
+    def arbitrary_decoder(_payload: bytes) -> object:
+        calls.append("called")
+        return object()
+
+    invalid_jobs = [
+        _job(
+            payload_type=bytes,
+            max_payload_bytes=128,
+            decoder=arbitrary_decoder,
+            context_type=PreparedCapture,
+        ),
+        _job(
+            payload_type=bytes,
+            max_payload_bytes=128,
+            decoder=decode_prepared_capture,
+            context_type=str,
+        ),
+        _job(
+            payload_type=bytes,
+            validator=lambda _payload: True,
+            max_payload_bytes=128,
+            decoder=decode_prepared_capture,
+            context_type=PreparedCapture,
+        ),
+        _job(payload_type=bytes, max_payload_bytes=128, decoder=decode_prepared_capture),
+    ]
+    for invalid_job in invalid_jobs:
+        with pytest.raises(TypeError):
+            ReviewedJobRegistry([invalid_job])
+    assert calls == []
+
+
+def test_decoder_contract_requires_payload_before_record_copy_or_decode() -> None:
+    """A registered decoder contract rejects missing payload before job work."""
+    events: list[str] = []
+    record_events: list[str] = []
+
+    class TrackingRecords(tuple[NormalizedRecord, ...]):
+        def __iter__(self):
+            record_events.append("iterate_records")
+            return super().__iter__()
+
+    batch = replace(_batch(), records=TrackingRecords(_batch().records))
+    job = _job(
+        normalize=lambda *_args: batch,
+        payload_type=bytes,
+        max_payload_bytes=128,
+        decoder=decode_prepared_capture,
+        context_type=PreparedCapture,
+    )
+    service, ledger = _service(job, events=events)
+
+    outcome = _run(service)
+
+    assert outcome is not None and outcome.record is not None
+    assert outcome.record.status == "failed"
+    assert outcome.record.error_text == "execution_failed:_CommitPayloadInvalidError"
+    assert record_events == []
+    assert events == []
+    assert ledger.events == []
+
+
+def test_normalizer_cannot_prepopulate_runner_owned_context() -> None:
+    """The normalized DTO cannot bypass the runner's allowlisted decoder."""
+    events: list[str] = []
+    payload = _prepared_capture_payload()
+    job = _job(
+        normalize=lambda *_args: _batch(payload, context=object()),
+        payload_type=bytes,
+        max_payload_bytes=MAX_COMMIT_PAYLOAD_BYTES,
+        decoder=decode_prepared_capture,
+        context_type=PreparedCapture,
+        publish=lambda *_args: (
+            events.append("publish"),
+            PublicationReceipt("pub-1", DATASET_ID, 1),
+        )[1],
+    )
+    service, ledger = _service(job, events=events)
+
+    outcome = _run(service)
+
+    assert outcome is not None and outcome.record is not None
+    assert outcome.record.status == "failed"
+    assert outcome.record.error_text == "execution_failed:_CommitPayloadInvalidError"
+    assert events == []
+    assert ledger.events == []
+
+
 def test_oversized_payload_is_rejected_before_validator_or_transaction() -> None:
     """The runner enforces the declared byte cap before calling job code."""
     events: list[str] = []
@@ -651,3 +807,201 @@ def test_two_runs_deliver_only_their_own_sidecar_without_ledger_persistence() ->
     assert "capture:first" not in first.job_snapshot_json
     assert "capture:second" not in second.job_snapshot_json
     assert all("capture:" not in repr(record) for record in ledger.records.values())
+
+
+def test_prepared_capture_is_decoded_before_transaction_and_same_object_reaches_publisher(
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """The runner carries the exact decoded immutable DTO only in its batch."""
+    payload = _prepared_capture_payload(source_request_id=SECRET_MARKER)
+    events: list[str] = []
+    decoded_contexts: list[PreparedCapture] = []
+    published_batches: list[NormalizedBatch] = []
+    original_validate = prepared_codec._store_validated_capture
+
+    def record_decoded(value: object) -> PreparedCapture:
+        checked = original_validate(value)
+        decoded_contexts.append(checked)
+        events.append("decode")
+        return checked
+
+    monkeypatch.setattr(prepared_codec, "_store_validated_capture", record_decoded)
+
+    def normalize(_raw: object, _request: RunRequest, _context: object) -> NormalizedBatch:
+        events.append("normalize")
+        return _batch(payload)
+
+    def publish(
+        _connection: Connection,
+        task: TaskDefinition,
+        _request: RunRequest,
+        batch: NormalizedBatch,
+        _key: str,
+    ) -> PublicationReceipt:
+        events.append("publish")
+        published_batches.append(batch)
+        assert batch.commit_payload is None
+        assert type(batch.commit_context) is PreparedCapture
+        return PublicationReceipt("pub-1", task.dataset_id, len(batch.records))
+
+    job = _job(
+        normalize=normalize,
+        publish=publish,
+        payload_type=bytes,
+        max_payload_bytes=MAX_COMMIT_PAYLOAD_BYTES,
+        decoder=decode_prepared_capture,
+        context_type=PreparedCapture,
+    )
+    service, ledger = _service(job, events=events)
+    queued = service.submit("stock-daily", "v1", _request())
+    original_batch = _batch(payload)
+
+    outcome = service.run_once("worker-a", TTL)
+
+    assert outcome is not None and outcome.record is not None
+    assert outcome.record.status == "succeeded"
+    assert len(decoded_contexts) == len(published_batches) == 1
+    assert published_batches[0].commit_context is decoded_contexts[0]
+    assert published_batches[0].commit_payload is None
+    assert type(published_batches[0]) is NormalizedBatch
+    assert events == ["normalize", "decode", "commit_result", "publish"]
+    assert SECRET_MARKER.encode() not in queued.job_snapshot_json.encode()
+    assert SECRET_MARKER not in repr(original_batch)
+    assert SECRET_MARKER not in repr(published_batches[0])
+    assert SECRET_MARKER not in repr(published_batches[0].commit_context)
+    assert SECRET_MARKER not in repr(outcome.record)
+    assert SECRET_MARKER not in caplog.text
+    assert all(SECRET_MARKER not in repr(record) for record in ledger.records.values())
+
+
+def test_decoder_failure_is_sanitized_and_never_publishes(caplog: pytest.LogCaptureFixture) -> None:
+    """Malformed bytes fail outside the transaction without revealing content."""
+    payload = SECRET_MARKER.encode()
+    events: list[str] = []
+    job = _job(
+        normalize=lambda *_args: _batch(payload),
+        publish=lambda *_args: (
+            events.append("publish"),
+            PublicationReceipt("pub-1", DATASET_ID, 1),
+        )[1],
+        payload_type=bytes,
+        max_payload_bytes=MAX_COMMIT_PAYLOAD_BYTES,
+        decoder=decode_prepared_capture,
+        context_type=PreparedCapture,
+    )
+    service, ledger = _service(job, events=events)
+
+    outcome = _run(service)
+
+    assert outcome is not None and outcome.record is not None
+    assert outcome.record.status == "failed"
+    assert outcome.record.error_text == "execution_failed:_CommitPayloadInvalidError"
+    assert events == []
+    assert ledger.events == []
+    assert SECRET_MARKER not in repr(outcome.record)
+    assert SECRET_MARKER not in caplog.text
+
+
+def test_oversized_decoder_payload_is_rejected_before_codec_runs(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The per-job byte ceiling prevents decoder work before record copying."""
+    payload = b"oversize"
+    decoder_events: list[str] = []
+    original_validate = prepared_codec._store_validated_capture
+
+    def record_decoder(value: object) -> PreparedCapture:
+        decoder_events.append("decode")
+        return original_validate(value)
+
+    monkeypatch.setattr(prepared_codec, "_store_validated_capture", record_decoder)
+    job = _job(
+        normalize=lambda *_args: _batch(payload),
+        payload_type=bytes,
+        max_payload_bytes=4,
+        decoder=decode_prepared_capture,
+        context_type=PreparedCapture,
+    )
+    service, ledger = _service(job)
+
+    outcome = _run(service)
+
+    assert outcome is not None and outcome.record is not None
+    assert outcome.record.status == "failed"
+    assert outcome.record.error_text == "execution_failed:_CommitPayloadInvalidError"
+    assert decoder_events == []
+    assert ledger.events == []
+
+
+def test_two_decoder_runs_deliver_only_their_own_context_objects(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Each run decodes its bytes into a distinct context with no shared cache."""
+    payload_by_symbol = {
+        "000001.SZ": _prepared_capture_payload(capture_id="a" * 32),
+        "600000.SH": _prepared_capture_payload(capture_id="f" * 32),
+    }
+    published: list[tuple[str, PreparedCapture]] = []
+    decoded: list[PreparedCapture] = []
+    original_validate = prepared_codec._store_validated_capture
+
+    def record_decoded(value: object) -> PreparedCapture:
+        result = original_validate(value)
+        decoded.append(result)
+        return result
+
+    monkeypatch.setattr(prepared_codec, "_store_validated_capture", record_decoded)
+
+    def fetch(request: RunRequest, _context: object) -> object:
+        return payload_by_symbol[str(request.query["symbol"])]
+
+    def normalize(raw: object, _request: RunRequest, _context: object) -> NormalizedBatch:
+        assert type(raw) is bytes
+        return _batch(raw)
+
+    def publish(
+        _connection: Connection,
+        task: TaskDefinition,
+        request: RunRequest,
+        batch: NormalizedBatch,
+        _key: str,
+    ) -> PublicationReceipt:
+        context = batch.commit_context
+        assert type(context) is PreparedCapture
+        assert batch.commit_payload is None
+        published.append((str(request.query["symbol"]), context))
+        return PublicationReceipt("pub-1", task.dataset_id, len(batch.records))
+
+    job = replace(
+        _job(
+            normalize=normalize,
+            publish=publish,
+            payload_type=bytes,
+            max_payload_bytes=MAX_COMMIT_PAYLOAD_BYTES,
+            decoder=decode_prepared_capture,
+            context_type=PreparedCapture,
+        ),
+        fetch=fetch,
+    )
+    service, ledger = _service(job)
+    first = service.submit("stock-daily", "v1", _request("first", "000001.SZ"))
+    second = service.submit("stock-daily", "v1", _request("second", "600000.SH"))
+
+    first_outcome = service.run_once("worker-a", TTL)
+    second_outcome = service.run_once("worker-a", TTL)
+
+    assert first_outcome is not None and first_outcome.record is not None
+    assert second_outcome is not None and second_outcome.record is not None
+    assert first_outcome.record.status == second_outcome.record.status == "succeeded"
+    assert len(decoded) == len(published) == 2
+    assert published[0] == ("000001.SZ", decoded[0])
+    assert published[1] == ("600000.SH", decoded[1])
+    assert published[0][1] is decoded[0]
+    assert published[1][1] is decoded[1]
+    assert decoded[0] is not decoded[1]
+    assert decoded[0]._capture_id == "a" * 32
+    assert decoded[1]._capture_id == "f" * 32
+    assert "provider-request" not in first.job_snapshot_json
+    assert "provider-request" not in second.job_snapshot_json
+    assert all("provider-request" not in repr(record) for record in ledger.records.values())
