@@ -384,10 +384,19 @@ def test_mysql_ledger_schema_uses_binary_identity_and_medium_text_columns() -> N
     ledger_table = RUN_LEDGER_METADATA.tables["od_run_ledger"]
     ddl = str(CreateTable(ledger_table).compile(dialect=mysql_dialect()))
 
-    for column in ("run_key", "status", "worker", "lease_id"):
-        match = re.search(rf"^\s*{column} VARCHAR\(\d+\).*$", ddl, re.MULTILINE)
+    for column in ("run_key", "status", "claim_policy", "worker", "lease_id"):
+        match = re.search(rf"^[ \t]*{column}[ \t]+VARCHAR\(\d+\)[^\r\n]*$", ddl, re.MULTILINE)
         assert match is not None
         assert "COLLATE utf8mb4_0900_bin" in match.group(0)
+    claim_policy_column = next(
+        line.strip() for line in ddl.splitlines() if line.strip().startswith("claim_policy ")
+    )
+    assert re.search(r"^claim_policy[ \t]+VARCHAR\(16\)(?=[ \t]|$)", claim_policy_column)
+    assert "COLLATE utf8mb4_0900_bin" in claim_policy_column
+    assert re.search(r"\bNOT[ \t]+NULL\b", claim_policy_column)
+    assert re.search(r"\bDEFAULT[ \t]+'recover_expired'(?=[ \t,]|$)", claim_policy_column)
+    assert "ck_od_run_ledger_claim_policy" in ddl
+    assert "claim_policy IN ('recover_expired', 'one_shot')" in ddl
     assert "job_snapshot_json MEDIUMTEXT NOT NULL" in ddl
     assert "error_text MEDIUMTEXT" in ddl
 

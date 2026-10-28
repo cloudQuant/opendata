@@ -696,6 +696,20 @@ class PersistentRunWorker:
         )
         return self._service.submit(job_id, version, request)
 
+    def submit_one_shot(self, job_id: str, version: str, request: RunRequest) -> RunRecord:
+        """Persist one explicitly requested reviewed run that cannot be reclaimed."""
+        _verify_process_owner(self._engine_binding.owner_process_id)
+        backend: Literal["MySQL", "SQLite"] = (
+            "MySQL" if isinstance(self._engine_binding, _MySQLWorkerEngineBinding) else "SQLite"
+        )
+        _verify_pool_wait_bound(
+            self._engine,
+            self._database_io_timeout_seconds,
+            self._engine_binding.pool_creator,
+            backend=backend,
+        )
+        return self._service.submit_one_shot(job_id, version, request)
+
     def run_once(self) -> RunOutcome | None:
         """Claim at most one durable run and execute it to a fenced outcome."""
         _verify_process_owner(self._engine_binding.owner_process_id)
@@ -709,6 +723,20 @@ class PersistentRunWorker:
             backend=backend,
         )
         return self._service.run_once(self._worker_id, self._lease_ttl)
+
+    def run_one_shot(self, run_key: str) -> RunOutcome | None:
+        """Claim and execute only the explicitly named one-shot run."""
+        _verify_process_owner(self._engine_binding.owner_process_id)
+        backend: Literal["MySQL", "SQLite"] = (
+            "MySQL" if isinstance(self._engine_binding, _MySQLWorkerEngineBinding) else "SQLite"
+        )
+        _verify_pool_wait_bound(
+            self._engine,
+            self._database_io_timeout_seconds,
+            self._engine_binding.pool_creator,
+            backend=backend,
+        )
+        return self._service.run_one_shot(run_key, self._worker_id, self._lease_ttl)
 
 
 def _bounded_number(value: object, name: str, minimum: float, maximum: float) -> float:

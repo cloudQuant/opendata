@@ -34,6 +34,7 @@ from sqlalchemy import (
     insert,
     or_,
     select,
+    text,
     update,
 )
 from sqlalchemy.dialects.mysql import MEDIUMTEXT
@@ -44,12 +45,15 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
 RunStatus = Literal["queued", "running", "succeeded", "failed", "cancelled"]
+ClaimPolicy = Literal["recover_expired", "one_shot"]
 
 QUEUED: RunStatus = "queued"
 RUNNING: RunStatus = "running"
 SUCCEEDED: RunStatus = "succeeded"
 FAILED: RunStatus = "failed"
 CANCELLED: RunStatus = "cancelled"
+RECOVER_EXPIRED: ClaimPolicy = "recover_expired"
+ONE_SHOT: ClaimPolicy = "one_shot"
 TERMINAL_STATUSES = (SUCCEEDED, FAILED, CANCELLED)
 
 MIN_TTL = timedelta(seconds=1)
@@ -81,6 +85,12 @@ RUN_LEDGER_TABLE = Table(
         nullable=False,
     ),
     Column(
+        "claim_policy",
+        String(16).with_variant(String(16, collation="utf8mb4_0900_bin"), "mysql"),
+        nullable=False,
+        server_default=text("'recover_expired'"),
+    ),
+    Column(
         "worker",
         String(MAX_WORKER_LENGTH).with_variant(
             String(MAX_WORKER_LENGTH, collation="utf8mb4_0900_bin"), "mysql"
@@ -103,6 +113,10 @@ RUN_LEDGER_TABLE = Table(
     CheckConstraint(
         "status IN ('queued', 'running', 'succeeded', 'failed', 'cancelled')",
         name="ck_od_run_ledger_status",
+    ),
+    CheckConstraint(
+        "claim_policy IN ('recover_expired', 'one_shot')",
+        name="ck_od_run_ledger_claim_policy",
     ),
     CheckConstraint("fencing_token >= 0", name="ck_od_run_ledger_fencing_token"),
 )
@@ -135,10 +149,27 @@ class RunRecord:
     heartbeat_at: datetime | None
     finished_at: datetime | None
     error_text: str | None
+    claim_policy: ClaimPolicy = RECOVER_EXPIRED
 
 
 class RunLedgerConflictError(ValueError):
-    """Raised when one idempotency key is reused for a different job snapshot."""
+    """Raised when one idempotency key is reused for different immutable input."""
+
+
+class RunExecutionUncertainError(RuntimeError):
+    """Raised when a one-shot run's worker lease expires after execution began.
+
+    The ledger deliberately leaves the run in ``running`` state. Its external
+    side effect may already have happened, so retrying it could duplicate that
+    effect. A human or domain-specific reconciliation process must resolve the
+    uncertain outcome.
+    """
+
+    def __init__(self, run_key: str) -> None:
+        """Identify the exact run whose one-shot outcome requires reconciliation."""
+        self.run_key = run_key
+        self.outcome: Literal["uncertain"] = "uncertain"
+        super().__init__("one-shot run outcome is uncertain and requires reconciliation")
 
 
 class RunLeaseExpiredError(RuntimeError):
@@ -204,15 +235,24 @@ class RunLedger:
         """Validate API timestamp shape even when database policy ignores its value."""
         _datetime_to_epoch_us(timestamp)
 
-    def enqueue(self, run_key: str, jobsnapshot_json: str) -> RunRecord:
+    def enqueue(
+        self,
+        run_key: str,
+        jobsnapshot_json: str,
+        *,
+        claim_policy: ClaimPolicy | None = None,
+    ) -> RunRecord:
         """Insert a queued run once and return the stored record on retries.
 
         Reusing a key with a different immutable job snapshot raises
         :class:`RunLedgerConflictError` so a changed payload cannot be hidden by
-        an idempotent retry.
+        an idempotent retry. ``claim_policy`` defaults to ``recover_expired``
+        for compatibility; callers must explicitly pass ``one_shot`` when the
+        run's side effect must never be retried after a worker lease expires.
         """
         _validate_run_key(run_key)
         _validate_snapshot(jobsnapshot_json)
+        resolved_claim_policy = _resolve_claim_policy(claim_policy)
         try:
             with self._engine.begin() as connection:
                 self._begin_database_write(connection)
@@ -222,6 +262,7 @@ class RunLedger:
                         run_key=run_key,
                         job_snapshot_json=jobsnapshot_json,
                         status=QUEUED,
+                        claim_policy=resolved_claim_policy,
                         worker=None,
                         lease_id=None,
                         fencing_token=0,
@@ -243,16 +284,22 @@ class RunLedger:
                 raise RunLedgerConflictError(
                     "run_key already exists with a different job snapshot"
                 ) from None
+            if existing.claim_policy != resolved_claim_policy:
+                raise RunLedgerConflictError(
+                    "run_key already exists with a different claim policy"
+                ) from None
             return existing
         if row is None:
             raise RuntimeError("inserted run ledger row could not be read")
         return row
 
     def claim(self, worker: str, now: datetime, ttl: timedelta) -> RunRecord | None:
-        """Atomically claim one queued run or reclaim an expired lease.
+        """Claim one recoverable queued run or reclaim an expired lease.
 
         A successful claim increments the fencing token. A live lease is never
         stolen, and an expired worker's token cannot be used after reclamation.
+        One-shot runs are always excluded; use :meth:`claim_run` with their
+        exact key for their initial attempt.
         """
         _validate_worker(worker)
         self._validate_timestamp_argument(now)
@@ -262,9 +309,13 @@ class RunLedger:
             self._begin_database_write(connection)
             now_us = self._timestamp_us(connection, now)
             claimable = or_(
-                RUN_LEDGER_TABLE.c.status == QUEUED,
+                and_(
+                    RUN_LEDGER_TABLE.c.status == QUEUED,
+                    RUN_LEDGER_TABLE.c.claim_policy == RECOVER_EXPIRED,
+                ),
                 and_(
                     RUN_LEDGER_TABLE.c.status == RUNNING,
+                    RUN_LEDGER_TABLE.c.claim_policy == RECOVER_EXPIRED,
                     RUN_LEDGER_TABLE.c.lease_expires_at_us <= now_us,
                 ),
             )
@@ -305,6 +356,84 @@ class RunLedger:
             if result.rowcount != 1:
                 return None
             return _select_run_by_lease(connection, lease_id)
+
+    def claim_run(
+        self, run_key: str, worker: str, now: datetime, ttl: timedelta
+    ) -> RunRecord | None:
+        """Claim only the exact, never-started ``one_shot`` run.
+
+        The compare-and-set requires an untouched queued row: zero fencing
+        token and NULL worker, lease, start, heartbeat, finish and error fields.
+        It never reclaims a running one-shot run. An expired or malformed
+        one-shot lifecycle raises :class:`RunExecutionUncertainError` and leaves
+        the row unchanged because its external effect may already have
+        occurred. Missing, cancelled, terminal, legacy-policy and live-running
+        rows are not claimable and return ``None``. The selected clock policy,
+        database row locks and fencing token semantics are the same as
+        :meth:`claim`.
+        """
+        _validate_run_key(run_key)
+        _validate_worker(worker)
+        self._validate_timestamp_argument(now)
+        ttl_us = _timedelta_to_ttl_us(ttl)
+        lease_id = uuid4().hex
+        with self._engine.begin() as connection:
+            self._begin_database_write(connection)
+            if self._engine.dialect.name in {"mysql", "postgresql"}:
+                locked_row = (
+                    connection.execute(
+                        select(RUN_LEDGER_TABLE)
+                        .where(RUN_LEDGER_TABLE.c.run_key == run_key)
+                        .with_for_update()
+                    )
+                    .mappings()
+                    .one_or_none()
+                )
+                now_us = self._timestamp_us(connection, now)
+                if locked_row is None:
+                    return None
+                if _row_is_uncertain_one_shot(locked_row, now_us):
+                    raise RunExecutionUncertainError(run_key)
+            else:
+                now_us = self._timestamp_us(connection, now)
+
+            result = connection.execute(
+                update(RUN_LEDGER_TABLE)
+                .where(
+                    and_(
+                        RUN_LEDGER_TABLE.c.run_key == run_key,
+                        RUN_LEDGER_TABLE.c.claim_policy == ONE_SHOT,
+                        RUN_LEDGER_TABLE.c.status == QUEUED,
+                        RUN_LEDGER_TABLE.c.fencing_token == 0,
+                        RUN_LEDGER_TABLE.c.worker.is_(None),
+                        RUN_LEDGER_TABLE.c.lease_id.is_(None),
+                        RUN_LEDGER_TABLE.c.lease_expires_at_us.is_(None),
+                        RUN_LEDGER_TABLE.c.started_at_us.is_(None),
+                        RUN_LEDGER_TABLE.c.heartbeat_at_us.is_(None),
+                        RUN_LEDGER_TABLE.c.finished_at_us.is_(None),
+                        RUN_LEDGER_TABLE.c.error_text.is_(None),
+                    )
+                )
+                .values(
+                    status=RUNNING,
+                    worker=worker,
+                    lease_id=lease_id,
+                    fencing_token=RUN_LEDGER_TABLE.c.fencing_token + 1,
+                    lease_expires_at_us=now_us + ttl_us,
+                    updated_at_us=now_us,
+                    started_at_us=now_us,
+                    heartbeat_at_us=now_us,
+                    finished_at_us=None,
+                    error_text=None,
+                )
+            )
+            if result.rowcount == 1:
+                return _select_run_by_lease(connection, lease_id)
+
+            current = _select_run(connection, run_key)
+            if current is not None and _record_is_uncertain_one_shot(current, now_us):
+                raise RunExecutionUncertainError(run_key)
+            return None
 
     def heartbeat(
         self,
@@ -678,6 +807,102 @@ def _record_lease_expiry_us(record: RunRecord) -> int:
     return _datetime_to_epoch_us(record.lease_expires_at)
 
 
+def _row_is_uncertain_one_shot(row: RowMapping, now_us: int) -> bool:
+    """Treat malformed or expired one-shot lifecycle data as uncertain."""
+    if row["claim_policy"] != ONE_SHOT:
+        return False
+    if row["status"] == QUEUED:
+        return not _row_has_initial_one_shot_state(row)
+    if row["status"] != RUNNING:
+        return False
+    expiry_us = row["lease_expires_at_us"]
+    if not _is_nonnegative_integer(expiry_us):
+        return True
+    return not _row_has_live_one_shot_state(row) or expiry_us <= now_us
+
+
+def _record_is_uncertain_one_shot(record: RunRecord, now_us: int) -> bool:
+    """Check whether a public one-shot snapshot has malformed or expired state."""
+    if record.claim_policy != ONE_SHOT:
+        return False
+    if record.status == QUEUED:
+        return not _record_has_initial_one_shot_state(record)
+    if record.status != RUNNING:
+        return False
+    return (
+        not _record_has_live_one_shot_state(record)
+        or record.lease_expires_at is None
+        or _datetime_to_epoch_us(record.lease_expires_at) <= now_us
+    )
+
+
+def _row_has_initial_one_shot_state(row: RowMapping) -> bool:
+    """Check that a queued one-shot row still has pristine lease metadata."""
+    return (
+        _is_nonnegative_integer(row["fencing_token"])
+        and row["fencing_token"] == 0
+        and row["worker"] is None
+        and row["lease_id"] is None
+        and row["lease_expires_at_us"] is None
+        and row["started_at_us"] is None
+        and row["heartbeat_at_us"] is None
+        and row["finished_at_us"] is None
+        and row["error_text"] is None
+    )
+
+
+def _record_has_initial_one_shot_state(record: RunRecord) -> bool:
+    """Check that a queued one-shot snapshot still has pristine lease metadata."""
+    return (
+        record.fencing_token == 0
+        and record.worker is None
+        and record.lease_id is None
+        and record.lease_expires_at is None
+        and record.started_at is None
+        and record.heartbeat_at is None
+        and record.finished_at is None
+        and record.error_text is None
+    )
+
+
+def _row_has_live_one_shot_state(row: RowMapping) -> bool:
+    """Check that a running one-shot row has complete lease ownership metadata."""
+    return (
+        isinstance(row["worker"], str)
+        and bool(row["worker"].strip())
+        and isinstance(row["lease_id"], str)
+        and re.fullmatch(r"[0-9a-f]{32}", row["lease_id"]) is not None
+        and _is_nonnegative_integer(row["fencing_token"])
+        and row["fencing_token"] > 0
+        and _is_nonnegative_integer(row["started_at_us"])
+        and _is_nonnegative_integer(row["heartbeat_at_us"])
+        and row["finished_at_us"] is None
+        and row["error_text"] is None
+    )
+
+
+def _record_has_live_one_shot_state(record: RunRecord) -> bool:
+    """Check that a running one-shot snapshot has complete lease metadata."""
+    return (
+        isinstance(record.worker, str)
+        and bool(record.worker.strip())
+        and isinstance(record.lease_id, str)
+        and re.fullmatch(r"[0-9a-f]{32}", record.lease_id) is not None
+        and record.fencing_token > 0
+        and record.started_at is not None
+        and _datetime_to_epoch_us(record.started_at) >= 0
+        and record.heartbeat_at is not None
+        and _datetime_to_epoch_us(record.heartbeat_at) >= 0
+        and record.finished_at is None
+        and record.error_text is None
+    )
+
+
+def _is_nonnegative_integer(value: object) -> bool:
+    """Return whether a stored counter or UTC microsecond value is a valid int."""
+    return isinstance(value, int) and not isinstance(value, bool) and value >= 0
+
+
 class _LostRunLeaseError(RuntimeError):
     """Force rollback when ownership changes during a fenced callback."""
 
@@ -844,6 +1069,7 @@ def _record_from_row(row: RowMapping) -> RunRecord:
         heartbeat_at=_as_optional_datetime(row["heartbeat_at_us"]),
         finished_at=_as_optional_datetime(row["finished_at_us"]),
         error_text=_as_optional_string(row["error_text"], "error_text"),
+        claim_policy=_as_claim_policy(row["claim_policy"]),
     )
 
 
@@ -1069,11 +1295,39 @@ def _as_status(value: object) -> RunStatus:
     raise RuntimeError("run ledger has invalid status")
 
 
+def _as_claim_policy(value: object) -> ClaimPolicy:
+    """Convert the stored policy to the closed run-ledger policy set."""
+    if not isinstance(value, str):
+        raise RuntimeError("run ledger has invalid claim policy")
+    if value == RECOVER_EXPIRED:
+        return RECOVER_EXPIRED
+    if value == ONE_SHOT:
+        return ONE_SHOT
+    raise RuntimeError("run ledger has invalid claim policy")
+
+
+def _resolve_claim_policy(value: object | None) -> ClaimPolicy:
+    """Resolve the backward-compatible enqueue default and reject unknown modes."""
+    if value is None:
+        return RECOVER_EXPIRED
+    if not isinstance(value, str):
+        raise ValueError("claim_policy must be 'recover_expired' or 'one_shot'")
+    if value == RECOVER_EXPIRED:
+        return RECOVER_EXPIRED
+    if value == ONE_SHOT:
+        return ONE_SHOT
+    raise ValueError("claim_policy must be 'recover_expired' or 'one_shot'")
+
+
 __all__ = [
     "RUN_LEDGER_METADATA",
     "RUN_LEDGER_TABLE",
+    "ClaimPolicy",
+    "ONE_SHOT",
+    "RECOVER_EXPIRED",
     "RunLedger",
     "RunLedgerConflictError",
+    "RunExecutionUncertainError",
     "RunLeaseExpiredError",
     "RunRecord",
     "RunStatus",

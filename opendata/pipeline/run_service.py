@@ -26,6 +26,7 @@ from typing import TYPE_CHECKING, Protocol, TypeAlias, TypeGuard, cast
 from pydantic import JsonValue
 
 from opendata.pipeline.run_identity import RunRequest, TaskDefinition, build_run_identity
+from opendata.pipeline.run_ledger import RunLedger
 from opendata.utils.cooperative_checkpoint import _CooperativeCheckpoint
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -39,6 +40,8 @@ MAX_COMMIT_PAYLOAD_BYTES = 16 * 1024 * 1024
 MAX_RESULT_DEPTH = 8
 MAX_RESULT_NODES = 1_000_000
 MAX_RESULT_TEXT = 4_096
+_RUN_LEDGER_ENQUEUE_METHOD = RunLedger.enqueue
+_RUN_LEDGER_CLAIM_RUN_METHOD = RunLedger.claim_run
 _UNSET_COMMIT_PAYLOAD = object()
 _ERROR_NAME = re.compile(r"^_?[A-Za-z][A-Za-z0-9_]{0,79}$")
 _SECRET_KEY_MARKERS = (
@@ -329,12 +332,75 @@ class RunService:
         identity = build_run_identity(job.task, request)
         return self._ledger.enqueue(identity.idempotency_key, identity.canonical_json)
 
+    def submit_one_shot(self, job_id: str, version: str, request: RunRequest) -> RunRecord:
+        """Enqueue an explicitly requested reviewed run with a no-retry claim policy.
+
+        Legacy ledger doubles remain valid for :meth:`submit`, but the one-shot
+        API requires this module's exact, unmodified :class:`RunLedger` so the
+        policy is persisted by its transactional implementation before the row
+        can be observed. This is a trusted same-process boundary, not protection
+        against code that can replace Python modules or mutate this process.
+        """
+        job = self._require_runnable(job_id, version)
+        if not isinstance(request, RunRequest):
+            raise TypeError("request must be a validated RunRequest")
+        identity = build_run_identity(job.task, request)
+        ledger = _require_unmodified_run_ledger(self._ledger)
+        record = _RUN_LEDGER_ENQUEUE_METHOD(
+            ledger,
+            identity.idempotency_key,
+            identity.canonical_json,
+            claim_policy="one_shot",
+        )
+        if (
+            getattr(record, "run_key", None) != identity.idempotency_key
+            or getattr(record, "job_snapshot_json", None) != identity.canonical_json
+            or getattr(record, "claim_policy", None) != "one_shot"
+        ):
+            raise RuntimeError("ledger did not persist the requested one-shot run contract")
+        return record
+
     def run_once(self, worker: str, ttl: timedelta) -> RunOutcome | None:
         """Claim and execute at most one queued request."""
         claim_now = self._now()
         record = self._ledger.claim(worker, claim_now, ttl)
         if record is None:
             return None
+        return self._execute_claimed(record, worker, ttl)
+
+    def run_one_shot(self, run_key: str, worker: str, ttl: timedelta) -> RunOutcome | None:
+        """Claim and execute only the exact initial one-shot ledger row.
+
+        This path never falls back to the broad queue claim. An expired
+        one-shot lease raises the ledger's uncertainty error unchanged because
+        its external effect may already have occurred.
+        """
+        ledger = _require_unmodified_run_ledger(self._ledger)
+        record = _RUN_LEDGER_CLAIM_RUN_METHOD(
+            ledger,
+            run_key,
+            worker,
+            self._now(),
+            ttl,
+        )
+        if record is None:
+            return None
+        lease_id = getattr(record, "lease_id", None)
+        if (
+            getattr(record, "run_key", None) != run_key
+            or getattr(record, "claim_policy", None) != "one_shot"
+            or getattr(record, "status", None) != "running"
+            or getattr(record, "worker", None) != worker
+            or getattr(record, "fencing_token", None) != 1
+            or not isinstance(lease_id, str)
+            or re.fullmatch(r"[0-9a-f]{32}", lease_id) is None
+            or getattr(record, "started_at", None) is None
+            or getattr(record, "heartbeat_at", None) is None
+            or getattr(record, "lease_expires_at", None) is None
+            or getattr(record, "finished_at", None) is not None
+            or getattr(record, "error_text", None) is not None
+        ):
+            raise RuntimeError("ledger returned an invalid exact one-shot claim")
         return self._execute_claimed(record, worker, ttl)
 
     def _execute_claimed(self, record: RunRecord, worker: str, ttl: timedelta) -> RunOutcome:
@@ -744,6 +810,26 @@ def _supports_ledger_protocol(value: object) -> bool:
         callable(getattr(value, name, None))
         for name in ("enqueue", "claim", "heartbeat", "fail", "get", "commit_result")
     )
+
+
+def _require_unmodified_run_ledger(value: object) -> RunLedger:
+    """Require the captured RunLedger implementation for exact-key operations.
+
+    One-shot execution must fail before enqueue/claim side effects when given a
+    duck type or an overridden implementation. This protects the service
+    contract in a trusted process; it is not a sandbox against same-process
+    code replacement or a malicious local user.
+    """
+    if type(value) is not RunLedger:
+        raise TypeError("one-shot operations require the unmodified RunLedger type")
+    if (
+        "enqueue" in vars(value)
+        or "claim_run" in vars(value)
+        or RunLedger.enqueue is not _RUN_LEDGER_ENQUEUE_METHOD
+        or RunLedger.claim_run is not _RUN_LEDGER_CLAIM_RUN_METHOD
+    ):
+        raise TypeError("one-shot operations require unmodified RunLedger methods")
+    return value
 
 
 def _parse_snapshot(snapshot_json: str) -> dict[str, object]:
