@@ -12,13 +12,16 @@ privileged operating-system races or make SQLite audit rows tamper-proof.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
+import sqlite3
+from contextlib import suppress
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from stat import S_ISREG
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 from urllib.parse import unquote, urlsplit
 
 from sqlalchemy import text
@@ -40,6 +43,9 @@ SOURCE_GRANT_HOST_TABLE = "od_source_grant_hosts"
 SOURCE_GRANT_HOST_SET_TABLE = "od_source_grant_host_sets"
 SOURCE_GRANT_EVENT_TABLE = "od_source_grant_events"
 SOURCE_ATTEMPT_TABLE = "od_source_attempt_reservations"
+SOURCE_ATTEMPT_SCOPE_V2_TABLE = "od_source_attempt_scope_v2"
+SOURCE_GATE_VERSION_TABLE = "alembic_version_source_gate"
+SOURCE_GATE_SCOPE_V2_REVISION = "sg0002_source_attempt_scope_v2"
 
 MICROTOKENS_PER_TOKEN = 1_000_000
 MICROSECONDS_PER_SECOND = 1_000_000
@@ -50,9 +56,111 @@ MAX_REVISION = 2_147_483_647
 MAX_TIMESTAMP_US = 253_402_300_799_999_999
 MAX_RETRY_AFTER_US = 1_000_000_000_000_000_000
 _MAX_TEXT_LENGTH = 128
+_MAX_SCOPE_V2_BYTES = 16 * 1024
 _IDENTIFIER_PATTERN = re.compile(r"\A[A-Za-z0-9][A-Za-z0-9._:-]{0,127}\Z")
 _HOST_LABEL_PATTERN = re.compile(r"\A[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\Z")
 _SHA256_PATTERN = re.compile(r"\A[0-9a-f]{64}\Z")
+_ATTEMPT_DENIAL_CODES = frozenset(
+    {
+        "budget_scope_mismatch",
+        "grant_conditions_invalid",
+        "grant_conditions_unresolved",
+        "grant_evidence_incomplete",
+        "grant_expired",
+        "grant_host_mismatch",
+        "grant_hosts_invalid",
+        "grant_hosts_unsealed",
+        "grant_invalid",
+        "grant_not_allowed",
+        "grant_not_found",
+        "grant_not_yet_valid",
+        "grant_revision_mismatch",
+        "grant_scope_mismatch",
+        "source_policy_revision_invalid",
+        "source_policy_unconfigured",
+        "source_quota_state_invalid",
+        "source_quota_state_unavailable",
+        "source_quota_unconfigured",
+        "source_rate_limited",
+    }
+)
+_BASE_ATTEMPT_COLUMNS = {
+    "attempt_id": ("VARCHAR(128)", 1, 1),
+    "request_id": ("VARCHAR(128)", 1, 0),
+    "attempt_no": ("BIGINT", 1, 0),
+    "grant_id": ("VARCHAR(128)", 1, 0),
+    "expected_revision": ("BIGINT", 1, 0),
+    "source": ("VARCHAR(128)", 1, 0),
+    "canonical_model": ("VARCHAR(128)", 1, 0),
+    "operation": ("VARCHAR(16)", 1, 0),
+    "principal_scope": ("VARCHAR(128)", 1, 0),
+    "host": ("VARCHAR(253)", 1, 0),
+    "run_key": ("VARCHAR(128)", 0, 0),
+    "outcome": ("VARCHAR(8)", 1, 0),
+    "denial_code": ("VARCHAR(64)", 0, 0),
+    "retry_after_us": ("BIGINT", 0, 0),
+    "decided_at_us": ("BIGINT", 1, 0),
+    "reserved_at_us": ("BIGINT", 0, 0),
+    "quota_key": ("VARCHAR(128)", 0, 0),
+    "policy_revision": ("BIGINT", 0, 0),
+    "rate_microtokens_per_second": ("BIGINT", 0, 0),
+    "capacity_microtokens": ("BIGINT", 0, 0),
+}
+_BASE_ATTEMPT_CHECKS = (
+    "length(trim(attempt_id)) BETWEEN 1 AND 128",
+    "length(trim(request_id)) BETWEEN 1 AND 128",
+    "attempt_no BETWEEN 1 AND 1000000",
+    "length(trim(grant_id)) BETWEEN 1 AND 128",
+    "expected_revision BETWEEN 1 AND 2147483647",
+    "length(trim(source)) BETWEEN 1 AND 128",
+    "length(trim(canonical_model)) BETWEEN 1 AND 128",
+    "operation IN ('query', 'store', 'export', 'subscribe')",
+    "length(trim(principal_scope)) BETWEEN 1 AND 128",
+    "length(trim(host)) BETWEEN 1 AND 253",
+    "run_key IS NULL OR length(trim(run_key)) BETWEEN 1 AND 128",
+    "(outcome = 'RESERVED' AND denial_code IS NULL AND reserved_at_us IS NOT NULL) OR "
+    "(outcome = 'DENIED' AND denial_code IS NOT NULL "
+    "AND length(trim(denial_code)) BETWEEN 1 AND 64 "
+    "AND reserved_at_us IS NULL)",
+    "retry_after_us IS NULL OR retry_after_us BETWEEN 1 AND 1000000000000000000",
+    "decided_at_us >= 0",
+    "reserved_at_us IS NULL OR reserved_at_us = decided_at_us",
+    "(quota_key IS NULL AND policy_revision IS NULL "
+    "AND rate_microtokens_per_second IS NULL AND capacity_microtokens IS NULL) OR "
+    "(quota_key IS NOT NULL AND policy_revision IS NOT NULL "
+    "AND rate_microtokens_per_second IS NOT NULL AND capacity_microtokens IS NOT NULL AND "
+    "length(trim(quota_key)) BETWEEN 1 AND 128 AND "
+    "policy_revision BETWEEN 1 AND 2147483647 AND "
+    "rate_microtokens_per_second BETWEEN 1 AND 1000000000000 AND "
+    "capacity_microtokens BETWEEN 1000000 AND 1000000000000)",
+)
+_SCOPE_V2_CHECKS = (
+    "scope_version = 2",
+    "length(CAST(scope_json AS BLOB)) BETWEEN 1 AND 16384",
+    "length(scope_sha256) = 64 AND scope_sha256 NOT GLOB '*[^0-9a-f]*'",
+)
+_IMMUTABLE_TRIGGER_SQL = {
+    (SOURCE_ATTEMPT_TABLE, "UPDATE"): (
+        "CREATE TRIGGER trg_od_source_attempt_immutable_update BEFORE UPDATE ON "
+        "od_source_attempt_reservations BEGIN SELECT RAISE(ABORT, "
+        "'source attempt tombstones are immutable'); END"
+    ),
+    (SOURCE_ATTEMPT_TABLE, "DELETE"): (
+        "CREATE TRIGGER trg_od_source_attempt_immutable_delete BEFORE DELETE ON "
+        "od_source_attempt_reservations BEGIN SELECT RAISE(ABORT, "
+        "'source attempt tombstones are permanent'); END"
+    ),
+    (SOURCE_ATTEMPT_SCOPE_V2_TABLE, "UPDATE"): (
+        "CREATE TRIGGER trg_od_source_attempt_scope_v2_immutable_update BEFORE UPDATE ON "
+        "od_source_attempt_scope_v2 BEGIN SELECT RAISE(ABORT, "
+        "'source attempt scope v2 rows are immutable'); END"
+    ),
+    (SOURCE_ATTEMPT_SCOPE_V2_TABLE, "DELETE"): (
+        "CREATE TRIGGER trg_od_source_attempt_scope_v2_immutable_delete BEFORE DELETE ON "
+        "od_source_attempt_scope_v2 BEGIN SELECT RAISE(ABORT, "
+        "'source attempt scope v2 rows are permanent'); END"
+    ),
+}
 
 
 class SourceAttemptGateError(RuntimeError):
@@ -91,6 +199,18 @@ class GrantRevocationStatus(str, Enum):
     ALREADY_REVOKED = "ALREADY_REVOKED"
     STALE_REVISION = "STALE_REVISION"
     NOT_REVOCABLE = "NOT_REVOCABLE"
+
+
+class AttemptLookupReasonCode(str, Enum):
+    """Fixed, non-sensitive reasons why a strict v2 lookup is indeterminate."""
+
+    DATABASE_UNAVAILABLE = "DATABASE_UNAVAILABLE"
+    SCHEMA_UNAVAILABLE = "SCHEMA_UNAVAILABLE"
+    LEGACY_SCOPE_UNVERIFIABLE = "LEGACY_SCOPE_UNVERIFIABLE"
+    ID_CONFLICT = "ID_CONFLICT"
+    SCOPE_MISMATCH = "SCOPE_MISMATCH"
+    SCOPE_CORRUPT = "SCOPE_CORRUPT"
+    RECORD_CORRUPT = "RECORD_CORRUPT"
 
 
 @dataclass(frozen=True, slots=True)
@@ -143,6 +263,99 @@ class TransportAttempt:
         }:
             raise SourceAttemptInputError("operation is not supported")
         object.__setattr__(self, "host", _normalize_host(self.host))
+
+
+@dataclass(frozen=True, slots=True)
+class SourceAttemptScopeV2:
+    """Complete, non-secret caller-declared scope for one v2 gate reservation.
+
+    Policy and budget pins identify the requested scope; they do not prove source
+    rights, HTTP delivery, or provider receipt. ``budget_quota_key`` names the
+    gate's shared bucket dimension. A v2 scope always requires a durable run key.
+    """
+
+    attempt: TransportAttempt
+    capture_intent_id: str
+    request_summary_sha256: str
+    source_policy_id: str
+    source_policy_revision: str
+    source_policy_sha256: str
+    budget_binding_sha256: str
+    budget_quota_key: str
+    budget_policy_revision: int
+    budget_policy_sha256: str
+
+    def __post_init__(self) -> None:
+        """Reject partial, malformed, or unbounded scope before any database access."""
+        if type(self.attempt) is not TransportAttempt:
+            raise SourceAttemptInputError("attempt must be a TransportAttempt")
+        if self.attempt.run_key is None:
+            raise SourceAttemptInputError("v2 attempt scope requires a run_key")
+        for field_name in (
+            "capture_intent_id",
+            "source_policy_id",
+            "source_policy_revision",
+            "budget_quota_key",
+        ):
+            _validate_identifier(getattr(self, field_name), field_name)
+        for field_name in (
+            "request_summary_sha256",
+            "source_policy_sha256",
+            "budget_binding_sha256",
+            "budget_policy_sha256",
+        ):
+            if not _valid_sha256(getattr(self, field_name)):
+                raise SourceAttemptInputError(f"{field_name} must be a lowercase SHA-256 digest")
+        if (
+            type(self.budget_policy_revision) is not int
+            or not 1 <= self.budget_policy_revision <= MAX_REVISION
+        ):
+            raise SourceAttemptInputError("budget_policy_revision is outside the supported range")
+        _scope_v2_bytes(self)
+
+
+@dataclass(frozen=True, slots=True)
+class AttemptLookupReserved:
+    """Exact matching committed reservation; not proof an HTTP request was sent."""
+
+    status: Literal["RESERVED"]
+    attempt_id: str
+    scope_sha256: str
+    source_policy_revision: str
+    budget_policy_revision: int
+    reserved_at_us: int
+
+
+@dataclass(frozen=True, slots=True)
+class AttemptLookupDenied:
+    """Exact matching committed denial tombstone."""
+
+    status: Literal["DENIED"]
+    attempt_id: str
+    scope_sha256: str
+    source_policy_revision: str
+    denial_code: str
+
+
+@dataclass(frozen=True, slots=True)
+class AttemptLookupAbsent:
+    """No matching row in a verified, successful local SQLite read snapshot."""
+
+    status: Literal["ABSENT"]
+    scope_sha256: str
+
+
+@dataclass(frozen=True, slots=True)
+class AttemptLookupIndeterminate:
+    """Lookup could not prove an exact decision or authoritative absence."""
+
+    status: Literal["INDETERMINATE"]
+    reason_code: AttemptLookupReasonCode
+
+
+GateAttemptLookupResult = (
+    AttemptLookupReserved | AttemptLookupDenied | AttemptLookupAbsent | AttemptLookupIndeterminate
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -240,20 +453,53 @@ class SourceAttemptGate:
         """
         if not isinstance(attempt, TransportAttempt):
             raise SourceAttemptInputError("attempt must be a TransportAttempt")
+        return self._reserve_attempt(attempt, None)
+
+    def reserve_attempt_v2(self, scope: SourceAttemptScopeV2) -> AttemptReservation:
+        """Atomically reserve a complete v2 scope and its immutable scope sidecar.
+
+        This API is available only after the dedicated source-gate migration is
+        installed. It never retries a request and a repeated identity never
+        returns a reusable permit.
+        """
+        if type(scope) is not SourceAttemptScopeV2:
+            raise SourceAttemptInputError("scope must be a SourceAttemptScopeV2")
+        _scope_v2_bytes(scope)
+        return self._reserve_attempt(scope.attempt, scope)
+
+    def _reserve_attempt(
+        self,
+        attempt: TransportAttempt,
+        scope: SourceAttemptScopeV2 | None,
+    ) -> AttemptReservation:
+        """Share the v1 writer while keeping v2 metadata in the same transaction."""
         connection = self._open_write_connection()
         try:
+            if scope is not None:
+                self._require_v2_schema(connection)
             effective_now = self._advance_clock(connection)
-            duplicate = self._find_existing_attempt(connection, attempt)
+            duplicate = (
+                self._find_existing_v2_attempt(connection, scope)
+                if scope is not None
+                else self._find_existing_attempt(connection, attempt)
+            )
             if duplicate is not None:
                 self._commit(connection)
                 return duplicate
 
-            decision, bucket_update, policy_snapshot = self._evaluate_attempt(
-                connection, attempt, effective_now
-            )
+            if scope is not None:
+                decision, bucket_update, policy_snapshot = self._evaluate_attempt_v2(
+                    connection, scope, effective_now
+                )
+            else:
+                decision, bucket_update, policy_snapshot = self._evaluate_attempt(
+                    connection, attempt, effective_now
+                )
             if bucket_update is not None:
                 self._persist_bucket(connection, bucket_update[0], bucket_update[1])
             self._insert_attempt(connection, attempt, decision, effective_now, policy_snapshot)
+            if scope is not None:
+                self._insert_attempt_scope_v2(connection, scope, effective_now)
             self._commit(connection)
             return decision
         except SourceAttemptGateUnavailable:
@@ -263,6 +509,36 @@ class SourceAttemptGate:
         except Exception:
             raise
         finally:
+            connection.close()
+
+    def lookup_attempt_v2(self, scope: SourceAttemptScopeV2) -> GateAttemptLookupResult:
+        """Read one exact attempt decision using a SQLite read-only connection.
+
+        This reports only a local gate tombstone. It does not establish that a
+        transport was invoked, that a provider received a request, or that
+        crash recovery is implemented. Any unverified state is indeterminate.
+        """
+        if type(scope) is not SourceAttemptScopeV2:
+            raise SourceAttemptInputError("scope must be a SourceAttemptScopeV2")
+        scope_json, scope_sha256 = _scope_v2_bytes_and_digest(scope)
+        try:
+            connection = self._open_readonly_connection()
+        except Exception:
+            return AttemptLookupIndeterminate(
+                "INDETERMINATE", AttemptLookupReasonCode.DATABASE_UNAVAILABLE
+            )
+        try:
+            reason_code = self._v2_schema_reason(connection)
+            if reason_code is not None:
+                return AttemptLookupIndeterminate("INDETERMINATE", reason_code)
+            return self._lookup_v2_snapshot(scope, scope_json, scope_sha256, connection)
+        except Exception:
+            return AttemptLookupIndeterminate(
+                "INDETERMINATE", AttemptLookupReasonCode.DATABASE_UNAVAILABLE
+            )
+        finally:
+            with suppress(sqlite3.Error):
+                connection.rollback()
             connection.close()
 
     def revoke_grant(
@@ -381,6 +657,46 @@ class SourceAttemptGate:
             raise SourceAttemptGateUnavailable("source attempt gate is unavailable") from None
         return connection
 
+    def _open_readonly_connection(self) -> sqlite3.Connection:
+        """Open the exact gate file with SQLite URI read-only enforcement."""
+        database_uri = f"{self._expected_main_path.as_uri()}?mode=ro"
+        connection = sqlite3.connect(
+            database_uri,
+            uri=True,
+            timeout=5.0,
+            isolation_level=None,
+        )
+        try:
+            connection.row_factory = sqlite3.Row
+            connection.execute("PRAGMA busy_timeout = 5000")
+            connection.execute("PRAGMA query_only = ON")
+            query_only = connection.execute("PRAGMA query_only").fetchone()
+            if query_only is None or query_only[0] != 1:
+                raise sqlite3.OperationalError("read-only mode is unavailable")
+            self._verify_readonly_main_database(connection)
+            connection.execute("BEGIN")
+            return connection
+        except Exception:
+            connection.close()
+            raise
+
+    def _verify_readonly_main_database(self, connection: sqlite3.Connection) -> None:
+        """Confirm the read-only handle resolves to the file identity pinned at init."""
+        rows = connection.execute("PRAGMA database_list").fetchall()
+        main_rows = [row for row in rows if row[1] == "main"]
+        if len(main_rows) != 1 or not isinstance(main_rows[0][2], str) or not main_rows[0][2]:
+            raise sqlite3.OperationalError("source attempt gate requires persistent SQLite")
+        try:
+            actual_path, actual_stat = _stat_database_file(Path(main_rows[0][2]))
+        except (OSError, ValueError):
+            raise sqlite3.OperationalError("source attempt database identity is invalid") from None
+        actual_identity = (actual_stat.st_dev, actual_stat.st_ino)
+        if (
+            actual_path != self._expected_main_path
+            or actual_identity != self._expected_main_identity
+        ):
+            raise sqlite3.OperationalError("source attempt database identity changed")
+
     def _verify_main_database(self, connection: Connection) -> None:
         """Reject memory/custom-creator/replaced databases before a write transaction."""
         rows = connection.exec_driver_sql("PRAGMA database_list").all()
@@ -448,6 +764,334 @@ class SourceAttemptGate:
             return AttemptReservation(ReservationStatus.DUPLICATE)
         return AttemptReservation(ReservationStatus.ID_CONFLICT)
 
+    def _find_existing_v2_attempt(
+        self, connection: Connection, scope: SourceAttemptScopeV2
+    ) -> AttemptReservation | None:
+        """Treat only an exact v2 tombstone as a duplicate; v1 rows are conflicts."""
+        attempt = scope.attempt
+        by_id = self._fetch_all(
+            connection,
+            "SELECT * FROM od_source_attempt_reservations WHERE attempt_id = :attempt_id",
+            {"attempt_id": attempt.attempt_id},
+        )
+        by_request = self._fetch_all(
+            connection,
+            "SELECT * FROM od_source_attempt_reservations "
+            "WHERE request_id = :request_id AND attempt_no = :attempt_no",
+            {"request_id": attempt.request_id, "attempt_no": attempt.attempt_no},
+        )
+        if len(by_id) > 1 or len(by_request) > 1:
+            return AttemptReservation(ReservationStatus.ID_CONFLICT)
+        if not by_id and not by_request:
+            sidecar = self._fetch_one(
+                connection,
+                "SELECT attempt_id FROM od_source_attempt_scope_v2 WHERE attempt_id = :attempt_id",
+                {"attempt_id": attempt.attempt_id},
+            )
+            return (
+                AttemptReservation(ReservationStatus.ID_CONFLICT) if sidecar is not None else None
+            )
+        if by_id and by_request and by_id[0]["attempt_id"] != by_request[0]["attempt_id"]:
+            return AttemptReservation(ReservationStatus.ID_CONFLICT)
+        existing = by_id[0] if by_id else by_request[0]
+        if not self._same_attempt_scope(existing, attempt):
+            return AttemptReservation(ReservationStatus.ID_CONFLICT)
+        sidecar = self._fetch_one(
+            connection,
+            "SELECT scope_version, scope_json, scope_sha256, recorded_at_us "
+            "FROM od_source_attempt_scope_v2 WHERE attempt_id = :attempt_id",
+            {"attempt_id": attempt.attempt_id},
+        )
+        if sidecar is None:
+            return AttemptReservation(ReservationStatus.ID_CONFLICT)
+        expected_json, expected_digest = _scope_v2_bytes_and_digest(scope)
+        stored_json = sidecar["scope_json"]
+        if not isinstance(stored_json, str):
+            return AttemptReservation(ReservationStatus.ID_CONFLICT)
+        try:
+            stored_bytes = stored_json.encode("utf-8", errors="strict")
+        except UnicodeError:
+            return AttemptReservation(ReservationStatus.ID_CONFLICT)
+        if (
+            sidecar["scope_version"] != 2
+            or not _valid_sha256(sidecar["scope_sha256"])
+            or hashlib.sha256(stored_bytes).hexdigest() != sidecar["scope_sha256"]
+            or stored_bytes != expected_json
+            or sidecar["scope_sha256"] != expected_digest
+            or sidecar["recorded_at_us"] != existing["decided_at_us"]
+        ):
+            return AttemptReservation(ReservationStatus.ID_CONFLICT)
+        return AttemptReservation(ReservationStatus.DUPLICATE)
+
+    def _require_v2_schema(self, connection: Connection) -> None:
+        """Fail closed before mutating the gate unless the v2 lineage is current."""
+        reason = self._v2_schema_reason(connection)
+        if reason is not None:
+            raise SourceAttemptGateUnavailable("source attempt gate v2 schema is unavailable")
+
+    def _v2_schema_reason(
+        self, connection: Connection | sqlite3.Connection
+    ) -> AttemptLookupReasonCode | None:
+        """Validate the independent v2 marker and immutable sidecar DDL contract."""
+        try:
+            version_table = self._query_rows(
+                connection,
+                "SELECT name FROM sqlite_master WHERE type = 'table' AND name = :name",
+                {"name": SOURCE_GATE_VERSION_TABLE},
+            )
+            if len(version_table) != 1:
+                return AttemptLookupReasonCode.SCHEMA_UNAVAILABLE
+            versions = self._query_rows(
+                connection,
+                "SELECT version_num FROM alembic_version_source_gate",
+                {},
+            )
+            if (
+                len(versions) != 1
+                or versions[0].get("version_num") != SOURCE_GATE_SCOPE_V2_REVISION
+            ):
+                return AttemptLookupReasonCode.SCHEMA_UNAVAILABLE
+
+            sidecar_tables = self._query_rows(
+                connection,
+                "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = :name",
+                {"name": SOURCE_ATTEMPT_SCOPE_V2_TABLE},
+            )
+            if len(sidecar_tables) != 1:
+                return AttemptLookupReasonCode.SCHEMA_UNAVAILABLE
+            sidecar_sql = sidecar_tables[0].get("sql")
+            if not isinstance(sidecar_sql, str):
+                return AttemptLookupReasonCode.SCHEMA_UNAVAILABLE
+            if not self._has_v2_scope_checks(sidecar_sql):
+                return AttemptLookupReasonCode.SCHEMA_UNAVAILABLE
+
+            columns = self._query_rows(
+                connection,
+                "PRAGMA table_info('od_source_attempt_scope_v2')",
+                {},
+            )
+            expected_columns = {
+                "attempt_id": ("TEXT", 1, 1),
+                "scope_version": ("INTEGER", 1, 0),
+                "scope_json": ("TEXT", 1, 0),
+                "scope_sha256": ("TEXT", 1, 0),
+                "recorded_at_us": ("INTEGER", 1, 0),
+            }
+            if len(columns) != len(expected_columns):
+                return AttemptLookupReasonCode.SCHEMA_UNAVAILABLE
+            for column in columns:
+                column_name = column.get("name")
+                expected = (
+                    expected_columns.get(column_name) if isinstance(column_name, str) else None
+                )
+                actual = (
+                    str(column.get("type", "")).upper(),
+                    column.get("notnull"),
+                    column.get("pk"),
+                )
+                if expected is None or actual != expected:
+                    return AttemptLookupReasonCode.SCHEMA_UNAVAILABLE
+
+            foreign_keys = self._query_rows(
+                connection,
+                "PRAGMA foreign_key_list('od_source_attempt_scope_v2')",
+                {},
+            )
+            if len(foreign_keys) != 1:
+                return AttemptLookupReasonCode.SCHEMA_UNAVAILABLE
+            foreign_key = foreign_keys[0]
+            if (
+                foreign_key.get("table") != SOURCE_ATTEMPT_TABLE
+                or foreign_key.get("from") != "attempt_id"
+                or foreign_key.get("to") != "attempt_id"
+                or str(foreign_key.get("on_delete", "")).upper() != "RESTRICT"
+            ):
+                return AttemptLookupReasonCode.SCHEMA_UNAVAILABLE
+            if not self._has_scope_v2_primary_key_index(connection):
+                return AttemptLookupReasonCode.SCHEMA_UNAVAILABLE
+
+            triggers = self._query_rows(
+                connection,
+                "SELECT name, tbl_name, sql FROM sqlite_master WHERE type = 'trigger' "
+                "AND tbl_name = :table_name",
+                {"table_name": SOURCE_ATTEMPT_SCOPE_V2_TABLE},
+            )
+            required_triggers = {
+                "trg_od_source_attempt_scope_v2_immutable_update": "UPDATE",
+                "trg_od_source_attempt_scope_v2_immutable_delete": "DELETE",
+            }
+            found_triggers = {row.get("name"): row for row in triggers}
+            if set(found_triggers) != set(required_triggers):
+                return AttemptLookupReasonCode.SCHEMA_UNAVAILABLE
+            for name, event in required_triggers.items():
+                trigger = found_triggers[name]
+                trigger_sql = trigger.get("sql")
+                if (
+                    trigger.get("tbl_name") != SOURCE_ATTEMPT_SCOPE_V2_TABLE
+                    or not isinstance(trigger_sql, str)
+                    or not self._has_immutable_trigger(
+                        trigger_sql, event, SOURCE_ATTEMPT_SCOPE_V2_TABLE
+                    )
+                ):
+                    return AttemptLookupReasonCode.SCHEMA_UNAVAILABLE
+
+            base_tables = self._query_rows(
+                connection,
+                "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = :name",
+                {"name": SOURCE_ATTEMPT_TABLE},
+            )
+            if len(base_tables) != 1:
+                return AttemptLookupReasonCode.SCHEMA_UNAVAILABLE
+            base_create_sql = base_tables[0].get("sql")
+            if not isinstance(base_create_sql, str):
+                return AttemptLookupReasonCode.SCHEMA_UNAVAILABLE
+            if not self._has_base_attempt_schema(connection, base_create_sql):
+                return AttemptLookupReasonCode.SCHEMA_UNAVAILABLE
+            encoding = self._query_rows(connection, "PRAGMA encoding", {})
+            if len(encoding) != 1 or str(encoding[0].get("encoding", "")).upper() != "UTF-8":
+                return AttemptLookupReasonCode.SCHEMA_UNAVAILABLE
+        except (sqlite3.Error, SQLAlchemyError):
+            return AttemptLookupReasonCode.DATABASE_UNAVAILABLE
+        except Exception:
+            return AttemptLookupReasonCode.SCHEMA_UNAVAILABLE
+        return None
+
+    def _has_v2_scope_checks(self, create_sql: str) -> bool:
+        """Require exactly the version, UTF-8 byte bound, and digest CHECK clauses."""
+        checks = _extract_sqlite_check_expressions(create_sql)
+        expected = {_normalize_check_expression(item) for item in _SCOPE_V2_CHECKS}
+        return (
+            checks is not None and len(checks) == len(_SCOPE_V2_CHECKS) and set(checks) == expected
+        )
+
+    def _has_immutable_trigger(self, trigger_sql: str, event: str, table_name: str) -> bool:
+        """Require byte-for-byte semantic DDL after insignificant whitespace folding."""
+        expected = _IMMUTABLE_TRIGGER_SQL.get((table_name, event))
+        return expected is not None and " ".join(trigger_sql.split()) == " ".join(expected.split())
+
+    def _has_base_attempt_schema(
+        self,
+        connection: Connection | sqlite3.Connection,
+        create_sql: str,
+    ) -> bool:
+        """Verify the complete immutable base-table contract before any v2 result."""
+        columns = self._query_rows(
+            connection,
+            "PRAGMA table_info('od_source_attempt_reservations')",
+            {},
+        )
+        if len(columns) != len(_BASE_ATTEMPT_COLUMNS):
+            return False
+        for column in columns:
+            column_name = column.get("name")
+            expected = (
+                _BASE_ATTEMPT_COLUMNS.get(column_name) if isinstance(column_name, str) else None
+            )
+            actual = (
+                str(column.get("type", "")).upper(),
+                column.get("notnull"),
+                column.get("pk"),
+            )
+            if expected is None or actual != expected or column.get("dflt_value") is not None:
+                return False
+
+        check_expressions = _extract_sqlite_check_expressions(create_sql)
+        expected_checks = {_normalize_check_expression(item) for item in _BASE_ATTEMPT_CHECKS}
+        if (
+            check_expressions is None
+            or len(check_expressions) != len(_BASE_ATTEMPT_CHECKS)
+            or set(check_expressions) != expected_checks
+        ):
+            return False
+
+        foreign_keys = self._query_rows(
+            connection,
+            "PRAGMA foreign_key_list('od_source_attempt_reservations')",
+            {},
+        )
+        if len(foreign_keys) != 1:
+            return False
+        foreign_key = foreign_keys[0]
+        if (
+            foreign_key.get("table") != SOURCE_GATE_POLICY_TABLE
+            or foreign_key.get("from") != "quota_key"
+            or foreign_key.get("to") != "quota_key"
+            or str(foreign_key.get("on_delete", "")).upper() != "RESTRICT"
+        ):
+            return False
+
+        triggers = self._query_rows(
+            connection,
+            "SELECT name, tbl_name, sql FROM sqlite_master WHERE type = 'trigger' "
+            "AND tbl_name = :table_name",
+            {"table_name": SOURCE_ATTEMPT_TABLE},
+        )
+        required_triggers = {
+            "trg_od_source_attempt_immutable_update": "UPDATE",
+            "trg_od_source_attempt_immutable_delete": "DELETE",
+        }
+        found_triggers = {row.get("name"): row for row in triggers}
+        if set(found_triggers) != set(required_triggers):
+            return False
+        for name, event in required_triggers.items():
+            trigger = found_triggers[name]
+            trigger_sql = trigger.get("sql")
+            if (
+                trigger.get("tbl_name") != SOURCE_ATTEMPT_TABLE
+                or not isinstance(trigger_sql, str)
+                or not self._has_immutable_trigger(trigger_sql, event, SOURCE_ATTEMPT_TABLE)
+            ):
+                return False
+        return self._has_attempt_request_unique_key(connection)
+
+    def _has_scope_v2_primary_key_index(self, connection: Connection | sqlite3.Connection) -> bool:
+        """Require the sidecar's only index to be its complete attempt-id primary key."""
+        indexes = self._query_rows(
+            connection,
+            "PRAGMA index_list('od_source_attempt_scope_v2')",
+            {},
+        )
+        if len(indexes) != 1:
+            return False
+        index = indexes[0]
+        index_name = index.get("name")
+        if (
+            index.get("unique") != 1
+            or index.get("partial") != 0
+            or index.get("origin") != "pk"
+            or not isinstance(index_name, str)
+        ):
+            return False
+        quoted_name = _quote_sqlite_literal(index_name)
+        columns = self._query_rows(connection, f"PRAGMA index_info({quoted_name})", {})
+        return tuple(column.get("name") for column in columns) == ("attempt_id",)
+
+    def _has_attempt_request_unique_key(self, connection: Connection | sqlite3.Connection) -> bool:
+        """Require exactly the PK and full non-partial request/attempt unique indexes."""
+        indexes = self._query_rows(
+            connection,
+            "PRAGMA index_list('od_source_attempt_reservations')",
+            {},
+        )
+        if len(indexes) != 2:
+            return False
+        found: set[tuple[str, tuple[object, ...]]] = set()
+        for index in indexes:
+            index_name = index.get("name")
+            if (
+                index.get("unique") != 1
+                or index.get("partial") != 0
+                or not isinstance(index_name, str)
+            ):
+                continue
+            quoted_name = _quote_sqlite_literal(index_name)
+            columns = self._query_rows(connection, f"PRAGMA index_info({quoted_name})", {})
+            found.add((str(index.get("origin")), tuple(column.get("name") for column in columns)))
+        return found == {
+            ("pk", ("attempt_id",)),
+            ("u", ("request_id", "attempt_no")),
+        }
+
     def _same_attempt_scope(self, row: Mapping[str, object], attempt: TransportAttempt) -> bool:
         """Compare every immutable caller-supplied scope field in an old row."""
         expected = (
@@ -480,6 +1124,266 @@ class SourceAttemptGate:
             )
         )
         return actual == expected
+
+    def _evaluate_attempt_v2(
+        self,
+        connection: Connection,
+        scope: SourceAttemptScopeV2,
+        effective_now: int,
+    ) -> tuple[
+        AttemptReservation,
+        tuple[str, _BucketDecision] | None,
+        _PolicySnapshot | None,
+    ]:
+        """Check grant first, then bind any consuming decision to the pinned bucket."""
+        attempt = scope.attempt
+        grant = self._fetch_one(
+            connection,
+            "SELECT * FROM od_source_grants WHERE grant_id = :grant_id",
+            {"grant_id": attempt.grant_id},
+        )
+        grant_denial = self._grant_denial(connection, grant, attempt, effective_now)
+        if grant_denial is not None:
+            return AttemptReservation(ReservationStatus.DENIED, grant_denial), None, None
+        if self._scope_budget_mismatch(connection, scope, effective_now):
+            return (
+                AttemptReservation(ReservationStatus.DENIED, "budget_scope_mismatch"),
+                None,
+                None,
+            )
+        return self._evaluate_attempt(connection, attempt, effective_now)
+
+    def _scope_budget_mismatch(
+        self,
+        connection: Connection,
+        scope: SourceAttemptScopeV2,
+        effective_now: int,
+    ) -> bool:
+        """Deny a v2 request if a valid current gate bucket differs from its pins.
+
+        Missing or invalid gate configuration is left to the regular evaluator,
+        which persists its established fixed denial code without granting a
+        request. This comparison does not establish source rights.
+        """
+        binding = self._fetch_one(
+            connection,
+            "SELECT * FROM od_source_gate_source_bindings WHERE source = :source",
+            {"source": scope.attempt.source},
+        )
+        quota_key = self._binding_value(binding, effective_now)
+        if quota_key is None:
+            return False
+        if quota_key != scope.budget_quota_key or binding is None:
+            return True
+        if binding["binding_sha256"] != scope.budget_binding_sha256:
+            return True
+        policy = self._fetch_one(
+            connection,
+            "SELECT * FROM od_source_gate_policies WHERE quota_key = :quota_key",
+            {"quota_key": quota_key},
+        )
+        values = self._policy_values(policy, effective_now)
+        if values is None:
+            return False
+        policy_revision, _rate, _capacity = values
+        return (
+            policy_revision != scope.budget_policy_revision
+            or policy is None
+            or policy["policy_sha256"] != scope.budget_policy_sha256
+        )
+
+    def _insert_attempt_scope_v2(
+        self,
+        connection: Connection,
+        scope: SourceAttemptScopeV2,
+        recorded_at_us: int,
+    ) -> None:
+        """Insert immutable v2 metadata inside the reservation transaction."""
+        scope_json, scope_sha256 = _scope_v2_bytes_and_digest(scope)
+        connection.execute(
+            text(
+                "INSERT INTO od_source_attempt_scope_v2 "
+                "(attempt_id, scope_version, scope_json, scope_sha256, recorded_at_us) "
+                "VALUES (:attempt_id, 2, :scope_json, :scope_sha256, :recorded_at_us)"
+            ),
+            {
+                "attempt_id": scope.attempt.attempt_id,
+                "scope_json": scope_json.decode("utf-8"),
+                "scope_sha256": scope_sha256,
+                "recorded_at_us": recorded_at_us,
+            },
+        )
+
+    def _lookup_v2_snapshot(
+        self,
+        scope: SourceAttemptScopeV2,
+        expected_json: bytes,
+        expected_sha256: str,
+        connection: sqlite3.Connection,
+    ) -> GateAttemptLookupResult:
+        """Resolve both immutable base keys and compare the whole v2 sidecar."""
+        attempt = scope.attempt
+        by_id = self._query_rows(
+            connection,
+            "SELECT * FROM od_source_attempt_reservations WHERE attempt_id = :attempt_id",
+            {"attempt_id": attempt.attempt_id},
+        )
+        by_request = self._query_rows(
+            connection,
+            "SELECT * FROM od_source_attempt_reservations "
+            "WHERE request_id = :request_id AND attempt_no = :attempt_no",
+            {"request_id": attempt.request_id, "attempt_no": attempt.attempt_no},
+        )
+        if len(by_id) > 1 or len(by_request) > 1:
+            return AttemptLookupIndeterminate("INDETERMINATE", AttemptLookupReasonCode.ID_CONFLICT)
+        if by_id and by_request and by_id[0]["attempt_id"] != by_request[0]["attempt_id"]:
+            return AttemptLookupIndeterminate("INDETERMINATE", AttemptLookupReasonCode.ID_CONFLICT)
+        if not by_id and not by_request:
+            foreign_key_violations = self._query_rows(
+                connection,
+                "PRAGMA foreign_key_check('od_source_attempt_scope_v2')",
+                {},
+            )
+            if foreign_key_violations:
+                return AttemptLookupIndeterminate(
+                    "INDETERMINATE", AttemptLookupReasonCode.SCOPE_CORRUPT
+                )
+            orphan = self._query_rows(
+                connection,
+                "SELECT attempt_id FROM od_source_attempt_scope_v2 WHERE attempt_id = :attempt_id",
+                {"attempt_id": attempt.attempt_id},
+            )
+            if orphan:
+                return AttemptLookupIndeterminate(
+                    "INDETERMINATE", AttemptLookupReasonCode.SCOPE_CORRUPT
+                )
+            return AttemptLookupAbsent("ABSENT", expected_sha256)
+
+        row = by_id[0] if by_id else by_request[0]
+        if not self._same_attempt_scope(row, attempt):
+            return AttemptLookupIndeterminate(
+                "INDETERMINATE", AttemptLookupReasonCode.SCOPE_MISMATCH
+            )
+        sidecars = self._query_rows(
+            connection,
+            "SELECT scope_version, scope_json, scope_sha256, recorded_at_us "
+            "FROM od_source_attempt_scope_v2 WHERE attempt_id = :attempt_id",
+            {"attempt_id": attempt.attempt_id},
+        )
+        if not sidecars:
+            return AttemptLookupIndeterminate(
+                "INDETERMINATE", AttemptLookupReasonCode.LEGACY_SCOPE_UNVERIFIABLE
+            )
+        if len(sidecars) != 1:
+            return AttemptLookupIndeterminate(
+                "INDETERMINATE", AttemptLookupReasonCode.SCOPE_CORRUPT
+            )
+        sidecar = sidecars[0]
+        try:
+            stored_json = sidecar.get("scope_json")
+            if not isinstance(stored_json, str):
+                raise ValueError("scope JSON is not text")
+            stored_bytes = stored_json.encode("utf-8", errors="strict")
+        except (UnicodeError, ValueError):
+            return AttemptLookupIndeterminate(
+                "INDETERMINATE", AttemptLookupReasonCode.SCOPE_CORRUPT
+            )
+        stored_sha256 = sidecar.get("scope_sha256")
+        if (
+            sidecar.get("scope_version") != 2
+            or len(stored_bytes) > _MAX_SCOPE_V2_BYTES
+            or not _valid_sha256(stored_sha256)
+            or hashlib.sha256(stored_bytes).hexdigest() != stored_sha256
+        ):
+            return AttemptLookupIndeterminate(
+                "INDETERMINATE", AttemptLookupReasonCode.SCOPE_CORRUPT
+            )
+        if stored_bytes != expected_json or stored_sha256 != expected_sha256:
+            return AttemptLookupIndeterminate(
+                "INDETERMINATE", AttemptLookupReasonCode.SCOPE_MISMATCH
+            )
+        recorded_at = _bounded_int_or_none(sidecar.get("recorded_at_us"), 0, MAX_TIMESTAMP_US)
+        decided_at = _bounded_int_or_none(row.get("decided_at_us"), 0, MAX_TIMESTAMP_US)
+        if recorded_at is None or decided_at is None or recorded_at != decided_at:
+            return AttemptLookupIndeterminate(
+                "INDETERMINATE", AttemptLookupReasonCode.RECORD_CORRUPT
+            )
+        snapshot_values = (
+            row.get("quota_key"),
+            row.get("policy_revision"),
+            row.get("rate_microtokens_per_second"),
+            row.get("capacity_microtokens"),
+        )
+        if any(value is not None for value in snapshot_values):
+            quota_key, policy_revision_value, rate_value, capacity_value = snapshot_values
+            if (
+                not _valid_identifier(quota_key)
+                or quota_key != scope.budget_quota_key
+                or _bounded_int_or_none(policy_revision_value, 1, MAX_REVISION)
+                != scope.budget_policy_revision
+                or _bounded_int_or_none(rate_value, 1, MAX_RATE_MICROTOKENS_PER_SECOND) is None
+                or _bounded_int_or_none(
+                    capacity_value, MICROTOKENS_PER_TOKEN, MAX_CAPACITY_MICROTOKENS
+                )
+                is None
+            ):
+                return AttemptLookupIndeterminate(
+                    "INDETERMINATE", AttemptLookupReasonCode.RECORD_CORRUPT
+                )
+
+        if row.get("outcome") == "RESERVED":
+            reserved_at = _bounded_int_or_none(row.get("reserved_at_us"), 0, MAX_TIMESTAMP_US)
+            policy_revision = _bounded_int_or_none(row.get("policy_revision"), 1, MAX_REVISION)
+            rate = _bounded_int_or_none(
+                row.get("rate_microtokens_per_second"), 1, MAX_RATE_MICROTOKENS_PER_SECOND
+            )
+            capacity = _bounded_int_or_none(
+                row.get("capacity_microtokens"), MICROTOKENS_PER_TOKEN, MAX_CAPACITY_MICROTOKENS
+            )
+            if (
+                row.get("denial_code") is not None
+                or reserved_at is None
+                or reserved_at != decided_at
+                or row.get("quota_key") != scope.budget_quota_key
+                or policy_revision != scope.budget_policy_revision
+                or rate is None
+                or capacity is None
+                or row.get("retry_after_us") is not None
+            ):
+                return AttemptLookupIndeterminate(
+                    "INDETERMINATE", AttemptLookupReasonCode.RECORD_CORRUPT
+                )
+            return AttemptLookupReserved(
+                "RESERVED",
+                attempt.attempt_id,
+                expected_sha256,
+                scope.source_policy_revision,
+                scope.budget_policy_revision,
+                reserved_at,
+            )
+        if row.get("outcome") == "DENIED":
+            denial_code = row.get("denial_code")
+            retry_after = row.get("retry_after_us")
+            if (
+                not isinstance(denial_code, str)
+                or denial_code not in _ATTEMPT_DENIAL_CODES
+                or row.get("reserved_at_us") is not None
+                or (
+                    retry_after is not None
+                    and _bounded_int_or_none(retry_after, 1, MAX_RETRY_AFTER_US) is None
+                )
+            ):
+                return AttemptLookupIndeterminate(
+                    "INDETERMINATE", AttemptLookupReasonCode.RECORD_CORRUPT
+                )
+            return AttemptLookupDenied(
+                "DENIED",
+                attempt.attempt_id,
+                expected_sha256,
+                scope.source_policy_revision,
+                denial_code,
+            )
+        return AttemptLookupIndeterminate("INDETERMINATE", AttemptLookupReasonCode.RECORD_CORRUPT)
 
     def _evaluate_attempt(
         self, connection: Connection, attempt: TransportAttempt, effective_now: int
@@ -837,12 +1741,134 @@ class SourceAttemptGate:
         result = connection.execute(text(statement), parameters).mappings().all()
         return [dict(row) for row in result]
 
+    def _query_rows(
+        self,
+        connection: Connection | sqlite3.Connection,
+        statement: str,
+        parameters: dict[str, object],
+    ) -> list[dict[str, object]]:
+        """Run a parameterized metadata/data query on either supported connection."""
+        if isinstance(connection, sqlite3.Connection):
+            return [dict(row) for row in connection.execute(statement, parameters).fetchall()]
+        result = connection.execute(text(statement), parameters).mappings().all()
+        return [dict(row) for row in result]
+
     def _commit(self, connection: Connection) -> None:
         """Commit or fail closed when the database acknowledgement is uncertain."""
         try:
             connection.commit()
         except Exception:
             raise SourceAttemptGateUnavailable("source attempt gate commit is uncertain") from None
+
+
+def _scope_v2_document(scope: SourceAttemptScopeV2) -> dict[str, object]:
+    """Return the closed v2 JSON object; values are identifiers, pins, and integers only."""
+    attempt = scope.attempt
+    return {
+        "attempt_id": attempt.attempt_id,
+        "attempt_no": attempt.attempt_no,
+        "budget_binding_sha256": scope.budget_binding_sha256,
+        "budget_policy_revision": scope.budget_policy_revision,
+        "budget_policy_sha256": scope.budget_policy_sha256,
+        "budget_quota_key": scope.budget_quota_key,
+        "canonical_model": attempt.canonical_model,
+        "capture_intent_id": scope.capture_intent_id,
+        "expected_grant_revision": attempt.expected_revision,
+        "grant_id": attempt.grant_id,
+        "host": attempt.host,
+        "operation": attempt.operation,
+        "principal_scope": attempt.principal_scope,
+        "request_id": attempt.request_id,
+        "request_summary_sha256": scope.request_summary_sha256,
+        "run_key": attempt.run_key,
+        "scope_version": 2,
+        "source": attempt.source,
+        "source_policy_id": scope.source_policy_id,
+        "source_policy_revision": scope.source_policy_revision,
+        "source_policy_sha256": scope.source_policy_sha256,
+    }
+
+
+def _scope_v2_bytes(scope: SourceAttemptScopeV2) -> bytes:
+    """Encode the complete v2 scope in bounded canonical UTF-8 JSON."""
+    encoded = json.dumps(
+        _scope_v2_document(scope),
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+        allow_nan=False,
+    ).encode("utf-8", errors="strict")
+    if not 1 <= len(encoded) <= _MAX_SCOPE_V2_BYTES:
+        raise SourceAttemptInputError("canonical v2 scope exceeds the supported size")
+    return encoded
+
+
+def _scope_v2_bytes_and_digest(scope: SourceAttemptScopeV2) -> tuple[bytes, str]:
+    """Return canonical UTF-8 scope bytes and their lowercase SHA-256 digest."""
+    encoded = _scope_v2_bytes(scope)
+    return encoded, hashlib.sha256(encoded).hexdigest()
+
+
+def _extract_sqlite_check_expressions(create_sql: str) -> tuple[str, ...] | None:
+    """Extract balanced CHECK bodies so schema verification sees their full clauses."""
+    expressions: list[str] = []
+    for match in re.finditer(r"\bCHECK\s*\(", create_sql, re.IGNORECASE):
+        opening = match.end() - 1
+        parsed = _sqlite_parenthesized_content(create_sql, opening)
+        if parsed is None:
+            return None
+        expression, _closing = parsed
+        expressions.append(_normalize_check_expression(expression))
+    return tuple(expressions)
+
+
+def _normalize_check_expression(expression: str) -> str:
+    """Normalize whitespace and redundant outer parentheses in one CHECK body."""
+    normalized = " ".join(expression.split()).lower()
+    while normalized.startswith("(") and normalized.endswith(")"):
+        parsed = _sqlite_parenthesized_content(normalized, 0)
+        if parsed is None or parsed[1] != len(normalized) - 1:
+            break
+        normalized = " ".join(parsed[0].split()).lower()
+    return normalized
+
+
+def _sqlite_parenthesized_content(value: str, opening: int) -> tuple[str, int] | None:
+    """Return the content and matching close of a SQLite SQL parenthesis group."""
+    if opening >= len(value) or value[opening] != "(":
+        return None
+    depth = 0
+    quote: str | None = None
+    index = opening
+    while index < len(value):
+        char = value[index]
+        if quote is not None:
+            if char == quote:
+                if index + 1 < len(value) and value[index + 1] == quote:
+                    index += 2
+                    continue
+                quote = None
+            index += 1
+            continue
+        if char in {"'", '"', "`"}:
+            quote = char
+        elif char == "[":
+            quote = "]"
+        elif char == "(":
+            depth += 1
+        elif char == ")":
+            depth -= 1
+            if depth == 0:
+                return value[opening + 1 : index], index
+            if depth < 0:
+                return None
+        index += 1
+    return None
+
+
+def _quote_sqlite_literal(value: str) -> str:
+    """Quote one SQLite string literal used only by PRAGMA metadata inspection."""
+    return "'" + value.replace("'", "''") + "'"
 
 
 def _refill_bucket(
@@ -1037,7 +2063,13 @@ def _valid_allowed_declaration(grant: Mapping[str, object], effective_now: int) 
 
 
 __all__ = [
+    "AttemptLookupAbsent",
+    "AttemptLookupDenied",
+    "AttemptLookupIndeterminate",
+    "AttemptLookupReasonCode",
+    "AttemptLookupReserved",
     "AttemptReservation",
+    "GateAttemptLookupResult",
     "GrantRevocationResult",
     "GrantRevocationStatus",
     "ReservationStatus",
@@ -1047,5 +2079,6 @@ __all__ = [
     "SourceAttemptGateUnavailable",
     "SourceAttemptGateUnavailableError",
     "SourceAttemptInputError",
+    "SourceAttemptScopeV2",
     "TransportAttempt",
 ]
