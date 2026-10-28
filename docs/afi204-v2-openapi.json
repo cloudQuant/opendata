@@ -1,6 +1,110 @@
 {
   "components": {
     "schemas": {
+      "CaptureCandidatePageResponse": {
+        "additionalProperties": false,
+        "description": "Bounded Sina capture candidates from one immutable publication batch.",
+        "properties": {
+          "dataset_id": {
+            "const": "sina_fzb_report_observations",
+            "title": "Dataset Id",
+            "type": "string"
+          },
+          "empty_result_semantics": {
+            "const": "no_matching_rows_in_pinned_publication",
+            "title": "Empty Result Semantics",
+            "type": "string"
+          },
+          "has_more": {
+            "title": "Has More",
+            "type": "boolean"
+          },
+          "instrument_id": {
+            "title": "Instrument Id",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CaptureCandidateResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          },
+          "observed_at_semantics": {
+            "const": "capture_observation_time_not_point_in_time",
+            "title": "Observed At Semantics",
+            "type": "string"
+          },
+          "page_size": {
+            "title": "Page Size",
+            "type": "integer"
+          },
+          "pit_policy": {
+            "const": "unsupported",
+            "title": "Pit Policy",
+            "type": "string"
+          },
+          "publication_id": {
+            "title": "Publication Id",
+            "type": "string"
+          },
+          "scope": {
+            "const": "publication_batch_only",
+            "title": "Scope",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dataset_id",
+          "publication_id",
+          "instrument_id",
+          "page_size",
+          "items",
+          "next_cursor",
+          "has_more",
+          "scope",
+          "empty_result_semantics",
+          "observed_at_semantics",
+          "pit_policy"
+        ],
+        "title": "CaptureCandidatePageResponse",
+        "type": "object"
+      },
+      "CaptureCandidateResponse": {
+        "additionalProperties": false,
+        "description": "One capture written by the selected publication, with its observation time.",
+        "properties": {
+          "capture_id": {
+            "maxLength": 64,
+            "minLength": 64,
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Capture Id",
+            "type": "string"
+          },
+          "observed_at": {
+            "format": "date-time",
+            "title": "Observed At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "capture_id",
+          "observed_at"
+        ],
+        "title": "CaptureCandidateResponse",
+        "type": "object"
+      },
       "CoverageRangeResponse": {
         "additionalProperties": false,
         "description": "Half-open date range in a coverage request or evidence response.",
@@ -909,6 +1013,171 @@
         "title": "ErrorEnvelope",
         "type": "object"
       },
+      "FinancialArchiveResponse": {
+        "additionalProperties": false,
+        "description": "Bounded archive read with explicitly unknown coverage and PIT semantics.",
+        "properties": {
+          "completeness": {
+            "const": "unknown",
+            "title": "Completeness",
+            "type": "string"
+          },
+          "period_amount_semantics": {
+            "const": "unknown",
+            "title": "Period Amount Semantics",
+            "type": "string"
+          },
+          "point_in_time_reconstruction": {
+            "const": "unavailable",
+            "title": "Point In Time Reconstruction",
+            "type": "string"
+          },
+          "records": {
+            "items": {
+              "$ref": "#/components/schemas/FinancialArchiveRowResponse"
+            },
+            "title": "Records",
+            "type": "array"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/FinancialArchiveScopeResponse"
+          }
+        },
+        "required": [
+          "scope",
+          "records",
+          "completeness",
+          "point_in_time_reconstruction",
+          "period_amount_semantics"
+        ],
+        "title": "FinancialArchiveResponse",
+        "type": "object"
+      },
+      "FinancialArchiveRowResponse": {
+        "additionalProperties": false,
+        "description": "Allowlisted source-native observation fields; decimal values stay exact text.",
+        "properties": {
+          "instrument_id": {
+            "title": "Instrument Id",
+            "type": "string"
+          },
+          "item_code": {
+            "title": "Item Code",
+            "type": "string"
+          },
+          "native_unit": {
+            "title": "Native Unit",
+            "type": "string"
+          },
+          "observed_at_utc": {
+            "title": "Observed At Utc",
+            "type": "string"
+          },
+          "periodicity": {
+            "enum": [
+              "annual",
+              "quarterly"
+            ],
+            "title": "Periodicity",
+            "type": "string"
+          },
+          "report_period": {
+            "title": "Report Period",
+            "type": "string"
+          },
+          "source_disclosure_date": {
+            "title": "Source Disclosure Date",
+            "type": "string"
+          },
+          "source_id": {
+            "title": "Source Id",
+            "type": "string"
+          },
+          "statement_type": {
+            "enum": [
+              "income",
+              "balance",
+              "cashflow"
+            ],
+            "title": "Statement Type",
+            "type": "string"
+          },
+          "value_decimal_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value Decimal Text"
+          }
+        },
+        "required": [
+          "source_id",
+          "instrument_id",
+          "statement_type",
+          "periodicity",
+          "report_period",
+          "source_disclosure_date",
+          "observed_at_utc",
+          "item_code",
+          "value_decimal_text",
+          "native_unit"
+        ],
+        "title": "FinancialArchiveRowResponse",
+        "type": "object"
+      },
+      "FinancialArchiveScopeResponse": {
+        "additionalProperties": false,
+        "description": "One explicit, single-security archive query scope.",
+        "properties": {
+          "end_report_period": {
+            "title": "End Report Period",
+            "type": "string"
+          },
+          "instrument_id": {
+            "title": "Instrument Id",
+            "type": "string"
+          },
+          "periodicity": {
+            "enum": [
+              "annual",
+              "quarterly"
+            ],
+            "title": "Periodicity",
+            "type": "string"
+          },
+          "source_id": {
+            "title": "Source Id",
+            "type": "string"
+          },
+          "start_report_period": {
+            "title": "Start Report Period",
+            "type": "string"
+          },
+          "statement_type": {
+            "enum": [
+              "income",
+              "balance",
+              "cashflow"
+            ],
+            "title": "Statement Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source_id",
+          "instrument_id",
+          "statement_type",
+          "periodicity",
+          "start_report_period",
+          "end_report_period"
+        ],
+        "title": "FinancialArchiveScopeResponse",
+        "type": "object"
+      },
       "IdentitySemanticsResponse": {
         "additionalProperties": false,
         "description": "Declared dataset keys paired with the store's stable page ordering.",
@@ -1661,6 +1930,224 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v2/data/financial-statements/archive": {
+      "get": {
+        "description": "Return one complete, bounded page of source-native financial rows.\n\nAuthentication and the existing ``financial_statement`` scope check run\nbefore the archive engine is created or an archive connection is opened.\nThe configured archive account must be provisioned with SELECT-only access.\nThis endpoint exposes no cursor, request-wide ``as_of`` value, completeness\nassertion, or reconstructed point-in-time result.",
+        "operationId": "query_financial_observation_archive_api_v2_data_financial_statements_archive_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "source_id",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9_.-]{0,63}$",
+              "title": "Source Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "instrument_id",
+            "required": true,
+            "schema": {
+              "maxLength": 9,
+              "minLength": 9,
+              "pattern": "^[0-9]{6}\\.(?:SH|SZ|BJ)$",
+              "title": "Instrument Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "statement_type",
+            "required": true,
+            "schema": {
+              "enum": [
+                "income",
+                "balance",
+                "cashflow"
+              ],
+              "title": "Statement Type",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "periodicity",
+            "required": true,
+            "schema": {
+              "enum": [
+                "annual",
+                "quarterly"
+              ],
+              "title": "Periodicity",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "start_report_period",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "title": "Start Report Period",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "end_report_period",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "title": "End Report Period",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 199,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-API-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinancialArchiveResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Dataset unavailable"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Published resource unavailable"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Published dataset contract changed"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Snapshot expired"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Response exceeds the size limit"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Published data service unavailable"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Query Financial Observation Archive",
+        "tags": [
+          "Financial Observation Archive"
+        ]
+      }
+    },
     "/api/v2/datasets": {
       "get": {
         "description": "List only published datasets permitted by the caller's current grants.",
@@ -1932,6 +2419,212 @@
           }
         ],
         "summary": "Get Dataset"
+      }
+    },
+    "/api/v2/datasets/{dataset_id}/capture-candidates": {
+      "get": {
+        "description": "List captures written by one pinned Sina FZB publication batch.\n\nThe result is deliberately scoped to records written by ``publication_id``.\nAn empty page does not establish that the instrument has no captures in\nearlier publications. ``observed_at`` is the capture observation time and\ndoes not imply point-in-time availability of the source information.",
+        "operationId": "list_sina_capture_candidates_api_v2_datasets__dataset_id__capture_candidates_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "dataset_id",
+            "required": true,
+            "schema": {
+              "title": "Dataset Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "publication_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 32,
+                  "minLength": 32,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Publication Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "instrument_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Instrument Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 1000,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 8192,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-API-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptureCandidatePageResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Dataset unavailable"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Published resource unavailable"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Published dataset contract changed"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Snapshot expired"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Response exceeds the size limit"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Published data service unavailable"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Sina Capture Candidates"
       }
     },
     "/api/v2/datasets/{dataset_id}/coverage": {

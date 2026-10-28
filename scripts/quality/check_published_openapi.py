@@ -20,7 +20,7 @@ BASELINE_PATHS = {
 # intentionally has no mode that generates or replaces a baseline from the candidate.
 BASELINE_SHA256 = {
     "v1": "2b738ff5ab2d2aa8a2603c908a05256a1b8b7522f72aa5a699ba963d4271bf74",
-    "v2": "86b7dd1982e6d50e477b67742e13258c32922436d4867e5d55333a1ac115a9e5",
+    "v2": "924f3d4a39f9d68f43eacb3448ee1a779b4f76beba62b20d726f4eef03d3c746",
 }
 _HTTP_METHODS = frozenset({"get", "post", "put", "patch", "delete", "options", "head"})
 _DOC_SCHEMA_KEYS = frozenset({"title", "description", "examples", "example"})

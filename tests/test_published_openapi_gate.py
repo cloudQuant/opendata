@@ -195,6 +195,37 @@ def test_v1_snapshot_contains_both_real_alias_families_and_excludes_v2() -> None
     assert len(extract_surface(baseline, "v1")["paths"]) == len(v1_paths)
 
 
+def test_v2_baseline_freezes_archive_and_capture_candidate_routes() -> None:
+    """The v2 artifact contains the reviewed archive and capture-candidate contracts."""
+    baseline = json.loads(BASELINE_PATHS["v2"].read_text(encoding="utf-8"))
+    surface = extract_surface(baseline, "v2")
+    paths = surface["paths"]
+    schemas = surface["components"]["schemas"]
+
+    archive = paths["/api/v2/data/financial-statements/archive"]["get"]
+    assert [parameter["name"] for parameter in archive["parameters"]] == [
+        "source_id",
+        "instrument_id",
+        "statement_type",
+        "periodicity",
+        "start_report_period",
+        "end_report_period",
+        "page_size",
+        "X-API-Key",
+    ]
+    assert archive["responses"]["200"]["content"]["application/json"]["schema"] == {
+        "$ref": "#/components/schemas/FinancialArchiveResponse"
+    }
+    assert "/api/v2/datasets/{dataset_id}/capture-candidates" in paths
+    assert {
+        "CaptureCandidatePageResponse",
+        "CaptureCandidateResponse",
+        "FinancialArchiveResponse",
+        "FinancialArchiveRowResponse",
+        "FinancialArchiveScopeResponse",
+    } <= set(schemas)
+
+
 def test_v1_v2_prefix_boundaries_do_not_leak_between_surfaces() -> None:
     """Exact v2 and v2 descendants stay out of the legacy v1 alias surface."""
     document = _contract()

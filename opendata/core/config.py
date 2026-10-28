@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Literal
 from urllib.parse import quote_plus
 
-from pydantic import AliasChoices, Field, ValidationInfo, field_validator
+from pydantic import AliasChoices, Field, SecretStr, ValidationInfo, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from opendata.utils.constants import DEFAULT_SECRET_KEY
@@ -68,6 +68,17 @@ class Settings(BaseSettings):
     data_mysql_password: str = Field(default="", description="Data MySQL password")
     data_mysql_database: str = Field(
         default="opendata_data", description="Data warehouse database name"
+    )
+
+    # A separately configured, read-only source for the financial observation
+    # archive API. Never derive this URL from either application database.
+    financial_archive_database_url: SecretStr | None = Field(
+        default=None,
+        repr=False,
+        description=(
+            "FINANCIAL_ARCHIVE_DATABASE_URL: dedicated archive database URL using a "
+            "SELECT-only service account; unset disables financial archive reads"
+        ),
     )
 
     # Database Connection Pool
