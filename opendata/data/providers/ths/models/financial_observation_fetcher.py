@@ -41,6 +41,7 @@ from opendata.data.providers.ths.endpoints import (
     build_financial_statements_request,
     financial_statement_items,
     millis_to_trading_date,
+    shanghai_midnight_millis,
 )
 from opendata.data.providers.ths.models.financial_observation_raw import (
     MAX_BODY_BYTES,
@@ -64,6 +65,7 @@ from opendata.data.request_budget import (
     check_scope_liveness,
     current_request_scopes,
 )
+from opendata.data.request_summary import request_summary_sha256
 from opendata.data.source_attempt_gate import SourceAttemptGate
 
 if TYPE_CHECKING:
@@ -85,6 +87,9 @@ _SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 _UNIT_VERSION_MAX_CHARS = 128
 _UNIT_EVIDENCE_MAX_CHARS = 512
 _MAX_TRANSPORT_ATTEMPTS = 3
+_FINANCIAL_REQUEST_SUMMARY_FIELDS = frozenset(
+    {"thscode", "period", "start", "end", "limit"}
+)
 _STATEMENT_ENDPOINTS: Mapping[StatementType, str] = MappingProxyType(
     {
         "income": INCOME_STATEMENTS_ENDPOINT,
@@ -255,7 +260,10 @@ class FinancialObservationFetchResult:
     ``not_assessed``: this result says nothing about missing periods, archive
     history, or completeness. ``usability_status`` only distinguishes rows
     returned by this response; it never asserts that the requested history is
-    complete or suitable for publishing.
+    complete or suitable for publishing. ``request_summary_sha256`` is a
+    caller-side v1 digest over the validated parameter mapping handed to the
+    transport; it is not an independent source receipt or proof of what the
+    provider received.
     """
 
     instrument_id: str
@@ -275,9 +283,15 @@ class FinancialObservationFetchResult:
     quarantined_rows: tuple[QuarantinedFinancialObservationRow, ...] = field(
         repr=False, compare=False
     )
+    request_summary_sha256: str | None = field(default=None, compare=False)
 
     def __post_init__(self) -> None:
         """Enforce the response-byte, digest, time and decoded-reference binding."""
+        if self.request_summary_sha256 is not None and (
+            type(self.request_summary_sha256) is not str
+            or _SHA256_PATTERN.fullmatch(self.request_summary_sha256) is None
+        ):
+            raise ValueError("request_summary_sha256 must be lowercase SHA-256 or None")
         if type(self.raw_body) is not bytes or not self.raw_body:
             raise ValueError("raw_body must contain the exact nonempty HTTP response bytes")
         digest = hashlib.sha256(self.raw_body).hexdigest()
@@ -567,12 +581,38 @@ class ThsFinancialObservationFetcher:
         profile = self._validated_profile(statement)
         endpoint = _STATEMENT_ENDPOINTS[statement]
         try:
-            params = build_financial_statements_request(
+            built_params = build_financial_statements_request(
                 symbol=canonical_id,
                 period=cadence,
                 start=start,
                 end=end,
                 limit=period_limit,
+            )
+            if type(built_params) is not dict:
+                raise ValueError("upstream request parameters must be a dictionary")
+            expected_params: dict[str, str | int] = {
+                "thscode": canonical_id,
+                "period": cadence,
+            }
+            if start is not None and end is not None:
+                expected_params.update(
+                    {
+                        "start": shanghai_midnight_millis(start),
+                        "end": shanghai_midnight_millis(end),
+                    }
+                )
+            elif period_limit is not None:
+                expected_params["limit"] = period_limit
+            params = MappingProxyType(dict(built_params))
+            if params.keys() != expected_params.keys() or any(
+                type(params[key]) is not type(expected_value)
+                or params[key] != expected_value
+                for key, expected_value in expected_params.items()
+            ):
+                raise ValueError("upstream request parameters differ from the validated query")
+            request_digest = request_summary_sha256(
+                params,
+                allowed_fields=_FINANCIAL_REQUEST_SUMMARY_FIELDS,
             )
         except (TypeError, ValueError):
             raise FinancialObservationFetchError("upstream_request_parameters_invalid") from None
@@ -660,6 +700,7 @@ class ThsFinancialObservationFetcher:
             raw_body=raw_body,
             observations=decoded.observations,
             quarantined_rows=decoded.quarantined_rows,
+            request_summary_sha256=request_digest,
         )
 
     def close(self) -> None:
