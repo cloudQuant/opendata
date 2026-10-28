@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from contextlib import nullcontext
 from dataclasses import replace
 from types import SimpleNamespace
@@ -76,6 +77,14 @@ def _event_for(**changes: object) -> tuple[bytes, str]:
     )
     event = outbox._build_publication_event(replace(candidate, **changes))
     return event.event_json.encode("utf-8"), event.event_sha256
+
+
+def _raw_event_for(**changes: object) -> tuple[bytes, str]:
+    """Build canonical event bytes that may deliberately violate publisher bounds."""
+    payload = json.loads(_EXPECTED_EVENT_JSON_UTF8)
+    payload.update(changes)
+    event_json_utf8 = outbox._canonical_json(payload).encode("utf-8")
+    return event_json_utf8, _digest_event(event_json_utf8)
 
 
 def _digest_event(event_json_utf8: bytes) -> str:
@@ -586,27 +595,103 @@ def test_json_parser_recursion_error_is_wrapped_as_receipt_error(
     assert rows == []
 
 
-@pytest.mark.parametrize(
-    "variant",
-    [
-        {"dataset_id": "equity.每日"},
-        {"schema_version": "版本一"},
-        {"schema_version": "version one"},
-    ],
-    ids=["unicode-dataset-id", "unicode-schema-version", "non-identifier-schema-version"],
-)
-def test_ascii_receipt_contract_rejects_unicode_allowed_by_current_publisher(
+def test_accepts_unicode_labels_and_internal_spaces_from_publication_contract(
     engine: Engine,
-    variant: dict[str, object],
 ) -> None:
-    """The current publication _label accepts labels that receipt schema 0008 excludes."""
-    event = _event_for(**variant)
-    message = "dataset_id|schema_version"
+    """Unicode and internal spaces accepted by the publisher are retained verbatim."""
+    dataset_id = "equity.每日 行情"
+    schema_version = "版本 一"
+    event = _event_for(dataset_id=dataset_id, schema_version=schema_version)
+
+    with engine.begin() as connection:
+        result = _receive(connection, event)
+        stored = connection.execute(select(METADATA_PUBLICATION_RECEIPTS)).mappings().one()
+
+    assert result.dataset_id == dataset_id
+    assert stored["dataset_id"] == dataset_id
+    assert stored["schema_version"] == schema_version
+    assert stored["event_json_utf8"] == event[0]
+    assert stored["event_sha256"] == event[1]
+
+
+def test_multibyte_labels_at_publisher_character_limits_are_preserved(engine: Engine) -> None:
+    """128- and 64-character Unicode labels fit the publisher's character bounds."""
+    dataset_id = "数" * 128
+    schema_version = "版" * 64
+    event = _event_for(dataset_id=dataset_id, schema_version=schema_version)
+
+    with engine.begin() as connection:
+        result = _receive(connection, event)
+        stored = connection.execute(select(METADATA_PUBLICATION_RECEIPTS)).mappings().one()
+
+    assert len(dataset_id.encode("utf-8")) == 384
+    assert len(schema_version.encode("utf-8")) == 192
+    assert result.dataset_id == dataset_id
+    assert stored["dataset_id"] == dataset_id
+    assert stored["schema_version"] == schema_version
+    assert stored["event_json_utf8"] == event[0]
+    assert stored["event_sha256"] == event[1]
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("dataset_id", "数" * 129),
+        ("schema_version", "版" * 65),
+        ("dataset_id", "equity.daily "),
+        ("schema_version", " 版本"),
+        ("dataset_id", "equity\x01daily"),
+        ("schema_version", "版\x1f本"),
+    ],
+    ids=[
+        "dataset-over-128-characters",
+        "schema-over-64-characters",
+        "dataset-trailing-space",
+        "schema-leading-space",
+        "dataset-c0-control",
+        "schema-c0-control",
+    ],
+)
+def test_rejects_unicode_labels_outside_publisher_rules_before_insert(
+    engine: Engine,
+    field: str,
+    value: str,
+) -> None:
+    """The receiver preserves publisher bounds for Unicode labels and C0 controls."""
+    event = _raw_event_for(**{field: value})
     with (
         engine.begin() as connection,
-        pytest.raises(receipt_writer.MetadataPublicationReceiptError, match=message),
+        pytest.raises(receipt_writer.MetadataPublicationReceiptError, match="event values"),
     ):
         _receive(connection, event)
+
+    with engine.connect() as connection:
+        rows = connection.execute(select(METADATA_PUBLICATION_RECEIPTS)).all()
+    assert rows == []
+
+
+def test_unicode_event_replay_preserves_exact_bytes_hash_and_first_receive_time(
+    engine: Engine,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """An exact Unicode event replay returns the first timestamp without rewriting bytes."""
+    event = _event_for(dataset_id="equity.每日 行情", schema_version="版本 一")
+    first_receive_time = 1_800_000_000_000_123
+    monkeypatch.setattr(receipt_writer, "time_ns", lambda: first_receive_time * 1_000)
+    with engine.begin() as connection:
+        first = _receive(connection, event)
+
+    monkeypatch.setattr(receipt_writer, "time_ns", lambda: (first_receive_time + 99) * 1_000)
+    with engine.begin() as connection:
+        replay = _receive(connection, event)
+        stored = connection.execute(select(METADATA_PUBLICATION_RECEIPTS)).mappings().one()
+
+    assert first.replayed is False
+    assert replay.replayed is True
+    assert replay.received_at_us == first_receive_time
+    assert stored["event_json_utf8"] == event[0]
+    assert stored["event_sha256"] == event[1]
+    assert stored["received_at_us"] == first_receive_time
 
 
 def test_wrong_supplied_event_digest_is_not_replaced_by_a_computed_digest(engine: Engine) -> None:

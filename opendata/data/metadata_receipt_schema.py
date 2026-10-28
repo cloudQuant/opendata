@@ -87,7 +87,14 @@ METADATA_PUBLICATION_RECEIPTS = Table(
         name="ck_od_meta_receipt_producer_evidence",
     ),
     CheckConstraint("length(publication_id) = 32", name="ck_od_meta_receipt_pub_id_len"),
-    CheckConstraint("length(dataset_id) BETWEEN 1 AND 128", name="ck_od_meta_receipt_dataset_len"),
+    CheckConstraint(
+        "length(dataset_id) BETWEEN 1 AND 128",
+        name="ck_od_meta_receipt_dataset_len",
+    ).ddl_if(dialect="sqlite"),
+    CheckConstraint(
+        "char_length(dataset_id) BETWEEN 1 AND 128",
+        name="ck_od_meta_receipt_dataset_len",
+    ).ddl_if(dialect="mysql"),
     CheckConstraint("publication_sequence > 0", name="ck_od_meta_receipt_sequence"),
     CheckConstraint(
         f"record_count BETWEEN 0 AND {_MAX_RECORD_COUNT}",
@@ -105,7 +112,14 @@ METADATA_PUBLICATION_RECEIPTS = Table(
         name="ck_od_meta_receipt_contract_evidence",
     ),
     CheckConstraint("length(provenance_sha256) = 64", name="ck_od_meta_receipt_provenance_sha"),
-    CheckConstraint("length(schema_version) BETWEEN 1 AND 64", name="ck_od_meta_receipt_schema"),
+    CheckConstraint(
+        "length(schema_version) BETWEEN 1 AND 64",
+        name="ck_od_meta_receipt_schema",
+    ).ddl_if(dialect="sqlite"),
+    CheckConstraint(
+        "char_length(schema_version) BETWEEN 1 AND 64",
+        name="ck_od_meta_receipt_schema",
+    ).ddl_if(dialect="mysql"),
     CheckConstraint(
         f"event_version = {_MAX_EVENT_VERSION}",
         name="ck_od_meta_receipt_event_version",
