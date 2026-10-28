@@ -53,6 +53,16 @@ from opendata.data.capture_selection import (
     InstrumentCaptureSelectionError,
     validate_selector_pair,
 )
+from opendata.pipeline.publication_outbox import (
+    _build_publication_event,
+    _candidate_from_publication_row,
+    _event_values,
+    _find_existing_event,
+    _make_publication_outbox_table,
+    _PublicationOutboxSourceError,
+    _require_exact_event_replay,
+    _require_supported_connection,
+)
 
 if TYPE_CHECKING:
     from sqlalchemy.sql.selectable import Select, Subquery
@@ -142,6 +152,7 @@ PUBLICATION_HEADS = Table(
     Column("watermark_json", _json_storage_type(), nullable=True),
     Column("updated_at_us", BigInteger, nullable=False),
     CheckConstraint("latest_sequence >= 0", name="ck_od_publication_head_sequence"),
+    mysql_engine="InnoDB",
 )
 PUBLICATIONS = Table(
     "od_publications",
@@ -176,7 +187,9 @@ PUBLICATIONS = Table(
         unique=True,
     ),
     Index("ix_od_publication_dataset_published", "dataset_id", "published_at_us"),
+    mysql_engine="InnoDB",
 )
+PUBLICATION_OUTBOX_EVENTS = _make_publication_outbox_table(PUBLICATION_METADATA)
 PUBLISHED_FACT_VERSIONS = Table(
     "od_published_fact_versions",
     PUBLICATION_METADATA,
@@ -223,6 +236,7 @@ PUBLISHED_FACT_VERSIONS = Table(
         "capture_id",
         "publication_sequence",
     ),
+    mysql_engine="InnoDB",
 )
 SNAPSHOTS = Table(
     "od_publication_snapshots",
@@ -484,12 +498,15 @@ def publish_in_connection(
     records: Iterable[PublishedRecordInput],
     watermark: Mapping[str, Any] | None = None,
 ) -> PublicationRecord:
-    """Append a publication and fact revisions inside the caller's transaction.
+    """Append a publication, fact revisions, and outbox event atomically.
 
     Publication input is a delta: supplied business keys are replaced by a new
     revision when their canonical content changed; keys omitted from the batch
-    remain unchanged. The caller's transaction controls atomic commit/rollback,
-    allowing a run lease/fence and run success to commit with these writes.
+    remain unchanged. A new publication's immutable outbox event is inserted in
+    the same savepoint. Existing-publication idempotency hits and race replays
+    do not create or repair events. The caller's transaction controls
+    atomic commit/rollback, allowing a run lease/fence and run success to commit
+    with these writes.
 
     Args:
         connection: Active synchronous SQLAlchemy connection.
@@ -511,10 +528,12 @@ def publish_in_connection(
     Raises:
         PublicationConflictError: A retry key has different canonical input.
         PublicationContractConflictError: Dataset contract metadata changed.
-        ValueError: Input is invalid, unbounded, or contains credential material.
+        ValueError: Input is invalid, unbounded, contains credential material, or targets an
+            unsupported dialect.
     """
     if not isinstance(connection, Connection):
         raise TypeError("connection must be a synchronous SQLAlchemy Connection")
+    _require_supported_connection(connection)
     dataset = _identifier(dataset_id, "dataset_id")
     source = _identifier(source_id, "source_id")
     schema = _label(schema_version, "schema_version", 64)
@@ -640,6 +659,39 @@ def publish_in_connection(
                     updated_at_us=now_us,
                 )
             )
+            persisted_publication = (
+                connection.execute(
+                    select(PUBLICATIONS)
+                    .where(PUBLICATIONS.c.publication_id == publication_id)
+                    .with_for_update()
+                )
+                .mappings()
+                .one()
+            )
+            event_candidate = _candidate_from_publication_row(persisted_publication)
+            if (
+                event_candidate.publication_id != publication_id
+                or event_candidate.dataset_id != dataset
+                or event_candidate.sequence != sequence
+                or event_candidate.record_count != len(normalized_records)
+                or event_candidate.payload_sha256 != payload_hash
+                or event_candidate.schema_version != schema
+                or event_candidate.published_at_us != now_us
+            ):
+                raise _PublicationOutboxSourceError(
+                    "new publication row changed before its outbox event was frozen"
+                )
+            event = _build_publication_event(event_candidate)
+            try:
+                with connection.begin_nested():
+                    connection.execute(
+                        insert(PUBLICATION_OUTBOX_EVENTS).values(**_event_values(event))
+                    )
+            except IntegrityError:
+                raced_event = _find_existing_event(connection, PUBLICATION_OUTBOX_EVENTS, event)
+                if raced_event is None:
+                    raise
+                _require_exact_event_replay(raced_event, event)
     except IntegrityError:
         raced = (
             connection.execute(
