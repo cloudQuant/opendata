@@ -76,6 +76,71 @@ def _worksheet(
     return xml.encode("utf-8")
 
 
+_OBSERVED_HEADERS = {
+    "current_a": (
+        "板块",
+        "公司全称",
+        "英文名称",
+        "注册地址",
+        "A股代码",
+        "A股简称",
+        "A股上市日期",
+        "A股总股本",
+        "A股流通股本",
+        "B股代码",
+        "B股 简 称",
+        "B股上市日期",
+        "B股总股本",
+        "B股流通股本",
+        "地      区",
+        "省    份",
+        "城     市",
+        "所属行业",
+        "公司网址",
+        "目前尚未盈利",
+        "具有表决权差异安排",
+        "具有协议控制架构",
+    ),
+    "suspended": ("证券代码", "证券简称", "上市日期", "暂停上市日期"),
+    "terminated": ("证券代码", "证券简称", "上市日期", "终止上市日期"),
+}
+
+
+def _observed_worksheet(
+    dataset_class: str,
+    *,
+    views: str | None = None,
+    format_properties: str | None = None,
+    margins: str | None = None,
+) -> bytes:
+    """Build a header-only/synthetic-row workbook using observed structure."""
+    headers = _OBSERVED_HEADERS[dataset_class]
+    columns = tuple("ABCDEFGHIJKLMNOPQRSTUVWXYZ"[: len(headers)])
+    header = "".join(
+        _inline_cell(f"{column}1", value) for column, value in zip(columns, headers, strict=True)
+    )
+    views = views or '<sheetViews><sheetView workbookViewId="0" tabSelected="0"/></sheetViews>'
+    format_properties = format_properties or (
+        '<sheetFormatPr baseColWidth="10" defaultRowHeight="15"/>'
+    )
+    margins = margins or (
+        '<pageMargins left="0.7" right="0.7" top="0.75" bottom="0.75" header="0.3" footer="0.3"/>'
+    )
+    data_cells = {
+        "current_a": '<c r="A2" t="n"><v>1</v></c><c r="V2" t="n"><v>2</v></c>',
+        "suspended": '<c r="A2" t="n"><v>3</v></c>',
+        "terminated": '<c r="A2" t="n"><v>4</v></c><c r="D2" t="n"><v>5</v></c>',
+    }[dataset_class]
+    xml = (
+        f'<worksheet xmlns="{_MAIN}"><dimension ref="A1"/>'
+        f"{views}{format_properties}"
+        f'<sheetData><row r="1">{header}</row><row r="2">{data_cells}</row></sheetData>'
+        f"{margins}"
+        "</worksheet>"
+    )
+    return xml.encode("utf-8")
+
+
 def _package(
     *,
     worksheet: bytes | None = None,
@@ -217,6 +282,80 @@ def test_dataset_category_is_required_as_a_caller_declaration(dataset_class: str
     assert result.dataset_class == dataset_class
     assert result.dataset_class_binding_status == "caller_declared"
     assert result.lifecycle_semantics_status == "unknown"
+
+
+@pytest.mark.parametrize("dataset_class", ["current_a", "suspended", "terminated"])
+def test_observed_selector_headers_preserve_raw_cells_without_assigning_meaning(
+    dataset_class: str,
+) -> None:
+    """Accept only the observed selector header and keep every semantic claim unknown."""
+    body = _package(worksheet=_observed_worksheet(dataset_class))
+    result = parse_szse_lifecycle_xlsx(body, dataset_class=dataset_class)  # type: ignore[arg-type]
+
+    assert result.headers == _OBSERVED_HEADERS[dataset_class]
+    assert result.header_contract_status == "selector_specific_observed_headers_only"
+    assert result.dataset_class == dataset_class
+    assert result.dataset_class_binding_status == "caller_declared"
+    assert result.source_id is None
+    assert result.source_id_status == "unknown"
+    assert result.lifecycle_semantics_status == "unknown"
+    assert result.market_scope_status == "unknown"
+    assert result.source_completeness_status == "unknown"
+    assert tuple(cell.column_index for cell in result.header_cells) == tuple(
+        range(1, len(_OBSERVED_HEADERS[dataset_class]) + 1)
+    )
+    assert result.rows[0].cells[0].raw_value in {"1", "3", "4"}
+    assert all(cell.cell_type == "n" for row in result.rows for cell in row.cells)
+
+
+@pytest.mark.parametrize(
+    ("source_class", "selected_class"),
+    [("current_a", "suspended"), ("suspended", "terminated"), ("terminated", "suspended")],
+)
+def test_observed_headers_are_bound_to_the_selected_parser_contract(
+    source_class: str, selected_class: str
+) -> None:
+    """Do not accept a different observed table just because its header is known."""
+    body = _package(worksheet=_observed_worksheet(source_class))
+    assert _error_code(body, dataset_class=selected_class) == "header_contract_mismatch"
+
+
+@pytest.mark.parametrize(
+    "layout",
+    [
+        {"views": '<sheetViews mode="unsafe"><sheetView workbookViewId="0"/></sheetViews>'},
+        {
+            "views": (
+                '<sheetViews><sheetView workbookViewId="0"><selection/></sheetView></sheetViews>'
+            )
+        },
+        {"views": '<sheetViews><sheetView workbookViewId="not-an-index"/></sheetViews>'},
+        {
+            "format_properties": (
+                '<sheetFormatPr baseColWidth="10" defaultRowHeight="15" customHeight="1"/>'
+            )
+        },
+        {"format_properties": ('<sheetFormatPr baseColWidth="256" defaultRowHeight="15"/>')},
+        {
+            "margins": (
+                '<pageMargins left="NaN" right="0.7" top="0.75" bottom="0.75" '
+                'header="0.3" footer="0.3"/>'
+            )
+        },
+        {
+            "margins": (
+                '<pageMargins left="0.7" right="0.7" top="0.75" bottom="0.75" '
+                'header="0.3" footer="0.3" extra="1"/>'
+            )
+        },
+    ],
+)
+def test_observed_layout_rejects_unknown_or_invalid_display_metadata(
+    layout: dict[str, str],
+) -> None:
+    """Keep accepted workbook metadata limited to bounded inert display nodes."""
+    body = _package(worksheet=_observed_worksheet("terminated", **layout))
+    assert _error_code(body, dataset_class="terminated") == "sheet_unsupported"
 
 
 def test_shared_strings_and_iso_date_cells_are_retained_without_date_coercion() -> None:

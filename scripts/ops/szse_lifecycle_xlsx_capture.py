@@ -5,7 +5,8 @@ The fixed request parameters mirror the currently vendored AkShare
 stable SZSE contract. Each selector is requested at most once through the
 governed bounded HTTP client. Response bytes are content-addressed before the
 offline parser is called, so an actual workbook whose headers differ from the
-synthetic #113 test contract remains available for safe review.
+accepted fixture or selector-specific header contracts remains available for
+safe review.
 
 This command assigns no instrument identity, writes no database or API data,
 and schedules no recurring work. Hashes establish local byte integrity only;
@@ -88,13 +89,14 @@ _SAFE_FAILURE_CODES = frozenset(
         "evidence_directory_invalid",
         "evidence_directory_must_be_new",
         "evidence_directory_unavailable",
+        "fixture_contract_not_allowed_for_live_capture",
         "header_contract_mismatch",
         "local_capture_operation_failed",
         "raw_evidence_persistence_failed",
         "response_body_too_large",
         "response_contract_invalid",
         "request_failed_or_outcome_unknown",
-        "synthetic_parser_rejected",
+        "xlsx_parser_rejected_or_unknown",
         "task_response_byte_cap_exceeded",
         "task_row_cap_exceeded",
     }
@@ -290,6 +292,7 @@ def run_szse_lifecycle_capture(
                     sequence=sequence,
                     selector=selector,
                     request_digest=request_digest,
+                    allow_test_fixture_contract=client_factory is not None,
                 )
                 receipts.append(one_receipt)
                 _write_json_exclusive(
@@ -310,11 +313,12 @@ def run_szse_lifecycle_capture(
                     stop_code = "task_row_cap_exceeded"
                     break
 
-        parser_contracts_passed = _all_parser_contracts_passed(receipts)
+        selector_schema_status = _selector_schema_validation_status(receipts)
+        selector_schemas_accepted = selector_schema_status != "not_all_selectors_schema_validated"
         outcome = (
             "bounded_raw_capture_completed"
-            if parser_contracts_passed
-            else ("partial_or_failed_capture")
+            if selector_schemas_accepted
+            else "partial_or_failed_capture"
         )
         if stop_code is not None:
             outcome = "partial_or_failed_capture"
@@ -326,11 +330,7 @@ def run_szse_lifecycle_capture(
             total_rows=total_rows,
             failure_code=stop_code or _first_failure_code(receipts),
             transport_attempts=_transport_attempts(budget),
-            parser_status=(
-                "all_synthetic_contracts_passed"
-                if parser_contracts_passed
-                else "not_all_synthetic_contracts_passed"
-            ),
+            selector_schema_validation_status=selector_schema_status,
         )
         _write_json_exclusive(directory_fd, "receipt.json", summary)
         return summary
@@ -343,7 +343,7 @@ def run_szse_lifecycle_capture(
             total_rows=total_rows,
             failure_code=exc.code,
             transport_attempts=_transport_attempts(budget),
-            parser_status="not_all_synthetic_contracts_passed",
+            selector_schema_validation_status="not_all_selectors_schema_validated",
         )
         _write_json_if_missing(directory_fd, "receipt.json", summary)
         return summary
@@ -356,7 +356,7 @@ def run_szse_lifecycle_capture(
             total_rows=total_rows,
             failure_code="local_capture_operation_failed",
             transport_attempts=_transport_attempts(budget),
-            parser_status="not_all_synthetic_contracts_passed",
+            selector_schema_validation_status="not_all_selectors_schema_validated",
         )
         _write_json_if_missing(directory_fd, "receipt.json", summary)
         return summary
@@ -373,8 +373,9 @@ def _capture_selector(
     sequence: int,
     selector: _Selector,
     request_digest: str,
+    allow_test_fixture_contract: bool,
 ) -> dict[str, object]:
-    """Fetch one fixed selector, persist bytes, then apply the synthetic parser."""
+    """Fetch one fixed selector, persist bytes, then validate its header contract."""
     try:
         response = client.get_bounded(
             ENDPOINT_URL,
@@ -474,7 +475,8 @@ def _capture_selector(
         "raw_persistence_state": "content_addressed_private",
         "request_summary_sha256": request_digest,
         "parsed_row_count": 0,
-        "header_contract_status": "not_evaluated",
+        "selector_schema_validation_status": "not_evaluated",
+        "matched_schema_contract": "unknown",
         "source_id_status": "unknown",
         "lifecycle_semantics_status": "unknown",
         "market_scope_status": "unknown",
@@ -486,28 +488,63 @@ def _capture_selector(
     try:
         parsed = parse_szse_lifecycle_xlsx(body, dataset_class=selector.dataset_class)
     except SzseLifecycleXlsxError as exc:
-        code = exc.code if exc.code in _SAFE_PARSER_FAILURE_CODES else "synthetic_parser_rejected"
+        code = (
+            exc.code
+            if exc.code in _SAFE_PARSER_FAILURE_CODES
+            else "xlsx_parser_rejected_or_unknown"
+        )
         base["failure_code"] = code
-        base["header_contract_status"] = (
-            "synthetic_contract_mismatch"
+        base["selector_schema_validation_status"] = (
+            "selector_schema_mismatch"
             if code == "header_contract_mismatch"
-            else "synthetic_contract_rejected_or_unknown"
+            else "selector_schema_rejected_or_unknown"
         )
         return base
     except Exception:
-        base["failure_code"] = "synthetic_parser_rejected"
-        base["header_contract_status"] = "synthetic_contract_rejected_or_unknown"
+        base["failure_code"] = "xlsx_parser_rejected_or_unknown"
+        base["selector_schema_validation_status"] = "selector_schema_rejected_or_unknown"
         return base
 
-    row_count = len(parsed.rows)
+    try:
+        row_count = len(parsed.rows)
+        schema_basis = _capture_schema_basis(parsed.header_contract_status)
+    except Exception:
+        base["failure_code"] = "xlsx_parser_rejected_or_unknown"
+        base["selector_schema_validation_status"] = "selector_schema_rejected_or_unknown"
+        return base
+    if schema_basis == "unknown":
+        base["attempt_outcome"] = "failed"
+        base["failure_code"] = "header_contract_mismatch"
+        base["selector_schema_validation_status"] = "selector_schema_mismatch"
+        return base
+    if schema_basis == "synthetic_fixture_only":
+        if not allow_test_fixture_contract:
+            base["attempt_outcome"] = "failed"
+            base["failure_code"] = "fixture_contract_not_allowed_for_live_capture"
+            base["selector_schema_validation_status"] = "selector_schema_rejected_or_unknown"
+            return base
+        validation_status = "test_fixture_contract_matched"
+    else:
+        validation_status = "selector_schema_validated"
     if row_count > MAX_ROWS_PER_SELECTOR:
         base["failure_code"] = "task_row_cap_exceeded"
-        base["header_contract_status"] = "synthetic_contract_rejected_or_unknown"
+        base["selector_schema_validation_status"] = validation_status
+        base["matched_schema_contract"] = schema_basis
         return base
     base["attempt_outcome"] = "succeeded"
     base["parsed_row_count"] = row_count
-    base["header_contract_status"] = parsed.header_contract_status
+    base["selector_schema_validation_status"] = validation_status
+    base["matched_schema_contract"] = schema_basis
     return base
+
+
+def _capture_schema_basis(header_contract_status: object) -> str:
+    """Map parser contract metadata to safe structural labels for the receipt."""
+    if header_contract_status == "synthetic_contract_only":
+        return "synthetic_fixture_only"
+    if header_contract_status == "selector_specific_observed_headers_only":
+        return "selector_specific_observed_headers"
+    return "unknown"
 
 
 def _failure_selector_receipt(
@@ -559,7 +596,8 @@ def _failure_selector_receipt(
         "response_suppressed": response_suppressed,
         "request_summary_sha256": request_digest,
         "parsed_row_count": 0,
-        "header_contract_status": "not_evaluated",
+        "selector_schema_validation_status": "not_evaluated",
+        "matched_schema_contract": "unknown",
         "source_id_status": "unknown",
         "lifecycle_semantics_status": "unknown",
         "market_scope_status": "unknown",
@@ -580,7 +618,7 @@ def _summary_receipt(
     total_rows: int,
     failure_code: str | None,
     transport_attempts: int,
-    parser_status: str,
+    selector_schema_validation_status: str,
 ) -> dict[str, object]:
     """Project selector outcomes into a value-free top-level receipt."""
     safe_receipts = [_sanitize_selector_receipt(item) for item in receipts]
@@ -591,17 +629,21 @@ def _summary_receipt(
         else None
     )
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "outcome": outcome
         if outcome in {"bounded_raw_capture_completed", "partial_or_failed_capture"}
         else "partial_or_failed_capture",
-        "synthetic_parser_contract_status": parser_status
-        if parser_status
+        "selector_schema_validation_status": selector_schema_validation_status
+        if selector_schema_validation_status
         in {
-            "all_synthetic_contracts_passed",
-            "not_all_synthetic_contracts_passed",
+            "all_selectors_schema_validated",
+            "test_fixture_contracts_matched",
+            "not_all_selectors_schema_validated",
         }
-        else "not_all_synthetic_contracts_passed",
+        else "not_all_selectors_schema_validated",
+        "selector_schema_validation_scope": (
+            "local_header_structure_only; source_identity_and_business_meaning_unknown"
+        ),
         "source": "szse.public",
         "method": "GET",
         "host": HOST,
@@ -638,7 +680,8 @@ def _sanitize_selector_receipt(receipt: Mapping[str, object]) -> dict[str, objec
     dataset_class = receipt.get("dataset_class")
     outcome = receipt.get("attempt_outcome")
     failure = receipt.get("failure_code")
-    header_status = receipt.get("header_contract_status")
+    schema_status = receipt.get("selector_schema_validation_status")
+    schema_basis = receipt.get("matched_schema_contract")
     parsed_count = receipt.get("parsed_row_count")
     result: dict[str, object] = {
         "sequence": sequence if type(sequence) is int and 1 <= sequence <= MAX_REQUESTS else None,
@@ -676,15 +719,22 @@ def _sanitize_selector_receipt(receipt: Mapping[str, object]) -> dict[str, objec
         "parsed_row_count": parsed_count
         if type(parsed_count) is int and 0 <= parsed_count <= MAX_ROWS_PER_SELECTOR
         else 0,
-        "header_contract_status": header_status
-        if header_status
+        "selector_schema_validation_status": schema_status
+        if type(schema_status) is str
+        and schema_status
         in {
             "not_evaluated",
-            "synthetic_contract_only",
-            "synthetic_contract_mismatch",
-            "synthetic_contract_rejected_or_unknown",
+            "selector_schema_validated",
+            "test_fixture_contract_matched",
+            "selector_schema_mismatch",
+            "selector_schema_rejected_or_unknown",
         }
         else "not_evaluated",
+        "matched_schema_contract": schema_basis
+        if type(schema_basis) is str
+        and schema_basis
+        in {"unknown", "synthetic_fixture_only", "selector_specific_observed_headers"}
+        else "unknown",
         "source_id_status": "unknown",
         "lifecycle_semantics_status": "unknown",
         "market_scope_status": "unknown",
@@ -982,13 +1032,21 @@ def _write_json(
         raise
 
 
-def _all_parser_contracts_passed(receipts: Sequence[Mapping[str, object]]) -> bool:
-    """Return true only when all three local synthetic parser contracts passed."""
-    return len(receipts) == MAX_REQUESTS and all(
-        receipt.get("attempt_outcome") == "succeeded"
-        and receipt.get("header_contract_status") == "synthetic_contract_only"
-        for receipt in receipts
-    )
+def _selector_schema_validation_status(receipts: Sequence[Mapping[str, object]]) -> str:
+    """Summarize observed-schema validation separately from test-fixture matching."""
+    if len(receipts) != MAX_REQUESTS or not all(
+        receipt.get("attempt_outcome") == "succeeded" for receipt in receipts
+    ):
+        return "not_all_selectors_schema_validated"
+    statuses = {receipt.get("selector_schema_validation_status") for receipt in receipts}
+    bases = {receipt.get("matched_schema_contract") for receipt in receipts}
+    if statuses == {"selector_schema_validated"} and bases == {
+        "selector_specific_observed_headers"
+    }:
+        return "all_selectors_schema_validated"
+    if statuses == {"test_fixture_contract_matched"} and bases == {"synthetic_fixture_only"}:
+        return "test_fixture_contracts_matched"
+    return "not_all_selectors_schema_validated"
 
 
 def _first_failure_code(receipts: Sequence[Mapping[str, object]]) -> str | None:

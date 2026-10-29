@@ -1,11 +1,11 @@
-"""Safely decode a deliberately small, synthetic SZSE lifecycle XLSX contract.
+"""Safely decode a bounded SZSE lifecycle XLSX structural contract.
 
 The adapter accepts bytes already supplied by a caller. It performs no file
 extraction, network access, database work, or canonical identity assignment.
-The dataset class is caller-declared metadata. Header names below belong only
-to this synthetic contract; they have not been verified against an SZSE
-publication. Source identity, row semantics, market coverage, and lifecycle
-meaning remain unknown in every returned result.
+The dataset class is caller-declared metadata. Besides a legacy synthetic
+fixture header, the adapter recognizes exact header rows observed in three
+SZSE XLSX responses. Those headers do not prove source identity, row semantics,
+market coverage, or lifecycle meaning, which remain unknown in every result.
 """
 
 from __future__ import annotations
@@ -15,6 +15,7 @@ import io
 import re
 import zipfile
 from dataclasses import dataclass
+from decimal import Decimal, InvalidOperation
 from typing import TYPE_CHECKING, Literal, cast
 from xml.parsers import expat
 
@@ -37,13 +38,45 @@ __all__ = [
 
 SzseLifecycleDatasetClass = Literal["current_a", "suspended", "terminated"]
 
-# Fixture-only labels. No source schema or vendor contract is claimed here.
+# Legacy test-only schema. It remains supported to preserve the synthetic test
+# contract; it is never treated as an observed source schema.
 SZSE_LIFECYCLE_SYNTHETIC_HEADERS: tuple[str, ...] = (
     "source_code",
     "source_name",
     "source_date",
     "source_status",
 )
+
+# Exact headers observed in the three bounded SZSE response workbooks. They are
+# used only to reject schema drift; no column receives inferred business meaning.
+_SZSE_OBSERVED_HEADERS: dict[SzseLifecycleDatasetClass, tuple[str, ...]] = {
+    "current_a": (
+        "板块",
+        "公司全称",
+        "英文名称",
+        "注册地址",
+        "A股代码",
+        "A股简称",
+        "A股上市日期",
+        "A股总股本",
+        "A股流通股本",
+        "B股代码",
+        "B股 简 称",
+        "B股上市日期",
+        "B股总股本",
+        "B股流通股本",
+        "地      区",
+        "省    份",
+        "城     市",
+        "所属行业",
+        "公司网址",
+        "目前尚未盈利",
+        "具有表决权差异安排",
+        "具有协议控制架构",
+    ),
+    "suspended": ("证券代码", "证券简称", "上市日期", "暂停上市日期"),
+    "terminated": ("证券代码", "证券简称", "上市日期", "终止上市日期"),
+}
 
 _DATASET_CLASSES = frozenset(("current_a", "suspended", "terminated"))
 _MAX_BODY_BYTES = 16 * 1024 * 1024
@@ -61,6 +94,8 @@ _MAX_CELL_CHARS = 4096
 _MAX_SHARED_STRINGS = 100_000
 _MAX_SHARED_STRING_CHARS = 4 * 1024 * 1024
 _MAX_STYLE_INDEX = 10_000
+_MAX_EXCEL_COLUMN_WIDTH = 255
+_MAX_EXCEL_ROW_HEIGHT = Decimal("409.5")
 _MAIN_NS = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
 _REL_NS = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 _PACKAGE_REL_NS = "http://schemas.openxmlformats.org/package/2006/relationships"
@@ -172,7 +207,9 @@ class SzseLifecycleXlsxResult:
     lifecycle_semantics_status: Literal["unknown"]
     market_scope_status: Literal["unknown"]
     source_completeness_status: Literal["unknown"]
-    header_contract_status: Literal["synthetic_contract_only"]
+    header_contract_status: Literal[
+        "synthetic_contract_only", "selector_specific_observed_headers_only"
+    ]
 
     def __repr__(self) -> str:
         """Summarize the result without exposing headers or row values."""
@@ -190,12 +227,13 @@ class _RejectedXmlError(Exception):
 def parse_szse_lifecycle_xlsx(
     body: bytes, *, dataset_class: SzseLifecycleDatasetClass
 ) -> SzseLifecycleXlsxResult:
-    """Parse a bounded XLSX body against the synthetic, raw-only contract.
+    """Parse a bounded XLSX body against the raw-only SZSE contract.
 
-    The workbook must contain exactly one visible worksheet whose first
-    non-empty row exactly matches :data:`SZSE_LIFECYCLE_SYNTHETIC_HEADERS`.
-    Spreadsheet dates remain their original XML cell type, value, and style;
-    no date, listing, delisting, market, or identity meaning is assigned.
+    The workbook must contain exactly one visible worksheet. Its first
+    non-empty row must match the synthetic fixture contract, or the exact
+    observed header schema associated with ``dataset_class``. That header
+    match does not verify source identity or business meaning. Spreadsheet
+    dates remain in their original XML cell type, value, and style.
 
     Args:
         body: Complete, already-acquired XLSX bytes.
@@ -234,8 +272,18 @@ def parse_szse_lifecycle_xlsx(
             else ()
         )
         header, header_cells, rows = _parse_worksheet(files[sheet_path], shared_strings)
-        if header != SZSE_LIFECYCLE_SYNTHETIC_HEADERS:
+        if header not in {
+            SZSE_LIFECYCLE_SYNTHETIC_HEADERS,
+            _SZSE_OBSERVED_HEADERS[dataset_class],
+        }:
             raise SzseLifecycleXlsxError("header_contract_mismatch")
+        header_status: Literal[
+            "synthetic_contract_only", "selector_specific_observed_headers_only"
+        ] = (
+            "synthetic_contract_only"
+            if header == SZSE_LIFECYCLE_SYNTHETIC_HEADERS
+            else "selector_specific_observed_headers_only"
+        )
         return SzseLifecycleXlsxResult(
             dataset_class=dataset_class,
             dataset_class_binding_status="caller_declared",
@@ -249,7 +297,7 @@ def parse_szse_lifecycle_xlsx(
             lifecycle_semantics_status="unknown",
             market_scope_status="unknown",
             source_completeness_status="unknown",
-            header_contract_status="synthetic_contract_only",
+            header_contract_status=header_status,
         )
     except SzseLifecycleXlsxError:
         raise
@@ -708,21 +756,9 @@ def _parse_worksheet(
     root = _parse_xml(data)
     if root.tag != f"{_SPREADSHEET_NS_PREFIX}worksheet":
         raise SzseLifecycleXlsxError("sheet_unsupported")
-    if root.find(f"{_SPREADSHEET_NS_PREFIX}mergeCells") is not None:
+    if root.attrib:
         raise SzseLifecycleXlsxError("sheet_unsupported")
-    if root.find(f"{_SPREADSHEET_NS_PREFIX}extLst") is not None:
-        raise SzseLifecycleXlsxError("sheet_unsupported")
-    sheet_data_nodes = root.findall(f"{_SPREADSHEET_NS_PREFIX}sheetData")
-    dimension_nodes = root.findall(f"{_SPREADSHEET_NS_PREFIX}dimension")
-    if len(sheet_data_nodes) != 1 or len(dimension_nodes) > 1:
-        raise SzseLifecycleXlsxError("sheet_unsupported")
-    sheet_data = sheet_data_nodes[0]
-    allowed_root_elements = {
-        f"{_SPREADSHEET_NS_PREFIX}sheetData",
-        f"{_SPREADSHEET_NS_PREFIX}dimension",
-    }
-    if any(child.tag not in allowed_root_elements for child in root):
-        raise SzseLifecycleXlsxError("sheet_unsupported")
+    sheet_data = _validate_worksheet_structure(root)
 
     header: tuple[str, ...] | None = None
     raw_header_cells: tuple[SzseLifecycleRawCell, ...] | None = None
@@ -752,7 +788,7 @@ def _parse_worksheet(
             if total_cells > _MAX_CELLS:
                 raise SzseLifecycleXlsxError("cell_limit_exceeded")
             cell = _parse_cell(cell_element, row_number, shared_strings)
-            if cell.column_index > len(SZSE_LIFECYCLE_SYNTHETIC_HEADERS):
+            if cell.column_index > _MAX_COLUMNS:
                 raise SzseLifecycleXlsxError("column_limit_exceeded")
             if cell.column_index in seen_columns:
                 raise SzseLifecycleXlsxError("cell_value_invalid")
@@ -763,15 +799,19 @@ def _parse_worksheet(
         if header is None:
             if not cells or all(cell.text_value == "" for cell in cells):
                 continue
-            if len(cells) != len(SZSE_LIFECYCLE_SYNTHETIC_HEADERS):
+            if len(cells) not in {
+                len(SZSE_LIFECYCLE_SYNTHETIC_HEADERS),
+                len(_SZSE_OBSERVED_HEADERS["current_a"]),
+            }:
                 raise SzseLifecycleXlsxError("header_contract_mismatch")
             header_values_by_column = {cell.column_index: cell.text_value for cell in cells}
-            if set(header_values_by_column) != {1, 2, 3, 4}:
+            expected_columns = set(range(1, len(cells) + 1))
+            if set(header_values_by_column) != expected_columns:
                 raise SzseLifecycleXlsxError("header_contract_mismatch")
-            header = tuple(header_values_by_column[index] for index in range(1, 5))
+            header = tuple(header_values_by_column[index] for index in range(1, len(cells) + 1))
             raw_header_cells = tuple(cells)
             continue
-        if any(cell.column_index > len(SZSE_LIFECYCLE_SYNTHETIC_HEADERS) for cell in cells):
+        if any(cell.column_index > len(header) for cell in cells):
             raise SzseLifecycleXlsxError("column_limit_exceeded")
         if any(
             len(cell.raw_value) > _MAX_CELL_CHARS or len(cell.text_value) > _MAX_CELL_CHARS
@@ -783,6 +823,134 @@ def _parse_worksheet(
     if header is None or raw_header_cells is None:
         raise SzseLifecycleXlsxError("header_contract_mismatch")
     return header, raw_header_cells, tuple(data_rows)
+
+
+def _validate_worksheet_structure(root: Element) -> Element:
+    """Accept the synthetic shape or the exact, inert SZSE display layout."""
+    children = list(root)
+    tags = tuple(child.tag for child in children)
+    dimension_tag = f"{_SPREADSHEET_NS_PREFIX}dimension"
+    views_tag = f"{_SPREADSHEET_NS_PREFIX}sheetViews"
+    format_tag = f"{_SPREADSHEET_NS_PREFIX}sheetFormatPr"
+    data_tag = f"{_SPREADSHEET_NS_PREFIX}sheetData"
+    margins_tag = f"{_SPREADSHEET_NS_PREFIX}pageMargins"
+
+    if views_tag in tags or format_tag in tags or margins_tag in tags:
+        if tags != (dimension_tag, views_tag, format_tag, data_tag, margins_tag):
+            raise SzseLifecycleXlsxError("sheet_unsupported")
+        dimension, views, format_properties, sheet_data, margins = children
+        _validate_dimension(dimension)
+        _validate_sheet_views(views)
+        _validate_sheet_format(format_properties)
+        _validate_page_margins(margins)
+        return sheet_data
+
+    if any(tag not in {dimension_tag, data_tag} for tag in tags):
+        raise SzseLifecycleXlsxError("sheet_unsupported")
+    data_nodes = [child for child in children if child.tag == data_tag]
+    dimension_nodes = [child for child in children if child.tag == dimension_tag]
+    if len(data_nodes) != 1 or len(dimension_nodes) > 1:
+        raise SzseLifecycleXlsxError("sheet_unsupported")
+    if dimension_nodes:
+        _validate_dimension(dimension_nodes[0])
+    return data_nodes[0]
+
+
+def _validate_dimension(node: Element) -> None:
+    """Validate the inert dimension hint without using it to bound worksheet data."""
+    if node.attrib.keys() != {"ref"} or len(node):
+        raise SzseLifecycleXlsxError("sheet_unsupported")
+    reference = node.get("ref", "")
+    references = reference.split(":")
+    if len(references) not in {1, 2} or any(
+        not _valid_excel_reference(item) for item in references
+    ):
+        raise SzseLifecycleXlsxError("sheet_unsupported")
+
+
+def _valid_excel_reference(reference: str) -> bool:
+    """Check a cell reference's lexical form and Excel coordinate limits."""
+    match = _CELL_REF.fullmatch(reference)
+    return bool(
+        match and _column_number(match.group(1)) <= 16_384 and int(match.group(2)) <= 1_048_576
+    )
+
+
+def _validate_sheet_views(node: Element) -> None:
+    """Accept only the single passive view used by the observed workbooks."""
+    if node.attrib or len(node) != 1:
+        raise SzseLifecycleXlsxError("sheet_unsupported")
+    view = node[0]
+    if view.tag != f"{_SPREADSHEET_NS_PREFIX}sheetView" or len(view):
+        raise SzseLifecycleXlsxError("sheet_unsupported")
+    if set(view.attrib) not in ({"workbookViewId"}, {"workbookViewId", "tabSelected"}):
+        raise SzseLifecycleXlsxError("sheet_unsupported")
+    if not _is_ascii_integer(view.get("workbookViewId", ""), maximum=65_535):
+        raise SzseLifecycleXlsxError("sheet_unsupported")
+    if "tabSelected" in view.attrib and view.get("tabSelected") not in {
+        "0",
+        "1",
+        "true",
+        "false",
+    }:
+        raise SzseLifecycleXlsxError("sheet_unsupported")
+
+
+def _validate_sheet_format(node: Element) -> None:
+    """Validate the two passive row/column defaults in the observed layout."""
+    if set(node.attrib) != {"baseColWidth", "defaultRowHeight"} or len(node):
+        raise SzseLifecycleXlsxError("sheet_unsupported")
+    base_column_width = node.get("baseColWidth", "")
+    if (
+        not _is_ascii_integer(base_column_width, maximum=_MAX_EXCEL_COLUMN_WIDTH)
+        or int(base_column_width) == 0
+    ):
+        raise SzseLifecycleXlsxError("sheet_unsupported")
+    if (
+        not _is_ascii_decimal(
+            node.get("defaultRowHeight", ""), minimum=Decimal("0"), maximum=_MAX_EXCEL_ROW_HEIGHT
+        )
+        or Decimal(node.get("defaultRowHeight", "0")) == 0
+    ):
+        raise SzseLifecycleXlsxError("sheet_unsupported")
+
+
+def _validate_page_margins(node: Element) -> None:
+    """Validate all six finite, non-negative page margin measurements."""
+    margin_names = {"left", "right", "top", "bottom", "header", "footer"}
+    if set(node.attrib) != margin_names or len(node):
+        raise SzseLifecycleXlsxError("sheet_unsupported")
+    if any(
+        not _is_ascii_decimal(node.get(name, ""), minimum=Decimal("0"), maximum=Decimal("1000"))
+        for name in margin_names
+    ):
+        raise SzseLifecycleXlsxError("sheet_unsupported")
+
+
+def _is_ascii_integer(value: str, *, maximum: int) -> bool:
+    """Check a bounded, unsigned ASCII integer without accepting signs or exponents."""
+    return bool(
+        value
+        and len(value) <= len(str(maximum))
+        and value.isascii()
+        and value.isdecimal()
+        and int(value) <= maximum
+    )
+
+
+def _is_ascii_decimal(value: str, *, minimum: Decimal, maximum: Decimal) -> bool:
+    """Check a finite plain decimal against inclusive bounds."""
+    if (
+        not value
+        or len(value) > 64
+        or not re.fullmatch(r"(?:0|[1-9][0-9]*)(?:\.[0-9]+)?", value, re.ASCII)
+    ):
+        return False
+    try:
+        number = Decimal(value)
+    except InvalidOperation:
+        return False
+    return number.is_finite() and minimum <= number <= maximum
 
 
 def _parse_cell(
