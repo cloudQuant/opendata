@@ -58,6 +58,7 @@ import requests
 
 from opendata.data.http_client import (
     BoundedHttpResponse,
+    FailureCategory,
     GovernedHttpClient,
     HttpClientConfig,
     HttpFetchError,
@@ -225,6 +226,7 @@ def run_pilot(authorization_file: Path, evidence_dir: Path) -> dict[str, object]
                     _failure_manifest(
                         reservation,
                         outcome="authorization_expired_before_transport",
+                        capture_state="failed_before_transport",
                         attempts_used=budget.attempts_used,
                         http_status=None,
                         failure_category="authorization_expired_before_transport",
@@ -252,6 +254,16 @@ def run_pilot(authorization_file: Path, evidence_dir: Path) -> dict[str, object]
                 failure = _failure_manifest(
                     reservation,
                     outcome="http_request_failed",
+                    capture_state=(
+                        "failed_before_transport"
+                        if exc.attempts == 0 and exc.status is None
+                        else (
+                            "transport_outcome_unknown"
+                            if exc.attempts == 0
+                            or exc.category in {FailureCategory.NETWORK, FailureCategory.TIMEOUT}
+                            else _capture_state_from_http_status(exc.status)
+                        )
+                    ),
                     attempts_used=budget.attempts_used,
                     http_status=exc.status,
                     failure_category=exc.category.value,
@@ -266,6 +278,7 @@ def run_pilot(authorization_file: Path, evidence_dir: Path) -> dict[str, object]
                 failure = _failure_manifest(
                     reservation,
                     outcome="request_failed",
+                    capture_state="transport_outcome_unknown",
                     attempts_used=budget.attempts_used,
                     http_status=None,
                     failure_category="governed_request_rejected",
@@ -282,15 +295,29 @@ def run_pilot(authorization_file: Path, evidence_dir: Path) -> dict[str, object]
                 _failure_manifest(
                     reservation,
                     outcome="response_rejected",
+                    capture_state="transport_outcome_unknown",
                     attempts_used=budget.attempts_used,
                     http_status=None,
                     failure_category="bounded_response_type_invalid",
                 ),
             )
             raise PilotError("pilot_response_rejected")
+        if type(response.status_code) is int and response.status_code != 200:
+            _write_json_exclusive(
+                directory_fd,
+                "capture.json",
+                _failure_manifest(
+                    reservation,
+                    outcome="response_rejected",
+                    capture_state=_capture_state_from_http_status(response.status_code),
+                    attempts_used=budget.attempts_used,
+                    http_status=response.status_code,
+                    failure_category="bounded_response_contract_invalid",
+                ),
+            )
+            raise PilotError("pilot_response_rejected")
         if (
             type(response.status_code) is not int
-            or response.status_code != 200
             or type(response.body) is not bytes
             or len(response.body) > PILOT_MAX_RESPONSE_BYTES
         ):
@@ -300,6 +327,11 @@ def run_pilot(authorization_file: Path, evidence_dir: Path) -> dict[str, object]
                 _failure_manifest(
                     reservation,
                     outcome="response_rejected",
+                    capture_state=(
+                        "response_rejected"
+                        if type(response.status_code) is int and response.status_code == 200
+                        else "transport_outcome_unknown"
+                    ),
                     attempts_used=budget.attempts_used,
                     http_status=(
                         response.status_code if type(response.status_code) is int else None
@@ -635,6 +667,9 @@ def _success_manifest(
     """Bind the captured bytes, request identity, and bounded sample summary."""
     return {
         **reservation,
+        "capture_state": (
+            "sample_captured" if outcome == "bounded_sample_captured" else "response_rejected"
+        ),
         "outcome": outcome,
         "retrieved_at_utc": None if retrieved_at is None else _format_utc(retrieved_at),
         "http_status": 200,
@@ -660,6 +695,7 @@ def _failure_manifest(
     reservation: Mapping[str, object],
     *,
     outcome: str,
+    capture_state: str,
     attempts_used: int,
     http_status: int | None,
     failure_category: str,
@@ -668,6 +704,7 @@ def _failure_manifest(
     """Record a safe failed attempt without claiming an unavailable response body."""
     return {
         **reservation,
+        "capture_state": capture_state,
         "outcome": outcome,
         "attempts_used": attempts_used,
         "http_status": http_status,
@@ -676,6 +713,17 @@ def _failure_manifest(
         "failure_category": failure_category,
         "completeness_assessment": "not_evaluated",
     }
+
+
+def _capture_state_from_http_status(status: object) -> str:
+    """Classify a terminal HTTP status without treating non-200 2xx as errors."""
+    if type(status) is not int:
+        return "transport_outcome_unknown"
+    if 200 <= status < 300:
+        return "response_rejected"
+    if 300 <= status <= 599:
+        return "http_error_response_received"
+    return "transport_outcome_unknown"
 
 
 def _strict_json_object(raw: bytes) -> dict[str, object]:
