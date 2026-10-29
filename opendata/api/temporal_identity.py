@@ -9,13 +9,11 @@ from __future__ import annotations
 
 import asyncio
 import json
-from dataclasses import dataclass
 from datetime import date
-from types import MappingProxyType
 from typing import TYPE_CHECKING, Annotated, Any, Protocol, TypeGuard
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Coroutine, Mapping, Sequence
+    from collections.abc import Callable, Coroutine, Mapping
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
@@ -32,6 +30,14 @@ from opendata.api.published_access import (
     require_published_access,
 )
 from opendata.api.published_data import get_dataset_grants
+from opendata.data.temporal_identity_pins import (
+    MAX_TEMPORAL_IDENTITY_PINS as _MAX_TEMPORAL_IDENTITY_PINS,
+)
+from opendata.data.temporal_identity_pins import (
+    TemporalIdentityConfigurationError,
+    TemporalIdentityPin,
+    TemporalIdentityPinRegistry,
+)
 from opendata.data.temporal_instrument_identity import (
     Exchange,
     IdentityResolution,
@@ -42,12 +48,13 @@ from opendata.data.temporal_instrument_identity import (
     TemporalInstrumentIdentityError,
 )
 
+MAX_TEMPORAL_IDENTITY_PINS = _MAX_TEMPORAL_IDENTITY_PINS
+
 MAX_REQUEST_BYTES = 8 * 1024
 MAX_RESPONSE_BYTES = 512 * 1024
 MAX_RESOLUTION_SEGMENTS = 256
 MAX_REQUEST_STREAM_CHUNKS = 4_096
 MAX_REQUEST_JSON_FIELDS = 10
-MAX_TEMPORAL_IDENTITY_PINS = 2_048
 MAX_WINDOW_DAYS = 3_660
 IDENTITY_RESOLVE_OPERATION = "identity.resolve"
 _IDENTIFIER_PATTERN = r"^[A-Za-z0-9][A-Za-z0-9._:/+\-]{0,127}$"
@@ -59,53 +66,6 @@ _Identifier = Annotated[
 ]
 _Sha256 = Annotated[str, StringConstraints(strict=True, pattern=_SHA256_PATTERN)]
 _Symbol = Annotated[str, StringConstraints(strict=True, pattern=_SYMBOL_PATTERN)]
-
-
-class TemporalIdentityConfigurationError(ValueError):
-    """Represent an invalid operator pin without exposing its contents."""
-
-    def __init__(self) -> None:
-        """Create a fixed message safe for logs and API startup."""
-        super().__init__("Invalid temporal identity pin configuration")
-
-
-class TemporalIdentityPin(BaseModel):
-    """Bind one dataset and source grant to an exact immutable identity snapshot."""
-
-    model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
-
-    dataset_id: _Identifier
-    source_id: _Identifier
-    authority_id: _Identifier
-    registry_id: _Identifier
-    reference_version: _Identifier
-    snapshot_sha256: _Sha256
-
-
-@dataclass(frozen=True, slots=True, init=False)
-class TemporalIdentityPinRegistry:
-    """Immutable operator-supplied map with one exact pin per dataset."""
-
-    _pins: Mapping[str, TemporalIdentityPin]
-
-    def __init__(self, pins: Sequence[TemporalIdentityPin]) -> None:
-        """Freeze a bounded sequence of unique dataset pins."""
-        if (
-            not isinstance(pins, (tuple, list))
-            or len(pins) > MAX_TEMPORAL_IDENTITY_PINS
-            or any(type(pin) is not TemporalIdentityPin for pin in pins)
-        ):
-            raise TemporalIdentityConfigurationError
-        by_dataset: dict[str, TemporalIdentityPin] = {}
-        for pin in pins:
-            if pin.dataset_id in by_dataset:
-                raise TemporalIdentityConfigurationError
-            by_dataset[pin.dataset_id] = pin
-        object.__setattr__(self, "_pins", MappingProxyType(by_dataset))
-
-    def get(self, dataset_id: str) -> TemporalIdentityPin | None:
-        """Return only the exact operator pin for one dataset identifier."""
-        return self._pins.get(dataset_id)
 
 
 class _ResolveRequest(BaseModel):
