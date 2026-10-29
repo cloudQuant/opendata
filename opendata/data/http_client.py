@@ -35,7 +35,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import TYPE_CHECKING, Any, cast
-from urllib.parse import urlsplit
+from urllib.parse import urlencode, urlsplit
 
 import requests
 from loguru import logger
@@ -75,6 +75,28 @@ if TYPE_CHECKING:
 
 _SENSITIVE_PARAMETER_PARTS = ("api_key", "apikey", "token", "secret", "password", "credential")
 _STREAM_CHUNK_BYTES = 64 * 1024
+_MAX_BOUNDED_FORM_BYTES = 1024 * 1024
+_MAX_BOUNDED_FORM_FIELDS = 256
+_BOUNDED_FORM_CALLER_HEADERS = frozenset(
+    {"accept", "accept-language", "origin", "referer", "user-agent", "x-requested-with"}
+)
+_BOUNDED_FORM_SESSION_HEADERS = _BOUNDED_FORM_CALLER_HEADERS | frozenset(
+    {"accept-encoding", "connection", "content-type"}
+)
+_UNSAFE_FORM_TRANSPORT_HEADERS = frozenset(
+    {
+        "authorization",
+        "cookie",
+        "content-length",
+        "transfer-encoding",
+        "content-encoding",
+        "host",
+        "proxy-authorization",
+        "proxy-connection",
+        "x-http-method-override",
+        "x-method-override",
+    }
+)
 _BOUNDED_SESSION_METHODS = (
     "request",
     "prepare_request",
@@ -103,6 +125,10 @@ class _BoundedRedirectError(Exception):
     def __init__(self, response: requests.Response) -> None:
         super().__init__("bounded request redirect rejected")
         self.response = response
+
+
+class _BoundedFormInputError(ValueError):
+    """Internal safe diagnostic for a rejected form value or header."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -225,6 +251,82 @@ def _snapshot_json_body(value: Mapping[str, Any] | None) -> dict[str, Any] | Non
         return cast("dict[str, Any]", snapshot)
     except Exception:
         raise ValueError("json_body must be a finite JSON object") from None
+
+
+def _encode_bounded_form(form: Mapping[str, str], max_bytes: int) -> bytes:
+    """Snapshot and encode a form without retaining more than its byte cap."""
+    if not isinstance(form, Mapping):
+        raise TypeError("form must be a mapping of strings")
+
+    encoded = bytearray()
+    field_count = 0
+    seen_keys: set[str] = set()
+    try:
+        items = iter(form.items())
+        while True:
+            try:
+                key, value = next(items)
+            except StopIteration:
+                break
+            field_count += 1
+            if field_count > _MAX_BOUNDED_FORM_FIELDS:
+                raise _BoundedFormInputError("form contains too many fields")
+            if type(key) is not str or type(value) is not str:
+                raise _BoundedFormInputError("form fields must be exact strings")
+            if key in seen_keys:
+                raise _BoundedFormInputError("form contains duplicate field names")
+            seen_keys.add(key)
+            # A character-count precheck bounds the temporary UTF-8 conversion.
+            if len(key) > max_bytes or len(value) > max_bytes:
+                raise _BoundedFormInputError("form field exceeds its byte limit")
+            if len(key.encode("utf-8")) > max_bytes or len(value.encode("utf-8")) > max_bytes:
+                raise _BoundedFormInputError("form field exceeds its byte limit")
+            pair = urlencode(((key, value),), encoding="utf-8", errors="strict").encode("ascii")
+            separator_bytes = 1 if encoded else 0
+            if len(encoded) + separator_bytes + len(pair) > max_bytes:
+                raise _BoundedFormInputError("encoded form exceeds max_form_bytes")
+            if separator_bytes:
+                encoded.extend(b"&")
+            encoded.extend(pair)
+    except _BoundedFormInputError:
+        raise
+    except Exception:
+        # Mapping and Unicode implementations can raise messages containing
+        # caller data; replace those with a stable, value-free diagnostic.
+        raise ValueError("form could not be encoded safely") from None
+    return bytes(encoded)
+
+
+def _snapshot_form_headers(headers: Mapping[str, str] | None) -> dict[str, str]:
+    """Copy only the bounded form API's safe caller-controlled headers."""
+    if headers is None:
+        return {}
+    if not isinstance(headers, Mapping):
+        raise TypeError("headers must be a mapping of strings")
+    copied: dict[str, str] = {}
+    seen_names: set[str] = set()
+    try:
+        for name, value in headers.items():
+            if type(name) is not str or type(value) is not str:
+                raise _BoundedFormInputError("form headers must be exact strings")
+            if not name or not name.isascii():
+                raise _BoundedFormInputError("form request header is malformed")
+            normalized = name.lower()
+            if normalized not in _BOUNDED_FORM_CALLER_HEADERS:
+                raise _BoundedFormInputError("form request contains an unsupported header")
+            if normalized in seen_names:
+                raise _BoundedFormInputError("form request contains duplicate headers")
+            seen_names.add(normalized)
+            if not value.isascii() or any(
+                ord(character) < 32 or ord(character) == 127 for character in value
+            ):
+                raise _BoundedFormInputError("form request header is malformed")
+            copied[name] = value
+    except _BoundedFormInputError:
+        raise
+    except Exception:
+        raise ValueError("form request headers could not be copied safely") from None
+    return copied
 
 
 class FailureCategory(str, Enum):
@@ -599,6 +701,115 @@ class GovernedHttpClient:
             raise RuntimeError("bounded HTTP attempt returned an ordinary response")
         return result
 
+    def post_form_bounded(
+        self,
+        url: str,
+        form: Mapping[str, str],
+        *,
+        max_form_bytes: int,
+        max_body_bytes: int,
+        overall_timeout: float,
+        headers: Mapping[str, str] | None = None,
+        timeout: float | tuple[float, float] | None = None,
+        source: str = "unspecified",
+    ) -> BoundedHttpResponse:
+        """Send one authorized form POST and stream its bounded response.
+
+        The form is snapshotted and URL-encoded locally. Its encoded ASCII byte
+        length must fit ``max_form_bytes``. The request is authorized by an
+        active QUERY scope, consumes its normal request budget, uses one
+        transport attempt, and never enters the raw response cache. Caller
+        headers are limited to presentation and source-origin headers; request
+        framing, authentication, content type, and compression headers stay
+        under this transport's control.
+
+        The response uses the same streaming, identity-encoding, body-limit,
+        redirect, rate-limit, and cooperative deadline rules as
+        :meth:`get_bounded`. As with that method, a blocking socket read may
+        exceed the overall deadline by up to its currently applied read timeout.
+
+        Args:
+            url: Absolute HTTPS URL covered by the active source grant.
+            form: Ordered mapping of exact string field names and values.
+            max_form_bytes: Maximum encoded request-body bytes.
+            max_body_bytes: Maximum response-body bytes retained.
+            overall_timeout: Cooperative wall-time budget in seconds.
+            headers: Optional safe source request headers.
+            timeout: Optional connect/read timeout override.
+            source: Exact source name present in the active QUERY grant.
+
+        Returns:
+            The successful HTTP status, UTC retrieval time, and bounded body.
+
+        Raises:
+            TypeError: If bounds, form, or headers have unsupported types.
+            ValueError: If a bound is invalid or the encoded form exceeds its cap.
+            RequestAuthorizationError: If no active QUERY grant authorizes the
+                request or the session could hide authentication or retries.
+            RequestAdapterRetryError: If a transport adapter can retry requests.
+            HttpFetchError: On transport, status, deadline, size, or encoding failure.
+
+        Form field values are never included in logs or exception messages.
+        """
+        if type(max_form_bytes) is not int:
+            raise TypeError("max_form_bytes must be an exact int")
+        if max_form_bytes <= 0:
+            raise ValueError("max_form_bytes must be positive")
+        if max_form_bytes > _MAX_BOUNDED_FORM_BYTES:
+            raise ValueError("max_form_bytes exceeds the local safety limit")
+        if type(max_body_bytes) is not int:
+            raise TypeError("max_body_bytes must be an exact int")
+        if max_body_bytes <= 0:
+            raise ValueError("max_body_bytes must be positive")
+        total_seconds = _strict_positive_seconds("overall_timeout", overall_timeout)
+        checked_timeout = _strict_timeout(timeout)
+        started = self._time()
+        deadline = started + total_seconds
+        if not math.isfinite(deadline):
+            raise ValueError("overall_timeout produces an invalid deadline")
+
+        scopes = current_request_scopes()
+        if not scopes or any(scope.operation is not RequestOperation.QUERY for scope in scopes):
+            raise RequestAuthorizationError("bounded form POST requires an active QUERY scope")
+        host = self._require_host(url)
+        self._validate_scoped_url(url, host)
+        if self._source_attempt_gate is not None:
+            self._validate_source_attempt_scopes(scopes)
+        elif any(scope.source_attempt_binding is not None for scope in scopes):
+            raise RequestAuthorizationError(
+                "source attempt binding requires a configured durable gate"
+            )
+        authorize_request(scopes, source, host)
+
+        form_body = _encode_bounded_form(form, max_form_bytes)
+        request_headers = _snapshot_form_headers(headers)
+        request_headers["Content-Type"] = "application/x-www-form-urlencoded"
+        request_headers["Accept-Encoding"] = "identity"
+
+        session = self._get_form_session()
+        self._validate_bounded_form_session(session)
+        try:
+            result = self._request(
+                "POST",
+                url,
+                headers=request_headers,
+                timeout=checked_timeout,
+                source=source,
+                use_cache=False,
+                body_limit=max_body_bytes,
+                deadline=deadline,
+                form_body=form_body,
+                transport_session=session,
+            )
+        except HttpFetchError as error:
+            # The POST may have reached the source even when its outcome is unknown.
+            # Never signal that a caller may safely replay the form automatically.
+            error.retryable = False
+            raise
+        if not isinstance(result, BoundedHttpResponse):
+            raise RuntimeError("bounded form POST returned an ordinary response")
+        return result
+
     def request(
         self,
         method: str,
@@ -662,6 +873,8 @@ class GovernedHttpClient:
         source: str = "unspecified",
         cache_context: Mapping[str, Any] | None = None,
         json_body: Mapping[str, Any] | None = None,
+        form_body: bytes | None = None,
+        transport_session: requests.Session | None = None,
         use_cache: bool = True,
         body_limit: int | None = None,
         deadline: float | None = None,
@@ -675,6 +888,11 @@ class GovernedHttpClient:
         method_upper = method.upper()
         if request_body is not None and method_upper in {"GET", "HEAD"}:
             raise ValueError("json_body is not allowed for GET or HEAD requests")
+        if form_body is not None:
+            if type(form_body) is not bytes:
+                raise TypeError("form_body must be exact bytes")
+            if request_body is not None or method_upper != "POST" or body_limit is None:
+                raise ValueError("form_body requires a bounded POST without a JSON body")
         host = self._require_host(url)
         scopes = current_request_scopes()
         scoped = bool(scopes)
@@ -688,15 +906,18 @@ class GovernedHttpClient:
             self._validate_scoped_url(url, host)
             authorize_request(scopes, source, host)
             # Authorization precedes both cache access and lazy Session creation.
-            session = self._get_session()
+            session = transport_session if transport_session is not None else self._get_session()
             if body_limit is None:
                 self._validate_scoped_session(session)
+            elif form_body is not None:
+                self._validate_bounded_form_session(session)
             else:
                 self._validate_bounded_session(session)
             if self._source_attempt_gate is not None:
                 self._validate_attempt_gated_session(session)
         elif body_limit is not None:
-            self._validate_bounded_session(self._get_session())
+            session = transport_session if transport_session is not None else self._get_session()
+            self._validate_bounded_session(session)
         is_get = method_upper == "GET"
         attempts = self._config.max_attempts if is_get else 1
         request_id = uuid.uuid4().hex
@@ -776,6 +997,8 @@ class GovernedHttpClient:
                 cache_context,
                 cache_identity,
                 scopes,
+                form_body=form_body,
+                transport_session=transport_session,
                 body_limit=body_limit,
                 deadline=deadline,
             )
@@ -821,6 +1044,8 @@ class GovernedHttpClient:
         cache_identity: _CacheRequestIdentity | None,
         scopes: tuple[RequestExecutionScope, ...],
         *,
+        form_body: bytes | None = None,
+        transport_session: requests.Session | None = None,
         body_limit: int | None = None,
         deadline: float | None = None,
     ) -> tuple[requests.Response | BoundedHttpResponse | None, HttpFetchError | None]:
@@ -842,6 +1067,9 @@ class GovernedHttpClient:
             cache_identity: Prepared URL and headers, including merged session
                 credentials and query parameters.
             scopes: The active Fetcher execution scopes, if any.
+            form_body: Optional pre-encoded body for a bounded form POST.
+            transport_session: Optional form-only Requests session already
+                validated by the bounded form transport.
             body_limit: Optional application-level body cap that enables streaming.
             deadline: Optional cooperative monotonic deadline for a bounded request.
 
@@ -897,6 +1125,8 @@ class GovernedHttpClient:
                             headers,
                             request_timeout,
                             json_body,
+                            form_body=form_body,
+                            transport_session=transport_session,
                             scopes=scopes,
                             source=source,
                             host=host,
@@ -924,6 +1154,8 @@ class GovernedHttpClient:
                         headers,
                         request_timeout,
                         json_body,
+                        form_body=form_body,
+                        transport_session=transport_session,
                         stream=body_limit is not None,
                         request_id=request_id,
                         attempt_no=attempt,
@@ -1103,6 +1335,11 @@ class GovernedHttpClient:
                 self._record_probe_failure(host, FailureCategory.BLOCKED)
             raise RequestRedirectError("redirects are forbidden in a scoped request")
         category, retryable = _classify_status(response.status_code)
+        if body_limit is not None and not 200 <= response.status_code < 300 and category is None:
+            # Bounded responses succeed only with an ordinary 2xx status. In
+            # particular, 1xx upgrade responses are never body data.
+            category = FailureCategory.UPSTREAM_ERROR
+            retryable = False
         if category is None:
             if (
                 body_limit is None
@@ -1167,11 +1404,10 @@ class GovernedHttpClient:
         response: requests.Response,
         body_limit: int | None,
     ) -> bool:
-        """Return whether a response is eligible for bounded body consumption."""
+        """Return whether a successful 2xx response can be read under the body cap."""
         if body_limit is None:
             return False
-        category, _retryable = _classify_status(response.status_code)
-        return category is None and not 300 <= response.status_code < 400
+        return bool(200 <= response.status_code < 300)
 
     @staticmethod
     def _reject_bounded_redirect_before_requests_resolution(
@@ -1261,9 +1497,18 @@ class GovernedHttpClient:
         host: str = "",
         deadline: float | None = None,
         stream: bool = False,
+        form_body: bytes | None = None,
+        transport_session: requests.Session | None = None,
     ) -> requests.Response:
         """Send one request through the session with governance kwargs."""
-        merged = {**self._config.default_headers, **(headers or {})}
+        if form_body is not None:
+            merged = requests.structures.CaseInsensitiveDict(self._config.default_headers)
+            merged.update(headers or {})
+            merged["Content-Type"] = "application/x-www-form-urlencoded"
+            merged["Accept-Encoding"] = "identity"
+        else:
+            # Keep the ordinary Requests path's historical plain-dict contract.
+            merged = {**self._config.default_headers, **(headers or {})}
         request_timeout = (
             timeout
             if timeout is not None
@@ -1272,7 +1517,7 @@ class GovernedHttpClient:
                 self._config.read_timeout,
             )
         )
-        session = self._get_session()
+        session = transport_session if transport_session is not None else self._get_session()
         request_kwargs: dict[str, Any] = {
             "params": dict(params) if params else None,
             "headers": merged,
@@ -1294,6 +1539,8 @@ class GovernedHttpClient:
             }
         if json_body is not None:
             request_kwargs["json"] = json_body
+        if form_body is not None:
+            request_kwargs["data"] = form_body
 
         def send() -> requests.Response:
             if scopes:
@@ -1315,7 +1562,10 @@ class GovernedHttpClient:
             if scopes and self._source_attempt_gate is not None:
                 check_scope_liveness(scopes)
             on_transport_start()
-            return session.request(method, url, **request_kwargs)
+            response = session.request(method, url, **request_kwargs)
+            if form_body is not None:
+                session.cookies.clear()
+            return response
 
         if self._session_override is not None:
             with self._injected_session_lock:
@@ -1463,6 +1713,19 @@ class GovernedHttpClient:
             self._thread_local.session = session
         return cast("requests.Session", session)
 
+    def _get_form_session(self) -> requests.Session:
+        """Return a form-only session with environment credential routing disabled."""
+        if self._session_override is not None:
+            return self._session_override
+        session = getattr(self._thread_local, "form_session", None)
+        if session is None:
+            session = requests.Session()
+            session.trust_env = False
+            session.headers["Accept-Encoding"] = "identity"
+            session.headers["Content-Type"] = "application/x-www-form-urlencoded"
+            self._thread_local.form_session = session
+        return cast("requests.Session", session)
+
     def _validate_scoped_url(self, url: str, host: str) -> None:
         """Require the exact HTTPS origin shape accepted by a trusted grant."""
         try:
@@ -1527,6 +1790,68 @@ class GovernedHttpClient:
                     "bounded requests require standard requests.Session methods"
                 )
         self._validate_scoped_session(session)
+
+    def _validate_bounded_form_session(self, session: object) -> None:
+        """Require a standard, direct session that cannot hide form credentials or retries."""
+        if not isinstance(session, requests.Session) or type(session) is not requests.Session:
+            raise RequestAuthorizationError(
+                "bounded form POST requires the standard Requests session"
+            )
+        self._validate_bounded_session(session)
+        if (
+            session.trust_env is not False
+            or session.verify is not True
+            or session.cert is not None
+            or type(session.proxies) is not dict
+            or session.proxies
+            or type(session.params) is not dict
+            or session.params
+            or self._config.proxies
+            or session.auth is not None
+            or type(session.cookies) is not requests.cookies.RequestsCookieJar
+            or any(session.cookies)
+        ):
+            raise RequestAuthorizationError(
+                "bounded form POST rejects environment routing and session credentials"
+            )
+        for header_map in (self._config.default_headers, session.headers):
+            for name, value in header_map.items():
+                if type(name) is not str or type(value) is not str:
+                    raise RequestAuthorizationError(
+                        "bounded form POST rejects malformed session headers"
+                    )
+                normalized = name.lower()
+                if normalized in _UNSAFE_FORM_TRANSPORT_HEADERS:
+                    raise RequestAuthorizationError(
+                        "bounded form POST rejects session authentication or framing headers"
+                    )
+                if normalized not in _BOUNDED_FORM_SESSION_HEADERS:
+                    raise RequestAuthorizationError(
+                        "bounded form POST rejects unapproved session headers"
+                    )
+                if normalized == "accept-encoding" and value.strip().lower() != "identity":
+                    raise RequestAuthorizationError(
+                        "bounded form POST requires identity request encoding"
+                    )
+                if normalized == "content-type" and (
+                    value.strip().lower() != "application/x-www-form-urlencoded"
+                ):
+                    raise RequestAuthorizationError(
+                        "bounded form POST requires the form content type"
+                    )
+        for adapter in session.adapters.values():
+            if type(adapter) is not requests.adapters.HTTPAdapter or "send" in adapter.__dict__:
+                raise RequestAuthorizationError(
+                    "bounded form POST rejects custom transport adapters"
+                )
+            retries = getattr(adapter, "max_retries", None)
+            if type(retries) is not Retry or any(
+                getattr(retries, attribute, None) not in (None, 0, False)
+                for attribute in ("total", "connect", "read", "redirect", "status", "other")
+            ):
+                raise RequestAdapterRetryError(
+                    "bounded form POST requires Requests adapters with retries disabled"
+                )
 
     @contextmanager
     def _scoped_semaphore(
