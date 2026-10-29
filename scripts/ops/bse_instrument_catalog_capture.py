@@ -8,8 +8,9 @@ pagination semantics remain unknown until the retained source bytes receive a
 separate, evidence-based review.
 
 The response is stored content-addressed below a new owner-private evidence
-directory. Receipts include only the bounded request scope, body size and
-digests, and fixed unknown statuses. This is a local capture record; it does
+directory. Schema-v2 receipts distinguish local budget reservations, bounded
+client invocation, reported transport attempts, and an observed HTTP response.
+This is a local capture record; it does
 not establish source authenticity, market completeness, historical coverage,
 or retention rights. No credentials, database, REST API, or scheduler are
 used by this module.
@@ -37,12 +38,15 @@ from requests.adapters import HTTPAdapter
 
 from opendata.data.http_client import (
     BoundedHttpResponse,
+    FailureCategory,
     GovernedHttpClient,
     HttpClientConfig,
+    HttpFetchError,
 )
 from opendata.data.request_budget import (
     GrantDecision,
     RequestBudget,
+    RequestBudgetError,
     RequestBudgetProfile,
     RequestGrant,
     RequestOperation,
@@ -82,6 +86,7 @@ _SAFE_FAILURE_CODES = frozenset(
         "evidence_directory_invalid",
         "evidence_directory_must_be_new",
         "evidence_directory_unavailable",
+        "governed_request_rejected",
         "local_capture_operation_failed",
         "raw_evidence_persistence_failed",
         "request_failed_or_outcome_unknown",
@@ -89,6 +94,7 @@ _SAFE_FAILURE_CODES = frozenset(
         "response_body_too_large",
     }
 )
+_SAFE_HTTP_FAILURE_CATEGORIES = frozenset(category.value for category in FailureCategory)
 _PATH_TYPE = type(Path())
 _O_DIRECTORY = getattr(os, "O_DIRECTORY", 0)
 _O_NOFOLLOW = getattr(os, "O_NOFOLLOW", 0)
@@ -195,8 +201,19 @@ def run_bse_instrument_catalog_capture(
         ):
             request_attempted = True
             result = _capture_response(client, artifact_writer, request_digest)
-        result["transport_attempts"] = budget.attempts_used
+        result["budget_reservations"] = budget.attempts_used
         _write_json_exclusive(directory_fd, "receipt.json", result)
+        return result
+    except RequestBudgetError:
+        result = _failure_receipt(
+            request_digest,
+            failure_code="governed_request_rejected",
+            request_attempted=request_attempted,
+            failure_category="unknown",
+            failure_category_source="local",
+        )
+        result["budget_reservations"] = budget.attempts_used if budget is not None else 0
+        _write_json_if_missing(directory_fd, "receipt.json", result)
         return result
     except BSECaptureError as exc:
         result = _failure_receipt(
@@ -204,7 +221,7 @@ def run_bse_instrument_catalog_capture(
             failure_code=exc.code,
             request_attempted=request_attempted,
         )
-        result["transport_attempts"] = budget.attempts_used if budget is not None else 0
+        result["budget_reservations"] = budget.attempts_used if budget is not None else 0
         _write_json_if_missing(directory_fd, "receipt.json", result)
         return result
     except Exception:
@@ -213,7 +230,7 @@ def run_bse_instrument_catalog_capture(
             failure_code="local_capture_operation_failed",
             request_attempted=request_attempted,
         )
-        result["transport_attempts"] = budget.attempts_used if budget is not None else 0
+        result["budget_reservations"] = budget.attempts_used if budget is not None else 0
         _write_json_if_missing(directory_fd, "receipt.json", result)
         return result
     finally:
@@ -241,6 +258,26 @@ def _capture_response(
             },
             timeout=(4.0, 8.0),
             source=SOURCE,
+        )
+    except RequestBudgetError:
+        return _failure_receipt(
+            request_digest,
+            failure_code="governed_request_rejected",
+            request_attempted=True,
+            failure_category="unknown",
+            failure_category_source="local",
+        )
+    except HttpFetchError as exc:
+        failure_category, failure_category_source, http_status = _http_failure_diagnostic(exc)
+        return _failure_receipt(
+            request_digest,
+            failure_code="request_failed_or_outcome_unknown",
+            request_attempted=True,
+            http_status=http_status,
+            failure_category=failure_category,
+            failure_category_source=failure_category_source,
+            transport_attempts=_http_failure_attempts(exc),
+            http_response_observed=http_status is not None,
         )
     except Exception:
         return _failure_receipt(
@@ -274,6 +311,8 @@ def _capture_response(
             http_status=status_code if type(status_code) is int else None,
             response_bytes=len(body) if type(body) is bytes else None,
             response_suppressed=True,
+            transport_attempts=1,
+            http_response_observed=True,
         )
 
     response_digest = hashlib.sha256(body).hexdigest()
@@ -300,6 +339,8 @@ def _capture_response(
             response_bytes=len(body),
             response_sha256=response_digest,
             response_suppressed=False,
+            transport_attempts=1,
+            http_response_observed=True,
         )
 
     return _receipt(
@@ -313,6 +354,8 @@ def _capture_response(
         raw_response_persisted=True,
         response_suppressed=False,
         failure_code=None,
+        transport_attempts=1,
+        http_response_observed=True,
     )
 
 
@@ -341,8 +384,13 @@ def _receipt(
     raw_response_persisted: bool,
     response_suppressed: bool,
     failure_code: str | None,
+    failure_category: str | None = None,
+    failure_category_source: str | None = None,
+    budget_reservations: int = 0,
+    transport_attempts: int | None = None,
+    http_response_observed: bool | None = None,
 ) -> dict[str, object]:
-    """Return fixed metadata without source row values or response fields."""
+    """Return versioned fixed metadata without source row values or response fields."""
     safe_outcome = (
         outcome
         if outcome in {"raw_page_captured", "partial_or_failed_capture"}
@@ -354,8 +402,38 @@ def _receipt(
         safe_failure = failure_code
     else:
         safe_failure = "local_capture_operation_failed"
+    if safe_failure is None:
+        safe_category = None
+        safe_category_source = "none"
+    elif type(failure_category) is str and failure_category in _SAFE_HTTP_FAILURE_CATEGORIES:
+        safe_category = failure_category
+        safe_category_source = (
+            "http_fetch_error" if failure_category_source == "http_fetch_error" else "unknown"
+        )
+    else:
+        safe_category = "unknown"
+        safe_category_source = "local" if failure_category_source == "local" else "unknown"
+    safe_http_status = (
+        http_status if type(http_status) is int and 100 <= http_status <= 599 else None
+    )
+    safe_budget_reservations = (
+        budget_reservations
+        if type(budget_reservations) is int and 0 <= budget_reservations <= MAX_REQUESTS
+        else 0
+    )
+    safe_transport_attempts = (
+        transport_attempts
+        if type(transport_attempts) is int and 0 <= transport_attempts <= MAX_REQUESTS
+        else None
+    )
+    safe_response_observed = (
+        http_response_observed
+        if type(http_response_observed) is bool
+        else safe_http_status is not None
+    )
     return {
-        "schema_version": 1,
+        "schema_version": 2,
+        "failure_diagnostic_schema_version": 1,
         "outcome": safe_outcome,
         "source": SOURCE,
         "method": "POST",
@@ -365,13 +443,24 @@ def _receipt(
         "request_summary_sha256": request_digest,
         "request_summary_basis": "allowlisted_logical_form_fields; bracketed_key_normalized",
         "request_attempted": request_attempted,
+        "request_attempted_semantics": "bounded_client_invocation_only",
+        "client_invoked": request_attempted,
+        "delivery_status": (
+            "response_received"
+            if safe_response_observed
+            else "unknown"
+            if request_attempted and safe_transport_attempts != 0
+            else "not_sent"
+            if request_attempted
+            else "not_invoked"
+        ),
+        "http_response_observed": safe_response_observed,
         "transport_send_ceiling": MAX_REQUESTS,
-        "transport_attempts": 1 if request_attempted else 0,
+        "budget_reservations": safe_budget_reservations,
+        "transport_attempts": safe_transport_attempts,
         "retry_policy": "none",
         "redirects": "disabled",
-        "http_status": (
-            http_status if type(http_status) is int and 100 <= http_status <= 599 else None
-        ),
+        "http_status": safe_http_status,
         "response_bytes": response_bytes
         if type(response_bytes) is int and 0 <= response_bytes <= MAX_RESPONSE_BYTES
         else None,
@@ -396,6 +485,8 @@ def _receipt(
         "row_values_in_receipt": False,
         "response_suppressed": response_suppressed,
         "failure_code": safe_failure,
+        "failure_category": safe_category,
+        "failure_category_source": safe_category_source,
     }
 
 
@@ -408,6 +499,11 @@ def _failure_receipt(
     response_bytes: int | None = None,
     response_sha256: str | None = None,
     response_suppressed: bool = True,
+    failure_category: str | None = None,
+    failure_category_source: str | None = None,
+    budget_reservations: int = 0,
+    transport_attempts: int | None = None,
+    http_response_observed: bool | None = None,
 ) -> dict[str, object]:
     """Return an anonymous fixed failure without transport or response details."""
     return _receipt(
@@ -421,7 +517,43 @@ def _failure_receipt(
         raw_response_persisted=False,
         response_suppressed=response_suppressed,
         failure_code=failure_code,
+        failure_category=failure_category,
+        failure_category_source=failure_category_source,
+        budget_reservations=budget_reservations,
+        transport_attempts=transport_attempts,
+        http_response_observed=http_response_observed,
     )
+
+
+def _http_failure_diagnostic(
+    error: HttpFetchError,
+) -> tuple[str, str, int | None]:
+    """Extract only typed enum and bounded status fields from the exact error type."""
+    if type(error) is not HttpFetchError:
+        return "unknown", "unknown", None
+    category = error.category
+    if type(category) is not FailureCategory:
+        safe_category = "unknown"
+        category_source = "unknown"
+    else:
+        safe_category = category.value
+        category_source = "http_fetch_error"
+    status = error.status
+    attempts = _http_failure_attempts(error)
+    safe_status = (
+        status
+        if attempts is not None and attempts > 0 and type(status) is int and 100 <= status <= 599
+        else None
+    )
+    return safe_category, category_source, safe_status
+
+
+def _http_failure_attempts(error: HttpFetchError) -> int | None:
+    """Read only the bounded attempt count from the exact governed error type."""
+    if type(error) is not HttpFetchError:
+        return None
+    attempts = error.attempts
+    return attempts if type(attempts) is int and 0 <= attempts <= MAX_REQUESTS else None
 
 
 def _run_reservation(request_digest: str) -> dict[str, object]:
