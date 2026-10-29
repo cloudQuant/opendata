@@ -49,6 +49,8 @@ def _report_scoped_test_environment(_parameters: dict[str, object]) -> dict[str,
         "child_value_visible": os.environ.get("OPENDATA_TEST_FUYAO_CHILD_KEY")
         == "synthetic-secret-for-child-test",
         "inherited_value": os.environ.get("UNRELATED_PARENT_SECRET"),
+        "home": os.environ.get("HOME"),
+        "user": os.environ.get("USER"),
         "cwd": str(Path.cwd()),
     }
 
@@ -187,6 +189,7 @@ def _fuyao_result_value(
         "source_policy_sha256": binding.source_policy_sha256,
         "source_request_id_match_status": "not_checked_no_trace",
         "statement_type": parameters["statement_type"],
+        "transport_max_attempts": binding.transport_max_attempts,
         "unit_mapping_declaration_status": "operator_declared_unverified",
         "unit_mapping_sha256_declared": "e" * 64,
         "unit_mapping_version_declared": unit_version,
@@ -544,40 +547,29 @@ def test_fixed_worker_helper_sanitizes_socket_and_bootstrap_failures(monkeypatch
     assert channel.closed is True
 
 
-def test_handler_import_output_and_exception_text_stay_in_child(monkeypatch, capsys):
-    module_name = f"opendata._executor_bootstrap_probe_{os.getpid()}"
-    env_name = f"OD_EXECUTOR_BOOTSTRAP_PROBE_{os.getpid()}"
-    module_path = Path(process_executor_module.__file__).resolve().parents[1] / (
-        f"_executor_bootstrap_probe_{os.getpid()}.py"
-    )
-    module_path.write_text(
-        "import os, sys\n"
-        f"if os.environ.get({env_name!r}) == '1':\n"
-        "    print('bootstrap-secret-do-not-leak', file=sys.stderr)\n"
-        "    raise RuntimeError('bootstrap-secret-do-not-leak')\n"
-        "def handle(parameters):\n"
-        "    return {'value': parameters.get('value')}\n",
-        encoding="utf-8",
-    )
-    spec = importlib.util.spec_from_file_location(module_name, module_path)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    monkeypatch.setitem(sys.modules, module_name, module)
-    spec.loader.exec_module(module)
-    handler = module.handle
-    monkeypatch.setenv(env_name, "1")
+def test_handler_import_output_and_exception_text_stay_in_child(
+    monkeypatch, capsys, tmp_path: Path
+) -> None:
+    env_name = "OD_TEST_PROCESS_EXECUTOR_BOOTSTRAP_IMPORT"
+    marker_name = "OD_TEST_PROCESS_EXECUTOR_BOOTSTRAP_MARKER"
+    monkeypatch.delenv(env_name, raising=False)
+    monkeypatch.delenv(marker_name, raising=False)
 
-    try:
-        with pytest.raises(ProcessExecutionHandlerError, match="process_handler_failed"):
-            ReviewedProcessExecutor(_registry(probe=handler)).run(
-                "probe", {"value": "x"}, timeout_seconds=5
-            )
+    from tests import _process_executor_bootstrap_probe
 
-        captured = capsys.readouterr()
-        assert "bootstrap-secret-do-not-leak" not in captured.out + captured.err
-    finally:
-        sys.modules.pop(module_name, None)
-        module_path.unlink(missing_ok=True)
+    marker_path = tmp_path / "bootstrap-import-reached"
+    handler = _process_executor_bootstrap_probe.handle
+    monkeypatch.setenv(env_name, "emit-and-raise")
+    monkeypatch.setenv(marker_name, str(marker_path))
+
+    with pytest.raises(ProcessExecutionHandlerError, match="process_handler_failed"):
+        ReviewedProcessExecutor(_registry(probe=handler)).run(
+            "probe", {"value": "x"}, timeout_seconds=5
+        )
+
+    assert marker_path.read_text(encoding="utf-8") == "imported"
+    captured = capsys.readouterr()
+    assert "bootstrap-secret-do-not-leak" not in captured.out + captured.err
 
 
 def test_large_python_stdout_and_stderr_are_discarded_and_counted_as_truncated() -> None:
@@ -1695,6 +1687,8 @@ def test_private_launch_uses_only_explicit_environment_and_working_directory(
     private_cwd.mkdir(mode=0o700)
     child_environment = {
         "OPENDATA_TEST_FUYAO_CHILD_KEY": "synthetic-secret-for-child-test",
+        "HOME": str(private_cwd),
+        "USER": "opendata-worker",
         "TMPDIR": str(private_cwd),
         "TMP": str(private_cwd),
         "TEMP": str(private_cwd),
@@ -1711,6 +1705,8 @@ def test_private_launch_uses_only_explicit_environment_and_working_directory(
     assert result.value == {
         "child_value_visible": True,
         "inherited_value": None,
+        "home": str(private_cwd),
+        "user": "opendata-worker",
         "cwd": str(private_cwd),
     }
 
@@ -1724,7 +1720,11 @@ def test_private_launch_rejects_exact_secret_in_result(tmp_path: Path) -> None:
             "secret",
             {},
             timeout_seconds=5,
-            _child_environment={"OPENDATA_TEST_FUYAO_CHILD_KEY": secret},
+            _child_environment={
+                "OPENDATA_TEST_FUYAO_CHILD_KEY": secret,
+                "HOME": str(tmp_path),
+                "USER": "opendata-worker",
+            },
             _child_cwd=str(tmp_path),
             _reject_secret=secret.encode(),
         )
@@ -1739,7 +1739,7 @@ def test_fuyao_binding_uses_closed_non_secret_child_config_and_hides_key(
     assert secret.encode() not in config
     assert secret not in repr(binding)
     assert json.loads(config) == {
-        "schema_version": 1,
+        "schema_version": 2,
         "financial_bundle_path": binding.financial_bundle_path,
         "financial_bundle_sha256": binding.financial_bundle_sha256,
         "source_policy_path": binding.source_policy_path,
@@ -1751,6 +1751,7 @@ def test_fuyao_binding_uses_closed_non_secret_child_config_and_hides_key(
         "raw_artifact_root": binding.raw_artifact_root,
         "retention_class": binding.retention_class,
         "source_history_limit": binding.source_history_limit,
+        "transport_max_attempts": binding.transport_max_attempts,
     }
 
     monkeypatch.setenv(process_executor_module.FUYAO_PROCESS_API_KEY_ENV, secret)
@@ -1777,6 +1778,9 @@ def test_fuyao_binding_uses_closed_non_secret_child_config_and_hides_key(
         {"source_history_limit": "complete"},
         {"raw_artifact_root": "/tmp/artifact\nroot"},
         {"api_key": "key-with\nline-break"},
+        {"transport_max_attempts": True},
+        {"transport_max_attempts": 0},
+        {"transport_max_attempts": 4},
     ],
 )
 def test_fuyao_binding_rejects_unpinned_or_unbounded_values(
@@ -1815,6 +1819,35 @@ def test_fuyao_child_binding_loader_rejects_duplicate_and_extra_json_keys(
         process_executor_module.FuyaoProcessDeploymentBinding.from_child_environment()
 
 
+def test_fuyao_child_binding_loader_accepts_only_the_exact_legacy_v1_shape(
+    monkeypatch,
+) -> None:
+    binding = _fuyao_binding(Path("/tmp"))
+    legacy_config = json.loads(process_executor_module._encode_fuyao_binding(binding))
+    legacy_config["schema_version"] = 1
+    legacy_config.pop("transport_max_attempts")
+    monkeypatch.setenv(process_executor_module.FUYAO_PROCESS_API_KEY_ENV, binding.api_key)
+    monkeypatch.setenv(
+        process_executor_module.FUYAO_PROCESS_BINDING_ENV,
+        json.dumps(legacy_config, separators=(",", ":")),
+    )
+
+    loaded = process_executor_module.FuyaoProcessDeploymentBinding.from_child_environment()
+
+    assert loaded.transport_max_attempts == 3
+    assert loaded == binding
+
+    # V1 did not carry a transport cap; accepting a V2-only field would weaken
+    # the versioned closed-shape contract.
+    legacy_config["transport_max_attempts"] = 3
+    monkeypatch.setenv(
+        process_executor_module.FUYAO_PROCESS_BINDING_ENV,
+        json.dumps(legacy_config, separators=(",", ":")),
+    )
+    with pytest.raises(ValueError, match="fuyao_process_binding_invalid"):
+        process_executor_module.FuyaoProcessDeploymentBinding.from_child_environment()
+
+
 def test_fuyao_child_binding_loader_rejects_missing_oversized_and_invalid_config(
     monkeypatch,
 ) -> None:
@@ -1836,8 +1869,13 @@ def test_fuyao_child_binding_loader_rejects_missing_oversized_and_invalid_config
     malformed_configs = [
         "{" * (process_executor_module._FUYAO_BINDING_MAX_BYTES + 1),
         "not-json",
-        json.dumps({**config, "schema_version": 2}),
+        json.dumps({**config, "schema_version": 3}),
         json.dumps({**config, "schema_version": True}),
+        json.dumps(
+            {key: value for key, value in config.items() if key != "transport_max_attempts"}
+        ),
+        json.dumps({**config, "transport_max_attempts": True}),
+        json.dumps({**config, "transport_max_attempts": 4}),
         json.dumps({**config, "financial_bundle_sha256": float("nan")}),
     ]
     for raw_config in malformed_configs:
@@ -2096,11 +2134,15 @@ def test_fuyao_executor_passes_only_allowlisted_environment_and_fixed_query(
     assert set(child_environment) == {
         process_executor_module.FUYAO_PROCESS_API_KEY_ENV,
         process_executor_module.FUYAO_PROCESS_BINDING_ENV,
+        "HOME",
+        "USER",
         "TMPDIR",
         "TMP",
         "TEMP",
     }
     assert child_environment[process_executor_module.FUYAO_PROCESS_API_KEY_ENV] == binding.api_key
+    assert child_environment["HOME"] == captured["_child_cwd"]
+    assert child_environment["USER"] == "opendata-worker"
     assert (
         binding.api_key not in child_environment[process_executor_module.FUYAO_PROCESS_BINDING_ENV]
     )
@@ -2158,6 +2200,8 @@ def test_fixed_executor_command_guard_stops_secret_before_socket_send(
         process_executor_module.FUYAO_PROCESS_BINDING_ENV: (
             process_executor_module._encode_fuyao_binding(binding).decode("utf-8")
         ),
+        "HOME": str(tmp_path),
+        "USER": "opendata-worker",
         "TMPDIR": str(tmp_path),
         "TMP": str(tmp_path),
         "TEMP": str(tmp_path),
@@ -2562,6 +2606,7 @@ def test_fuyao_executor_rejects_untrusted_or_unbounded_query_fields(
         ("instrument_id", "all", "fuyao_result_binding_invalid"),
         ("attempt_association_status", "verified", "fuyao_result_status_invalid"),
         ("source_policy_sha256", "bad-digest", "fuyao_result_digest_invalid"),
+        ("transport_max_attempts", 2, "fuyao_result_binding_invalid"),
         ("observation_ids", [], "fuyao_result_counts_invalid"),
         ("observation_count", True, "fuyao_result_counts_invalid"),
         ("quarantined_row_count", 65, "fuyao_result_counts_invalid"),

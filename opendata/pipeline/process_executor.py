@@ -86,7 +86,7 @@ _FUYAO_HISTORY_LIMITS = frozenset(
         "none_documented",
     }
 )
-_FUYAO_BINDING_FIELDS = frozenset(
+_FUYAO_BINDING_V1_FIELDS = frozenset(
     {
         "schema_version",
         "financial_bundle_path",
@@ -102,6 +102,7 @@ _FUYAO_BINDING_FIELDS = frozenset(
         "source_history_limit",
     }
 )
+_FUYAO_BINDING_V2_FIELDS = _FUYAO_BINDING_V1_FIELDS | {"transport_max_attempts"}
 _FUYAO_RESULT_FIELDS = frozenset(
     {
         "attempt_association_status",
@@ -121,6 +122,7 @@ _FUYAO_RESULT_FIELDS = frozenset(
         "source_policy_sha256",
         "source_request_id_match_status",
         "statement_type",
+        "transport_max_attempts",
         "unit_mapping_declaration_status",
         "unit_mapping_sha256_declared",
         "unit_mapping_version_declared",
@@ -198,6 +200,7 @@ class FuyaoProcessDeploymentBinding:
         "partial_history",
         "none_documented",
     ]
+    transport_max_attempts: int = 3
 
     def __post_init__(self) -> None:
         """Reject unbounded or implicit deployment values without touching files."""
@@ -229,6 +232,11 @@ class FuyaoProcessDeploymentBinding:
         ):
             raise ValueError("source attempt revision is invalid")
         if (
+            type(self.transport_max_attempts) is not int
+            or not 1 <= self.transport_max_attempts <= 3
+        ):
+            raise ValueError("transport_max_attempts is invalid")
+        if (
             type(self.retention_class) is not str
             or self.retention_class not in _FUYAO_RETENTION_CLASSES
         ):
@@ -258,10 +266,19 @@ class FuyaoProcessDeploymentBinding:
                 object_pairs_hook=_reject_duplicate_json_object_keys,
                 parse_constant=_reject_json_constant,
             )
-            if type(decoded) is not dict or set(decoded) != _FUYAO_BINDING_FIELDS:
+            if type(decoded) is not dict:
                 raise ValueError("binding shape invalid")
-            if type(decoded["schema_version"]) is not int or decoded["schema_version"] != 1:
+            schema_version = decoded.get("schema_version")
+            if type(schema_version) is not int:
                 raise ValueError("binding version invalid")
+            expected_fields = {
+                1: _FUYAO_BINDING_V1_FIELDS,
+                2: _FUYAO_BINDING_V2_FIELDS,
+            }.get(schema_version)
+            if expected_fields is None or set(decoded) != expected_fields:
+                raise ValueError("binding shape invalid")
+            if schema_version == 1:
+                decoded["transport_max_attempts"] = 3
             decoded.pop("schema_version")
             return cls(api_key=api_key, **decoded)
         except Exception:
@@ -440,6 +457,8 @@ class ReviewedProcessExecutor:
             child_environment = {
                 FUYAO_PROCESS_API_KEY_ENV: binding.api_key,
                 FUYAO_PROCESS_BINDING_ENV: binding_json.decode("utf-8"),
+                "HOME": private_cwd,
+                "USER": "opendata-worker",
                 "TMPDIR": private_cwd,
                 "TMP": private_cwd,
                 "TEMP": private_cwd,
@@ -1057,6 +1076,11 @@ def _validate_fuyao_child_result(
     ):
         if type(value[name]) is not str:
             raise _ProtocolValueError("fuyao_result_field_type_invalid")
+    if (
+        type(value["transport_max_attempts"]) is not int
+        or value["transport_max_attempts"] != binding.transport_max_attempts
+    ):
+        raise _ProtocolValueError("fuyao_result_binding_invalid")
     for name in (
         "capture_manifest_sha256",
         "financial_bundle_sha256",
@@ -1707,7 +1731,7 @@ def _reject_json_constant(_value: str) -> None:
 def _encode_fuyao_binding(binding: FuyaoProcessDeploymentBinding) -> bytes:
     """Encode only non-secret, explicitly declared Fuyao deployment fields."""
     payload = {
-        "schema_version": 1,
+        "schema_version": 2,
         "financial_bundle_path": binding.financial_bundle_path,
         "financial_bundle_sha256": binding.financial_bundle_sha256,
         "source_policy_path": binding.source_policy_path,
@@ -1719,6 +1743,7 @@ def _encode_fuyao_binding(binding: FuyaoProcessDeploymentBinding) -> bytes:
         "raw_artifact_root": binding.raw_artifact_root,
         "retention_class": binding.retention_class,
         "source_history_limit": binding.source_history_limit,
+        "transport_max_attempts": binding.transport_max_attempts,
     }
     try:
         encoded = json.dumps(
