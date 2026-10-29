@@ -24,10 +24,12 @@ merged, flagged result (the dwd write is a key-level upsert).
 from __future__ import annotations
 
 import asyncio
+import sqlite3
 import sys
 from dataclasses import dataclass, field
 from datetime import date
 from functools import lru_cache
+from importlib import import_module
 from typing import TYPE_CHECKING, Any, Protocol, cast
 
 import pandas as pd
@@ -50,6 +52,11 @@ from opendata.pipeline.templates import (
     incremental_window,
 )
 from opendata.pipeline.trading_calendar import CalendarView, resolve_calendar
+from opendata.pipeline.universe_errors import (
+    EmptySymbolUniverseError,
+    UniverseLimitExceededError,
+    UniverseQueryError,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable, Mapping, Sequence
@@ -438,8 +445,14 @@ def derive_universe(
         a caller handed in a list, ``requested``.
 
     Raises:
-        ValueError: When the DWD-derived universe exceeds the requested
-            cap, or the cap cannot be probed safely.
+        UniverseLimitExceededError: When the DWD-derived universe exceeds the
+            requested cap. It remains a ``ValueError`` for compatibility.
+        EmptySymbolUniverseError: When the derived universe has no eligible
+            symbols, either because the DWD read is empty or catalog filtering
+            removes every symbol. It remains a ``ValueError`` for compatibility.
+        UniverseQueryError: When the DWD query fails with a supported
+            database or driver exception; the underlying details are omitted.
+        ValueError: When the cap cannot be probed safely.
     """
     if symbols:
         return list(symbols), {"from": "caller", "requested": str(len(symbols))}
@@ -457,13 +470,15 @@ def derive_universe(
         )
     universe = symbol_universe(engine, domain, limit=cap + 1)
     if len(universe) > cap:
-        raise ValueError(
+        raise UniverseLimitExceededError(
             f"derived universe from {dwd_table(domain)} exceeds limit {cap}; "
             "raise the limit or pass explicit symbols"
         )
-    provenance = {"from": dwd_table(domain), "catalog": "absent"}
     if not universe:
-        return universe, provenance
+        raise EmptySymbolUniverseError(
+            f"no eligible symbols remain in the derived universe for {domain}"
+        )
+    provenance = {"from": dwd_table(domain), "catalog": "absent"}
     catalog = landed_instruments(engine)
     if not catalog:
         return universe, provenance
@@ -478,6 +493,10 @@ def derive_universe(
         )
     if ambiguous:
         logger.info(f"{domain} universe: {ambiguous} codes match several catalog rows and stay")
+    if not kept:
+        raise EmptySymbolUniverseError(
+            f"no eligible symbols remain in the derived universe for {domain}"
+        )
     return kept, provenance
 
 
@@ -500,10 +519,17 @@ def symbol_universe(
         limit: Cap on the universe; None means :data:`DEFAULT_SYMBOL_LIMIT`.
 
     Returns:
-        Ascending symbol list (empty when the table is not there yet).
+        Ascending symbol list; a successful query with no rows returns an
+        empty list. Database failures raise :class:`UniverseQueryError`.
+
+    Raises:
+        UniverseQueryError: A supported DBAPI, connection-pool, SQLite, or PyMySQL
+            database exception occurred. The exception contains only a
+            fixed message; query details are not retained or logged.
     """
     table = dwd_table(domain)
     cap = DEFAULT_SYMBOL_LIMIT if limit is None else max(limit, 1)
+    query_failed = False
     try:
         with engine.connect() as conn:
             rows = conn.execute(
@@ -512,10 +538,38 @@ def symbol_universe(
                 ),
                 {"cap": cap},
             ).all()
-    except Exception as exc:  # a missing table is a normal first-run state
-        logger.warning(f"symbol universe unavailable from {table}: {exc!s}")
-        return []
+    except Exception as exc:
+        if not _is_supported_universe_database_error(exc):
+            raise
+        query_failed = True
+    if query_failed:
+        # Raise after leaving the except block so neither __context__ nor
+        # __cause__ retains the driver's SQL, DSN, parameters, or traceback.
+        logger.warning("symbol universe query failed")
+        raise UniverseQueryError("symbol universe query failed")
     return [str(row[0]) for row in rows]
+
+
+def _is_supported_universe_database_error(error: Exception) -> bool:
+    """Identify only database errors that this universe reader supports.
+
+    Supported SQLAlchemy wrappers are DBAPI failures and connection-pool
+    timeout/disconnection failures. Supported raw DBAPI errors are SQLite
+    and PyMySQL. SQLAlchemy wraps most driver failures, but direct driver
+    exceptions can also occur during connection setup. No message parsing is
+    used to classify missing tables; supported failures use one safe query
+    error.
+    """
+    from sqlalchemy.exc import DBAPIError, DisconnectionError
+    from sqlalchemy.exc import TimeoutError as PoolTimeoutError
+
+    if isinstance(error, (DBAPIError, PoolTimeoutError, DisconnectionError, sqlite3.Error)):
+        return True
+    try:
+        mysql_error = getattr(import_module("pymysql.err"), "MySQLError", None)
+    except ImportError:
+        return False
+    return isinstance(mysql_error, type) and isinstance(error, mysql_error)
 
 
 async def run_incremental_job(
@@ -559,8 +613,12 @@ async def run_incremental_job(
         The :class:`JobResult` of the batch.
 
     Raises:
-        ValueError: On an unsupported domain, an empty universe, or a
-            calendar with no trading day in reach.
+        ValueError: On an unsupported domain or a calendar with no trading
+            day in reach. Derived universes without eligible symbols raise
+            :class:`EmptySymbolUniverseError`, which remains a ``ValueError``.
+        UniverseLimitExceededError: When the derived universe exceeds its cap.
+        UniverseQueryError: When the DWD query fails with a supported
+            database or driver exception; providers are not started.
     """
     from opendata.core.database import async_session_maker
 
@@ -580,8 +638,8 @@ async def run_incremental_job(
         warehouse, domain, symbols=symbols, limit=limit, window=window
     )
     if not universe:
-        raise ValueError(
-            f"empty symbol universe for {domain}: pass symbols= or load {dwd_table(domain)}"
+        raise EmptySymbolUniverseError(
+            f"no eligible symbols remain in the derived universe for {domain}"
         )
 
     feeds = [authoritative]

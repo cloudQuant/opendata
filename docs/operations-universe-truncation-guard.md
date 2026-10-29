@@ -36,11 +36,25 @@ accepts at most 5,000. These list-size limits are independent of `limit`, which
 only caps an implicit DWD-derived universe. Use explicit symbols for a
 deliberate bounded repair or batch, not as evidence of broad-market coverage.
 
-One existing error-handling detail affects diagnosis: `symbol_universe`
-currently converts warehouse query exceptions to an empty list, and the
-incremental runner then raises an empty-universe error. Follow-up work should
-preserve the original query failure separately from a genuinely empty DWD
-table, so operators can distinguish a warehouse outage from missing data.
+`symbol_universe` now classifies supported DWD query failures separately from
+successful empty results. It recognizes SQLAlchemy `DBAPIError`, pool
+`TimeoutError` and `DisconnectionError`, SQLite errors, and PyMySQL errors by
+exception type. For these failures it writes the fixed warning
+`symbol universe query failed` and raises `UniverseQueryError` outside the
+exception handler, without retaining the driver exception as `__context__` or
+`__cause__`. A successful query with no rows still returns an empty list;
+`derive_universe` turns that result into `EmptySymbolUniverseError`, a
+`ValueError` subclass. See
+[`operations-universe-errors.md`](operations-universe-errors.md) for the
+complete behavior and acceptance evidence.
+
+Missing-table errors are not independently classified or identified by name.
+When the driver reports a supported database exception, a missing table gets
+the same generic `UniverseQueryError` as other supported query failures.
+Exceptions outside the recognized database types propagate unchanged. This
+safe classification applies to the DWD symbol query only: instrument-catalog,
+count, runner, and other task-path logs were not sanitized by this change, and
+the scheduler retry policy was not changed.
 
 ## Current job, API, and scheduled-task behavior
 
