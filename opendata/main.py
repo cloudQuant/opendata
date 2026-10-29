@@ -21,6 +21,11 @@ from starlette.middleware.base import RequestResponseEndpoint
 
 from opendata.api import api_router, api_v2_router, ws_routers
 from opendata.api.rate_limit import get_limiter
+from opendata.api.temporal_identity_runtime import (
+    TemporalIdentityRuntime,
+    TemporalIdentityRuntimeConfig,
+    create_temporal_identity_runtime,
+)
 from opendata.core.config import settings
 from opendata.core.database import close_db, init_db
 from opendata.middleware.security import SecurityHeadersMiddleware
@@ -99,7 +104,7 @@ limiter = get_limiter()
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+async def _existing_lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan manager.
 
     Handles startup and shutdown events.
@@ -211,6 +216,54 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     await close_db()
     logger.info("Application shutdown complete")
+
+
+def _clear_temporal_identity_state(app: FastAPI) -> None:
+    """Drop all request-facing temporal identity references from app state."""
+    app.state.temporal_identity_pin_registry = None
+    app.state.temporal_identity_snapshot_store = None
+
+
+def _create_temporal_identity_runtime_from_settings() -> TemporalIdentityRuntime:
+    """Build the temporal identity runtime from explicit deployment settings."""
+    if getattr(settings, "temporal_identity_enabled", False) is not True:
+        return create_temporal_identity_runtime(None)
+
+    warehouse_url = settings.temporal_identity_warehouse_url
+    runtime_config = TemporalIdentityRuntimeConfig(
+        enabled=True,
+        pin_file=settings.temporal_identity_pin_file,
+        pin_sha256=settings.temporal_identity_pin_sha256,
+        warehouse_sqlite_path=settings.temporal_identity_warehouse_sqlite_path,
+        warehouse_url=warehouse_url.get_secret_value() if warehouse_url is not None else None,
+        mysql_select_only_account_acknowledged=(
+            settings.temporal_identity_mysql_select_only_account_acknowledged
+        ),
+    )
+    return create_temporal_identity_runtime(runtime_config)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    """Own temporal identity read resources for exactly one app lifespan."""
+    runtime: TemporalIdentityRuntime | None = None
+    _clear_temporal_identity_state(app)
+    try:
+        runtime = _create_temporal_identity_runtime_from_settings()
+        if runtime.enabled:
+            if runtime.pin_registry is None or runtime.snapshot_store is None:
+                raise RuntimeError("temporal_identity_runtime_incomplete")
+            app.state.temporal_identity_pin_registry = runtime.pin_registry
+            app.state.temporal_identity_snapshot_store = runtime.snapshot_store
+
+        async with _existing_lifespan(app):
+            yield
+    finally:
+        try:
+            if runtime is not None:
+                runtime.close()
+        finally:
+            _clear_temporal_identity_state(app)
 
 
 # OpenAPI tag metadata
