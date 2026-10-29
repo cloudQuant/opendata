@@ -139,10 +139,22 @@ def test_four_fixed_selectors_capture_private_raw_and_anonymous_receipts(
         "3",
         "3",
     ]
-    assert all(call[0] == capture.ENDPOINT for call in fake.calls)
+    assert [call[0] for call in fake.calls] == [
+        capture.CURRENT_ENDPOINT,
+        capture.CURRENT_ENDPOINT,
+        capture.STATUS3_ENDPOINT,
+        capture.STATUS3_ENDPOINT,
+    ]
     assert all(call[1]["pageHelp.pageSize"] == str(capture.PAGE_SIZE) for call in fake.calls)
     assert all(call[1]["pageHelp.pageNo"] == "1" for call in fake.calls)
     assert all("Authorization" not in call[2] for call in fake.calls)
+    assert [call[2]["Referer"] for call in fake.calls] == [
+        capture.CURRENT_REFERER,
+        capture.CURRENT_REFERER,
+        capture.STATUS3_REFERER,
+        capture.STATUS3_REFERER,
+    ]
+    assert len(capture._SELECTORS) * capture.MAX_PAGES_PER_SELECTOR == capture.MAX_REQUESTS
 
     reservation_files = tuple(evidence_dir.glob("page-*-reservation.json"))
     page_receipt_files = tuple(evidence_dir.glob("page-*-receipt.json"))

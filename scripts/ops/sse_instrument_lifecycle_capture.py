@@ -63,8 +63,12 @@ __all__ = ["SSECaptureError", "run_sse_instrument_capture"]
 SOURCE = "sse"
 CANONICAL_MODEL = "instrument_census"
 HOST = "query.sse.com.cn"
-ENDPOINT = f"https://{HOST}/sseQuery/commonQuery.do"
-REFERER = "https://www.sse.com.cn/assortment/stock/list/share/"
+CURRENT_ENDPOINT = f"https://{HOST}/sseQuery/commonQuery.do"
+STATUS3_ENDPOINT = f"https://{HOST}/commonQuery.do"
+# Retain the old module constant for callers that mean the current-list route.
+ENDPOINT = CURRENT_ENDPOINT
+CURRENT_REFERER = "https://www.sse.com.cn/assortment/stock/list/share/"
+STATUS3_REFERER = "https://www.sse.com.cn/"
 PAGE_SIZE = 1_000
 MAX_PAGES_PER_SELECTOR = 2
 MAX_REQUESTS = 4 * MAX_PAGES_PER_SELECTOR
@@ -87,6 +91,18 @@ _SELECTOR_PARAMS: dict[SSEInstrumentSelector, tuple[str, str]] = {
     SSEInstrumentSelector.CURRENT_STAR: ("8", "2,4,5,7,8"),
     SSEInstrumentSelector.STATUS3_MAIN_A_CANDIDATE: ("1", "3"),
     SSEInstrumentSelector.STATUS3_STAR_CANDIDATE: ("8", "3"),
+}
+_SELECTOR_ENDPOINTS: dict[SSEInstrumentSelector, str] = {
+    SSEInstrumentSelector.CURRENT_MAIN_A: CURRENT_ENDPOINT,
+    SSEInstrumentSelector.CURRENT_STAR: CURRENT_ENDPOINT,
+    SSEInstrumentSelector.STATUS3_MAIN_A_CANDIDATE: STATUS3_ENDPOINT,
+    SSEInstrumentSelector.STATUS3_STAR_CANDIDATE: STATUS3_ENDPOINT,
+}
+_SELECTOR_REFERERS: dict[SSEInstrumentSelector, str] = {
+    SSEInstrumentSelector.CURRENT_MAIN_A: CURRENT_REFERER,
+    SSEInstrumentSelector.CURRENT_STAR: CURRENT_REFERER,
+    SSEInstrumentSelector.STATUS3_MAIN_A_CANDIDATE: STATUS3_REFERER,
+    SSEInstrumentSelector.STATUS3_STAR_CANDIDATE: STATUS3_REFERER,
 }
 
 
@@ -346,13 +362,13 @@ def _capture_page(
     params = _request_params(selector, page_number)
     try:
         response = client.get_bounded(
-            ENDPOINT,
+            _SELECTOR_ENDPOINTS[selector],
             max_body_bytes=MAX_RESPONSE_BYTES,
             overall_timeout=REQUEST_TIMEOUT_SECONDS,
             params=params,
             headers={
                 "Accept": "application/json,*/*",
-                "Referer": REFERER,
+                "Referer": _SELECTOR_REFERERS[selector],
                 "User-Agent": "OpenData-instrument-capture/1.0",
             },
             timeout=(5.0, 10.0),
@@ -532,7 +548,7 @@ def _request_summary(selector: SSEInstrumentSelector, page_number: int) -> dict[
     """Describe the fixed request without credentials or response values."""
     return {
         "method": "GET",
-        "endpoint": ENDPOINT,
+        "endpoint": _SELECTOR_ENDPOINTS[selector],
         "params": _request_params(selector, page_number),
     }
 
