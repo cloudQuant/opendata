@@ -317,10 +317,10 @@ def _write_pinned_policy(path: Path) -> str:
 
 
 def _binding_document(binding: Any) -> str:
-    """Encode the exact nonsecret child deployment fields used by schema v1."""
+    """Encode the exact nonsecret child deployment fields used by schema v2."""
     return json.dumps(
         {
-            "schema_version": 1,
+            "schema_version": 2,
             "financial_bundle_path": binding.financial_bundle_path,
             "financial_bundle_sha256": binding.financial_bundle_sha256,
             "source_policy_path": binding.source_policy_path,
@@ -332,6 +332,7 @@ def _binding_document(binding: Any) -> str:
             "raw_artifact_root": binding.raw_artifact_root,
             "retention_class": binding.retention_class,
             "source_history_limit": binding.source_history_limit,
+            "transport_max_attempts": binding.transport_max_attempts,
         },
         ensure_ascii=False,
         sort_keys=True,
@@ -402,12 +403,14 @@ def _install_mock_process_fetcher(
         credentials: Any,
         source_attempt_gate: Any,
         bundle: Any,
+        max_attempts: int,
     ) -> ThsFinancialObservationFetcher:
         return ThsFinancialObservationFetcher(
             credentials=credentials,
             source_attempt_gate=source_attempt_gate,
             instrument_registry=bundle.instrument_registry,
             unit_profiles=bundle.unit_profiles,
+            max_attempts=max_attempts,
             mock_transport=mock_transport,
         )
 
@@ -522,7 +525,7 @@ def test_fuyao_job_is_disabled_and_manual_windows_are_bounded(
     assert job.max_commit_payload_bytes == 5 * 1024 * 1024
     assert "synthetic-fuyao-test-key" not in repr(binding)
     assert _RESULT_FIELDS == _FUYAO_RESULT_FIELDS
-    assert len(_RESULT_FIELDS) == 20
+    assert len(_RESULT_FIELDS) == 21
 
     manual = build_fuyao_financial_manual_payload(
         _INSTRUMENT,
@@ -1621,12 +1624,14 @@ def test_mocked_fuyao_capture_commits_or_rolls_back_by_report_family(
             credentials: Any,
             source_attempt_gate: Any,
             bundle: Any,
+            max_attempts: int,
         ) -> ThsFinancialObservationFetcher:
             return ThsFinancialObservationFetcher(
                 credentials=credentials,
                 source_attempt_gate=source_attempt_gate,
                 instrument_registry=bundle.instrument_registry,
                 unit_profiles=bundle.unit_profiles,
+                max_attempts=max_attempts,
                 mock_transport=mock_transport,
             )
 

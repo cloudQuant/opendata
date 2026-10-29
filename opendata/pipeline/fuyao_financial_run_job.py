@@ -114,6 +114,7 @@ _RESULT_FIELDS = frozenset(
         "source_policy_sha256",
         "source_request_id_match_status",
         "statement_type",
+        "transport_max_attempts",
         "unit_mapping_declaration_status",
         "unit_mapping_sha256_declared",
         "unit_mapping_version_declared",
@@ -611,6 +612,11 @@ def _decode_process_result(
     if type(value) is not dict or set(value) != _RESULT_FIELDS:
         raise ValueError(_PROCESS_RESULT_ERROR)
     try:
+        if (
+            type(value["transport_max_attempts"]) is not int
+            or value["transport_max_attempts"] != binding.transport_max_attempts
+        ):
+            raise ValueError(_PROCESS_RESULT_ERROR)
         instrument_id = value["instrument_id"]
         statement_type = value["statement_type"]
         periodicity = value["periodicity"]
@@ -1052,6 +1058,7 @@ def _copy_deployment_binding(
             raw_artifact_root=binding.raw_artifact_root,
             retention_class=binding.retention_class,
             source_history_limit=binding.source_history_limit,
+            transport_max_attempts=binding.transport_max_attempts,
         )
     except (AttributeError, TypeError, ValueError):
         raise ValueError("Fuyao deployment binding is invalid") from None

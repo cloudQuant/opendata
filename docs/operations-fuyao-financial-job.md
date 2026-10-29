@@ -1,6 +1,6 @@
 # Fuyao 财务观察采集切片：当前运行边界
 
-本文描述迭代 204 中待验收的 Fuyao 单标的 ReviewedJob 开发切片。它用于说明当前代码的边界，不代表生产验收、数据完整性确认或上线批准。应结合代码版本和该版本对应的验收证据阅读。
+本文描述迭代 204 中 Fuyao 单标的 ReviewedJob 开发切片及其当前隔离验收结果。它用于说明当前代码的边界，不代表生产验收、数据完整性确认或上线批准。应结合代码版本和该版本对应的验收证据阅读。
 
 ## 当前状态与范围
 
@@ -24,7 +24,7 @@
 
 `FuyaoProcessDeploymentBinding` 是显式部署输入，包含 API key、数据包路径及摘要、来源策略路径及摘要、来源尝试 gate 数据库路径和 grant 身份、raw evidence 路径，以及保留期和来源历史限制声明。run payload 只承载受限的业务查询字段，不承载这些部署字段。
 
-仓库普通 settings 可以从项目根目录的 `.env` 读取 `FUYAO_API_KEY`。但本 ReviewedJob 的 factory 和 handler 不读取 settings 或 dotenv，也不自动查找该 key；它们要求调用方显式提供 `FuyaoProcessDeploymentBinding`。当前还没有可信的生产装配入口，因此仅仅存在 `.env` 或其中有 `FUYAO_API_KEY`，都不能说明这个 ReviewedJob 已接通。固定 Fuyao executor 把 deployment binding 中的 API key 放入专用子进程环境变量，把其他绑定作为有界配置传入，并将该子进程的临时目录设为私有目录。进程隔离用于限制生命周期和 IPC 边界；它不是操作系统安全沙箱，子进程仍以调用方相同的操作系统权限运行。
+仓库普通 settings 可以从项目根目录的 `.env` 读取 `FUYAO_API_KEY`。但本 ReviewedJob 的 factory 和 handler 不读取 settings 或 dotenv，也不自动查找该 key；它们要求调用方显式提供 `FuyaoProcessDeploymentBinding`。当前还没有可信的生产装配入口，因此仅仅存在 `.env` 或其中有 `FUYAO_API_KEY`，都不能说明这个 ReviewedJob 已接通。固定 Fuyao executor 把 deployment binding 中的 API key 放入专用子进程环境变量，把其他绑定作为有界配置传入，并为子进程设置私有 `HOME`、工作目录（`cwd`）和固定的 `USER`。这些设置没有切换操作系统用户身份；子进程仍以调用方相同的操作系统权限运行。进程隔离用于限制生命周期和 IPC 边界，不是操作系统安全沙箱。
 
 当前代码没有生产配置装配入口。这里列出的字段是代码接口边界，不是生产启用步骤或定时任务操作说明。数据包摘要用于固定所读文件内容，不等同于签名、来源真实性证明或数据授权证明。
 
@@ -32,11 +32,15 @@
 
 `ThsFinancialObservationFetcher` 接受显式的 `max_attempts`，只允许精确整数 `1` 到 `3`，默认值为 `3`。它限制一次 `fetch()` 中最多发生的物理 HTTP 发送次数；启用来源尝试 gate 的请求在每次物理发送前都必须完成一次新的 gate reservation，重试也会单独预留并记录本地 attempt trace。
 
-当前 `opendata/pipeline/fuyao_financial_process.py` 的 `_build_fetcher()` 没有传入 `max_attempts`，所以仍使用默认值 `3`。未来受控的装配代码可以显式配置 `max_attempts=1`，将一次 fetch 限制为一次物理发送；但这项参数能力目前没有接入生产装配，也没有让当前 ReviewedJob 自动变成 one-shot。不能把默认配置描述为每个 run 只发一次 HTTP 请求。
+本批已完成隔离验收的部署绑定实现会沿固定父子进程路径传递此限制：旧版 v1 **绑定输入**按兼容规则使用默认值 `3`；新版 v2 绑定输入必须显式携带 `transport_max_attempts`，并严格校验为 `1` 到 `3` 的整数（布尔值不接受）。这是绑定输入格式的兼容，不代表父子进程协议可以跨版本混用；父进程和固定子进程必须使用匹配版本。父进程只从受信部署绑定取值，固定子进程据此构造 fetcher；业务 run payload 没有覆盖这个上限的字段。子进程结果会回报绑定值，父进程在继续处理准备数据前要求它与自身绑定中的值完全相等。
+
+该回报只证明父子进程对绑定配置值达成一致，不是 HTTP 物理发送次数的证据。物理发送仍须由发送前 gate reservation 和 attempt trace 等独立证据核对。默认部署值仍为 `3`；目前没有接入 reviewed one-shot factory、生产配置装配或真实 Fuyao 采集，因此不能将当前 ReviewedJob 描述为每个 run 只发一次 HTTP 请求。
 
 这个限制依赖受信任的进程装配。fetcher 会检查自身预期上限与私有 HTTP client 设置的一致性，但这些仍是可变的 Python 进程状态；同一进程内的代码若同时篡改两处状态，可以绕过检查。它也不提供上游 exactly-once 保证；超时或进程故障仍可能使发送结果未知。
 
-本切片的离线隔离证据位于 `/tmp/od204-fuyao-attempt-cap-20261029-5bb7/evidence`：两个目标测试文件共 **170 项合成测试通过**，目标模块 statement+branch combined 覆盖率 **97.00%**，`excluded_lines=0`。快照使用 HTTPX `MockTransport`、临时 SQLite gate 和合成数据，没有访问 Fuyao 实源。证据中的运行版本为 pytest **8.3.4**、pytest-asyncio **1.0.0**、pytest-cov **6.2.1**、coverage **7.9.2**；仓库 `requirements.txt` 固定 pytest **8.3.3**、pytest-asyncio **0.24.0**、pytest-cov **6.0.0**，因此这次通过不能替代锁定依赖版本下的复验。该次没有运行完整 canonical A2 门禁，也没有完成生产装配、真实采集、全 A 股历史缺口核对或生产验收。
+本批父子绑定传递的隔离验收共 **292 项通过**；`process_executor.py`、`fuyao_financial_process.py`、`fuyao_financial_run_job.py` 的 statement+branch combined 覆盖率依次为 **93.75%**、**90.67%**、**93.63%**，三个模块均为 `excluded_lines=0`。测试中的 preflight 与 HTTPX `MockTransport` 只证明本地校验、绑定传递和模拟响应路径，未向 Fuyao 发送请求，也不构成真实采集证据。此前 fetcher 上限实现的离线隔离证据位于 `/tmp/od204-fuyao-attempt-cap-20261029-5bb7/evidence`：两个目标测试文件共 **170 项合成测试通过**，目标模块 statement+branch combined 覆盖率 **97.00%**，`excluded_lines=0`。该快照同样使用 HTTPX `MockTransport`、临时 SQLite gate 和合成数据，没有访问 Fuyao 实源。
+
+本批测试运行版本为 pytest **8.3.4**、pytest-asyncio **1.0.0**、pytest-cov **6.2.1**、coverage **7.9.2**；仓库 `requirements.txt` 固定 pytest **8.3.3**、pytest-asyncio **0.24.0**、pytest-cov **6.0.0**，因此本次通过不能替代锁定依赖版本下的复验。此前失败的执行记录仍保留，最终通过数不覆盖这些历史失败。完整 canonical A2 门禁未能运行，所需的 `docs/evidence/C100/quality-scope-audit/immutable-wave9-exact5055/classification.json` 不存在。mypy 仍报告 3 项已有诊断：`financial_observation_store.py:544` 的冗余 cast，以及 `run_service.py` 中冗余 bytes cast 和 decode 配对类型不匹配；这些诊断不应记作本批通过项。本批结果不代表生产装配、真实采集、全 A 股历史缺口核对或生产验收。
 
 ## 尚未核实的声明
 
@@ -46,7 +50,7 @@
 
 ## 合成测试与真实子进程边界
 
-`tests/test_fuyao_financial_run_job.py` 的运行与提交组合用例使用临时 SQLite 文件和 HTTPX `MockTransport`。为聚焦归档与事务边界，这些用例会替换 executor 方法并在测试进程内直接调用 handler；它们**不覆盖真实 `Popen`、封闭子进程环境或真实 IPC**。其中的回滚场景验证 SQL 回滚时已写入的 raw evidence 仍可能保留。
+`tests/test_fuyao_financial_run_job.py` 的运行与提交组合用例使用临时 SQLite 文件和 HTTPX `MockTransport`。为聚焦归档与事务边界，这些用例会替换 executor 方法并在测试进程内直接调用 handler；它们**不覆盖真实 Fuyao 请求或真实数据采集**。其中的回滚场景验证 SQL 回滚时已写入的 raw evidence 仍可能保留。绑定传递的 preflight 和 mock 用例也只证明本地路径。
 
 `tests/test_process_executor.py` 单独覆盖进程协议和子进程生命周期边界；Fuyao 专用真实 worker 用例验证缺少配置时在网络请求前失败关闭。该失败路径和 IPC 单元用例不能替代“成功的 Fuyao 请求完整经过真实子进程、来源授权、raw 写入、归档事务”的端到端证据。测试结果及覆盖范围必须以对应代码版本的独立验收记录为准。
 

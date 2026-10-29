@@ -96,6 +96,7 @@ _DATE_PATTERN = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}\Z", re.ASCII)
 _POLICY_SHA256_PATTERN = re.compile(r"[0-9a-f]{64}\Z", re.ASCII)
 MAX_FUYAO_CAPTURE_PAYLOAD_BYTES = 5 * 1024 * 1024
 _MAX_QUERY_WINDOW_DAYS = 3650
+_MAX_TRANSPORT_ATTEMPTS = 3
 _POLICY_TIMEOUT_SECONDS = 30.0
 _ERROR = "fuyao_financial_process_failed"
 _RESULT_FIELDS = frozenset(
@@ -117,6 +118,7 @@ _RESULT_FIELDS = frozenset(
         "source_policy_sha256",
         "source_request_id_match_status",
         "statement_type",
+        "transport_max_attempts",
         "unit_mapping_declaration_status",
         "unit_mapping_sha256_declared",
         "unit_mapping_version_declared",
@@ -162,6 +164,7 @@ def execute_fuyao_financial_request(parameters: Mapping[str, JsonValue]) -> Json
     try:
         request = _validate_parameters(parameters)
         binding = FuyaoProcessDeploymentBinding.from_child_environment()
+        transport_max_attempts = _validate_transport_max_attempts(binding.transport_max_attempts)
         bundle = load_fuyao_financial_bundle(
             path=binding.financial_bundle_path,
             expected_sha256=binding.financial_bundle_sha256,
@@ -204,6 +207,7 @@ def execute_fuyao_financial_request(parameters: Mapping[str, JsonValue]) -> Json
             credentials=credentials,
             source_attempt_gate=gate,
             bundle=bundle,
+            max_attempts=transport_max_attempts,
         )
         source_attempt_binding = SourceAttemptBinding(
             grant_id=binding.source_attempt_grant_id,
@@ -261,6 +265,7 @@ def execute_fuyao_financial_request(parameters: Mapping[str, JsonValue]) -> Json
             "source_policy_sha256": binding.source_policy_sha256,
             "source_request_id_match_status": capture.source_request_id_match_status,
             "statement_type": request.statement_type,
+            "transport_max_attempts": transport_max_attempts,
             "unit_mapping_declaration_status": "operator_declared_unverified",
             "unit_mapping_sha256_declared": fetch_result.unit_mapping_sha256_declared,
             "unit_mapping_version_declared": fetch_result.unit_mapping_version_declared,
@@ -302,14 +307,24 @@ def _build_fetcher(
     credentials: FuyaoCredentials,
     source_attempt_gate: SourceAttemptGate,
     bundle: FuyaoFinancialBundle,
+    max_attempts: int = _MAX_TRANSPORT_ATTEMPTS,
 ) -> ThsFinancialObservationFetcher:
-    """Construct the exact fixed fetcher from the pinned bundle and gate."""
+    """Construct the fixed fetcher with the exact deployment send ceiling."""
+    max_attempts = _validate_transport_max_attempts(max_attempts)
     return ThsFinancialObservationFetcher(
         credentials=credentials,
         source_attempt_gate=source_attempt_gate,
         instrument_registry=bundle.instrument_registry,
         unit_profiles=bundle.unit_profiles,
+        max_attempts=max_attempts,
     )
+
+
+def _validate_transport_max_attempts(value: object) -> int:
+    """Require one exact physical-send limit in the supported closed range."""
+    if type(value) is not int or not 1 <= value <= _MAX_TRANSPORT_ATTEMPTS:
+        raise FuyaoFinancialProcessError()
+    return value
 
 
 def _load_exact_policy(
