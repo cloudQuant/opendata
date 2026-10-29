@@ -90,9 +90,10 @@ EXECUTABLE_KINDS = frozenset(
     }
 )
 
-#: Universe cap for one batch when the caller asks for "all" symbols: a
-#: scheduled run must stay finite even as the warehouse grows.
-DEFAULT_SYMBOL_LIMIT = 5000
+#: Safety cap for one batch when the caller asks for all symbols. It bounds
+#: the warehouse-derived universe; reaching it does not establish full-market
+#: or full-A-share coverage.
+DEFAULT_SYMBOL_LIMIT = 10_000
 
 #: Warehouse table holding the landed ``Instrument`` catalog.
 INSTRUMENT_TABLE = dwd_table("instrument")
@@ -821,8 +822,8 @@ async def _execute_template(template: ScheduleTemplate) -> dict[str, Any]:
         The serialized :class:`JobResult`.
 
     Raises:
-        ValueError: If the payload targets a domain without a builder or
-            declares a window the code cannot resolve yet.
+        ValueError: If the payload targets a domain without a builder,
+            declares an unsupported window, or has an invalid universe limit.
     """
     if template.kind is TemplateKind.FRESHNESS:
         return await _execute_freshness(template)
@@ -850,11 +851,20 @@ async def _execute_template(template: ScheduleTemplate) -> dict[str, Any]:
             f"{template.name!r} declares window {window_kind!r}; only "
             "last-trading-day is executable without a trading calendar"
         )
-    result = await run_incremental_job(
-        domain=domain,
-        source=payload.get("source"),
-        second_source=payload.get("second_source"),
-    )
+    run_args: dict[str, Any] = {
+        "domain": domain,
+        "source": payload.get("source"),
+        "second_source": payload.get("second_source"),
+    }
+    if "limit" in payload:
+        configured_limit: object = payload["limit"]
+        if type(configured_limit) is not int or not 1 <= configured_limit <= 50_000:
+            raise ValueError(
+                f"{template.name!r} declares invalid 'limit'; expected an exact integer "
+                "from 1 through 50000"
+            )
+        run_args["limit"] = configured_limit
+    result = await run_incremental_job(**run_args)
     return result.as_dict()
 
 
