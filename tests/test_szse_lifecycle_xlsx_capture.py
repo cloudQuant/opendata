@@ -176,7 +176,11 @@ def test_fixed_selectors_capture_only_content_addressed_private_raw_and_anonymou
     )
 
     assert receipt["outcome"] == "bounded_raw_capture_completed"
-    assert receipt["synthetic_parser_contract_status"] == "all_synthetic_contracts_passed"
+    assert receipt["schema_version"] == 2
+    assert receipt["selector_schema_validation_status"] == "test_fixture_contracts_matched"
+    assert receipt["selector_schema_validation_scope"] == (
+        "local_header_structure_only; source_identity_and_business_meaning_unknown"
+    )
     assert receipt["selectors_attempted"] == 3
     assert receipt["transport_attempts"] == 3
     assert receipt["response_bytes_total"] == len(body) * 3
@@ -210,6 +214,11 @@ def test_fixed_selectors_capture_only_content_addressed_private_raw_and_anonymou
         "suspended",
         "terminated",
     ]
+    assert all(
+        item["selector_schema_validation_status"] == "test_fixture_contract_matched"
+        and item["matched_schema_contract"] == "synthetic_fixture_only"
+        for item in selector_receipts
+    )
     assert all(item["raw_response_persisted"] is True for item in selector_receipts)
     assert all(item["source_completeness_status"] == "unknown" for item in selector_receipts)
     assert receipt["market_completeness"] == "not_established"
@@ -247,7 +256,8 @@ def test_unrecognized_realistic_header_is_rejected_after_raw_evidence_is_persist
     assert receipt["outcome"] == "partial_or_failed_capture"
     first = _selector_receipts(receipt)[0]
     assert first["failure_code"] == "header_contract_mismatch"
-    assert first["header_contract_status"] == "synthetic_contract_mismatch"
+    assert first["selector_schema_validation_status"] == "selector_schema_mismatch"
+    assert first["matched_schema_contract"] == "unknown"
     assert first["raw_response_persisted"] is True
     raw_digest = first["response_sha256"]
     assert isinstance(raw_digest, str)
@@ -255,6 +265,76 @@ def test_unrecognized_realistic_header_is_rejected_after_raw_evidence_is_persist
     assert raw_path.read_bytes() == body
     final_receipt = (tmp_path / "capture" / "receipt.json").read_text()
     assert private_header not in final_receipt
+
+
+def test_selector_specific_observed_schema_is_reported_without_synthetic_label(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Report selector schema validation without implying source or business validation."""
+    monkeypatch.setenv("APP_ENV", "development")
+    monkeypatch.setenv("TESTING", "false")
+    body = b"PRIVATE-OBSERVED-WORKBOOK-BYTES"
+    fake = _FakeBoundedClient((body, body, body))
+
+    def parse_observed_schema(*args: object, **kwargs: object) -> object:
+        return SimpleNamespace(
+            rows=(object(),),
+            header_contract_status="selector_specific_observed_headers_only",
+        )
+
+    monkeypatch.setattr(capture, "parse_szse_lifecycle_xlsx", parse_observed_schema)
+    monkeypatch.setattr(
+        capture,
+        "_new_live_client",
+        lambda: SimpleNamespace(client=fake, session=SimpleNamespace(close=lambda: None)),
+    )
+    receipt = capture.run_szse_lifecycle_capture(
+        tmp_path / "capture",
+    )
+
+    assert receipt["outcome"] == "bounded_raw_capture_completed"
+    assert receipt["selector_schema_validation_status"] == "all_selectors_schema_validated"
+    assert receipt["source_identity"] == "unknown"
+    assert receipt["lifecycle_semantics"] == "unknown"
+    assert receipt["market_completeness"] == "not_established"
+    selector_receipts = _selector_receipts(receipt)
+    assert all(
+        item["selector_schema_validation_status"] == "selector_schema_validated"
+        and item["matched_schema_contract"] == "selector_specific_observed_headers"
+        for item in selector_receipts
+    )
+    assert "synthetic" not in json.dumps(receipt, sort_keys=True).lower()
+
+
+def test_live_capture_rejects_test_fixture_schema_and_preserves_raw(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Do not accept the legacy synthetic fixture header as a live selector schema."""
+    monkeypatch.setenv("APP_ENV", "development")
+    monkeypatch.setenv("TESTING", "false")
+    body = _synthetic_xlsx()
+    fake = _FakeBoundedClient((body, body, body))
+    monkeypatch.setattr(
+        capture,
+        "_new_live_client",
+        lambda: SimpleNamespace(client=fake, session=SimpleNamespace(close=lambda: None)),
+    )
+
+    receipt = capture.run_szse_lifecycle_capture(tmp_path / "capture")
+
+    assert receipt["outcome"] == "partial_or_failed_capture"
+    assert receipt["selector_schema_validation_status"] == "not_all_selectors_schema_validated"
+    first = _selector_receipts(receipt)[0]
+    assert first["failure_code"] == "fixture_contract_not_allowed_for_live_capture"
+    assert first["attempt_outcome"] == "failed"
+    assert first["selector_schema_validation_status"] == "selector_schema_rejected_or_unknown"
+    assert first["matched_schema_contract"] == "unknown"
+    raw_digest = first["response_sha256"]
+    assert isinstance(raw_digest, str)
+    raw_path = tmp_path / "capture" / "raw" / "objects" / raw_digest[:2] / f"{raw_digest}.blob"
+    assert raw_path.read_bytes() == body
 
 
 def test_transport_failure_is_redacted_and_still_receipted(
@@ -452,9 +532,18 @@ def test_live_path_closes_its_session_while_using_only_a_fake_transport(
     )
     monkeypatch.setattr(capture, "_new_live_client", lambda: live_client)
 
+    def parse_observed_schema(*args: object, **kwargs: object) -> object:
+        return SimpleNamespace(
+            rows=(object(),),
+            header_contract_status="selector_specific_observed_headers_only",
+        )
+
+    monkeypatch.setattr(capture, "parse_szse_lifecycle_xlsx", parse_observed_schema)
+
     receipt = capture.run_szse_lifecycle_capture(tmp_path / "capture")
 
     assert receipt["outcome"] == "bounded_raw_capture_completed"
+    assert receipt["selector_schema_validation_status"] == "all_selectors_schema_validated"
     assert len(fake.calls) == 3
     assert closed is True
 
@@ -507,7 +596,10 @@ def test_selector_row_cap_rejects_oversized_parser_result(
 
     assert receipt["failure_code"] == "task_row_cap_exceeded"
     assert receipt["selectors_attempted"] == 3
-    assert all(item["raw_response_persisted"] is True for item in _selector_receipts(receipt))
+    selector_receipts = _selector_receipts(receipt)
+    assert all(item["raw_response_persisted"] is True for item in selector_receipts)
+    assert all(item["failure_code"] == "task_row_cap_exceeded" for item in selector_receipts)
+    assert all(item["parsed_row_count"] == 0 for item in selector_receipts)
 
 
 @pytest.mark.parametrize(  # type: ignore[misc]
@@ -623,9 +715,9 @@ def test_unexpected_parser_failure_keeps_raw_response_but_not_exception_text(
     )
 
     first = _selector_receipts(receipt)[0]
-    assert first["failure_code"] == "synthetic_parser_rejected"
+    assert first["failure_code"] == "xlsx_parser_rejected_or_unknown"
     assert first["raw_response_persisted"] is True
-    assert first["header_contract_status"] == "synthetic_contract_rejected_or_unknown"
+    assert first["selector_schema_validation_status"] == "selector_schema_rejected_or_unknown"
     assert "SECRET-PARSER-DETAIL" not in json.dumps(receipt, sort_keys=True)
 
 
@@ -669,7 +761,8 @@ def test_selector_receipt_sanitizer_drops_malformed_and_private_values() -> None
         "response_suppressed": True,
         "request_summary_sha256": "SECRET-REQUEST",
         "parsed_row_count": -1,
-        "header_contract_status": "SECRET-HEADER",
+        "selector_schema_validation_status": "SECRET-STATUS",
+        "matched_schema_contract": "SECRET-BASIS",
         "source_authenticity": "SECRET-AUTHENTICITY",
         "unknown_private_field": "SECRET-ROW-VALUE",
     }
@@ -681,6 +774,8 @@ def test_selector_receipt_sanitizer_drops_malformed_and_private_values() -> None
     assert sanitized["dataset_class"] is None
     assert sanitized["attempt_outcome"] == "unknown"
     assert sanitized["failure_code"] == "local_capture_operation_failed"
+    assert sanitized["selector_schema_validation_status"] == "not_evaluated"
+    assert sanitized["matched_schema_contract"] == "unknown"
     assert sanitized["response_suppressed"] is True
     assert "unknown_private_field" not in sanitized
     assert "SECRET" not in serialized
