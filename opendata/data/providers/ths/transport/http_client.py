@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import json
 import logging
 import random
 import ssl
@@ -111,9 +112,10 @@ class FuyaoHttpResponse:
         status_code: HTTP 状态码。
         envelope: 解析后的信封。
         elapsed_seconds: 耗时。
-        raw_content: HTTPX 已缓冲并解压的实体 body bytes，而非线上压缩 wire bytes。
-            HTTPX 在本模块应用体积上限前已完成 buffering。该字段随成功结果返回，
-            本模块不会把响应体写入日志或持久化。
+        raw_content: 本模块在体积上限内读取的实体 body bytes，而非线上 wire bytes。
+            随成功结果返回；响应体不进入日志，只有显式启用的原始响应缓存会持久化它。
+            底层传输可能暂存单个较大的 chunk，解析/复制也可能产生临时副本，因此该上限
+            不是 wire 或 RSS 上限。
         attempt_trace: 仅随成功响应返回的本地 request/attempt 预留及观察记录，不是上游
             回执，也不是完整审计轨迹。终止失败从原异常中无法取得 trace；gate reservation
             只证明本地预留。不要对整个响应对象执行通用序列化，因为响应还包含原始实体和解析数据。
@@ -163,8 +165,10 @@ class FuyaoHttpClient:
 
         Args:
             credentials: 凭据。
-            client: 注入的 httpx 客户端（测试用 MockTransport）；``None`` 时
-                使用直连（不继承本地代理配置）。
+            client: 注入的标准 httpx.Client（测试用 MockTransport）。非 scoped 调用会拒绝
+                auth、mounts 和 response hooks 并关闭重定向。注入 transport 仍是可信边界，
+                不得隐藏重试，也不得在 ``send(stream=True)`` 返回前读取或缓存完整 body。
+                ``None`` 时使用直连。
             mock_transport: 仅供离线测试使用的精确 ``httpx.MockTransport``；
                 与 ``client`` 互斥，并由本类创建受限客户端。
             rate_limiter: 限流器；``None`` 时使用默认配置。
@@ -180,6 +184,8 @@ class FuyaoHttpClient:
         """
         if max_attempts < 1:
             raise ValueError("max_attempts must be >= 1")
+        if type(max_response_bytes) is not int or max_response_bytes < 1:
+            raise ValueError("max_response_bytes must be a positive integer")
         if client is not None and mock_transport is not None:
             raise ValueError("client and mock_transport are mutually exclusive")
         if mock_transport is not None and type(mock_transport) is not httpx.MockTransport:
@@ -298,14 +304,17 @@ class FuyaoHttpClient:
     ) -> FuyaoHttpResponse:
         """Run one GET while holding the client-state lock."""
         self._validate_source_attempt_mode(scopes)
-        last_error: FuyaoError | None = None
+        last_error = error_for_transport("unknown")
         request_id = uuid.uuid4().hex
         url = f"{self.credentials.base_url}{endpoint}"
         gate_enabled = self._source_attempt_gate is not None
         raw_cache = None if gate_enabled else self._raw_response_cache_override
         if raw_cache is None and not gate_enabled:
             raw_cache = _get_configured_raw_response_cache()
-        cache_headers = {API_KEY_HEADER: self.credentials.api_key}
+        cache_headers = {
+            API_KEY_HEADER: self.credentials.api_key,
+            "Accept-Encoding": "identity",
+        }
         cache_identity = (
             self._prepare_cache_identity(url, params, cache_headers)
             if raw_cache is not None
@@ -328,8 +337,8 @@ class FuyaoHttpClient:
                         check_scope_liveness(scopes)
                         if 300 <= cached.status_code < 400:
                             raise RequestRedirectError("scoped redirects are not allowed")
-                    response = _restore_cached_httpx_response(url, cached)
-                    result = self._handle_response(response, time.monotonic() - started)
+                    cached_response = _restore_cached_httpx_response(url, cached)
+                    result = self._handle_response(cached_response, time.monotonic() - started)
                     if scopes:
                         check_scope_liveness(scopes)
                 except RequestBudgetError:
@@ -415,6 +424,9 @@ class FuyaoHttpClient:
             gate_reservation: tuple[str, AttemptReservation] | None = None
             send_started = False
             trace_recorded = False
+            response: httpx.Response | None = None
+            response_content = b""
+            rate_limit_recorded = False
 
             try:
                 if scopes:
@@ -427,7 +439,10 @@ class FuyaoHttpClient:
                         "GET",
                         url,
                         params=dict(params or {}),
-                        headers={API_KEY_HEADER: self.credentials.api_key},
+                        headers={
+                            API_KEY_HEADER: self.credentials.api_key,
+                            "Accept-Encoding": "identity",
+                        },
                         timeout=timeout,
                     )
                     check_scope_liveness(scopes)
@@ -462,32 +477,74 @@ class FuyaoHttpClient:
                                 timeout
                             ).as_dict()
                         send_started = True
-                        response = self._client.send(prepared_request, follow_redirects=False)
-                        response_status = response.status_code
-                        check_scope_liveness(scopes)
+                        response = self._client.send(
+                            prepared_request,
+                            follow_redirects=False,
+                            stream=True,
+                        )
+                        with _close_response(response):
+                            response_status = response.status_code
+                            if response_status == 429:
+                                self._limiter.record_rate_limit(
+                                    retry_after_seconds=_retry_after(response)
+                                )
+                                rate_limit_recorded = True
+                            check_scope_liveness(scopes)
+                            if 300 <= response_status < 400:
+                                raise RequestRedirectError("scoped redirects are not allowed")
+                            response_content = self._read_bounded_response(response, scopes)
+                            check_scope_liveness(scopes)
                 else:
                     with shared_host_request(self._concurrency_host):
-                        response = self._client.get(
+                        self._validate_unscoped_client()
+                        prepared_request = self._client.build_request(
+                            "GET",
                             url,
                             params=dict(params or {}),
-                            headers={API_KEY_HEADER: self.credentials.api_key},
+                            headers={
+                                API_KEY_HEADER: self.credentials.api_key,
+                                "Accept-Encoding": "identity",
+                            },
                             timeout=self._timeout_seconds,
                         )
+                        send_started = True
+                        response = self._client.send(
+                            prepared_request,
+                            follow_redirects=False,
+                            stream=True,
+                        )
+                        with _close_response(response):
+                            response_status = response.status_code
+                            if response_status == 429:
+                                self._limiter.record_rate_limit(
+                                    retry_after_seconds=_retry_after(response)
+                                )
+                                rate_limit_recorded = True
+                            response_content = self._read_bounded_response(response, ())
             except RequestBudgetError:
                 raise
             except httpx.TimeoutException:
                 last_error = error_for_transport("timeout")
+                if response is not None:
+                    # Headers arrived, so replay could duplicate an upstream action.
+                    last_error.retryable = False
             except httpx.HTTPError as exc:
                 last_error = error_for_transport("network", detail=exc.__class__.__name__)
+                if response is not None:
+                    # A body-read failure leaves the response outcome ambiguous.
+                    last_error.retryable = False
             except FuyaoError as exc:
                 last_error = exc
             else:
                 response_status = response.status_code
-                if scopes and 300 <= response_status < 400:
-                    raise RequestRedirectError("scoped redirects are not allowed")
                 elapsed = time.monotonic() - started
                 try:
-                    result = self._handle_response(response, elapsed)
+                    result = self._handle_response(
+                        response,
+                        elapsed,
+                        content=response_content,
+                        rate_limit_recorded=rate_limit_recorded,
+                    )
                 except FuyaoError as exc:
                     last_error = exc
                     self._log_request_event(
@@ -524,7 +581,7 @@ class FuyaoHttpClient:
                             headers=cache_identity.headers,
                             context=cache_context,
                             status_code=response.status_code,
-                            content=response.content,
+                            content=result.raw_content,
                             encoding=response.encoding,
                         )
                     self._log_request_event(
@@ -562,7 +619,7 @@ class FuyaoHttpClient:
                     attempt=attempt,
                     started=started,
                     status=response_status,
-                    failure_category=(last_error.category if last_error is not None else "unknown"),
+                    failure_category=last_error.category,
                 )
             record_attempt_trace(
                 gate_reservation,
@@ -570,17 +627,17 @@ class FuyaoHttpClient:
                 already_recorded=trace_recorded,
                 attempt_no=attempt,
                 http_status=response_status,
-                failure_category=(last_error.category if last_error is not None else "unknown"),
-                source_request_id=(last_error.request_id if last_error is not None else None),
+                failure_category=last_error.category,
+                source_request_id=last_error.request_id,
             )
+            if not last_error.retryable:
+                raise last_error
             if attempt >= self._max_attempts:
                 break
             if scopes:
                 self._scoped_sleep(scopes)(self._backoff_seconds(attempt))
             else:
                 self._sleep(self._backoff_seconds(attempt))
-        if last_error is None:  # pragma: no cover - 循环必然设置
-            raise error_for_transport("unknown")
         raise last_error
 
     @staticmethod
@@ -620,6 +677,19 @@ class FuyaoHttpClient:
             raise RequestAuthorizationError("scoped client event hooks are not allowed")
         if self._source_attempt_gate is not None or require_attempt_gate:
             self._validate_attempt_gated_client()
+
+    def _validate_unscoped_client(self) -> None:
+        """Reject HTTPX features that can add hidden sends or body reads."""
+        if type(self._client) is not httpx.Client:
+            raise RequestAuthorizationError("bounded request client type is not verified")
+        if self._client.is_closed:
+            raise RequestAuthorizationError("bounded request client is closed")
+        if self._client.auth is not None:
+            raise RequestAuthorizationError("bounded client authentication is not allowed")
+        if self._client._mounts:
+            raise RequestAuthorizationError("bounded client routing is not allowed")
+        if any(self._client.event_hooks.values()):
+            raise RequestAuthorizationError("response hooks are not allowed for bounded transport")
 
     def _validate_attempt_gated_client(self) -> None:
         """Verify the gate-bound client cannot proxy, retry, or skip TLS checks."""
@@ -701,7 +771,7 @@ class FuyaoHttpClient:
     ) -> tuple[str, AttemptReservation]:
         """Persist and return the local one-use reservation immediately before send."""
         gate = self._source_attempt_gate
-        if gate is None:  # pragma: no cover - guarded by _validate_source_attempt_mode
+        if gate is None:
             raise RequestAuthorizationError("source attempt gate is not configured")
         try:
             binding, canonical_model, operation = self._validated_source_attempt_scope(scopes)
@@ -842,18 +912,114 @@ class FuyaoHttpClient:
             extra=extra,
         )
 
-    def _handle_response(self, response: httpx.Response, elapsed: float) -> FuyaoHttpResponse:
-        """校验状态码/响应体大小并解析信封."""
-        content = response.content
+    def _read_bounded_response(
+        self,
+        response: httpx.Response,
+        scopes: tuple[RequestExecutionScope, ...],
+    ) -> bytes:
+        """Read a successful identity-encoded body while enforcing its entity cap.
+
+        Liveness is checked around every raw chunk yielded by HTTPX. Socket reads
+        remain subject to the configured inactivity timeout; a slow trickle can
+        cross a scope's total deadline before the next yielded chunk, so this is
+        not a hard wall-clock deadline guarantee. The bytearray accumulated here
+        never exceeds the configured cap. HTTPX or an injected transport may
+        buffer a larger transport chunk before yielding it, and conversion to
+        the returned immutable bytes may create a temporary copy; this is not a
+        physical wire-byte or process-RSS limit. An injected non-scoped client
+        and its transport are trusted capabilities and must not eagerly consume
+        the body inside ``send``. No later iterator chunk is requested after
+        the first over-limit yield.
+        """
+        if response.status_code not in {200, 201}:
+            return b""
+
+        content_lengths = response.headers.get_list("content-length", split_commas=True)
+        transfer_encodings = response.headers.get_list("transfer-encoding", split_commas=True)
+        if (
+            len(content_lengths) > 1
+            or len(transfer_encodings) > 1
+            or (content_lengths and transfer_encodings)
+            or (transfer_encodings and transfer_encodings[0].casefold() != "chunked")
+        ):
+            raise error_for_transport("envelope_invalid", detail="headers")
+
+        expected_length: int | None = None
+        if content_lengths:
+            raw_length = content_lengths[0]
+            if (
+                not raw_length
+                or len(raw_length) > 20
+                or not raw_length.isascii()
+                or not raw_length.isdecimal()
+            ):
+                raise error_for_transport("envelope_invalid", detail="content_length")
+            expected_length = int(raw_length)
+            if expected_length > self._max_response_bytes:
+                raise error_for_transport(
+                    "response_too_large", detail=str(self._max_response_bytes)
+                )
+
+        content_encodings = response.headers.get_list("content-encoding", split_commas=True)
+        if content_encodings and (
+            len(content_encodings) != 1 or content_encodings[0].casefold() != "identity"
+        ):
+            raise error_for_transport("envelope_invalid", detail="content_encoding")
+
+        content = bytearray()
+        # Leave chunking to the transport. Passing ``chunk_size`` makes HTTPX's
+        # byte chunker coalesce multiple source chunks before yielding, delaying
+        # scope checks and potentially consuming more body data before we can
+        # enforce the cap.
+        iterator = iter(response.iter_raw())
+        while True:
+            if scopes:
+                check_scope_liveness(scopes)
+            try:
+                chunk = next(iterator)
+            except StopIteration:
+                break
+            except httpx.TimeoutException:
+                raise
+            except httpx.HTTPError:
+                raise
+            except Exception as exc:
+                stream_error = error_for_transport("network", detail=exc.__class__.__name__)
+                stream_error.retryable = False
+                raise stream_error from None
+            if scopes:
+                check_scope_liveness(scopes)
+            if len(content) + len(chunk) > self._max_response_bytes:
+                raise error_for_transport(
+                    "response_too_large", detail=str(self._max_response_bytes)
+                )
+            content.extend(chunk)
+
+        if expected_length is not None and len(content) != expected_length:
+            raise error_for_transport("envelope_invalid", detail="content_length")
+        return bytes(content)
+
+    def _handle_response(
+        self,
+        response: httpx.Response,
+        elapsed: float,
+        *,
+        content: bytes | None = None,
+        rate_limit_recorded: bool = False,
+    ) -> FuyaoHttpResponse:
+        """Validate HTTP status and parse the Fuyao envelope from bounded bytes."""
+        if content is None:
+            content = response.content
         if len(content) > self._max_response_bytes:
             raise error_for_transport("response_too_large", detail=str(self._max_response_bytes))
         if response.status_code == 429:
             # 429 与业务码 4001 等效：记录冷却并按可重试分类抛出。
-            self._limiter.record_rate_limit(retry_after_seconds=_retry_after(response))
+            if not rate_limit_recorded:
+                self._limiter.record_rate_limit(retry_after_seconds=_retry_after(response))
             raise error_for_transport("rate_limited", detail="429")
         if response.status_code in {200, 201}:
             try:
-                payload = response.json()
+                payload = json.loads(content)
             except ValueError:
                 raise error_for_transport("envelope_invalid", detail="json") from None
             if not isinstance(payload, Mapping):
@@ -885,6 +1051,31 @@ def _restore_cached_httpx_response(url: str, cached: CachedRawResponse) -> httpx
         headers={"content-type": content_type},
         request=httpx.Request("GET", url),
     )
+
+
+@contextmanager
+def _close_response(response: httpx.Response) -> Iterator[None]:
+    """Close a streamed response without replacing the primary read failure."""
+    primary_error: BaseException | None = None
+    try:
+        yield
+    except BaseException as exc:
+        primary_error = exc
+        raise
+    finally:
+        try:
+            response.close()
+        except Exception as exc:
+            if primary_error is not None:
+                logger.warning(
+                    "fuyao response close failed after a request error",
+                    extra={"error_type": exc.__class__.__name__},
+                )
+            else:
+                category = "timeout" if isinstance(exc, httpx.TimeoutException) else "network"
+                close_error = error_for_transport(category, detail=exc.__class__.__name__)
+                close_error.retryable = False
+                raise close_error from None
 
 
 def _get_configured_raw_response_cache() -> RawResponseCache | None:
