@@ -931,6 +931,45 @@ async def test_records_require_a_window_and_can_select_a_known_publication(
 
 
 @pytest.mark.asyncio
+async def test_record_route_rejects_invalid_windows_and_unpinned_cursor_before_snapshot_creation(
+    published_api: tuple[FastAPI, PublicationStore, DatasetContract],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Invalid page selectors cannot create a snapshot as a side effect."""
+    app, store, _ = published_api
+
+    def fail_if_snapshot_created(*_args: object, **_kwargs: object) -> None:
+        raise AssertionError("invalid record request reached snapshot creation")
+
+    monkeypatch.setattr(store, "create_snapshot", fail_if_snapshot_created)
+    invalid_requests = (
+        (
+            {"start_date": END_DATE.isoformat(), "end_date": START_DATE.isoformat()},
+            "invalid_request",
+        ),
+        ({"start_date": START_DATE.isoformat()}, "invalid_request"),
+        (
+            {
+                "start_date": START_DATE.isoformat(),
+                "end_date": END_DATE.isoformat(),
+                "cursor": "unbound-cursor",
+            },
+            "invalid_request",
+        ),
+    )
+
+    for params, expected_code in invalid_requests:
+        response = await _request(
+            app,
+            "GET",
+            f"/api/v2/datasets/{DATASET_ID}/records",
+            params=params,
+        )
+        assert response.status_code == 422
+        assert response.json()["error"]["code"] == expected_code
+
+
+@pytest.mark.asyncio
 async def test_snapshot_body_rejects_noncanonical_and_incomplete_date_windows(
     published_api: tuple[FastAPI, PublicationStore, DatasetContract],
 ) -> None:
@@ -1109,6 +1148,94 @@ async def test_record_route_rejects_contract_semantics_it_cannot_guarantee(
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("variant", "params", "expected_code"),
+    (
+        ("table_temporal", {}, "unsupported_time_semantics"),
+        (
+            "table_date_bounds",
+            {"start_date": START_DATE.isoformat(), "end_date": END_DATE.isoformat()},
+            "date_bounds_unsupported",
+        ),
+        ("table_pit", {}, "unsupported_point_in_time_policy"),
+        ("table_ordering", {}, "unsupported_ordering"),
+        ("table_numeric_key", {}, "unsupported_business_key"),
+        ("event_kind", {}, "unsupported_record_kind"),
+    ),
+)
+async def test_record_route_rejects_non_timeseries_contract_shapes(
+    published_api: tuple[FastAPI, PublicationStore, DatasetContract],
+    variant: str,
+    params: dict[str, str],
+    expected_code: str,
+) -> None:
+    """Table and snapshot contracts cannot bypass the supported read semantics."""
+    _, store, base_contract = published_api
+    dataset_id = f"equity.table.{variant}"
+    updates: dict[str, object] = {
+        "record_kind": "table",
+        "temporal_semantics": "none",
+        "time_field": None,
+        "ordering": base_contract.business_key,
+        "pit_policy": "unsupported",
+    }
+    if variant == "table_temporal":
+        updates.update(temporal_semantics="business_date", time_field="trade_date")
+        updates["ordering"] = base_contract.ordering
+    elif variant == "table_pit":
+        updates["pit_policy"] = "required"
+    elif variant == "table_ordering":
+        updates["ordering"] = base_contract.ordering
+    elif variant == "table_numeric_key":
+        updates.update(business_key=("close",), ordering=("close",))
+    elif variant == "event_kind":
+        updates.update(
+            record_kind="event",
+            temporal_semantics="business_date",
+            time_field="trade_date",
+            ordering=base_contract.ordering,
+        )
+
+    app, _ = _publish_contract_variant(store, base_contract, dataset_id, updates)
+    response = await _request(
+        app,
+        "GET",
+        f"/api/v2/datasets/{dataset_id}/records",
+        params=params,
+    )
+
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == expected_code
+
+
+@pytest.mark.asyncio
+async def test_coverage_rejects_date_bounds_for_an_atemporal_table_contract(
+    published_api: tuple[FastAPI, PublicationStore, DatasetContract],
+) -> None:
+    """Coverage date bounds are reserved for contracts with business-date meaning."""
+    _, store, base_contract = published_api
+    dataset_id = "equity.table.coverage"
+    updates: dict[str, object] = {
+        "record_kind": "table",
+        "temporal_semantics": "none",
+        "time_field": None,
+        "ordering": base_contract.business_key,
+        "pit_policy": "unsupported",
+    }
+    app, _ = _publish_contract_variant(store, base_contract, dataset_id, updates)
+
+    response = await _request(
+        app,
+        "GET",
+        f"/api/v2/datasets/{dataset_id}/coverage",
+        params={"start_date": START_DATE.isoformat(), "end_date": END_DATE.isoformat()},
+    )
+
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "unsupported_time_semantics"
+
+
+@pytest.mark.asyncio
 async def test_coverage_remains_unknown_and_does_not_infer_completeness_from_rows(
     published_api: tuple[FastAPI, PublicationStore, DatasetContract],
 ) -> None:
@@ -1131,6 +1258,46 @@ async def test_coverage_remains_unknown_and_does_not_infer_completeness_from_row
     assert coverage["observed"] is None
     assert coverage["missing_ranges"] == []
     assert "independently verified" in coverage["limitation"]
+
+
+@pytest.mark.asyncio
+async def test_unbounded_coverage_without_evidence_has_no_invented_requested_range(
+    published_api: tuple[FastAPI, PublicationStore, DatasetContract],
+) -> None:
+    """An omitted optional window is represented as null when evidence is absent."""
+    app, _, _ = published_api
+    response = await _request(app, "GET", f"/api/v2/datasets/{DATASET_ID}/coverage")
+
+    assert response.status_code == 200
+    coverage = response.json()["coverage"]
+    assert coverage["status"] == "unknown"
+    assert coverage["requested"] is None
+    assert coverage["observed"] is None
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "params",
+    (
+        {"start_date": START_DATE.isoformat()},
+        {"start_date": END_DATE.isoformat(), "end_date": START_DATE.isoformat()},
+    ),
+)
+async def test_coverage_rejects_one_sided_and_reversed_date_windows(
+    published_api: tuple[FastAPI, PublicationStore, DatasetContract],
+    params: dict[str, str],
+) -> None:
+    """Coverage accepts only absent bounds or a nonempty half-open range."""
+    app, _, _ = published_api
+    response = await _request(
+        app,
+        "GET",
+        f"/api/v2/datasets/{DATASET_ID}/coverage",
+        params=params,
+    )
+
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "invalid_request"
 
 
 @pytest.mark.asyncio
@@ -1228,6 +1395,214 @@ async def test_coverage_evaluates_only_the_exact_evidenced_publication_pin(
 
 
 @pytest.mark.asyncio
+async def test_coverage_requires_a_complete_contract_bound_visible_record_set_pin(
+    published_api: tuple[FastAPI, PublicationStore, DatasetContract],
+) -> None:
+    """Missing, contract-mismatched, and content-mismatched pins remain unknown."""
+    _, store, _ = published_api
+    start = date(2026, 10, 21)
+    end_exclusive = date(2026, 10, 23)
+    publication, contract = _publish_index_contract(
+        store,
+        (
+            _index_record("000300.SH", start, 4_000.0),
+            _index_record("000300.SH", end_exclusive - timedelta(days=1), 4_010.0),
+        ),
+        idempotency_key="coverage-index-pin-boundaries",
+    )
+    pin = _visible_record_set_pin(store, publication.publication_id, contract)
+    open_dates = (start, end_exclusive - timedelta(days=1))
+    evidence_without_pin = _index_coverage_evidence(
+        publication.publication_id,
+        start=start,
+        end_exclusive=end_exclusive,
+        open_dates=open_dates,
+    )
+    evidence_with_pin = _index_coverage_evidence(
+        publication.publication_id,
+        start=start,
+        end_exclusive=end_exclusive,
+        open_dates=open_dates,
+        visible_record_set=pin,
+    )
+    evidence_wrong_contract = replace(
+        evidence_with_pin,
+        visible_record_set=replace(pin, contract_sha256="f" * 64),
+    )
+    evidence_wrong_content = replace(
+        evidence_with_pin,
+        visible_record_set=replace(pin, sha256="0" * 64),
+    )
+    cases = (
+        (
+            evidence_without_pin,
+            "does not pin the complete visible publication record set",
+        ),
+        (evidence_wrong_contract, "does not match the published contract"),
+        (evidence_wrong_content, "does not match the prior operator pin"),
+    )
+
+    for evidence, expected_limitation in cases:
+        app = _make_index_app(
+            store,
+            contract,
+            DatasetCoverageEvidenceRegistry((evidence,)),
+        )
+        response = await _request(
+            app,
+            "GET",
+            f"/api/v2/datasets/{contract.dataset_id}/coverage",
+            params={
+                "publication_id": publication.publication_id,
+                "start_date": start.isoformat(),
+                "end_date": end_exclusive.isoformat(),
+            },
+        )
+
+        assert response.status_code == 200
+        coverage = response.json()["coverage"]
+        assert coverage["status"] == "unknown"
+        assert expected_limitation in coverage["limitation"]
+
+
+@pytest.mark.asyncio
+async def test_coverage_returns_sanitized_unavailable_when_pinned_scan_is_absent(
+    published_api: tuple[FastAPI, PublicationStore, DatasetContract],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A vanished verified scan is unavailable, never an empty coverage result."""
+    _, store, _ = published_api
+    start = date(2026, 10, 21)
+    end_exclusive = date(2026, 10, 22)
+    publication, contract = _publish_index_contract(
+        store,
+        (_index_record("000300.SH", start, 4_000.0),),
+        idempotency_key="coverage-index-missing-scan",
+    )
+    evidence = _index_coverage_evidence(
+        publication.publication_id,
+        start=start,
+        end_exclusive=end_exclusive,
+        open_dates=(start,),
+        visible_record_set=_visible_record_set_pin(store, publication.publication_id, contract),
+    )
+    app = _make_index_app(
+        store,
+        contract,
+        DatasetCoverageEvidenceRegistry((evidence,)),
+    )
+    monkeypatch.setattr(store, "read_coverage_record_set", lambda *_args, **_kwargs: None)
+
+    response = await _request(
+        app,
+        "GET",
+        f"/api/v2/datasets/{contract.dataset_id}/coverage",
+        params={
+            "publication_id": publication.publication_id,
+            "start_date": start.isoformat(),
+            "end_date": end_exclusive.isoformat(),
+        },
+    )
+
+    assert response.status_code == 503
+    assert response.json()["error"]["code"] == "published_data_unavailable"
+
+
+@pytest.mark.asyncio
+async def test_coverage_rejects_future_requested_range_without_claiming_completeness(
+    published_api: tuple[FastAPI, PublicationStore, DatasetContract],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A fixed market date prevents future requests from inheriting history evidence."""
+    _, store, _ = published_api
+    start = date(2026, 10, 20)
+    today = date(2026, 10, 21)
+    end_exclusive = today + timedelta(days=1)
+    publication, contract = _publish_index_contract(
+        store,
+        (
+            _index_record("000300.SH", start, 4_000.0),
+            _index_record("000300.SH", today, 4_010.0),
+        ),
+        idempotency_key="coverage-index-future-range",
+    )
+    evidence = _index_coverage_evidence(
+        publication.publication_id,
+        start=start,
+        end_exclusive=end_exclusive,
+        open_dates=(start, today),
+        visible_record_set=_visible_record_set_pin(store, publication.publication_id, contract),
+    )
+    app = _make_index_app(
+        store,
+        contract,
+        DatasetCoverageEvidenceRegistry((evidence,)),
+    )
+    monkeypatch.setattr(published_data_module, "_shanghai_business_date", lambda: today)
+    future_end = today + timedelta(days=2)
+
+    response = await _request(
+        app,
+        "GET",
+        f"/api/v2/datasets/{contract.dataset_id}/coverage",
+        params={
+            "publication_id": publication.publication_id,
+            "start_date": start.isoformat(),
+            "end_date": future_end.isoformat(),
+        },
+    )
+
+    assert response.status_code == 200
+    coverage = response.json()["coverage"]
+    assert coverage["status"] == "unknown"
+    assert coverage["requested"] == {"start": start.isoformat(), "end": future_end.isoformat()}
+    assert "Future lifecycle status" in coverage["limitation"]
+
+
+@pytest.mark.asyncio
+async def test_coverage_keeps_observations_outside_evidenced_scan_scope_unknown(
+    published_api: tuple[FastAPI, PublicationStore, DatasetContract],
+) -> None:
+    """Rows outside the pinned scan interval cannot certify covered dates."""
+    _, store, _ = published_api
+    start = date(2026, 10, 21)
+    end_exclusive = date(2026, 10, 22)
+    publication, contract = _publish_index_contract(
+        store,
+        (_index_record("000300.SH", start - timedelta(days=1), 4_000.0),),
+        idempotency_key="coverage-index-out-of-scan-scope",
+    )
+    evidence = _index_coverage_evidence(
+        publication.publication_id,
+        start=start,
+        end_exclusive=end_exclusive,
+        open_dates=(start,),
+        visible_record_set=_visible_record_set_pin(store, publication.publication_id, contract),
+    )
+    app = _make_index_app(
+        store,
+        contract,
+        DatasetCoverageEvidenceRegistry((evidence,)),
+    )
+
+    response = await _request(
+        app,
+        "GET",
+        f"/api/v2/datasets/{contract.dataset_id}/coverage",
+        params={
+            "publication_id": publication.publication_id,
+            "start_date": start.isoformat(),
+            "end_date": end_exclusive.isoformat(),
+        },
+    )
+
+    assert response.status_code == 200
+    coverage = response.json()["coverage"]
+    assert coverage["status"] == "unknown"
+    assert "outside its independently evidenced scan scope" in coverage["limitation"]
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize("dataset_id", tuple(INDEX_SYMBOL_BY_DATASET_ID))
 async def test_coverage_supports_each_trusted_single_index_dataset(
     published_api: tuple[FastAPI, PublicationStore, DatasetContract],
@@ -1274,24 +1649,37 @@ async def test_coverage_supports_each_trusted_single_index_dataset(
 
 
 @pytest.mark.asyncio
-async def test_coverage_reports_partial_for_an_evidenced_missing_open_date(
+async def test_coverage_coalesces_nonadjacent_missing_open_date_runs(
     published_api: tuple[FastAPI, PublicationStore, DatasetContract],
 ) -> None:
-    """A real calendar gap is surfaced as PARTIAL with its half-open missing range."""
+    """Adjacent missing sessions coalesce without merging separate gap runs."""
     _, store, _ = published_api
     start = date(2026, 10, 21)
-    next_open_day = date(2026, 10, 22)
-    end_exclusive = date(2026, 10, 23)
+    observed_middle = date(2026, 10, 26)
+    observed_last = date(2026, 10, 29)
+    end_exclusive = date(2026, 10, 30)
     publication, contract = _publish_index_contract(
         store,
-        (_index_record("000300.SH", start, 4_000.0),),
-        idempotency_key="coverage-index-partial-gap",
+        (
+            _index_record("000300.SH", start, 4_000.0),
+            _index_record("000300.SH", observed_middle, 4_010.0),
+            _index_record("000300.SH", observed_last, 4_020.0),
+        ),
+        idempotency_key="coverage-index-multiple-gap-runs",
     )
     evidence = _index_coverage_evidence(
         publication.publication_id,
         start=start,
         end_exclusive=end_exclusive,
-        open_dates=(start, next_open_day),
+        open_dates=(
+            start,
+            start + timedelta(days=1),
+            start + timedelta(days=2),
+            observed_middle,
+            observed_middle + timedelta(days=1),
+            observed_middle + timedelta(days=2),
+            observed_last,
+        ),
         visible_record_set=_visible_record_set_pin(store, publication.publication_id, contract),
     )
     app = _make_index_app(
@@ -1315,7 +1703,14 @@ async def test_coverage_reports_partial_for_an_evidenced_missing_open_date(
     coverage = response.json()["coverage"]
     assert coverage["status"] == "partial"
     assert coverage["missing_ranges"] == [
-        {"start": next_open_day.isoformat(), "end": end_exclusive.isoformat()}
+        {
+            "start": date(2026, 10, 22).isoformat(),
+            "end": date(2026, 10, 24).isoformat(),
+        },
+        {
+            "start": date(2026, 10, 27).isoformat(),
+            "end": observed_last.isoformat(),
+        },
     ]
 
 
