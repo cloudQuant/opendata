@@ -342,6 +342,21 @@ class TaskScheduler:
                     error_message=failure_message,
                 )
 
+                # An empty or oversized pipeline universe is a deterministic
+                # input/configuration failure; repeating the same scheduled
+                # request cannot make it valid. Compute this before notification
+                # handling, whose exception target must not shadow the original.
+                stop_after_failure = False
+                if task.task_kind == "pipeline":
+                    from opendata.pipeline.universe_errors import (
+                        EmptySymbolUniverseError,
+                        UniverseLimitExceededError,
+                    )
+
+                    stop_after_failure = isinstance(
+                        e, (EmptySymbolUniverseError, UniverseLimitExceededError)
+                    )
+
                 # Send failure notification (WebSocket + optional email)
                 try:
                     from opendata.services.notification_service import NotificationService
@@ -352,10 +367,13 @@ class TaskScheduler:
                         execution_id=execution.execution_id,
                         error_message=failure_message,
                         retry_count=attempt + 1,
-                        max_retries=max_attempts,
+                        max_retries=attempt + 1 if stop_after_failure else max_attempts,
                     )
-                except Exception as e:
-                    logger.debug("Task failure notification skipped: {}", e)
+                except Exception as notification_error:
+                    logger.debug("Task failure notification skipped: {}", notification_error)
+
+                if stop_after_failure:
+                    return
 
                 # If not last attempt, wait before retry
                 if attempt < max_attempts - 1:
