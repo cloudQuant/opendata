@@ -14,8 +14,12 @@ import pytest
 import requests
 from requests.adapters import HTTPAdapter
 
-from opendata.data.http_client import BoundedHttpResponse
-from opendata.data.request_budget import current_request_scopes, reserve_scoped_attempt
+from opendata.data.http_client import BoundedHttpResponse, FailureCategory, HttpFetchError
+from opendata.data.request_budget import (
+    RequestBudgetError,
+    current_request_scopes,
+    reserve_scoped_attempt,
+)
 from scripts.ops import bse_instrument_catalog_capture as capture
 
 if TYPE_CHECKING:
@@ -25,9 +29,10 @@ if TYPE_CHECKING:
 class _FakeBoundedPostClient:
     """Offline fake that records the sole request and consumes local budget."""
 
-    def __init__(self, response: object) -> None:
+    def __init__(self, response: object, *, reserve_attempt: bool = True) -> None:
         """Store one response or exception for the one allowed call."""
         self.response = response
+        self.reserve_attempt = reserve_attempt
         self.calls: list[dict[str, object]] = []
 
     def post_form_bounded(
@@ -61,7 +66,8 @@ class _FakeBoundedPostClient:
             "Referer": capture.REFERER,
         }
         scopes = current_request_scopes()
-        reserve_scoped_attempt(scopes, source, capture.HOST)
+        if self.reserve_attempt:
+            reserve_scoped_attempt(scopes, source, capture.HOST)
         self.calls.append(
             {
                 "url": url,
@@ -107,7 +113,15 @@ def test_capture_preserves_one_raw_page_without_parsing_or_publishing_fields(
 
     assert receipt["outcome"] == "raw_page_captured"
     assert receipt["request_attempted"] is True
+    assert receipt["request_attempted_semantics"] == "bounded_client_invocation_only"
+    assert receipt["client_invoked"] is True
+    assert receipt["budget_reservations"] == 1
     assert receipt["transport_attempts"] == 1
+    assert receipt["delivery_status"] == "response_received"
+    assert receipt["http_response_observed"] is True
+    assert receipt["failure_category"] is None
+    assert receipt["schema_version"] == 2
+    assert receipt["failure_diagnostic_schema_version"] == 1
     assert receipt["transport_send_ceiling"] == 1
     assert receipt["response_interpretation"] == "not_parsed"
     assert receipt["catalog_fields"] == "unknown"
@@ -153,7 +167,14 @@ def test_failed_single_post_is_not_retried_or_reported_as_empty_page(
     assert receipt["outcome"] == "partial_or_failed_capture"
     assert receipt["failure_code"] == "request_failed_or_outcome_unknown"
     assert receipt["request_attempted"] is True
-    assert receipt["transport_attempts"] == 1
+    assert receipt["client_invoked"] is True
+    assert receipt["budget_reservations"] == 1
+    assert receipt["transport_attempts"] is None
+    assert receipt["delivery_status"] == "unknown"
+    assert receipt["http_response_observed"] is False
+    assert receipt["failure_category"] == "unknown"
+    assert receipt["failure_category_source"] == "unknown"
+    assert receipt["http_status"] is None
     assert receipt["total_pages"] == "unknown"
     assert receipt["pagination"] == "unknown"
     assert len(client.calls) == 1
@@ -198,6 +219,8 @@ def test_non_success_status_is_not_saved_as_a_catalog_page(
     assert receipt["outcome"] == "partial_or_failed_capture"
     assert receipt["failure_code"] == "response_contract_invalid"
     assert receipt["http_status"] == 302
+    assert receipt["failure_category"] == "unknown"
+    assert receipt["delivery_status"] == "response_received"
     assert receipt["response_suppressed"] is True
     assert receipt["raw_response_persisted"] is False
     assert len(client.calls) == 1
@@ -272,7 +295,10 @@ def test_invalid_client_factory_fails_before_any_request(
 
     assert receipt["failure_code"] == "client_contract_invalid"
     assert receipt["request_attempted"] is False
-    assert receipt["transport_attempts"] == 0
+    assert receipt["client_invoked"] is False
+    assert receipt["budget_reservations"] == 0
+    assert receipt["transport_attempts"] is None
+    assert receipt["delivery_status"] == "not_invoked"
 
 
 def test_client_factory_failure_is_sanitized_without_retry(
@@ -292,7 +318,10 @@ def test_client_factory_failure_is_sanitized_without_retry(
 
     assert receipt["failure_code"] == "local_capture_operation_failed"
     assert receipt["request_attempted"] is False
-    assert receipt["transport_attempts"] == 0
+    assert receipt["client_invoked"] is False
+    assert receipt["budget_reservations"] == 0
+    assert receipt["delivery_status"] == "not_invoked"
+    assert receipt["failure_category"] == "unknown"
     assert (
         b"private failure detail"
         not in (tmp_path / "bse-factory-failure" / "receipt.json").read_bytes()
@@ -330,6 +359,7 @@ def test_raw_evidence_persistence_failure_keeps_only_anonymous_receipt(
 
     assert receipt["failure_code"] == "raw_evidence_persistence_failed"
     assert receipt["response_sha256"] is not None
+    assert receipt["delivery_status"] == "response_received"
     assert receipt["response_suppressed"] is False
     assert receipt["raw_response_persisted"] is False
     assert b"SYNTHETIC-SECRET-CODE" not in (evidence_dir / "receipt.json").read_bytes()
@@ -464,7 +494,8 @@ def test_live_capture_uses_identity_encoding_through_fake_adapter_send(
     receipt = capture.run_bse_instrument_catalog_capture(tmp_path / "live-session-canary")
 
     assert receipt["outcome"] == "raw_page_captured"
-    assert receipt["transport_attempts"] == 1
+    assert receipt["budget_reservations"] == 1
+    assert receipt["client_invoked"] is True
     assert receipt["response_interpretation"] == "not_parsed"
     assert receipt["raw_response_persisted"] is True
     assert len(sends) == 1
@@ -530,6 +561,7 @@ def test_failure_receipt_never_echoes_unrecognized_failure_text() -> None:
     )
 
     assert receipt["failure_code"] == "local_capture_operation_failed"
+    assert receipt["failure_category"] == "unknown"
     assert receipt["http_status"] is None
     assert receipt["response_bytes"] is None
     assert receipt["response_interpretation"] == "not_parsed"
@@ -541,3 +573,188 @@ def test_failure_receipt_never_echoes_unrecognized_failure_text() -> None:
         request_attempted=True,
     )
     assert malformed_code["failure_code"] == "local_capture_operation_failed"
+
+
+@pytest.mark.parametrize(
+    ("category", "status", "expected_delivery"),
+    [
+        (FailureCategory.NETWORK, None, "unknown"),
+        (FailureCategory.RATE_LIMITED, 429, "response_received"),
+        (FailureCategory.UPSTREAM_ERROR, 503, "response_received"),
+    ],
+)
+def test_exact_http_fetch_error_emits_only_fixed_category_and_valid_status(
+    category: FailureCategory,
+    status: int | None,
+    expected_delivery: str,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Typed failures preserve only enum/status diagnostics and the one-send scope."""
+    _enable_fake_environment(monkeypatch)
+    error = HttpFetchError(
+        category,
+        url="https://bse.example/private?token=DO_NOT_ECHO",
+        host="bse.example",
+        attempts=1,
+        status=status,
+        retryable=True,
+    )
+    client = _FakeBoundedPostClient(error)
+    evidence_dir = tmp_path / "bse-typed-failure"
+
+    receipt = capture.run_bse_instrument_catalog_capture(
+        evidence_dir,
+        client_factory=lambda: client,
+    )
+
+    encoded = (evidence_dir / "receipt.json").read_bytes()
+    assert receipt["outcome"] == "partial_or_failed_capture"
+    assert receipt["failure_code"] == "request_failed_or_outcome_unknown"
+    assert receipt["failure_category"] == category.value
+    assert receipt["failure_category_source"] == "http_fetch_error"
+    assert receipt["http_status"] == status
+    assert receipt["transport_attempts"] == 1
+    assert receipt["delivery_status"] == expected_delivery
+    assert receipt["http_response_observed"] is (status is not None)
+    assert receipt["client_invoked"] is True
+    assert receipt["budget_reservations"] == 1
+    assert receipt["transport_send_ceiling"] == 1
+    assert receipt["retry_policy"] == "none"
+    assert receipt["raw_response_persisted"] is False
+    assert len(client.calls) == 1
+    assert b"DO_NOT_ECHO" not in encoded
+    assert b"bse.example" not in encoded
+
+
+def test_spoofed_or_malformed_http_failure_attributes_are_not_trusted(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Subclasses, malformed categories, and exception text cannot supply diagnostics."""
+    _enable_fake_environment(monkeypatch)
+
+    class _SpoofedHttpFetchError(HttpFetchError):
+        """A subclass must not impersonate the exact governed transport error."""
+
+    subclass_error = _SpoofedHttpFetchError(
+        FailureCategory.NETWORK,
+        url="https://bse.example/private?secret=DO_NOT_ECHO",
+        host="bse.example",
+        attempts=1,
+        status=503,
+    )
+    subclass_error.args = ("SUBCLASS_EXCEPTION_TEXT_DO_NOT_ECHO",)
+    client = _FakeBoundedPostClient(subclass_error)
+    evidence_dir = tmp_path / "bse-spoofed-error"
+
+    receipt = capture.run_bse_instrument_catalog_capture(
+        evidence_dir,
+        client_factory=lambda: client,
+    )
+
+    encoded = (evidence_dir / "receipt.json").read_bytes()
+    assert receipt["failure_category"] == "unknown"
+    assert receipt["failure_category_source"] == "unknown"
+    assert receipt["http_status"] is None
+    assert receipt["delivery_status"] == "unknown"
+    assert receipt["transport_attempts"] is None
+    assert receipt["http_response_observed"] is False
+    assert receipt["budget_reservations"] == 1
+    assert len(client.calls) == 1
+    assert b"DO_NOT_ECHO" not in encoded
+    assert b"SUBCLASS_EXCEPTION_TEXT_DO_NOT_ECHO" not in encoded
+
+
+def test_exact_http_fetch_error_with_mutated_category_and_out_of_range_status_is_unknown(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Only an actual enum member and a 100..599 integer are accepted."""
+    _enable_fake_environment(monkeypatch)
+    error = HttpFetchError(
+        FailureCategory.NETWORK,
+        url="https://bse.example/",
+        host="bse.example",
+        attempts=1,
+        status=503,
+    )
+    error.category = "category-secret-sentinel"  # type: ignore[assignment]
+    error.status = 999
+    client = _FakeBoundedPostClient(error)
+    evidence_dir = tmp_path / "bse-malformed-error-fields"
+
+    receipt = capture.run_bse_instrument_catalog_capture(
+        evidence_dir,
+        client_factory=lambda: client,
+    )
+
+    encoded = (evidence_dir / "receipt.json").read_bytes()
+    assert receipt["failure_category"] == "unknown"
+    assert receipt["failure_category_source"] == "unknown"
+    assert receipt["http_status"] is None
+    assert receipt["delivery_status"] == "unknown"
+    assert receipt["transport_attempts"] == 1
+    assert receipt["http_response_observed"] is False
+    assert b"category-secret-sentinel" not in encoded
+
+
+def test_http_fetch_error_zero_attempts_means_not_sent_and_rejects_status(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A pre-send transport error cannot simultaneously claim an HTTP response."""
+    _enable_fake_environment(monkeypatch)
+    error = HttpFetchError(
+        FailureCategory.NETWORK,
+        url="https://bse.example/",
+        host="bse.example",
+        attempts=0,
+        status=503,
+    )
+    client = _FakeBoundedPostClient(error)
+
+    receipt = capture.run_bse_instrument_catalog_capture(
+        tmp_path / "bse-zero-transport-attempts",
+        client_factory=lambda: client,
+    )
+
+    assert receipt["failure_category"] == "network"
+    assert receipt["failure_category_source"] == "http_fetch_error"
+    assert receipt["http_status"] is None
+    assert receipt["transport_attempts"] == 0
+    assert receipt["budget_reservations"] == 1
+    assert receipt["client_invoked"] is True
+    assert receipt["http_response_observed"] is False
+    assert receipt["delivery_status"] == "not_sent"
+    assert len(client.calls) == 1
+
+
+def test_request_budget_rejection_is_local_and_never_claims_transport(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Local request authorization failures stay separate from uncertain transport."""
+    _enable_fake_environment(monkeypatch)
+    client = _FakeBoundedPostClient(
+        RequestBudgetError("PRIVATE_REQUEST_BUDGET_DETAIL"),
+        reserve_attempt=False,
+    )
+    evidence_dir = tmp_path / "bse-local-budget-rejection"
+
+    receipt = capture.run_bse_instrument_catalog_capture(
+        evidence_dir,
+        client_factory=lambda: client,
+    )
+
+    encoded = (evidence_dir / "receipt.json").read_bytes()
+    assert receipt["failure_code"] == "governed_request_rejected"
+    assert receipt["failure_category"] == "unknown"
+    assert receipt["failure_category_source"] == "local"
+    assert receipt["budget_reservations"] == 0
+    assert receipt["transport_attempts"] is None
+    assert receipt["client_invoked"] is True
+    assert receipt["http_response_observed"] is False
+    assert receipt["delivery_status"] == "unknown"
+    assert len(client.calls) == 1
+    assert b"PRIVATE_REQUEST_BUDGET_DETAIL" not in encoded
