@@ -221,7 +221,13 @@ class InterfaceListResponse(BaseModel):
 
 # Task schemas
 class PipelineTaskParameters(BaseModel):
-    """Validated arguments for the existing six-step incremental runner."""
+    """Validated arguments for the existing six-step incremental runner.
+
+    ``limit`` defaults to the job's 10,000-symbol capacity when omitted. The
+    normalized payload deliberately uses ``exclude_unset=True`` so an omitted
+    limit stays omitted and the job remains the source of its runtime default.
+    An explicit limit still overrides that default, up to the 50,000 ceiling.
+    """
 
     model_config = ConfigDict(extra="forbid")
 
@@ -231,7 +237,15 @@ class PipelineTaskParameters(BaseModel):
         None, min_length=1, max_length=64, pattern=r"^[a-z][a-z0-9_]*$"
     )
     symbols: list[str] | None = Field(None, min_length=1, max_length=5000)
-    limit: int = Field(default=5000, ge=1, le=50000)
+    limit: int = Field(
+        default=10_000,
+        ge=1,
+        le=50_000,
+        description=(
+            "Maximum instrument count. Omit to use the job default (10,000); "
+            "explicit values may be between 1 and 50,000."
+        ),
+    )
     lookback_days: int = Field(default=0, ge=0, le=3650)
     shard_size: int = Field(default=200, ge=1, le=1000)
 
@@ -287,7 +301,12 @@ class PipelineTaskParameters(BaseModel):
 
 
 def validate_pipeline_task_parameters(parameters: dict[str, Any] | None) -> dict[str, Any]:
-    """Validate and normalize the allowlisted arguments for a pipeline task."""
+    """Validate allowlisted pipeline arguments while preserving omitted fields.
+
+    ``exclude_unset=True`` is intentional: default values validate and appear
+    in schema metadata, but are not persisted unless the caller supplied them.
+    In particular, omitting ``limit`` lets the job apply its runtime capacity.
+    """
     validated = PipelineTaskParameters.model_validate(parameters or {})
     return validated.model_dump(exclude_unset=True)
 

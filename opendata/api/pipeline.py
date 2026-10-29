@@ -93,8 +93,10 @@ async def pipeline_run(
     domain: str = Query("stock_daily", description="Domain to run"),
     source: str | None = Query(None, description="Authoritative source; defaults to the mapping"),
     second_source: str | None = Query(None, description="Second source; wires cross-check"),
-    symbols: list[str] | None = Query(None, description="Explicit universe (repeatable)"),
-    limit: int = Query(200, ge=1, le=5000, description="Cap of the derived universe"),
+    symbols: list[str] | None = Query(
+        None, max_length=10000, description="Explicit universe (repeatable; up to 10,000 symbols)"
+    ),
+    limit: int = Query(200, ge=1, le=10000, description="Cap of the derived universe"),
     as_of: date | None = Query(None, description="Window end date; defaults to today"),
     lookback_days: int = Query(0, ge=0, le=30, description="Days to prepend to the window"),
     shard_size: int = Query(50, ge=1, le=500, description="Symbols per shard"),
