@@ -24,6 +24,7 @@ from opendata.api.published_data import router as published_data_router
 from opendata.api.scripts import router as scripts_router
 from opendata.api.tables import router as tables_router
 from opendata.api.tasks import router as tasks_router
+from opendata.api.temporal_identity import router as temporal_identity_router
 from opendata.api.users import router as users_router
 from opendata.api.websocket import router as ws_router
 
@@ -39,6 +40,7 @@ api_router = APIRouter()
 # routes unchanged while adding new read-only archive endpoints to this group.
 api_v2_router = APIRouter()
 api_v2_router.include_router(published_data_router)
+api_v2_router.include_router(temporal_identity_router)
 api_v2_router.include_router(
     financial_observation_archive_router,
     prefix="/api/v2/data",

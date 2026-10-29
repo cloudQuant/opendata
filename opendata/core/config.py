@@ -81,6 +81,51 @@ class Settings(BaseSettings):
         ),
     )
 
+    # Temporal identity snapshot reads remain disabled until an operator
+    # explicitly supplies a digest-pinned registry and a dedicated read-only
+    # warehouse target. The MySQL acknowledgement is a deployment declaration;
+    # the runtime cannot inspect database grants.
+    temporal_identity_enabled: bool = Field(
+        default=False,
+        description=(
+            "TEMPORAL_IDENTITY_ENABLED: explicitly enable the read-only temporal identity API; "
+            "false performs no pin-file or warehouse I/O"
+        ),
+    )
+    temporal_identity_pin_file: str | None = Field(
+        default=None,
+        repr=False,
+        description="TEMPORAL_IDENTITY_PIN_FILE: absolute path to operator-owned pin JSON",
+    )
+    temporal_identity_pin_sha256: str | None = Field(
+        default=None,
+        repr=False,
+        description="TEMPORAL_IDENTITY_PIN_SHA256: independently supplied pin-file digest",
+    )
+    temporal_identity_warehouse_sqlite_path: str | None = Field(
+        default=None,
+        repr=False,
+        description=(
+            "TEMPORAL_IDENTITY_WAREHOUSE_SQLITE_PATH: existing SQLite warehouse file "
+            "opened read-only"
+        ),
+    )
+    temporal_identity_warehouse_url: SecretStr | None = Field(
+        default=None,
+        repr=False,
+        exclude=True,
+        description=(
+            "TEMPORAL_IDENTITY_WAREHOUSE_URL: verified-TLS MySQL URL for a SELECT-only account"
+        ),
+    )
+    temporal_identity_mysql_select_only_account_acknowledged: bool = Field(
+        default=False,
+        description=(
+            "TEMPORAL_IDENTITY_MYSQL_SELECT_ONLY_ACCOUNT_ACKNOWLEDGED: operator declaration only; "
+            "database grants are not verified by the application"
+        ),
+    )
+
     # Database Connection Pool
     database_pool_size: int = Field(
         default=5,

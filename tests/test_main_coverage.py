@@ -7,9 +7,28 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 
+@pytest.fixture
+def mocked_lifespan_seams():
+    """Keep lifespan tests independent from providers and shared executor state.
+
+    Provider registration has its own tests. These cases exercise application
+    startup and shutdown, so replace the public registration seam while still
+    asserting that startup invokes it. The AKShare executor is process-global;
+    mock its shutdown so one test cannot disable it for later tests.
+    """
+    with (
+        patch("opendata.data.providers.register_providers", return_value=[]) as mock_register,
+        patch(
+            "opendata.services.data_acquisition.DataAcquisitionService._akshare_executor.shutdown"
+        ) as mock_executor_shutdown,
+    ):
+        yield mock_register, mock_executor_shutdown
+
+
 class TestLifespan:
     @pytest.mark.asyncio
-    async def test_lifespan_startup_shutdown(self, monkeypatch):
+    async def test_lifespan_startup_shutdown(self, monkeypatch, mocked_lifespan_seams):
+        mock_register, mock_executor_shutdown = mocked_lifespan_seams
         from opendata.main import lifespan
 
         # The bootstrap is guarded on TESTING (read at startup, not at import:
@@ -40,9 +59,14 @@ class TestLifespan:
             mock_sched.start.assert_called_once()
             mock_sched.shutdown.assert_called_once()
             mock_close.assert_called_once()
+            mock_register.assert_called_once_with()
+            mock_executor_shutdown.assert_called_once_with(wait=False)
 
     @pytest.mark.asyncio
-    async def test_lifespan_skips_the_database_bootstrap_in_a_test_process(self, monkeypatch):
+    async def test_lifespan_skips_the_database_bootstrap_in_a_test_process(
+        self, monkeypatch, mocked_lifespan_seams
+    ):
+        mock_register, mock_executor_shutdown = mocked_lifespan_seams
         """A test process must not touch the configured warehouse on startup.
 
         ``TestClient(app)`` runs this lifespan on a fresh event loop, while the
@@ -78,9 +102,12 @@ class TestLifespan:
             mock_ct.assert_not_called()
             mock_init.assert_not_called()
             mock_sched.start.assert_not_called()
+            mock_register.assert_called_once_with()
+            mock_executor_shutdown.assert_called_once_with(wait=False)
 
     @pytest.mark.asyncio
-    async def test_lifespan_safe_secret(self):
+    async def test_lifespan_safe_secret(self, mocked_lifespan_seams):
+        mock_register, mock_executor_shutdown = mocked_lifespan_seams
         from opendata.main import lifespan
 
         with (
@@ -101,6 +128,9 @@ class TestLifespan:
 
             async with lifespan(MagicMock()):
                 pass
+
+            mock_register.assert_called_once_with()
+            mock_executor_shutdown.assert_called_once_with(wait=False)
 
 
 class TestHealthCheckBranches:
