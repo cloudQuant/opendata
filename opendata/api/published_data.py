@@ -1567,6 +1567,8 @@ def _resolve_contract(
         or contract.adjustment_basis != publication.adjustment_basis
     ):
         raise _service_unavailable()
+    if contract.dataset_id == _SINA_FZB_DATASET_ID:
+        _require_sina_fzb_observation_contract(contract)
     try:
         selection_profile(contract)
         market_profile = market_symbol_selection_profile(contract)
@@ -1581,7 +1583,7 @@ def _resolve_contract(
 
 
 def _require_sina_fzb_observation_contract(contract: DatasetContract) -> None:
-    """Keep capture discovery confined to the exact source-native Sina FZB contract."""
+    """Reject any drift from the reserved source-native Sina FZB contract."""
     try:
         expected = build_sina_fzb_observation_contract()
         contract_matches = canonical_sha256(contract) == canonical_sha256(expected)
@@ -1696,6 +1698,7 @@ def _request_selection(
         ) from None
     if was_supplied and selection is None:
         raise _http_problem(422, "invalid_selection", "Instrument/capture selection is invalid")
+    _validate_sina_fzb_instrument(contract, selection)
     return selection
 
 
@@ -1704,7 +1707,7 @@ def _snapshot_selection(
 ) -> InstrumentCaptureSelection | None:
     """Validate persisted selectors against the pinned publication contract."""
     try:
-        return parse_instrument_capture_selection(
+        selection = parse_instrument_capture_selection(
             contract,
             instrument_id=snapshot.instrument_id,
             capture_id=snapshot.capture_id,
@@ -1712,6 +1715,24 @@ def _snapshot_selection(
         )
     except InstrumentCaptureSelectionError:
         raise _service_unavailable() from None
+    try:
+        _validate_sina_fzb_instrument(contract, selection)
+    except HTTPException:
+        raise _service_unavailable() from None
+    return selection
+
+
+def _validate_sina_fzb_instrument(
+    contract: DatasetContract,
+    selection: InstrumentCaptureSelection | None,
+) -> None:
+    """Require exchange-qualified A-share symbols for the reserved Sina FZB data."""
+    if (
+        contract.dataset_id == _SINA_FZB_DATASET_ID
+        and selection is not None
+        and _SINA_FZB_INSTRUMENT_PATTERN.fullmatch(selection.instrument_id) is None
+    ):
+        raise _http_problem(422, "invalid_selection", "Instrument/capture selection is invalid")
 
 
 def _validate_snapshot_selection_request(

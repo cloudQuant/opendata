@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
-from datetime import datetime, timezone
+from dataclasses import dataclass, replace
+from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Any
 
 import pytest
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from httpx import ASGITransport, AsyncClient, Response
 from sqlalchemy import create_engine
 
@@ -19,6 +19,9 @@ from opendata.api.published_access import (
     require_published_access,
 )
 from opendata.api.published_data import (
+    _capture_candidate_page_payload,
+    _require_sina_fzb_observation_contract,
+    _resolve_contract,
     get_dataset_contracts,
     get_dataset_grants,
     get_publication_store,
@@ -29,10 +32,17 @@ from opendata.data.dataset_contract_registry import (
     canonical_sha256,
 )
 from opendata.data.platform_contracts import DatasetContract, FieldContract, SourceIdentity
+from opendata.data.providers.sina.financial_statement_publication import (
+    build_sina_fzb_observation_contract,
+)
 from opendata.models.user import User, UserRole
 from opendata.pipeline.publication_store import (
     PUBLICATION_METADATA,
+    CaptureDiscovery,
+    CaptureDiscoveryPage,
+    PublicationRecord,
     PublicationStore,
+    PublishedPage,
     PublishedRecordInput,
 )
 
@@ -104,32 +114,8 @@ def capture_api(tmp_path: Path) -> Iterator[CaptureApiFixture]:
 
 
 def _selected_contract() -> DatasetContract:
-    """Build the reserved table/none contract with the exact selection keys."""
-    return DatasetContract(
-        dataset_id=SELECTED_DATASET_ID,
-        schema_version="source-native-report-v1",
-        semantic_version="sina-fzb-source-native-v1",
-        asset_class="equity",
-        frequency="irregular",
-        record_kind="table",
-        fields=(
-            FieldContract(name="instrument_id", data_type="string"),
-            FieldContract(name="capture_id", data_type="string"),
-            FieldContract(name="statement_code", data_type="string"),
-            FieldContract(name="report_period", data_type="date"),
-            FieldContract(name="currency", data_type="string"),
-            FieldContract(name="entries", data_type="array"),
-            FieldContract(name="report_metadata", data_type="object"),
-        ),
-        business_key=("instrument_id", "capture_id", "statement_code", "report_period"),
-        ordering=("instrument_id", "capture_id", "statement_code", "report_period"),
-        filter_fields=("instrument_id", "capture_id"),
-        temporal_semantics="none",
-        source=SourceIdentity(source_id=SOURCE_ID, source="sina"),
-        adjustment_basis="not_applicable",
-        timezone="UTC",
-        pit_policy="unsupported",
-    )
+    """Build the canonical reserved source-native Sina FZB contract."""
+    return build_sina_fzb_observation_contract()
 
 
 def _legacy_contract() -> DatasetContract:
@@ -258,7 +244,15 @@ def _payload(
         "capture_id": capture_id,
         "statement_code": "fzb",
         "report_period": report_period,
+        "source_paper_code": instrument_id[:6],
+        "published_on": "2024-10-30",
+        "publication_precision": "day",
+        "source_update_epoch_seconds": 1_730_246_400,
+        "source_updated_at": "2024-10-30T00:00:00Z",
+        "source_updated_at_timezone": "UTC",
+        "retrieved_at_utc": "2026-10-27T01:00:00Z",
         "currency": "CNY",
+        "period_metadata": {},
         "entries": [
             {
                 "kind": "item",
@@ -286,7 +280,16 @@ def _record(
         report_period=report_period,
     )
     if contract.dataset_id != SELECTED_DATASET_ID:
-        payload = {"row_id": row_id, **payload}
+        payload = {
+            "row_id": row_id,
+            "instrument_id": instrument_id,
+            "capture_id": capture_id,
+            "statement_code": "fzb",
+            "report_period": report_period,
+            "currency": "CNY",
+            "entries": payload["entries"],
+            "report_metadata": payload["report_metadata"],
+        }
         key_values = [row_id]
     else:
         key_values = [instrument_id, capture_id, "fzb", report_period]
@@ -596,6 +599,281 @@ async def test_reserved_profile_rejects_invalid_selector_shapes_and_extra_body_f
 
 
 @pytest.mark.asyncio
+async def test_first_page_rejects_incomplete_window_reversed_window_and_orphan_cursor(
+    capture_api: CaptureApiFixture,
+) -> None:
+    """Date and cursor parameters cannot bypass the fixed first-page snapshot contract."""
+    base = {"instrument_id": INSTRUMENT, "capture_id": CAPTURE_A}
+    incomplete = await _request(
+        capture_api.app,
+        "GET",
+        f"/api/v2/datasets/{SELECTED_DATASET_ID}/records",
+        params={**base, "start_date": "2026-10-21"},
+    )
+    reversed_window = await _request(
+        capture_api.app,
+        "GET",
+        f"/api/v2/datasets/{SELECTED_DATASET_ID}/records",
+        params={**base, "start_date": "2026-10-22", "end_date": "2026-10-21"},
+    )
+    orphan_cursor = await _request(
+        capture_api.app,
+        "GET",
+        f"/api/v2/datasets/{SELECTED_DATASET_ID}/records",
+        params={**base, "cursor": "synthetic-cursor-without-snapshot"},
+    )
+
+    assert incomplete.status_code == reversed_window.status_code == orphan_cursor.status_code == 422
+    assert incomplete.json()["error"]["code"] == "invalid_request"
+    assert reversed_window.json()["error"]["code"] == "invalid_request"
+    assert orphan_cursor.json()["error"]["code"] == "invalid_request"
+
+
+@pytest.mark.asyncio
+async def test_sina_fzb_selectors_require_six_digit_sh_or_sz_instruments(
+    capture_api: CaptureApiFixture,
+) -> None:
+    """The reserved Sina snapshot selector accepts only canonical SH/SZ A-share IDs."""
+    valid_sz_query = await _request(
+        capture_api.app,
+        "GET",
+        f"/api/v2/datasets/{SELECTED_DATASET_ID}/records",
+        params={"instrument_id": "000001.SZ", "capture_id": CAPTURE_A},
+    )
+    valid_sz_snapshot = await _request(
+        capture_api.app,
+        "POST",
+        "/api/v2/snapshots",
+        json={
+            "dataset_id": SELECTED_DATASET_ID,
+            "instrument_id": "000001.SZ",
+            "capture_id": CAPTURE_A,
+        },
+    )
+    assert valid_sz_query.status_code == 200
+    assert valid_sz_query.json()["rows"] == []
+    assert valid_sz_snapshot.status_code == 201
+
+    for instrument_id in ("600000.BJ", "SSE:600000", "60000.SH"):
+        query = await _request(
+            capture_api.app,
+            "GET",
+            f"/api/v2/datasets/{SELECTED_DATASET_ID}/records",
+            params={"instrument_id": instrument_id, "capture_id": CAPTURE_A},
+        )
+        body = await _request(
+            capture_api.app,
+            "POST",
+            "/api/v2/snapshots",
+            json={
+                "dataset_id": SELECTED_DATASET_ID,
+                "instrument_id": instrument_id,
+                "capture_id": CAPTURE_A,
+            },
+        )
+        assert query.status_code == body.status_code == 422
+        assert (
+            query.json()["error"]["code"] == body.json()["error"]["code"] == ("invalid_selection")
+        )
+        assert instrument_id not in query.text + body.text
+
+
+def test_reserved_sina_contract_must_equal_its_canonical_contract(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A merely selector-shaped replacement cannot impersonate the FZB contract."""
+    canonical = _selected_contract()
+    _require_sina_fzb_observation_contract(canonical)
+
+    drifted = canonical.model_copy(update={"timezone": "Asia/Shanghai"})
+    with pytest.raises(HTTPException) as error:
+        _require_sina_fzb_observation_contract(drifted)
+
+    assert error.value.status_code == 503
+
+    def fail_to_build_contract() -> DatasetContract:
+        raise ValueError("synthetic contract construction failure")
+
+    monkeypatch.setattr(
+        "opendata.api.published_data.build_sina_fzb_observation_contract",
+        fail_to_build_contract,
+    )
+    with pytest.raises(HTTPException) as builder_error:
+        _require_sina_fzb_observation_contract(canonical)
+
+    assert builder_error.value.status_code == 503
+    assert "synthetic" not in str(builder_error.value.detail)
+
+
+def test_contract_resolution_rejects_drift_even_when_publication_pins_it() -> None:
+    """A self-consistent publication hash does not replace the reserved contract."""
+    canonical = _selected_contract()
+    drifted = canonical.model_copy(update={"timezone": "Asia/Shanghai"})
+    access = require_published_access(
+        _principal(),
+        SELECTED_DATASET_ID,
+        "data.read",
+        DatasetGrantRegistry((_grant(SELECTED_DATASET_ID),)),
+    )
+    publication = PublicationRecord(
+        publication_id="d" * 32,
+        dataset_id=SELECTED_DATASET_ID,
+        source_id=SOURCE_ID,
+        sequence=1,
+        schema_version=drifted.schema_version,
+        semantic_version=drifted.semantic_version,
+        unit="per-field",
+        adjustment_basis=drifted.adjustment_basis,
+        quality={"status": "unknown", "report_id": None, "issue_count": 0},
+        provenance={"contract_sha256": canonical_sha256(drifted)},
+        watermark=None,
+        idempotency_key="synthetic-drifted-contract",
+        payload_hash="e" * 64,
+        record_count=0,
+        published_at=datetime(2026, 10, 27, 1, tzinfo=UTC),
+    )
+
+    with pytest.raises(HTTPException) as error:
+        _resolve_contract(DatasetContractRegistry((drifted,)), access, publication)
+
+    assert error.value.status_code == 503
+
+
+def test_capture_candidate_payload_serializes_bounded_sorted_page() -> None:
+    """The disabled discovery route's response validator still has a synthetic contract test."""
+    page = CaptureDiscoveryPage(
+        items=(
+            CaptureDiscovery("a" * 64, datetime(2026, 10, 27, 2, tzinfo=UTC)),
+            CaptureDiscovery("b" * 64, datetime(2026, 10, 27, 2, tzinfo=UTC)),
+            CaptureDiscovery("c" * 64, datetime(2026, 10, 27, 1, tzinfo=UTC)),
+        ),
+        next_cursor="synthetic-next-page",
+    )
+
+    payload = _capture_candidate_page_payload(
+        dataset_id=SELECTED_DATASET_ID,
+        publication_id="f" * 32,
+        instrument_id=INSTRUMENT,
+        page_size=3,
+        page=page,
+    )
+
+    assert payload == {
+        "dataset_id": SELECTED_DATASET_ID,
+        "publication_id": "f" * 32,
+        "instrument_id": INSTRUMENT,
+        "page_size": 3,
+        "items": [
+            {"capture_id": "a" * 64, "observed_at": "2026-10-27T02:00:00+00:00"},
+            {"capture_id": "b" * 64, "observed_at": "2026-10-27T02:00:00+00:00"},
+            {"capture_id": "c" * 64, "observed_at": "2026-10-27T01:00:00+00:00"},
+        ],
+        "next_cursor": "synthetic-next-page",
+        "has_more": True,
+        "scope": "publication_batch_only",
+        "empty_result_semantics": "no_matching_rows_in_pinned_publication",
+        "observed_at_semantics": "capture_observation_time_not_point_in_time",
+        "pit_policy": "unsupported",
+    }
+
+
+def _candidate_page_payload_for_test(page: object, *, page_size: int = 2) -> dict[str, object]:
+    """Call the private response validator with one fixed, synthetic publication scope."""
+    return _capture_candidate_page_payload(
+        dataset_id=SELECTED_DATASET_ID,
+        publication_id="f" * 32,
+        instrument_id=INSTRUMENT,
+        page_size=page_size,
+        page=page,  # type: ignore[arg-type] - malformed pages are deliberate test inputs.
+    )
+
+
+@pytest.mark.parametrize(
+    ("page", "page_size"),
+    (
+        (object(), 2),
+        (CaptureDiscoveryPage(items=[], next_cursor=None), 2),
+        (
+            CaptureDiscoveryPage(
+                items=(
+                    CaptureDiscovery("a" * 64, datetime(2026, 10, 27, 1, tzinfo=UTC)),
+                    CaptureDiscovery("b" * 64, datetime(2026, 10, 27, 0, tzinfo=UTC)),
+                ),
+                next_cursor=None,
+            ),
+            1,
+        ),
+        (CaptureDiscoveryPage(items=(), next_cursor=""), 2),
+        (CaptureDiscoveryPage(items=(), next_cursor=1), 2),
+        (CaptureDiscoveryPage(items=(), next_cursor="x" * 8_193), 2),
+    ),
+    ids=(
+        "wrong-page-type",
+        "non-tuple-items",
+        "over-page-size",
+        "empty-cursor",
+        "non-string-cursor",
+        "oversized-cursor",
+    ),
+)
+def test_capture_candidate_payload_rejects_invalid_page_envelopes(
+    page: object,
+    page_size: int,
+) -> None:
+    """Malformed page envelopes fail closed without exposing cursor or row content."""
+    with pytest.raises(HTTPException) as error:
+        _candidate_page_payload_for_test(page, page_size=page_size)
+
+    assert error.value.status_code == 503
+    assert "synthetic" not in str(error.value.detail)
+
+
+@pytest.mark.parametrize(
+    "items",
+    (
+        (CaptureDiscovery("A" * 64, datetime(2026, 10, 27, 1, tzinfo=UTC)),),
+        (
+            CaptureDiscovery("a" * 64, datetime(2026, 10, 27, 1, tzinfo=UTC)),
+            CaptureDiscovery("a" * 64, datetime(2026, 10, 27, 0, tzinfo=UTC)),
+        ),
+        (CaptureDiscovery("a" * 64, datetime(2026, 10, 27, 1)),),
+        (
+            CaptureDiscovery(
+                "a" * 64,
+                datetime(2026, 10, 27, 1, tzinfo=timezone(timedelta(hours=8))),
+            ),
+        ),
+        (
+            CaptureDiscovery("a" * 64, datetime(2026, 10, 27, 0, tzinfo=UTC)),
+            CaptureDiscovery("b" * 64, datetime(2026, 10, 27, 1, tzinfo=UTC)),
+        ),
+        (
+            CaptureDiscovery("b" * 64, datetime(2026, 10, 27, 1, tzinfo=UTC)),
+            CaptureDiscovery("a" * 64, datetime(2026, 10, 27, 1, tzinfo=UTC)),
+        ),
+    ),
+    ids=(
+        "noncanonical-capture",
+        "duplicate-capture",
+        "naive-observation",
+        "non-utc-observation",
+        "out-of-order-time",
+        "out-of-order-id",
+    ),
+)
+def test_capture_candidate_payload_rejects_invalid_capture_facts(
+    items: tuple[CaptureDiscovery, ...],
+) -> None:
+    """Invalid capture identity, time semantics, duplicates, or ordering are not serialized."""
+    page = CaptureDiscoveryPage(items=items, next_cursor=None)
+
+    with pytest.raises(HTTPException) as error:
+        _candidate_page_payload_for_test(page)
+
+    assert error.value.status_code == 503
+
+
+@pytest.mark.asyncio
 async def test_legacy_profile_keeps_unselected_response_shape_and_rejects_pair(
     capture_api: CaptureApiFixture,
 ) -> None:
@@ -632,6 +910,12 @@ async def test_legacy_profile_keeps_unselected_response_shape_and_rejects_pair(
         f"/api/v2/datasets/{LEGACY_DATASET_ID}/records",
         params={"instrument_id": INSTRUMENT, "capture_id": CAPTURE_A},
     )
+    table_date_bounds = await _request(
+        capture_api.app,
+        "GET",
+        f"/api/v2/datasets/{LEGACY_DATASET_ID}/records",
+        params={"start_date": "2026-10-21", "end_date": "2026-10-23"},
+    )
     post_selector = await _request(
         capture_api.app,
         "POST",
@@ -643,6 +927,8 @@ async def test_legacy_profile_keeps_unselected_response_shape_and_rejects_pair(
         },
     )
     assert selector.status_code == post_selector.status_code == 422
+    assert table_date_bounds.status_code == 422
+    assert table_date_bounds.json()["error"]["code"] == "date_bounds_unsupported"
 
 
 @pytest.mark.asyncio
@@ -670,7 +956,7 @@ async def test_invalid_reserved_contract_fails_closed_on_read(
 async def test_persisted_snapshot_scope_must_match_contract_profile(
     capture_api: CaptureApiFixture,
 ) -> None:
-    """Reserved/unselected and legacy/paired stored snapshots fail on descriptor and page."""
+    """Invalid persisted reserved and legacy selections fail on descriptor and record pages."""
     selected_publication = capture_api.store.list_datasets()
     selected_summary = next(
         summary for summary in selected_publication if summary.dataset_id == SELECTED_DATASET_ID
@@ -696,6 +982,13 @@ async def test_persisted_snapshot_scope_must_match_contract_profile(
         publication_id=selected_summary.publication_id,
         access_scope=selected_scope,
     )
+    noncanonical_sina_symbol = capture_api.store.create_snapshot(
+        SELECTED_DATASET_ID,
+        publication_id=selected_summary.publication_id,
+        access_scope=selected_scope,
+        instrument_id="600000.BJ",
+        capture_id=CAPTURE_A,
+    )
     paired_legacy = capture_api.store.create_snapshot(
         LEGACY_DATASET_ID,
         publication_id=legacy_summary.publication_id,
@@ -706,6 +999,7 @@ async def test_persisted_snapshot_scope_must_match_contract_profile(
 
     for dataset_id, snapshot in (
         (SELECTED_DATASET_ID, null_reserved),
+        (SELECTED_DATASET_ID, noncanonical_sina_symbol),
         (LEGACY_DATASET_ID, paired_legacy),
     ):
         descriptor = await _request(
@@ -763,3 +1057,43 @@ async def test_authorization_precedes_publication_store_reads_for_selected_reque
     assert response.status_code == post_response.status_code == 403
     assert response.json()["error"]["code"] == "dataset_unavailable"
     assert post_response.json()["error"]["code"] == "dataset_unavailable"
+
+
+@pytest.mark.asyncio
+async def test_selected_page_fails_closed_when_indexed_symbol_disagrees_with_payload(
+    capture_api: CaptureApiFixture,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A corrupted store page cannot return a row contradicting the pinned selector."""
+    original_read_page = capture_api.store.read_page
+
+    def corrupt_page(snapshot_id: str, **kwargs: Any) -> PublishedPage:
+        page = original_read_page(snapshot_id, **kwargs)
+        assert page.records
+        row = page.records[0]
+        corrupted_payload = {**row.payload, "instrument_id": OTHER_INSTRUMENT}
+        corrupted_business_key = json.dumps(
+            [corrupted_payload.get(field) for field in capture_api.selected_contract.business_key],
+            ensure_ascii=False,
+            allow_nan=False,
+            separators=(",", ":"),
+        )
+        corrupted_row = replace(
+            row,
+            business_key=corrupted_business_key,
+            payload=corrupted_payload,
+        )
+        return replace(page, records=(corrupted_row, *page.records[1:]))
+
+    monkeypatch.setattr(capture_api.store, "read_page", corrupt_page)
+
+    response = await _request(
+        capture_api.app,
+        "GET",
+        f"/api/v2/datasets/{SELECTED_DATASET_ID}/records",
+        params={"instrument_id": INSTRUMENT, "capture_id": CAPTURE_A},
+    )
+
+    assert response.status_code == 503
+    assert response.json()["error"]["code"] == "published_data_unavailable"
+    assert OTHER_INSTRUMENT not in response.text
