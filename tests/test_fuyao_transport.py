@@ -420,7 +420,7 @@ class TestHttpClient:
             calls += 1
             if calls == 1:
                 raise httpx.ReadTimeout("synthetic timeout")
-            return httpx.Response(200, content=_envelope(items=[{"close": 2.0}]))
+            return httpx.Response(200, stream=httpx.ByteStream(_envelope(items=[{"close": 2.0}])))
 
         with _client(handler, max_attempts=2) as client:
             _enable_synthetic_attempt_gate(monkeypatch, client)
@@ -455,8 +455,10 @@ class TestHttpClient:
             nonlocal calls
             calls += 1
             if calls == 1:
-                return httpx.Response(200, content=_envelope(5001, message="temporary"))
-            return httpx.Response(200, content=_envelope(items=[{"close": 3.0}]))
+                return httpx.Response(
+                    200, stream=httpx.ByteStream(_envelope(5001, message="temporary"))
+                )
+            return httpx.Response(200, stream=httpx.ByteStream(_envelope(items=[{"close": 3.0}])))
 
         with _client(handler, max_attempts=2) as client:
             _enable_synthetic_attempt_gate(monkeypatch, client)
@@ -494,7 +496,7 @@ class TestHttpClient:
         def handler(request: httpx.Request) -> httpx.Response:
             seen.update(dict(request.headers))
             seen["url"] = str(request.url)
-            return httpx.Response(200, content=_envelope(items=[{"close": 1.0}]))
+            return httpx.Response(200, stream=httpx.ByteStream(_envelope(items=[{"close": 1.0}])))
 
         with _client(handler) as client:
             result = client.get("/api/a-share/prices", params={"thscode": "600519.SH"})
@@ -517,7 +519,9 @@ class TestHttpClient:
 
         def handler(request: httpx.Request) -> httpx.Response:
             calls.append(1)
-            return httpx.Response(200, content=_envelope(2001, message="unauthorized"))
+            return httpx.Response(
+                200, stream=httpx.ByteStream(_envelope(2001, message="unauthorized"))
+            )
 
         with _client(handler) as client, pytest.raises(FuyaoError) as exc:
             client.get("/api/a-share/prices")
@@ -532,8 +536,10 @@ class TestHttpClient:
         def handler(request: httpx.Request) -> httpx.Response:
             calls.append(1)
             if len(calls) < 3:
-                return httpx.Response(200, content=_envelope(5001, message="server error"))
-            return httpx.Response(200, content=_envelope(items=[{"close": 2.0}]))
+                return httpx.Response(
+                    200, stream=httpx.ByteStream(_envelope(5001, message="server error"))
+                )
+            return httpx.Response(200, stream=httpx.ByteStream(_envelope(items=[{"close": 2.0}])))
 
         with _client(handler, max_attempts=3) as client:
             result = client.get("/api/a-share/prices")
@@ -546,7 +552,9 @@ class TestHttpClient:
 
         def handler(request: httpx.Request) -> httpx.Response:
             calls.append(1)
-            return httpx.Response(200, content=_envelope(5003, message="unavailable"))
+            return httpx.Response(
+                200, stream=httpx.ByteStream(_envelope(5003, message="unavailable"))
+            )
 
         with _client(handler, max_attempts=2) as client, pytest.raises(FuyaoError) as exc:
             client.get("/api/a-share/prices")
@@ -566,8 +574,10 @@ class TestHttpClient:
         def handler(request: httpx.Request) -> httpx.Response:
             calls.append(1)
             if len(calls) == 1:
-                return httpx.Response(429, headers={"Retry-After": "7"}, content=b"")
-            return httpx.Response(200, content=_envelope())
+                return httpx.Response(
+                    429, headers={"Retry-After": "7"}, stream=httpx.ByteStream(b"")
+                )
+            return httpx.Response(200, stream=httpx.ByteStream(_envelope()))
 
         credentials = FuyaoCredentials("k", base_url="https://fuyao.test")
         client = FuyaoHttpClient(
@@ -654,7 +664,7 @@ class TestHttpClient:
 
     def test_invalid_json_is_an_envelope_failure(self):
         def handler(request: httpx.Request) -> httpx.Response:
-            return httpx.Response(200, content=b"not json")
+            return httpx.Response(200, stream=httpx.ByteStream(b"not json"))
 
         with _client(handler, max_attempts=1) as client, pytest.raises(FuyaoError) as exc:
             client.get("/api/a-share/prices")
@@ -670,7 +680,9 @@ class TestHttpClient:
 
         def handler(request: httpx.Request) -> httpx.Response:
             calls.append(1)
-            return httpx.Response(200, content=_envelope(3002, message="data not ready"))
+            return httpx.Response(
+                200, stream=httpx.ByteStream(_envelope(3002, message="data not ready"))
+            )
 
         with _client(handler) as client, pytest.raises(FuyaoError) as exc:
             client.get("/api/a-share/prices")
@@ -682,7 +694,9 @@ class TestHttpClient:
         with (
             caplog.at_level(logging.INFO, logger=HTTP_CLIENT_LOGGER),
             _client(
-                lambda _request: httpx.Response(200, content=_envelope(3002, message="not ready")),
+                lambda _request: httpx.Response(
+                    200, stream=httpx.ByteStream(_envelope(3002, message="not ready"))
+                ),
                 max_attempts=1,
             ) as client,
             pytest.raises(FuyaoError),
@@ -749,7 +763,7 @@ class TestHttpClient:
             release.wait(timeout=2.0)
             with lock:
                 active -= 1
-            return httpx.Response(200, content=_envelope())
+            return httpx.Response(200, stream=httpx.ByteStream(_envelope()))
 
         clients = [
             FuyaoHttpClient(

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
-import json
+import json as jsonlib
 import logging
 import ssl
 import time
@@ -66,12 +66,12 @@ SOURCE = "ths"
 MODEL = "financial_statement"
 PRINCIPAL = "fixture-worker"
 GRANT_ID = "fixture-ths-grant"
-QUOTA_KEY = "fixture-ths-quota-v1"
+QUOTA_KEY = "test-quota"
 HOST = "fuyao.test"
 NOW_US = 1_700_000_000_000_000
 FAR_FUTURE_US = 253_402_300_799_999_999
 MICROTOKEN = 1_000_000
-_SUCCESS = json.dumps(
+_SUCCESS = jsonlib.dumps(
     {
         "code": 0,
         "message": "success",
@@ -248,6 +248,26 @@ def _client(
     )
 
 
+def _streamed_response(*args: Any, content: bytes, **kwargs: Any) -> httpx.Response:
+    """Build an unconsumed byte stream while preserving content-length semantics."""
+    headers = httpx.Headers(kwargs.pop("headers", None))
+    headers.setdefault("Content-Length", str(len(content)))
+    return httpx.Response(*args, headers=headers, stream=httpx.ByteStream(content), **kwargs)
+
+
+def _streamed_json_response(*args: Any, json: Any, **kwargs: Any) -> httpx.Response:
+    """Build a streamed JSON response with the headers HTTPX's eager form supplies."""
+    headers = httpx.Headers(kwargs.pop("headers", None))
+    headers.setdefault("Content-Type", "application/json")
+    content = jsonlib.dumps(
+        json,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        allow_nan=False,
+    ).encode("utf-8")
+    return _streamed_response(*args, content=content, headers=headers, **kwargs)
+
+
 def test_constructor_rejects_invalid_retry_transport_and_gate_inputs() -> None:
     credentials = FuyaoCredentials("offline-key", base_url=f"https://{HOST}")
     with pytest.raises(ValueError, match="max_attempts"):
@@ -272,7 +292,7 @@ def test_constructor_rejects_invalid_retry_transport_and_gate_inputs() -> None:
 
 
 def test_endpoint_path_must_be_root_relative() -> None:
-    client = _client(lambda _request: httpx.Response(200, content=_SUCCESS))
+    client = _client(lambda _request: _streamed_response(200, content=_SUCCESS))
     with pytest.raises(ValueError, match="endpoint must start"):
         client.get("api/a-share/financials")
 
@@ -323,7 +343,7 @@ def test_gate_reserves_each_physical_retry_before_mock_transport_send(
         sent.append(request)
         if len(sent) == 1:
             raise httpx.ReadTimeout("synthetic retry", request=request)
-        return httpx.Response(200, content=_SUCCESS)
+        return _streamed_response(200, content=_SUCCESS)
 
     client = _client(handler, gate=gate)
     result = _run_scoped_get(client, binding=_binding())
@@ -350,7 +370,7 @@ def test_client_mutation_during_reservation_cannot_change_gated_send(
     gate = _gate(gate_engine)
     sent: list[httpx.Request] = []
     client = _client(
-        lambda request: sent.append(request) or httpx.Response(200, content=_SUCCESS),
+        lambda request: sent.append(request) or _streamed_response(200, content=_SUCCESS),
         gate=gate,
     )
     original_reserve = gate.reserve_attempt
@@ -386,7 +406,9 @@ def test_gate_enablement_cannot_be_mutated_to_weaken_transport_after_reserve(
     monkeypatch.setattr(
         client._client,
         "send",
-        lambda request, **_kwargs: sent.append(request) or httpx.Response(200, content=_SUCCESS),
+        lambda request, **_kwargs: (
+            sent.append(request) or _streamed_response(200, content=_SUCCESS)
+        ),
     )
     original_reserve = gate.reserve_attempt
 
@@ -428,7 +450,7 @@ def test_gate_mode_never_reads_or_writes_raw_response_cache(gate_engine: Any) ->
     cache = Cache()
     sent: list[httpx.Request] = []
     client = _client(
-        lambda request: sent.append(request) or httpx.Response(200, content=_SUCCESS),
+        lambda request: sent.append(request) or _streamed_response(200, content=_SUCCESS),
         gate=_gate(gate_engine),
         cache=cache,
     )
@@ -463,7 +485,7 @@ def test_invalid_cached_response_is_invalidated_then_replaced_from_mock_send() -
     cache = Cache()
     sent: list[httpx.Request] = []
     client = _client(
-        lambda request: sent.append(request) or httpx.Response(200, content=_SUCCESS),
+        lambda request: sent.append(request) or _streamed_response(200, content=_SUCCESS),
         cache=cache,
     )
 
@@ -499,7 +521,7 @@ def test_scoped_cached_redirect_is_rejected_without_invalidation_or_send() -> No
     cache = Cache()
     sent: list[httpx.Request] = []
     client = _client(
-        lambda request: sent.append(request) or httpx.Response(200, content=_SUCCESS),
+        lambda request: sent.append(request) or _streamed_response(200, content=_SUCCESS),
         cache=cache,
     )
     budget = _budget()
@@ -523,7 +545,9 @@ def test_unavailable_optional_cache_configuration_does_not_block_transport(
     monkeypatch.setattr(cache_module, "get_configured_raw_response_cache", unavailable)
     monkeypatch.setattr(ths_http_client_module, "_cache_config_warning_emitted", False)
     sent: list[httpx.Request] = []
-    client = _client(lambda request: sent.append(request) or httpx.Response(200, content=_SUCCESS))
+    client = _client(
+        lambda request: sent.append(request) or _streamed_response(200, content=_SUCCESS)
+    )
 
     with caplog.at_level(logging.WARNING, logger=ths_http_client_module.__name__):
         result = client.get("/api/a-share/financials/income-statements")
@@ -541,7 +565,7 @@ def test_unavailable_optional_cache_configuration_does_not_block_transport(
 def test_cache_identity_is_disabled_for_opaque_auth_proxy_or_preparation_failure(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    client = _client(lambda _request: httpx.Response(200, content=_SUCCESS))
+    client = _client(lambda _request: _streamed_response(200, content=_SUCCESS))
     url = f"https://{HOST}/api/a-share/financials/income-statements"
     headers = {"X-api-key": "offline-key"}
 
@@ -578,7 +602,7 @@ def test_cache_identity_is_disabled_for_opaque_auth_proxy_or_preparation_failure
 def test_invalid_success_response_shape_fails_closed_without_retry(body: bytes) -> None:
     sent: list[httpx.Request] = []
     client = _client(
-        lambda request: sent.append(request) or httpx.Response(200, content=body),
+        lambda request: sent.append(request) or _streamed_response(200, content=body),
         max_attempts=3,
     )
 
@@ -592,7 +616,7 @@ def test_invalid_success_response_shape_fails_closed_without_retry(body: bytes) 
 def test_oversized_success_response_is_rejected_before_parsing() -> None:
     sent: list[httpx.Request] = []
     client = _client(
-        lambda request: sent.append(request) or httpx.Response(200, content=b"large"),
+        lambda request: sent.append(request) or _streamed_response(200, content=b"large"),
         max_attempts=3,
         max_response_bytes=4,
     )
@@ -612,7 +636,7 @@ def test_unscoped_timeout_retry_uses_configured_backoff_without_scope() -> None:
         sent.append(request)
         if len(sent) == 1:
             raise httpx.ReadTimeout("offline timeout", request=request)
-        return httpx.Response(200, content=_SUCCESS)
+        return _streamed_response(200, content=_SUCCESS)
 
     client = _client(handler, max_attempts=2, sleep=sleeps.append)
 
@@ -641,8 +665,8 @@ def test_numeric_retry_after_wait_is_consumed_before_second_offline_send() -> No
     def handler(request: httpx.Request) -> httpx.Response:
         sent.append(request)
         if len(sent) == 1:
-            return httpx.Response(429, headers={"Retry-After": "2.5"}, content=b"")
-        return httpx.Response(200, content=_SUCCESS)
+            return _streamed_response(429, headers={"Retry-After": "2.5"}, content=b"")
+        return _streamed_response(200, content=_SUCCESS)
 
     client = _client(handler, max_attempts=2, sleep=sleep, rate_limiter=limiter)
 
@@ -668,7 +692,9 @@ def test_request_logs_redact_values_and_format_ip_authorities_safely(
 
     client = FuyaoHttpClient(
         credentials=FuyaoCredentials("offline-api-key-secret", base_url="https://[2001:db8::1]"),
-        mock_transport=httpx.MockTransport(lambda _request: httpx.Response(200, content=_SUCCESS)),
+        mock_transport=httpx.MockTransport(
+            lambda _request: _streamed_response(200, content=_SUCCESS)
+        ),
         rate_limiter=_independent_limiter(),
         raw_response_cache=EmptyCache(),  # type: ignore[arg-type]
     )
@@ -734,7 +760,7 @@ def test_binding_without_gate_fails_before_cache_or_transport() -> None:
 
     sent: list[httpx.Request] = []
     client = _client(
-        lambda request: sent.append(request) or httpx.Response(200, content=_SUCCESS),
+        lambda request: sent.append(request) or _streamed_response(200, content=_SUCCESS),
         cache=Cache(),
     )
     with pytest.raises(RequestAuthorizationError, match="configured durable gate"):
@@ -747,7 +773,7 @@ def test_gate_without_binding_or_scope_fails_before_transport(gate_engine: Any) 
     _seed_gate(gate_engine)
     sent: list[httpx.Request] = []
     client = _client(
-        lambda request: sent.append(request) or httpx.Response(200, content=_SUCCESS),
+        lambda request: sent.append(request) or _streamed_response(200, content=_SUCCESS),
         gate=_gate(gate_engine),
     )
     with pytest.raises(RequestAuthorizationError, match="trusted request scopes"):
@@ -828,7 +854,7 @@ def test_financial_statement_fetcher_persists_gate_before_mock_send(
         assert request.url.host == HOST
         assert request.url.path == "/api/a-share/financials/income-statements"
         sent.append(request)
-        return httpx.Response(
+        return _streamed_json_response(
             200,
             json={
                 "code": 0,
@@ -929,7 +955,7 @@ def test_bare_symbol_resolution_has_its_own_durable_request_reservation(
             assert request.url.path == "/api/a-share/financials/income-statements"
             assert request.url.params["thscode"] == "600000.SH"
             payload = {"item": [statement_row]}
-        return httpx.Response(
+        return _streamed_json_response(
             200,
             json={
                 "code": 0,
@@ -993,7 +1019,9 @@ def test_bare_symbol_resolution_has_its_own_durable_request_reservation(
 def test_unbound_legacy_scoped_request_still_works_without_gate() -> None:
     """Existing scoped callers remain compatible when durable gating is not enabled."""
     sent: list[httpx.Request] = []
-    client = _client(lambda request: sent.append(request) or httpx.Response(200, content=_SUCCESS))
+    client = _client(
+        lambda request: sent.append(request) or _streamed_response(200, content=_SUCCESS)
+    )
     result = _run_scoped_get(client, binding=None)
     assert result.status_code == 200
     assert len(sent) == 1
@@ -1003,7 +1031,7 @@ def test_empty_gate_denies_without_sending_and_does_not_retry(gate_engine: Any) 
     """An empty/unconfigured durable gate denies the send before the retry loop."""
     sent: list[httpx.Request] = []
     client = _client(
-        lambda request: sent.append(request) or httpx.Response(200, content=_SUCCESS),
+        lambda request: sent.append(request) or _streamed_response(200, content=_SUCCESS),
         gate=_gate(gate_engine),
         max_attempts=3,
     )
@@ -1028,7 +1056,7 @@ def test_gate_exception_is_sanitized_and_never_retried(
     monkeypatch.setattr(gate, "reserve_attempt", unavailable)
     sent: list[httpx.Request] = []
     client = _client(
-        lambda request: sent.append(request) or httpx.Response(200, content=_SUCCESS),
+        lambda request: sent.append(request) or _streamed_response(200, content=_SUCCESS),
         gate=gate,
         max_attempts=3,
     )
@@ -1056,7 +1084,7 @@ def test_non_new_gate_reservation_never_sends(
     )
     sent: list[httpx.Request] = []
     client = _client(
-        lambda request: sent.append(request) or httpx.Response(200, content=_SUCCESS),
+        lambda request: sent.append(request) or _streamed_response(200, content=_SUCCESS),
         gate=gate,
     )
     with pytest.raises(RequestAuthorizationError, match="did not authorize"):
@@ -1079,7 +1107,7 @@ def test_durable_reservation_acknowledgement_loss_cannot_reach_transport(
     monkeypatch.setattr(gate, "_commit", commit_then_lose_ack)
     sent: list[httpx.Request] = []
     client = _client(
-        lambda request: sent.append(request) or httpx.Response(200, content=_SUCCESS),
+        lambda request: sent.append(request) or _streamed_response(200, content=_SUCCESS),
         gate=gate,
         max_attempts=3,
     )
@@ -1097,7 +1125,7 @@ def test_scope_identity_mismatch_is_rejected_before_gate_or_send(gate_engine: An
     gate = _gate(gate_engine)
     sent: list[httpx.Request] = []
     client = _client(
-        lambda request: sent.append(request) or httpx.Response(200, content=_SUCCESS),
+        lambda request: sent.append(request) or _streamed_response(200, content=_SUCCESS),
         gate=gate,
     )
     budget = _budget()
@@ -1190,8 +1218,9 @@ def test_redirect_is_not_followed_and_has_exactly_one_reservation(gate_engine: A
     _seed_gate(gate_engine)
     sent: list[httpx.Request] = []
     client = _client(
-        lambda request: sent.append(request)
-        or httpx.Response(302, headers={"Location": "https://other.test/"}),
+        lambda request: (
+            sent.append(request) or httpx.Response(302, headers={"Location": "https://other.test/"})
+        ),
         gate=_gate(gate_engine),
         max_attempts=3,
     )
@@ -1224,7 +1253,7 @@ def test_liveness_change_after_reservation_prevents_mock_transport_send(
     monkeypatch.setattr(gate, "reserve_attempt", reserve_then_cancel)
     sent: list[httpx.Request] = []
     client = _client(
-        lambda request: sent.append(request) or httpx.Response(200, content=_SUCCESS),
+        lambda request: sent.append(request) or _streamed_response(200, content=_SUCCESS),
         gate=gate,
     )
     budget = _budget()
@@ -1270,7 +1299,9 @@ def test_scope_cancellation_while_waiting_for_shared_host_gate_prevents_send(
         "get_shared_concurrency_gate",
         lambda _host: ContendedHostGate(),
     )
-    client = _client(lambda request: sent.append(request) or httpx.Response(200, content=_SUCCESS))
+    client = _client(
+        lambda request: sent.append(request) or _streamed_response(200, content=_SUCCESS)
+    )
     budget = _budget()
 
     with (
@@ -1318,7 +1349,7 @@ def test_gate_rejects_client_configuration_that_can_change_routing_or_auth(
     _seed_gate(gate_engine)
     sent: list[httpx.Request] = []
     client = _client(
-        lambda request: sent.append(request) or httpx.Response(200, content=_SUCCESS),
+        lambda request: sent.append(request) or _streamed_response(200, content=_SUCCESS),
         gate=_gate(gate_engine),
     )
     if mutation == "redirect":
@@ -1370,7 +1401,7 @@ def test_gate_rejects_injected_httpx_client_before_gate_or_send(gate_engine: Any
     sent: list[httpx.Request] = []
     injected = httpx.Client(
         transport=httpx.MockTransport(
-            lambda request: sent.append(request) or httpx.Response(200, content=_SUCCESS)
+            lambda request: sent.append(request) or _streamed_response(200, content=_SUCCESS)
         )
     )
     client = FuyaoHttpClient(

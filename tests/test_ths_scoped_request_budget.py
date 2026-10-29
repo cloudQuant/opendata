@@ -286,8 +286,8 @@ def test_each_429_retry_consumes_one_actual_mock_transport_attempt() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         sends.append(request)
         if len(sends) < 3:
-            return httpx.Response(429, content=b"")
-        return httpx.Response(200, content=_SUCCESS)
+            return httpx.Response(429, stream=httpx.ByteStream(b""))
+        return httpx.Response(200, stream=httpx.ByteStream(_SUCCESS))
 
     client = _client(
         handler,
@@ -311,7 +311,7 @@ def test_timeout_retries_each_consume_one_actual_mock_transport_attempt() -> Non
         sends.append(request)
         if len(sends) == 1:
             raise httpx.ReadTimeout("offline timeout", request=request)
-        return httpx.Response(200, content=_SUCCESS)
+        return httpx.Response(200, stream=httpx.ByteStream(_SUCCESS))
 
     client = _client(handler, max_attempts=2)
     budget = _budget((_grant(attempts=2),), attempts=2)
@@ -395,7 +395,7 @@ def test_scoped_upstream_error_keeps_fuyao_classification_after_counting_send() 
     def handler(request: httpx.Request) -> httpx.Response:
         sends.append(request)
         body = json.dumps({"code": 5001, "message": "temporary", "request_id": "offline"}).encode()
-        return httpx.Response(200, content=body)
+        return httpx.Response(200, stream=httpx.ByteStream(body))
 
     client = _client(handler, max_attempts=1)
     budget = _budget((_grant(attempts=2),), attempts=2)
@@ -442,7 +442,9 @@ def test_cancellation_while_waiting_for_shared_budget_host_slot_releases_waiter(
     sends: list[httpx.Request] = []
     limiter = FuyaoRateLimiter(burst=100)
     client = _client(
-        lambda request: sends.append(request) or httpx.Response(200, content=_SUCCESS),
+        lambda request: (
+            sends.append(request) or httpx.Response(200, stream=httpx.ByteStream(_SUCCESS))
+        ),
         rate_limiter=limiter,
     )
     budget = _budget((_grant(),))
@@ -489,7 +491,7 @@ def test_cancellation_while_waiting_for_instance_lock_is_checked_before_send() -
         if len(sends) == 1:
             entered_handler.set()
             assert release_handler.wait(timeout=1)
-        return httpx.Response(200, content=_SUCCESS)
+        return httpx.Response(200, stream=httpx.ByteStream(_SUCCESS))
 
     client = _client(handler, rate_limiter=FuyaoRateLimiter(burst=100))
     budget = _budget((_grant(),), attempts=2)
