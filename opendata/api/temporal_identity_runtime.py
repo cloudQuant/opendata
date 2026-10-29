@@ -21,9 +21,6 @@ account whose database grants are SELECT-only.
 from __future__ import annotations
 
 import errno
-import hashlib
-import hmac
-import json
 import os
 import re
 import stat
@@ -36,12 +33,22 @@ from sqlalchemy import create_engine, event, text
 from sqlalchemy.engine import URL, Engine, make_url
 from sqlalchemy.pool import NullPool
 
-from opendata.api.temporal_identity import (
-    MAX_TEMPORAL_IDENTITY_PINS,
+from opendata.data.temporal_identity_pins import (
+    MAX_TEMPORAL_IDENTITY_PIN_FILE_BYTES,
+    MAX_TEMPORAL_IDENTITY_PIN_JSON_DEPTH,
+    MAX_TEMPORAL_IDENTITY_PIN_JSON_NODES,
     TemporalIdentityPin,
+    TemporalIdentityPinDocumentError,
     TemporalIdentityPinRegistry,
+    check_temporal_identity_pin_json_budget,
+    decode_temporal_identity_pin_registry,
+)
+from opendata.data.temporal_identity_pins import (
+    MAX_TEMPORAL_IDENTITY_PINS as _MAX_TEMPORAL_IDENTITY_PINS,
 )
 from opendata.data.temporal_identity_store import TemporalIdentitySnapshotStore
+
+MAX_TEMPORAL_IDENTITY_PINS = _MAX_TEMPORAL_IDENTITY_PINS
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -69,21 +76,9 @@ class _DBAPIConnection(Protocol):
         """Create a cursor for fixed read-only session configuration."""
 
 
-MAX_TEMPORAL_IDENTITY_PIN_FILE_BYTES = 1024 * 1024
-_MAX_JSON_DEPTH = 8
-_MAX_JSON_NODES = 40_000
+_MAX_JSON_DEPTH = MAX_TEMPORAL_IDENTITY_PIN_JSON_DEPTH
+_MAX_JSON_NODES = MAX_TEMPORAL_IDENTITY_PIN_JSON_NODES
 _SHA256 = re.compile(r"^[0-9a-f]{64}$", re.ASCII)
-_PIN_FIELDS = frozenset(
-    {
-        "dataset_id",
-        "source_id",
-        "authority_id",
-        "registry_id",
-        "reference_version",
-        "snapshot_sha256",
-    }
-)
-_ROOT_FIELDS = frozenset({"schema_version", "pins"})
 
 
 class TemporalIdentityRuntimeError(RuntimeError):
@@ -444,87 +439,19 @@ def _same_directory(left: os.stat_result, right: os.stat_result) -> bool:
 
 
 def _decode_pin_registry(raw: bytes, expected_sha256: str) -> TemporalIdentityPinRegistry:
-    """Check an independent digest and decode bounded version-one pin JSON."""
-    actual = hashlib.sha256(raw).hexdigest()
-    if not hmac.compare_digest(actual, expected_sha256):
-        raise TemporalIdentityRuntimeError("pin_digest_mismatch")
+    """Translate the shared low-level parser contract into runtime errors."""
     try:
-        document = json.loads(
-            raw.decode("utf-8", errors="strict"),
-            object_pairs_hook=_unique_object,
-            parse_constant=_reject_constant,
-        )
-        _check_json_budget(document)
-        _check_json_unicode(document)
-        root = _require_object(document, _ROOT_FIELDS)
-        if type(root["schema_version"]) is not int or root["schema_version"] != 1:
-            raise TemporalIdentityRuntimeError("pin_document_invalid")
-        pins_value = root["pins"]
-        if type(pins_value) is not list or not 1 <= len(pins_value) <= MAX_TEMPORAL_IDENTITY_PINS:
-            raise TemporalIdentityRuntimeError("pin_count_invalid")
-        pins: list[TemporalIdentityPin] = []
-        for value in pins_value:
-            item = _require_object(value, _PIN_FIELDS)
-            pins.append(TemporalIdentityPin.model_validate(item, strict=True))
-        return TemporalIdentityPinRegistry(tuple(pins))
-    except TemporalIdentityRuntimeError:
-        raise
-    except (UnicodeDecodeError, json.JSONDecodeError, RecursionError, TypeError, ValueError):
-        raise TemporalIdentityRuntimeError("pin_document_invalid") from None
-
-
-def _unique_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
-    """Reject duplicate keys at every JSON object depth."""
-    result: dict[str, object] = {}
-    for key, value in pairs:
-        if key in result:
-            raise ValueError("duplicate key")
-        result[key] = value
-    return result
-
-
-def _reject_constant(_value: str) -> None:
-    """Reject non-standard NaN and Infinity JSON values."""
-    raise ValueError("non-standard JSON constant")
+        return decode_temporal_identity_pin_registry(raw, expected_sha256)
+    except TemporalIdentityPinDocumentError as exc:
+        raise TemporalIdentityRuntimeError(exc.code) from None
 
 
 def _check_json_budget(document: object) -> None:
-    """Bound JSON nesting and node count before schema validation."""
-    stack: list[tuple[object, int]] = [(document, 1)]
-    nodes = 0
-    while stack:
-        value, depth = stack.pop()
-        nodes += 1
-        if depth > _MAX_JSON_DEPTH or nodes > _MAX_JSON_NODES:
-            raise TemporalIdentityRuntimeError("pin_document_bounds_invalid")
-        if type(value) is dict:
-            stack.extend((child, depth + 1) for child in value.values())
-        elif type(value) is list:
-            stack.extend((child, depth + 1) for child in value)
-
-
-def _check_json_unicode(document: object) -> None:
-    """Reject escaped lone surrogate scalars before model validation."""
-    stack: list[object] = [document]
-    while stack:
-        value = stack.pop()
-        if type(value) is str:
-            try:
-                value.encode("utf-8", errors="strict")
-            except UnicodeEncodeError:
-                raise TemporalIdentityRuntimeError("pin_document_invalid") from None
-        elif type(value) is dict:
-            stack.extend(value.keys())
-            stack.extend(value.values())
-        elif type(value) is list:
-            stack.extend(value)
-
-
-def _require_object(value: object, fields: frozenset[str]) -> dict[str, object]:
-    """Require an exact object field set without echoing operator content."""
-    if type(value) is not dict or set(value) != fields:
-        raise TemporalIdentityRuntimeError("pin_document_invalid")
-    return value
+    """Keep the runtime-private guard while sharing its bounds implementation."""
+    try:
+        check_temporal_identity_pin_json_budget(document)
+    except TemporalIdentityPinDocumentError as exc:
+        raise TemporalIdentityRuntimeError(exc.code) from None
 
 
 def _build_engine(config: TemporalIdentityRuntimeConfig) -> tuple[Engine, bool]:
