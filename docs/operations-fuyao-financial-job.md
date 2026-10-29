@@ -42,6 +42,18 @@
 
 本批测试运行版本为 pytest **8.3.4**、pytest-asyncio **1.0.0**、pytest-cov **6.2.1**、coverage **7.9.2**；仓库 `requirements.txt` 固定 pytest **8.3.3**、pytest-asyncio **0.24.0**、pytest-cov **6.0.0**，因此本次通过不能替代锁定依赖版本下的复验。此前失败的执行记录仍保留，最终通过数不覆盖这些历史失败。完整 canonical A2 门禁未能运行，所需的 `docs/evidence/C100/quality-scope-audit/immutable-wave9-exact5055/classification.json` 不存在。mypy 仍报告 3 项已有诊断：`financial_observation_store.py:544` 的冗余 cast，以及 `run_service.py` 中冗余 bytes cast 和 decode 配对类型不匹配；这些诊断不应记作本批通过项。本批结果不代表生产装配、真实采集、全 A 股历史缺口核对或生产验收。
 
+## 一次性部署声明快照（非执行契约）
+
+`opendata/pipeline/fuyao_one_shot_contract.py` 新增纯数据声明：它把固定的 THS/Fuyao 财务报表查询范围（Fuyao 主机、`financial_statement` 模型、`query` 操作、单次 HTTP 尝试、预算绑定版本）与调用方提供的 bundle、来源策略、grant、预算绑定/策略及凭证修订声明组成封闭、不可变的快照，并对规范 JSON 计算带域分隔的 SHA-256 指纹。快照记录的来源和验证标签也是调用方的声明；输入摘要只做格式校验，并不从外部重新读取或核实对应内容。
+
+该 fingerprint 只绑定快照中的部署声明，**不绑定请求参数、capture intent 或 run**，也不等同于执行凭据。它不能证明预算 quota key 或预算绑定对应实际 gate 实体、请求主体或有效额度，不能证明 source grant 的授权范围、有效性或真实性，也不能证明数据完整性。模块不会创建、启用或调度 job，不会调用 provider、读取 key 或发起 Fuyao 请求；因此这份快照不构成真实的一次性执行能力或生产就绪证明。
+
+快照没有 API key、secret、password 等秘密字段，构造器拒绝额外字段；自由标识字段只接受受限格式并拒绝一小组已知凭证标记。这只是有限的输入防误用检查，不能识别所有伪装成普通标识的密钥。调用方必须确保 `grant_id`、`grant_principal`、`source_policy_id`、`source_policy_revision` 和 `budget_quota_key` 等标识不包含任何秘密；不得把 API key 或其他密钥放进这些字段，也不得把它们作为摘要输入。
+
+正常导入路径 `opendata.pipeline.fuyao_one_shot_contract` 会先执行既有 `opendata.pipeline` 包初始化；该初始化导入 runner 和 ORM 模型，后续数据库模块会加载应用 settings 并构造 SQLAlchemy engine。因此，这个纯模块的隔离单测使用 namespace-package 快照，省略了 `opendata/pipeline/__init__.py`，以避免导入应用配置和创建 engine。该方式没有验证正常包导入、应用启动或生产组合；后续集成时仍需单独审查并处理这项导入副作用。
+
+针对该契约的隔离验收中，86 项合成测试通过；模块 statement+branch combined 覆盖率为 **273/275（99.27%）**，`excluded_lines=0`。证据来自 `/tmp/od204-fuyao-contract-run-20261029-92N1qghO/evidence`，测试只构造内存中的合成声明，没有访问网络、provider、数据库、API key、应用 settings 或真实 grant。该运行使用 CPython **3.13.5**、pytest **8.3.4**、pytest-cov **6.2.1** 和 coverage **7.9.2**；与仓库固定的 pytest **8.3.3**、pytest-cov **6.0.0** 不同。结果仅验收该 namespace-package 快照中的纯契约模块，不是正常包导入、全量质量门禁、生产验收或真实 Fuyao 调用的证据。
+
 ## 尚未核实的声明
 
 来源授权状态、单位映射版本与摘要、保留类别和历史范围都可能来自 operator 声明，当前状态应按 `operator_declared_unverified`、`operator_policy_allowed_unverified` 等字段理解。它们不是独立核验过的合同授权、单位语义、来源真实性或历史完整性证明。attempt 与本地 trace 的关联状态也是 `local_trace_matched_unverified`；source request id 匹配状态同样明确标注为未验证或不可用时未验证。
