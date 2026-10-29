@@ -9,7 +9,9 @@ real end-to-end run of this module is the acceptance evidence in
 
 from __future__ import annotations
 
+import sys
 from datetime import date, datetime, timezone
+from types import ModuleType
 from typing import TYPE_CHECKING, Any
 
 import pandas as pd
@@ -26,6 +28,7 @@ from opendata.pipeline.trading_calendar import (
     TIER_WEEKDAY,
     calendar_from_days,
 )
+from opendata.pipeline.universe_errors import EmptySymbolUniverseError
 
 if TYPE_CHECKING:
     from collections.abc import Iterator, Mapping, Sequence
@@ -286,9 +289,18 @@ class TestRunIncrementalJob:
     async def test_rejects_an_empty_universe_instead_of_running_zero_symbols(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        database_module = ModuleType("opendata.core.database")
+        database_module.async_session_maker = object()  # type: ignore[attr-defined]
+        monkeypatch.setitem(sys.modules, "opendata.core.database", database_module)
         monkeypatch.setattr(jobs, "symbol_universe", lambda engine, domain, *, limit=None: [])
-        with pytest.raises(ValueError, match="empty symbol universe"):
-            await jobs.run_incremental_job(source="akshare")
+        with pytest.raises(EmptySymbolUniverseError, match="no eligible symbols"):
+            await jobs.run_incremental_job(
+                source="akshare",
+                engine=object(),
+                session_maker=object(),
+                as_of=WINDOW.start,
+                calendar=calendar_from_days([WINDOW.start]),
+            )
 
     async def test_dual_source_runs_the_secondary_feed_first(
         self, stubbed_run: list[dict[str, Any]]
@@ -390,14 +402,29 @@ class TestRunIncrementalJob:
 
 
 class TestSymbolUniverse:
-    """The universe reader is fail-soft: no table, no crash."""
+    """The universe reader distinguishes a successful empty query from failure."""
 
-    def test_missing_table_yields_an_empty_universe(self) -> None:
-        class _Broken:
+    def test_successful_empty_query_yields_an_empty_universe(self) -> None:
+        class _Result:
+            def all(self) -> list[tuple[str]]:
+                return []
+
+        class _Conn:
+            def __enter__(self) -> _Conn:
+                return self
+
+            def __exit__(self, *exc: object) -> None:
+                return None
+
+            def execute(self, statement: object, params: dict[str, int]) -> _Result:
+                assert params == {"cap": jobs.DEFAULT_SYMBOL_LIMIT}
+                return _Result()
+
+        class _Engine:
             def connect(self) -> Any:
-                raise RuntimeError("no such table")
+                return _Conn()
 
-        assert jobs.symbol_universe(_Broken(), "stock_daily") == []
+        assert jobs.symbol_universe(_Engine(), "stock_daily") == []
 
     def test_limit_is_bounded_to_a_positive_cap(self) -> None:
         captured: dict[str, Any] = {}
@@ -743,6 +770,21 @@ class TestInstrumentCatalog:
         assert provenance["catalog"] == jobs.INSTRUMENT_TABLE
         assert provenance["dropped_inactive"] == "1"
         assert provenance["ambiguous_codes"] == "0"
+
+    def test_derive_universe_rejects_a_catalog_that_removes_every_symbol(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(jobs, "symbol_universe", lambda e, d, *, limit=None: ["600519"])
+        monkeypatch.setattr(
+            jobs,
+            "landed_instruments",
+            lambda engine, **kwargs: [_instrument("600519.SH", delist_date=date(2020, 1, 1))],
+        )
+
+        with pytest.raises(EmptySymbolUniverseError, match="no eligible symbols") as caught:
+            jobs.derive_universe(object(), "stock_daily", symbols=None, limit=None, window=WINDOW)
+
+        assert isinstance(caught.value, ValueError)
 
     def test_derive_universe_says_which_codes_it_refused_to_judge(
         self, monkeypatch: pytest.MonkeyPatch, logged: Sequence[tuple[str, str]]

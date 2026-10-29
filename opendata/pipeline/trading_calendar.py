@@ -253,8 +253,8 @@ def warehouse_calendar(engine: Engine, *, table: str = CALENDAR_TABLE) -> Calend
                 text(f"SELECT * FROM `{table}` ORDER BY `date`")  # noqa: S608  # nosec B608  # tbl default=CALENDAR_TABLE literal
             ).mappings()
             records = CalendarContract.from_frame(pd.DataFrame(list(rows)))
-    except Exception as exc:  # an unlanded or non-contract table is a normal state
-        logger.warning(f"trading calendar contract unavailable from {table}: {exc!s}")
+    except Exception:  # an unlanded or non-contract table is a normal state
+        logger.warning("trading calendar contract unavailable; using weekday fallback")
         return weekday_calendar()
     return calendar_from_contracts(records)
 
