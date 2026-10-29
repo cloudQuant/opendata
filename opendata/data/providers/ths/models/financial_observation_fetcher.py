@@ -116,13 +116,16 @@ def _validate_local_attempt_trace(
     *,
     status_code: object,
     source_request_id: object,
+    max_attempts: int = _MAX_TRANSPORT_ATTEMPTS,
 ) -> None:
     """Check local trace consistency without treating it as a source receipt."""
+    if type(max_attempts) is not int or not 1 <= max_attempts <= _MAX_TRANSPORT_ATTEMPTS:
+        raise ValueError("max_attempts must be an integer from 1 through 3")
     if type(value) is not tuple:
         raise ValueError("attempt_trace must be an immutable tuple")
     if not value:
         return
-    if len(value) > _MAX_TRANSPORT_ATTEMPTS:
+    if len(value) > max_attempts:
         raise ValueError("attempt_trace exceeds the local transport attempt limit")
 
     request_id: str | None = None
@@ -139,7 +142,7 @@ def _validate_local_attempt_trace(
             or not trace.attempt_id
             or trace.attempt_id != trace.attempt_id.strip()
             or type(trace.attempt_no) is not int
-            or not 1 <= trace.attempt_no <= _MAX_TRANSPORT_ATTEMPTS
+            or not 1 <= trace.attempt_no <= max_attempts
             or trace.attempt_no <= previous_attempt_no
             or type(trace.reserved_at_us) not in {int, type(None)}
             or type(trace.gate_status) is not str
@@ -425,6 +428,11 @@ class ThsFinancialObservationFetcher:
     system UTC clock sample immediately after the response is received; there
     is no public clock override. This runtime timestamp does not establish
     point-in-time correctness, historical revisions or archive completeness.
+
+    ``max_attempts`` is a trusted-configuration bound with a single-field drift
+    check between the constructor's expected value and the owned client's
+    setting. Both values are mutable Python process state; this is not a
+    security boundary against same-process code that changes both values.
     """
 
     def __init__(
@@ -434,6 +442,7 @@ class ThsFinancialObservationFetcher:
         source_attempt_gate: SourceAttemptGate,
         instrument_registry: InstrumentReferenceRegistry,
         unit_profiles: Mapping[str, ThsFinancialNativeUnitProfile],
+        max_attempts: int = _MAX_TRANSPORT_ATTEMPTS,
         mock_transport: httpx.MockTransport | None = None,
     ) -> None:
         """Create a fetcher with explicit trusted dependencies and no discovery.
@@ -445,13 +454,20 @@ class ThsFinancialObservationFetcher:
             source_attempt_gate: Real file-backed SQLite attempt gate.
             instrument_registry: Exact immutable reviewed instrument registry.
             unit_profiles: Complete operator-declared profiles for all three statements.
+            max_attempts: Maximum physical HTTP sends for one fetch, from 1 through 3.
+                The default preserves existing behavior. This is a trusted-process
+                configuration bound and detects one-field client-setting drift; it
+                does not resist same-process code changing both the expected value
+                and the client setting.
             mock_transport: Exact in-process HTTPX MockTransport for offline tests;
                 omit it in production.
 
         Raises:
             TypeError: A dependency is not the exact supported implementation.
-            ValueError: The credential origin or unit profiles differ.
+            ValueError: The credential origin, retry limit or unit profiles differ.
         """
+        if type(max_attempts) is not int or not 1 <= max_attempts <= _MAX_TRANSPORT_ATTEMPTS:
+            raise ValueError("max_attempts must be an integer from 1 through 3")
         if type(source_attempt_gate) is not SourceAttemptGate:
             raise TypeError("source_attempt_gate must be an exact SourceAttemptGate")
         if type(instrument_registry) is not InstrumentReferenceRegistry:
@@ -484,9 +500,10 @@ class ThsFinancialObservationFetcher:
             credentials=private_credentials,
             mock_transport=mock_transport,
             source_attempt_gate=source_attempt_gate,
-            max_attempts=_MAX_TRANSPORT_ATTEMPTS,
+            max_attempts=max_attempts,
             raw_response_cache=None,
         )
+        self._expected_max_attempts = max_attempts
         self._source_attempt_gate = source_attempt_gate
         self._instrument_registry = instrument_registry
         self._unit_profiles = MappingProxyType(copied_profiles)
@@ -497,7 +514,12 @@ class ThsFinancialObservationFetcher:
             raise FinancialObservationFetchError("source_attempt_gate_binding_invalid")
         if self._client.credentials.base_url != DEFAULT_FUYAO_API_BASE_URL:
             raise FinancialObservationFetchError("fuyao_origin_not_allowed")
-        if not 1 <= self._client._max_attempts <= _MAX_TRANSPORT_ATTEMPTS:
+        if (
+            type(self._expected_max_attempts) is not int
+            or not 1 <= self._expected_max_attempts <= _MAX_TRANSPORT_ATTEMPTS
+            or type(self._client._max_attempts) is not int
+            or self._client._max_attempts != self._expected_max_attempts
+        ):
             raise FinancialObservationFetchError("transport_attempt_limit_invalid")
 
     @staticmethod
@@ -719,6 +741,16 @@ class ThsFinancialObservationFetcher:
             observed_utc = observed_at.astimezone(timezone.utc)
         except (OverflowError, TypeError, ValueError):
             raise FinancialObservationFetchError("response_observation_time_invalid") from None
+        self._validate_client()
+        try:
+            _validate_local_attempt_trace(
+                response.attempt_trace,
+                status_code=response.status_code,
+                source_request_id=response.envelope.request_id,
+                max_attempts=self._expected_max_attempts,
+            )
+        except ValueError:
+            raise FinancialObservationFetchError("transport_attempt_trace_invalid") from None
         raw_body = response.raw_content
         if type(raw_body) is not bytes or not raw_body:
             raise FinancialObservationFetchError("response_body_empty_or_invalid")

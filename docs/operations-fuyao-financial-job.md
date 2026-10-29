@@ -28,6 +28,16 @@
 
 当前代码没有生产配置装配入口。这里列出的字段是代码接口边界，不是生产启用步骤或定时任务操作说明。数据包摘要用于固定所读文件内容，不等同于签名、来源真实性证明或数据授权证明。
 
+## 每次 fetch 的 HTTP 发送上限
+
+`ThsFinancialObservationFetcher` 接受显式的 `max_attempts`，只允许精确整数 `1` 到 `3`，默认值为 `3`。它限制一次 `fetch()` 中最多发生的物理 HTTP 发送次数；启用来源尝试 gate 的请求在每次物理发送前都必须完成一次新的 gate reservation，重试也会单独预留并记录本地 attempt trace。
+
+当前 `opendata/pipeline/fuyao_financial_process.py` 的 `_build_fetcher()` 没有传入 `max_attempts`，所以仍使用默认值 `3`。未来受控的装配代码可以显式配置 `max_attempts=1`，将一次 fetch 限制为一次物理发送；但这项参数能力目前没有接入生产装配，也没有让当前 ReviewedJob 自动变成 one-shot。不能把默认配置描述为每个 run 只发一次 HTTP 请求。
+
+这个限制依赖受信任的进程装配。fetcher 会检查自身预期上限与私有 HTTP client 设置的一致性，但这些仍是可变的 Python 进程状态；同一进程内的代码若同时篡改两处状态，可以绕过检查。它也不提供上游 exactly-once 保证；超时或进程故障仍可能使发送结果未知。
+
+本切片的离线隔离证据位于 `/tmp/od204-fuyao-attempt-cap-20261029-5bb7/evidence`：两个目标测试文件共 **170 项合成测试通过**，目标模块 statement+branch combined 覆盖率 **97.00%**，`excluded_lines=0`。快照使用 HTTPX `MockTransport`、临时 SQLite gate 和合成数据，没有访问 Fuyao 实源。证据中的运行版本为 pytest **8.3.4**、pytest-asyncio **1.0.0**、pytest-cov **6.2.1**、coverage **7.9.2**；仓库 `requirements.txt` 固定 pytest **8.3.3**、pytest-asyncio **0.24.0**、pytest-cov **6.0.0**，因此这次通过不能替代锁定依赖版本下的复验。该次没有运行完整 canonical A2 门禁，也没有完成生产装配、真实采集、全 A 股历史缺口核对或生产验收。
+
 ## 尚未核实的声明
 
 来源授权状态、单位映射版本与摘要、保留类别和历史范围都可能来自 operator 声明，当前状态应按 `operator_declared_unverified`、`operator_policy_allowed_unverified` 等字段理解。它们不是独立核验过的合同授权、单位语义、来源真实性或历史完整性证明。attempt 与本地 trace 的关联状态也是 `local_trace_matched_unverified`；source request id 匹配状态同样明确标注为未验证或不可用时未验证。
