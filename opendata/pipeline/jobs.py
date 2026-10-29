@@ -24,6 +24,7 @@ merged, flagged result (the dwd write is a key-level upsert).
 from __future__ import annotations
 
 import asyncio
+import sys
 from dataclasses import dataclass, field
 from datetime import date
 from functools import lru_cache
@@ -423,17 +424,42 @@ def derive_universe(
         engine: Warehouse engine.
         domain: Domain identifier.
         symbols: Explicit universe; None or empty means derive it.
-        limit: Cap for the derived universe.
+        limit: Cap for the derived universe. The implicit DWD read probes
+            one extra distinct code and fails before provider execution if
+            more than this many are present. This reports the warehouse
+            snapshot's observed scope; it does not establish full-market
+            or all-A-share coverage.
         window: Inclusive window the batch is about to fetch.
 
     Returns:
         ``(symbols, provenance)`` - provenance carries ``from``,
         ``catalog``, ``dropped_inactive``, ``ambiguous_codes`` and, when
         a caller handed in a list, ``requested``.
+
+    Raises:
+        ValueError: When the DWD-derived universe exceeds the requested
+            cap, or the cap cannot be probed safely.
     """
     if symbols:
         return list(symbols), {"from": "caller", "requested": str(len(symbols))}
-    universe = symbol_universe(engine, domain, limit=limit)
+    if limit is not None and type(limit) is not int:
+        raise ValueError("derived universe limit must be an integer or None")
+    cap = DEFAULT_SYMBOL_LIMIT if limit is None else max(limit, 1)
+    # The extra row is only a truncation witness. Do not let cap+1 wrap at
+    # the platform's maximum signed integer or reach a database driver with
+    # a value it cannot represent. A caller-selected huge cap is not a
+    # reason to silently fall back to a partial result.
+    if isinstance(cap, int) and cap >= sys.maxsize:
+        raise ValueError(
+            f"derived universe cap {cap} cannot be probed safely; "
+            "choose a smaller limit or pass explicit symbols"
+        )
+    universe = symbol_universe(engine, domain, limit=cap + 1)
+    if len(universe) > cap:
+        raise ValueError(
+            f"derived universe from {dwd_table(domain)} exceeds limit {cap}; "
+            "raise the limit or pass explicit symbols"
+        )
     provenance = {"from": dwd_table(domain), "catalog": "absent"}
     if not universe:
         return universe, provenance
