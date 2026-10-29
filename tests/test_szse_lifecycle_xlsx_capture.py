@@ -886,6 +886,39 @@ def test_live_client_configuration_has_one_attempt_and_no_environment_proxy() ->
         assert live.client._config.max_attempts == 1
         assert live.client._config.rate_burst == 1
         assert live.client._config.max_concurrency_per_host == 1
+        assert live.client._config.rate_max_wait == capture.RATE_LIMIT_MAX_WAIT_SECONDS
         assert all(adapter.max_retries.total == 0 for adapter in live.session.adapters.values())
+    finally:
+        live.session.close()
+
+
+def test_live_client_rate_gate_admits_three_selectors_with_bounded_waits() -> None:
+    """Allow two refill waits while keeping the three-token run within 45 seconds."""
+    live = capture._new_live_client()
+    now = 0.0
+    sleeps: list[float] = []
+
+    def monotonic() -> float:
+        return now
+
+    def sleep(seconds: float) -> None:
+        nonlocal now
+        sleeps.append(seconds)
+        now += seconds
+
+    live.client._time = monotonic
+    live.client._sleep = sleep
+    try:
+        for _selector in capture._REQUEST_PARAMS:
+            live.client._acquire_token(
+                capture.HOST,
+                capture.ENDPOINT_URL,
+                deadline=capture.MAX_TASK_TIMEOUT_SECONDS,
+            )
+
+        assert sleeps == [pytest.approx(1.0), pytest.approx(1.0)]
+        assert now == pytest.approx(2.0)
+        assert now < capture.MAX_TASK_TIMEOUT_SECONDS
+        assert live.client._config.max_attempts == 1
     finally:
         live.session.close()
