@@ -72,6 +72,7 @@ MAX_ROWS_PER_SELECTOR = 50_000
 MAX_TASK_ROWS = MAX_REQUESTS * MAX_ROWS_PER_SELECTOR
 REQUEST_TIMEOUT_SECONDS = 10.0
 MAX_TASK_TIMEOUT_SECONDS = 45.0
+RATE_LIMIT_MAX_WAIT_SECONDS = 1.0
 _REQUEST_PARAMS: tuple[tuple[SzseLifecycleDatasetClass, str, str], ...] = (
     ("current_a", "1110", "tab1"),
     ("suspended", "1793_ssgs", "tab1"),
@@ -800,7 +801,7 @@ def _transport_attempts(budget: RequestBudget | None) -> int:
 
 
 def _new_live_client() -> _LiveClient:
-    """Build a one-send, no-cache, no-environment-proxy bounded client."""
+    """Build a one-send client with a short rate wait and no cache or proxy."""
     session = requests.Session()
     session.trust_env = False
     session.mount("https://", HTTPAdapter(max_retries=0))
@@ -814,7 +815,7 @@ def _new_live_client() -> _LiveClient:
         rate_limit_per_host=1.0,
         rate_burst=1,
         max_concurrency_per_host=1,
-        rate_max_wait=0.0,
+        rate_max_wait=RATE_LIMIT_MAX_WAIT_SECONDS,
         default_headers={
             "User-Agent": "opendata/afi204-szse-lifecycle-capture",
             "Accept-Encoding": "identity",
