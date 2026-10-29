@@ -295,6 +295,58 @@ class TemporalIdentitySnapshotStore:
             TemporalIdentitySnapshotCorruptError: If persisted content is inconsistent.
             TemporalIdentitySnapshotStoreError: If database access fails.
         """
+        return self._get_validated_snapshot(
+            authority_id=authority_id,
+            registry_id=registry_id,
+            reference_version=reference_version,
+            expected_sha256=expected_sha256,
+        ).registry
+
+    def get_bytes(
+        self,
+        *,
+        authority_id: str,
+        registry_id: str,
+        reference_version: str,
+        expected_sha256: str,
+    ) -> bytes:
+        """Return complete canonical bytes after full header, chunk, codec and pin checks.
+
+        This read has the same independent full-byte digest requirement and
+        corruption checks as :meth:`get`. It does not return partial chunks or
+        trust the digest stored in the database as its own expected value.
+
+        Args:
+            authority_id: Exact stable authority key.
+            registry_id: Exact stable registry key.
+            reference_version: Explicit immutable version; no latest lookup exists.
+            expected_sha256: Independently trusted lowercase full-byte SHA-256.
+
+        Returns:
+            The exact complete canonical snapshot bytes validated from storage.
+
+        Raises:
+            TemporalIdentitySnapshotNotFoundError: If the exact version is absent.
+            TemporalIdentitySnapshotDigestMismatchError: If bytes differ from the pin.
+            TemporalIdentitySnapshotCorruptError: If persisted content is inconsistent.
+            TemporalIdentitySnapshotStoreError: If database access fails.
+        """
+        return self._get_validated_snapshot(
+            authority_id=authority_id,
+            registry_id=registry_id,
+            reference_version=reference_version,
+            expected_sha256=expected_sha256,
+        ).raw
+
+    def _get_validated_snapshot(
+        self,
+        *,
+        authority_id: str,
+        registry_id: str,
+        reference_version: str,
+        expected_sha256: str,
+    ) -> _StoredSnapshot:
+        """Read one explicit version and validate all bytes against its external pin."""
         key = (
             _validate_identifier(authority_id, "authority_id"),
             _validate_identifier(registry_id, "registry_id"),
@@ -312,7 +364,7 @@ class TemporalIdentitySnapshotStore:
             raise TemporalIdentitySnapshotDigestMismatchError(
                 "stored snapshot does not match the independently supplied digest"
             )
-        return stored.registry
+        return stored
 
     @contextmanager
     def _transaction(self, *, write: bool) -> Iterator[Connection]:

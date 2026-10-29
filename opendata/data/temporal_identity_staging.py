@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Literal
 
 from pydantic import ValidationError
@@ -54,15 +54,22 @@ class TemporalIdentityStagingError(ValueError):
 
 @dataclass(frozen=True, slots=True)
 class TemporalIdentityStagingResult:
-    """Hold canonical bytes and digests derived from explicit caller inputs."""
+    """Hold canonical candidate material derived from explicit caller inputs.
 
-    pin_document_bytes: bytes
+    The byte fields are excluded from ``repr`` because snapshots and merged pin
+    documents can be large and may contain caller-supplied evidence references.
+    They remain immutable ``bytes`` values so an importer can revalidate them.
+    """
+
+    pin_document_bytes: bytes = field(repr=False)
     snapshot_sha256: str
     pin_file_sha256: str
     assignment_count: int
     existing_pin_count: int
     pin_count: int
     verification_status: Literal["caller_declared_unverified"]
+    snapshot_bytes: bytes = field(default=b"", repr=False)
+    candidate_pin: TemporalIdentityPin | None = None
 
 
 def stage_temporal_identity_pin(
@@ -139,6 +146,8 @@ def stage_temporal_identity_pin(
         existing_pin_count=len(existing_pins),
         pin_count=len(merged),
         verification_status=_STAGING_VERIFICATION,
+        snapshot_bytes=snapshot_bytes,
+        candidate_pin=pin,
     )
 
 

@@ -118,6 +118,8 @@ def test_stage_emits_runtime_compatible_canonical_bytes_and_complete_digests() -
 
     result = _stage(snapshot_bytes)
 
+    assert result.snapshot_bytes == snapshot_bytes
+    assert type(result.snapshot_bytes) is bytes
     assert result.snapshot_sha256 == hashlib.sha256(snapshot_bytes).hexdigest()
     assert result.pin_file_sha256 == hashlib.sha256(result.pin_document_bytes).hexdigest()
     assert result.assignment_count == 1
@@ -127,6 +129,7 @@ def test_stage_emits_runtime_compatible_canonical_bytes_and_complete_digests() -
     parsed = _decode_shared_and_runtime(result.pin_document_bytes, result.pin_file_sha256)
     pin = parsed.get("stock_daily")
     assert pin is not None
+    assert result.candidate_pin == pin
     assert pin.snapshot_sha256 == result.snapshot_sha256
     assert pin.source_id == "akshare"
     assert result.pin_document_bytes == json.dumps(
@@ -146,6 +149,18 @@ def test_stage_emits_runtime_compatible_canonical_bytes_and_complete_digests() -
         sort_keys=True,
         separators=(",", ":"),
     ).encode("utf-8")
+
+
+def test_stage_result_repr_does_not_include_snapshot_or_pin_document_bytes() -> None:
+    """Large caller-provided snapshot and generated pin bytes stay out of logs."""
+    result = _stage(_snapshot())
+
+    rendered = repr(result)
+
+    assert repr(result.snapshot_bytes) not in rendered
+    assert repr(result.pin_document_bytes) not in rendered
+    assert result.candidate_pin is not None
+    assert result.candidate_pin.dataset_id == "stock_daily"
 
 
 def test_stage_preserves_all_other_dataset_pins_and_sorts_deterministically() -> None:

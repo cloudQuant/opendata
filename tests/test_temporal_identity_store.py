@@ -218,6 +218,47 @@ def test_store_round_trips_only_after_explicit_schema_migration(engine: Engine) 
         )
 
 
+def test_store_get_bytes_returns_the_complete_validated_canonical_snapshot(
+    engine: Engine,
+) -> None:
+    """The public raw-byte read validates the same full digest and codec as get."""
+    registry = _registry()
+    encoded = encode_temporal_identity_snapshot(registry)
+    digest = hashlib.sha256(encoded).hexdigest()
+    store = TemporalIdentitySnapshotStore(engine)
+    store.put(
+        authority_id="source-a",
+        registry_id="registry-a",
+        registry=registry,
+        expected_sha256=digest,
+    )
+
+    observed = store.get_bytes(
+        authority_id="source-a",
+        registry_id="registry-a",
+        reference_version="registry-v1",
+        expected_sha256=digest,
+    )
+
+    assert type(observed) is bytes
+    assert observed == encoded
+    assert hashlib.sha256(observed).hexdigest() == digest
+
+
+def test_store_get_bytes_requires_the_independent_complete_digest(engine: Engine) -> None:
+    """The byte API rejects a wrong caller pin and does not return stored bytes."""
+    registry = _registry()
+    _insert_one(engine, registry)
+
+    with pytest.raises(TemporalIdentitySnapshotDigestMismatchError):
+        TemporalIdentitySnapshotStore(engine).get_bytes(
+            authority_id="source-a",
+            registry_id="registry-a",
+            reference_version="registry-v1",
+            expected_sha256="0" * 64,
+        )
+
+
 def test_store_same_version_identical_bytes_are_idempotent(engine: Engine) -> None:
     """An exact replay leaves the first timestamp and bytes unchanged."""
     registry = _registry()
