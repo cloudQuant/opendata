@@ -25,7 +25,10 @@ from urllib.parse import urlsplit
 import httpx
 
 from opendata.data.providers.ths.transport.envelope import FuyaoEnvelope, parse_envelope
-from opendata.data.providers.ths.transport.errors import FuyaoError, error_for_transport
+from opendata.data.providers.ths.transport.errors import (
+    FuyaoError,
+    error_for_transport,
+)
 from opendata.data.providers.ths.transport.rate_limiter import (
     FuyaoRateLimiter,
     get_shared_concurrency_gate,
@@ -59,6 +62,27 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 _SENSITIVE_PARAMETER_PARTS = ("api_key", "apikey", "token", "secret", "password", "credential")
+_FUYAO_ERROR_CATEGORIES = frozenset(
+    {
+        "request",
+        "auth",
+        "permission",
+        "empty",
+        "not_ready",
+        "unsupported",
+        "rate_limited",
+        "transient",
+        "network",
+        "timeout",
+        "response_too_large",
+        "envelope_invalid",
+        "http",
+        "unknown",
+    }
+)
+_FUYAO_TRANSPORT_ERROR_KEYS = frozenset(
+    {"network", "timeout", "response_too_large", "envelope_invalid", "http", "unknown"}
+)
 _cache_config_warning_lock = threading.Lock()
 _cache_config_warning_emitted = False
 
@@ -125,6 +149,26 @@ class FuyaoHttpResponse:
     envelope: FuyaoEnvelope
     elapsed_seconds: float
     raw_content: bytes = field(default=b"", repr=False, compare=False)
+    attempt_trace: tuple[FuyaoTransportAttemptTrace, ...] = field(
+        default=(), repr=False, compare=False
+    )
+
+
+@dataclass(frozen=True)
+class FuyaoRawExchangeResponse:
+    """One bounded Fuyao HTTP exchange without envelope interpretation.
+
+    The body is the complete HTTP entity body observed within the configured
+    response cap. It is not the wire representation or a process-memory cap.
+    Response headers are intentionally omitted so callers cannot accidentally
+    persist credentials or other transport metadata with the body. A source can
+    still echo request credentials inside the entity body; callers must check
+    for credential reflection before persisting or serializing this response.
+    """
+
+    status_code: int
+    body: bytes = field(repr=False, compare=False)
+    elapsed_seconds: float
     attempt_trace: tuple[FuyaoTransportAttemptTrace, ...] = field(
         default=(), repr=False, compare=False
     )
@@ -293,6 +337,241 @@ class FuyaoHttpClient:
                 cache_context=cache_context,
                 scopes=(),
             )
+
+    def get_raw_exchange(
+        self,
+        endpoint: str,
+        *,
+        params: Mapping[str, Any] | None = None,
+    ) -> FuyaoRawExchangeResponse:
+        """Return one bounded GET response without parsing or caching its body.
+
+        This opt-in transport seam makes exactly one ``Client.send`` call,
+        never follows redirects, and returns the HTTP status and complete
+        entity body for every status code. The existing :meth:`get` behavior
+        remains unchanged. Active request scopes still authorize the host,
+        reserve one request-budget attempt, and use the optional durable source
+        attempt gate. The Fuyao host limiter is consumed once for every call.
+        The body is returned unchanged and may contain an echoed API key, so a
+        caller must check for credential reflection before persisting or
+        serializing it.
+
+        Args:
+            endpoint: A path beginning with ``/``; query and fragment syntax
+                must be supplied through ``params``.
+            params: Optional request query parameters.
+
+        Returns:
+            The observed status code and bounded response entity body.
+
+        Raises:
+            ValueError: If ``endpoint`` is not a path-only absolute URL part.
+            RequestBudgetError: If no active scope exists or it does not authorize a send.
+            FuyaoError: If local rate governance, timeout, transport, or the
+                configured body cap prevents observing the complete response.
+                No partial or synthetic body is returned on these failures.
+        """
+        if not endpoint.startswith("/") or "?" in endpoint or "#" in endpoint:
+            raise ValueError("endpoint must be a path beginning with '/' and no query or fragment")
+        scopes = current_request_scopes()
+        if not scopes:
+            raise RequestAuthorizationError("raw exchange requires an active request scope")
+        self._validate_source_attempt_mode(scopes)
+        while not self._request_lock.acquire(timeout=0.05):
+            check_scope_liveness(scopes)
+        try:
+            check_scope_liveness(scopes)
+            url = f"{self.credentials.base_url}{endpoint}"
+            host = self._scoped_host(url)
+            authorize_request(scopes, "ths", host)
+            self._validate_scoped_client()
+            self._validate_raw_exchange_client()
+            return self._raw_exchange_locked(endpoint, params=params, scopes=scopes)
+        finally:
+            self._request_lock.release()
+
+    def _raw_exchange_locked(
+        self,
+        endpoint: str,
+        *,
+        params: Mapping[str, Any] | None,
+        scopes: tuple[RequestExecutionScope, ...],
+    ) -> FuyaoRawExchangeResponse:
+        """Execute one transport attempt while holding the client-state lock."""
+        self._validate_source_attempt_mode(scopes)
+        if not scopes:
+            raise RequestAuthorizationError("raw exchange requires an active request scope")
+        url = f"{self.credentials.base_url}{endpoint}"
+        request_id = uuid.uuid4().hex
+        started = time.monotonic()
+        status: int | None = None
+        gate_reservation: tuple[str, AttemptReservation] | None = None
+        send_started = False
+        response: httpx.Response | None = None
+        body: bytes | None = None
+
+        try:
+            self._validate_raw_exchange_client()
+            self._limiter.wait_and_acquire(self._scoped_sleep(scopes))
+            check_scope_liveness(scopes)
+
+            request_host = self._scoped_host(url)
+            check_scope_liveness(scopes)
+            authorize_request(scopes, "ths", request_host)
+            self._validate_scoped_client()
+            self._validate_raw_exchange_client()
+            request = self._client.build_request(
+                "GET",
+                url,
+                params=dict(params or {}),
+                headers={
+                    API_KEY_HEADER: self.credentials.api_key,
+                    "Accept-Encoding": "identity",
+                },
+                timeout=self._scoped_timeout(scopes),
+            )
+            check_scope_liveness(scopes)
+            authorize_request(scopes, "ths", request_host)
+            self._validate_scoped_client()
+            with (
+                self._scoped_shared_host_request(scopes, request_host),
+                scoped_host_slot(scopes, "ths", request_host),
+            ):
+                check_scope_liveness(scopes)
+                authorize_request(scopes, "ths", request_host)
+                self._validate_scoped_client()
+                self._validate_raw_exchange_client()
+                request.extensions["timeout"] = httpx.Timeout(
+                    self._scoped_timeout(scopes)
+                ).as_dict()
+                reserve_scoped_attempt(scopes, "ths", request_host)
+                if self._source_attempt_gate is not None:
+                    gate_reservation = self._reserve_source_attempt(
+                        scopes,
+                        host=request_host,
+                        request_id=request_id,
+                        attempt_no=1,
+                    )
+                    check_scope_liveness(scopes)
+                    authorize_request(scopes, "ths", request_host)
+                    self._validate_scoped_client(require_attempt_gate=True)
+                    self._validate_raw_exchange_client()
+                    request.extensions["timeout"] = httpx.Timeout(
+                        self._scoped_timeout(scopes)
+                    ).as_dict()
+                send_started = True
+                response = self._client.send(
+                    request,
+                    follow_redirects=False,
+                    stream=True,
+                )
+                with _close_response(response):
+                    status = response.status_code
+                    if status == 429:
+                        self._limiter.record_rate_limit(retry_after_seconds=_retry_after(response))
+                    check_scope_liveness(scopes)
+                    body = self._read_bounded_response(response, scopes, include_all_statuses=True)
+                    check_scope_liveness(scopes)
+        except RequestBudgetError:
+            raise
+        except httpx.TimeoutException:
+            failure = error_for_transport("timeout")
+            failure.retryable = False
+            self._log_request_event(
+                url=url,
+                params=params,
+                request_id=request_id,
+                attempt=1,
+                started=started,
+                status=status,
+                failure_category=failure.category,
+            )
+            raise failure from None
+        except httpx.HTTPError:
+            failure = error_for_transport("network")
+            failure.retryable = False
+            self._log_request_event(
+                url=url,
+                params=params,
+                request_id=request_id,
+                attempt=1,
+                started=started,
+                status=status,
+                failure_category=failure.category,
+            )
+            raise failure from None
+        except FuyaoError as exc:
+            category = exc.category if exc.category in _FUYAO_ERROR_CATEGORIES else "unknown"
+            if category in _FUYAO_TRANSPORT_ERROR_KEYS:
+                failure = error_for_transport(category)
+            else:
+                safe_template = error_for_transport("unknown")
+                failure = FuyaoError(
+                    f"FUYAO_{category.upper()}",
+                    category=category,
+                    message=safe_template.message,
+                    advice=safe_template.advice,
+                    retryable=exc.retryable is True,
+                )
+            failure.retryable = exc.retryable is True
+            self._log_request_event(
+                url=url,
+                params=params,
+                request_id=request_id,
+                attempt=1,
+                started=started,
+                status=status,
+                failure_category=failure.category,
+            )
+            raise failure from None
+        except Exception:
+            # Do not propagate arbitrary injected transport messages: they can
+            # contain request URLs, credentials, response fragments, or body data.
+            failure = error_for_transport("network")
+            failure.retryable = False
+            self._log_request_event(
+                url=url,
+                params=params,
+                request_id=request_id,
+                attempt=1,
+                started=started,
+                status=status,
+                failure_category=failure.category,
+            )
+            raise failure from None
+
+        if response is None or status is None or body is None:
+            raise error_for_transport("unknown")
+        elapsed = time.monotonic() - started
+        trace: tuple[FuyaoTransportAttemptTrace, ...] = ()
+        if gate_reservation is not None and send_started:
+            attempt_id, reservation = gate_reservation
+            trace = (
+                _make_attempt_trace(
+                    transport_request_id=request_id,
+                    attempt_id=attempt_id,
+                    attempt_no=1,
+                    reservation=reservation,
+                    http_status=status,
+                    failure_category=None,
+                    source_request_id=None,
+                ),
+            )
+        self._log_request_event(
+            url=url,
+            params=params,
+            request_id=request_id,
+            attempt=1,
+            started=started,
+            status=status,
+            failure_category=None,
+        )
+        return FuyaoRawExchangeResponse(
+            status_code=status,
+            body=body,
+            elapsed_seconds=elapsed,
+            attempt_trace=trace,
+        )
 
     def _get_locked(
         self,
@@ -691,6 +970,31 @@ class FuyaoHttpClient:
         if any(self._client.event_hooks.values()):
             raise RequestAuthorizationError("response hooks are not allowed for bounded transport")
 
+    def _validate_raw_exchange_client(self) -> None:
+        """Fail closed unless this client can make one direct, verified send."""
+        self._validate_unscoped_client()
+        if self._client.trust_env:
+            raise RequestAuthorizationError(
+                "raw exchange client environment routing is not allowed"
+            )
+        transport = self._client._transport
+        if type(transport) is httpx.MockTransport:
+            # Exact MockTransport is the explicit offline testing seam.
+            return
+        if type(transport) is not httpx.HTTPTransport:
+            raise RequestAuthorizationError("raw exchange transport is not verified")
+        pool = getattr(transport, "_pool", None)
+        ssl_context = getattr(pool, "_ssl_context", None)
+        if (
+            pool is None
+            or getattr(pool, "_retries", None) != 0
+            or getattr(pool, "_proxy", None) is not None
+            or ssl_context is None
+            or getattr(ssl_context, "verify_mode", None) != ssl.CERT_REQUIRED
+            or getattr(ssl_context, "check_hostname", None) is not True
+        ):
+            raise RequestAuthorizationError("raw exchange direct TLS transport is not verified")
+
     def _validate_attempt_gated_client(self) -> None:
         """Verify the gate-bound client cannot proxy, retry, or skip TLS checks."""
         transport = self._scoped_transport
@@ -916,8 +1220,10 @@ class FuyaoHttpClient:
         self,
         response: httpx.Response,
         scopes: tuple[RequestExecutionScope, ...],
+        *,
+        include_all_statuses: bool = False,
     ) -> bytes:
-        """Read a successful identity-encoded body while enforcing its entity cap.
+        """Read an identity-encoded body while enforcing its entity cap.
 
         Liveness is checked around every raw chunk yielded by HTTPX. Socket reads
         remain subject to the configured inactivity timeout; a slow trickle can
@@ -931,7 +1237,7 @@ class FuyaoHttpClient:
         the body inside ``send``. No later iterator chunk is requested after
         the first over-limit yield.
         """
-        if response.status_code not in {200, 201}:
+        if not include_all_statuses and response.status_code not in {200, 201}:
             return b""
 
         content_lengths = response.headers.get_list("content-length", split_commas=True)
@@ -1118,6 +1424,7 @@ __all__ = [
     "DEFAULT_MAX_RESPONSE_BYTES",
     "DEFAULT_TIMEOUT_SECONDS",
     "FuyaoHttpClient",
+    "FuyaoRawExchangeResponse",
     "FuyaoHttpResponse",
     "FuyaoTransportAttemptTrace",
 ]
