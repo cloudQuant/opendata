@@ -97,13 +97,16 @@ class SourceAttemptBinding:
 
     This value carries backend policy identity only. It does not prove rights,
     create a request grant, or enable a source-attempt gate. Callers must never
-    populate it from request bodies, query parameters, or headers.
+    populate it from request bodies, query parameters, or headers. An optional
+    expected evidence reference is compared against the persisted grant in the
+    same transaction that reserves a physical source attempt.
     """
 
     grant_id: str
     expected_revision: int
     principal_scope: str
     run_key: str | None = None
+    expected_rights_evidence_reference: str | None = None
 
     def __post_init__(self) -> None:
         """Validate exact field types and bounded gate identifiers."""
@@ -111,6 +114,15 @@ class SourceAttemptBinding:
         _validate_source_attempt_binding_identifier(self.principal_scope, "principal_scope")
         if self.run_key is not None:
             _validate_source_attempt_binding_identifier(self.run_key, "run_key")
+        evidence_reference = self.expected_rights_evidence_reference
+        if evidence_reference is not None and (
+            type(evidence_reference) is not str
+            or not evidence_reference
+            or evidence_reference != evidence_reference.strip()
+            or len(evidence_reference) > 512
+            or any(ord(character) < 32 or ord(character) == 127 for character in evidence_reference)
+        ):
+            raise ValueError("expected_rights_evidence_reference must be bounded plain text")
         if (
             type(self.expected_revision) is not int
             or not 1 <= self.expected_revision <= _MAX_SOURCE_ATTEMPT_BINDING_REVISION

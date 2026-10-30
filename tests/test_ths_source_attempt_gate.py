@@ -12,6 +12,7 @@ import json as jsonlib
 import logging
 import ssl
 import time
+from dataclasses import replace
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -53,6 +54,7 @@ from opendata.data.source_attempt_gate import (
     ReservationStatus,
     SourceAttemptGate,
     SourceAttemptGateUnavailable,
+    TransportAttempt,
 )
 
 if TYPE_CHECKING:
@@ -218,6 +220,28 @@ def _binding() -> SourceAttemptBinding:
     )
 
 
+def _direct_attempt(
+    *,
+    expected_evidence_reference: str | None = None,
+    host: str = HOST,
+) -> TransportAttempt:
+    """Return one synthetic v1 gate input without creating an HTTP request."""
+    return TransportAttempt(
+        attempt_id="fixture-attempt-evidence-0001",
+        request_id="fixture-request-evidence-0001",
+        attempt_no=1,
+        grant_id=GRANT_ID,
+        expected_revision=1,
+        source=SOURCE,
+        canonical_model=MODEL,
+        operation="query",
+        principal_scope=PRINCIPAL,
+        host=host,
+        run_key="fixture-run",
+        expected_rights_evidence_reference=expected_evidence_reference,
+    )
+
+
 def _independent_limiter() -> FuyaoRateLimiter:
     """Give each offline test client an isolated, comfortably sized bucket."""
     return FuyaoRateLimiter(rate_per_second=1_000.0, burst=1_000)
@@ -360,6 +384,42 @@ def test_gate_reserves_each_physical_retry_before_mock_transport_send(
     assert {row["principal_scope"] for row in rows} == {PRINCIPAL}
     assert {row["run_key"] for row in rows} == {"fixture-run"}
     assert {row["host"] for row in rows} == {HOST}
+
+
+def test_v1_duplicate_identity_does_not_persist_or_compare_expected_evidence_reference(
+    gate_engine: Any,
+) -> None:
+    """V1 checks evidence for a new reservation; a replay stays non-permitting.
+
+    Its schema does not persist the evidence reference. Thus a changed
+    reference on the same stored identity is DUPLICATE, while ID_CONFLICT is
+    reserved for differences in persisted attempt columns. Neither outcome is
+    a transport permit.
+    """
+    _seed_gate(gate_engine)
+    gate = _gate(gate_engine)
+    expected_reference = "synthetic:offline-fixture-only"
+
+    first = gate.reserve_attempt(_direct_attempt(expected_evidence_reference=expected_reference))
+    changed_evidence = gate.reserve_attempt(
+        _direct_attempt(expected_evidence_reference="synthetic:different-reference")
+    )
+    changed_persisted_host = gate.reserve_attempt(
+        replace(
+            _direct_attempt(expected_evidence_reference=expected_reference),
+            host="other.fuyao.test",
+        )
+    )
+
+    assert first.status is ReservationStatus.RESERVED_NEW
+    assert changed_evidence.status is ReservationStatus.DUPLICATE
+    assert changed_evidence.reserved_at_us is None
+    assert changed_persisted_host.status is ReservationStatus.ID_CONFLICT
+    assert changed_persisted_host.reserved_at_us is None
+    rows = _attempt_rows(gate_engine)
+    assert len(rows) == 1
+    assert rows[0]["outcome"] == "RESERVED"
+    assert "expected_rights_evidence_reference" not in rows[0]
 
 
 def test_client_mutation_during_reservation_cannot_change_gated_send(

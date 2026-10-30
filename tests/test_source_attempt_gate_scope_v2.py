@@ -173,6 +173,17 @@ def _scope(attempt: TransportAttempt | None = None) -> SourceAttemptScopeV2:
     )
 
 
+def test_v2_scope_rejects_expected_grant_evidence_reference_until_scope_version_changes() -> None:
+    """V2 cannot silently omit a binding field from its canonical audit scope."""
+    with pytest.raises(SourceAttemptInputError, match="v2 source attempt scope"):
+        _scope(
+            replace(
+                _attempt(),
+                expected_rights_evidence_reference="synthetic:expected-grant-evidence",
+            )
+        )
+
+
 @pytest.fixture
 def gate_engine(tmp_path: Path) -> Engine:
     """Yield a test-owned database with both the base and exact v2 schema."""

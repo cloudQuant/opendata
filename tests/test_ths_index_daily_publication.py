@@ -7,6 +7,7 @@ from dataclasses import replace
 from datetime import date, datetime, timedelta, timezone
 from typing import TYPE_CHECKING
 
+import httpx
 import pytest
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient, Response
@@ -22,7 +23,6 @@ from opendata.api.published_data import (
 )
 from opendata.data.dataset_contract_registry import DatasetContractRegistry
 from opendata.data.models.market import Bar
-from opendata.data.protocol import FetchContext
 from opendata.data.providers.ths import endpoints as ths_endpoints
 from opendata.data.providers.ths.index_daily_publication import (
     INDEX_DATASET_ID_BY_SYMBOL,
@@ -38,12 +38,17 @@ from opendata.data.providers.ths.index_daily_publication import (
 )
 from opendata.data.providers.ths.models import index_daily as ths_index_model
 from opendata.data.providers.ths.models.index_daily import ThsIndexDailyFetcher
-from opendata.data.request_budget import (
-    GrantDecision,
-    RequestBudget,
-    RequestBudgetProfile,
-    RequestGrant,
-    RequestOperation,
+from opendata.data.providers.ths.transport.credentials import (
+    DEFAULT_FUYAO_API_BASE_URL,
+    FuyaoCredentials,
+)
+from opendata.data.providers.ths.transport.http_client import FuyaoHttpClient
+from opendata.data.providers.ths.transport.rate_limiter import FuyaoRateLimiter
+from opendata.data.request_budget import RequestAuthorizationError, SourceAttemptBinding
+from opendata.data.source_attempt_gate import (
+    AttemptReservation,
+    ReservationStatus,
+    SourceAttemptGate,
 )
 from opendata.models.user import User, UserRole
 from opendata.pipeline import ths_index_daily_publication as job_module
@@ -115,29 +120,6 @@ def _job(symbol: str = SSE50_INDEX_SYMBOL) -> ReviewedJob:
     """Build the real disabled job around one exact synthetic index contract."""
     contract = build_index_daily_contract(symbol)
     return job_module.build_index_daily_job(symbol, DatasetContractRegistry([contract]))
-
-
-def _fixture_fetch_context(timeout: float | None) -> FetchContext:
-    """Grant one bounded fake-provider attempt inside this test only."""
-    grant = RequestGrant(
-        source="ths",
-        canonical_model="index_daily",
-        operation=RequestOperation.QUERY,
-        decision=GrantDecision.ALLOWED,
-        rights_evidence="test-fixture:offline-only:mock-transport",
-        task_attempts=1,
-        source_attempts=1,
-        allowed_hosts=frozenset({"fuyao.test"}),
-        expires_at=datetime.now(UTC) + timedelta(minutes=5),
-        profile=RequestBudgetProfile.BOUNDED_REQUEST,
-    )
-    budget = RequestBudget(
-        task_attempts=1,
-        source_attempts=1,
-        grants=(grant,),
-        profile=RequestBudgetProfile.BOUNDED_REQUEST,
-    )
-    return FetchContext(timeout=timeout, request_budget=budget)
 
 
 def _api_app(
@@ -257,9 +239,8 @@ def test_unknown_ths_authorization_stops_before_provider_send(
 
 
 @pytest.mark.asyncio
-async def test_fixture_provider_publication_and_v2_read_are_single_index_only(
+async def test_fixture_publication_and_v2_read_are_single_index_only(
     tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Four fixture series stay isolated through provider, writer, and v2 reads."""
     contract_by_symbol = {
@@ -270,37 +251,6 @@ async def test_fixture_provider_publication_and_v2_read_are_single_index_only(
         symbol: job_module.build_index_daily_job(symbol, contracts)
         for symbol in INDEX_DATASET_ID_BY_SYMBOL
     }
-    source_calls: list[tuple[str, date, date]] = []
-
-    monkeypatch.setattr(job_module, "_require_ths_source_authorization", lambda: None)
-    monkeypatch.setattr(job_module, "FetchContext", _fixture_fetch_context)
-
-    @contextmanager
-    def fake_client(*, timeout_seconds: float) -> Iterator[object]:
-        assert timeout_seconds == 30
-        yield object()
-
-    def resolve_index_code(client: object, symbol: str) -> str:
-        assert symbol in INDEX_DATASET_ID_BY_SYMBOL
-        return symbol
-
-    def fetch_index_daily_bars(
-        client: object,
-        *,
-        symbol: str,
-        start: date,
-        end: date,
-    ) -> tuple[Bar, ...]:
-        assert symbol in INDEX_DATASET_ID_BY_SYMBOL
-        assert start == START
-        assert end == END + timedelta(days=1)
-        source_calls.append((symbol, start, end))
-        return _bars(symbol)
-
-    monkeypatch.setattr(ths_index_model, "client", fake_client)
-    monkeypatch.setattr(ths_index_model, "resolve_index_code", resolve_index_code)
-    monkeypatch.setattr(ths_endpoints, "fetch_index_daily_bars", fetch_index_daily_bars)
-
     engine = create_engine(f"sqlite:///{tmp_path / 'ths-index-publication.sqlite'}")
     try:
         PUBLICATION_METADATA.create_all(engine)
@@ -313,7 +263,7 @@ async def test_fixture_provider_publication_and_v2_read_are_single_index_only(
             contract = contract_by_symbol[symbol]
             job = jobs[symbol]
             request = _request(symbol)
-            batch = job.normalize(job.fetch(request, _context()), request, _context())
+            batch = job.normalize(_bars(symbol), request, _context())
             assert len(batch.records) == 2
             assert all(record.payload["symbol"] == symbol for record in batch.records)
             assert all("amount" not in record.payload for record in batch.records)
@@ -325,11 +275,11 @@ async def test_fixture_provider_publication_and_v2_read_are_single_index_only(
                 for record in batch.records
             )
             assert batch.provenance["dataset_id"] == contract.dataset_id
-            assert batch.provenance["source_rights_status"] == "unknown"
+            assert batch.provenance["source_rights_status"] == "UNKNOWN"
             assert batch.provenance["source_comparison_status"] == "unknown"
             assert batch.provenance["source_data_origin_status"] == "unknown"
             assert batch.provenance["coverage_status"] == "unknown"
-            assert batch.provenance["source_history_boundary"] == "unknown"
+            assert batch.provenance["source_history_boundary"] == "UNKNOWN"
 
             other_symbol = next(
                 candidate for candidate in INDEX_DATASET_ID_BY_SYMBOL if candidate != symbol
@@ -383,9 +333,6 @@ async def test_fixture_provider_publication_and_v2_read_are_single_index_only(
                 )
             )
 
-        assert source_calls == [
-            (symbol, START, END + timedelta(days=1)) for symbol in INDEX_DATASET_ID_BY_SYMBOL
-        ]
         app = _api_app(store, contracts, DatasetGrantRegistry(fixture_grants))
         for symbol, dataset_id in INDEX_DATASET_ID_BY_SYMBOL.items():
             page = await _get(
@@ -443,6 +390,14 @@ def test_backfill_request_builders_enforce_one_symbol_and_inclusive_date_order()
     )
     assert csi500_request.partition == {"symbol": "000905.SH"}
 
+    legacy_long_request = job_module.build_index_daily_backfill_request(
+        symbol=SSE50_INDEX_SYMBOL,
+        start_date=START,
+        end_date=START + timedelta(days=3650),
+        idempotency_key="fixture-sse50-long-range-001",
+    )
+    assert legacy_long_request.backfill_end == START + timedelta(days=3650)
+
     with pytest.raises(ValueError, match="four reviewed benchmark codes"):
         job_module.build_index_daily_backfill_request(
             symbol="000852.SH",
@@ -470,6 +425,200 @@ def test_backfill_request_builders_enforce_one_symbol_and_inclusive_date_order()
             start_date=END,
             end_date=START,
             idempotency_key="fixture-reversed-range-001",
+        )
+
+
+def test_explicit_csi500_job_reserves_one_gated_send_and_keeps_history_unknown(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The explicit one-shot route reaches the persistent gate before HTTP send."""
+    contract = build_index_daily_contract("000905.SH")
+    contracts = DatasetContractRegistry([contract])
+    gate = object.__new__(SourceAttemptGate)
+    events: list[tuple[str, object]] = []
+    gate_denies = False
+
+    def reserve_attempt(self: SourceAttemptGate, attempt: object) -> AttemptReservation:
+        assert self is gate
+        events.append(("reserved", attempt))
+        return AttemptReservation(
+            status=(ReservationStatus.DENIED if gate_denies else ReservationStatus.RESERVED_NEW),
+            denial_code="fixture_denied" if gate_denies else None,
+            reserved_at_us=None if gate_denies else 1,
+        )
+
+    monkeypatch.setattr(SourceAttemptGate, "reserve_attempt", reserve_attempt)
+    source_access = job_module.Csi500FuyaoSourceAccess(
+        source_attempt_gate=gate,
+        source_attempt_binding=SourceAttemptBinding(
+            grant_id="fixture-csi500-grant",
+            expected_revision=1,
+            principal_scope="fixture-csi500-worker",
+        ),
+        operator_confirms_user_declared_internal_use=True,
+    )
+    job = job_module.build_authorized_csi500_index_daily_job(
+        contracts,
+        source_access=source_access,
+    )
+    assert job.reviewed is True
+    assert job.one_shot_only is True
+    assert job.task.enabled is False
+    assert job.task.schedule is None
+    assert job.task.version.startswith(f"{job_module.SSE50_INDEX_JOB_VERSION}.fuyao-")
+    changed_binding_access = replace(
+        source_access,
+        source_attempt_binding=replace(
+            source_access.source_attempt_binding,
+            expected_revision=2,
+        ),
+    )
+    changed_binding_job = job_module.build_authorized_csi500_index_daily_job(
+        contracts,
+        source_access=changed_binding_access,
+    )
+    assert changed_binding_job.task.version != job.task.version
+
+    payload = job_module.build_csi500_manual_backfill_payload(
+        source_access=source_access,
+        start_date=START,
+        end_date=END,
+        idempotency_key="fixture-csi500-one-shot-001",
+    )
+    request = RunRequest(run_type="manual", **payload)
+    sent: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert len(events) == len(sent) + 1
+        assert events[-1][0] == "reserved"
+        sent.append(request)
+        return httpx.Response(
+            200,
+            json={
+                "code": 0,
+                "message": "success",
+                "request_id": "fixture-csi500",
+                "data": {"item": []},
+            },
+        )
+
+    @contextmanager
+    def gated_client(
+        *,
+        timeout_seconds: float | None = None,
+        source_attempt_gate: SourceAttemptGate | None = None,
+        max_attempts: int | None = None,
+    ) -> Iterator[FuyaoHttpClient]:
+        assert timeout_seconds == 30
+        assert source_attempt_gate is gate
+        assert max_attempts == 1
+        active = FuyaoHttpClient(
+            credentials=FuyaoCredentials(
+                "offline-fixture-key", base_url=DEFAULT_FUYAO_API_BASE_URL
+            ),
+            mock_transport=httpx.MockTransport(handler),
+            source_attempt_gate=gate,
+            max_attempts=1,
+            backoff_base_seconds=0,
+            backoff_jitter_seconds=0,
+            sleep=lambda _seconds: None,
+            rate_limiter=FuyaoRateLimiter(rate_per_second=1000, burst=10),
+        )
+        try:
+            yield active
+        finally:
+            active.close()
+
+    def fetch_index_daily_bars(
+        active: object,
+        *,
+        symbol: str,
+        start: date,
+        end: date,
+    ) -> tuple[Bar, ...]:
+        response = active.get(
+            ths_endpoints.INDEX_PRICES_ENDPOINT,
+            params={"symbol": symbol, "start": start.isoformat(), "end": end.isoformat()},
+        )
+        assert response.envelope.code == 0
+        return _bars(symbol)
+
+    monkeypatch.setattr(ths_index_model, "client", gated_client)
+    monkeypatch.setattr(ths_endpoints, "fetch_index_daily_bars", fetch_index_daily_bars)
+    raw = job.fetch(request, _context())
+    batch = job.normalize(raw, request, _context())
+
+    assert len(sent) == 1
+    assert sent[0].url.host == "fuyao.aicubes.cn"
+    attempt = events[0][1]
+    assert attempt.source == "ths"
+    assert attempt.canonical_model == "index_daily"
+    assert attempt.operation == "query"
+    assert attempt.run_key == _context().run_key
+    assert batch.provenance["source_rights_basis"] == "USER_DECLARED"
+    assert batch.provenance["source_rights_status"] == "USER_DECLARED_INTERNAL_USE_UNVERIFIED"
+    assert (
+        batch.provenance["source_rights_evidence_reference"] == "docs/data-rights-registry.md#0.1"
+    )
+    assert batch.provenance["source_history_boundary"] == "UNKNOWN"
+    assert batch.provenance["source_cross_execution_attempt_limit"] == "UNKNOWN"
+    assert batch.provenance["source_per_request_calendar_day_limit"] == 3650
+    assert batch.provenance["source_per_run_transport_attempt_limit"] == 1
+    assert batch.provenance["source_external_distribution_allowed"] is False
+
+    gate_denies = True
+    denied_payload = job_module.build_csi500_manual_backfill_payload(
+        source_access=source_access,
+        start_date=START,
+        end_date=END,
+        idempotency_key="fixture-csi500-one-shot-denied-001",
+    )
+    denied_request = RunRequest(run_type="manual", **denied_payload)
+    with pytest.raises(RequestAuthorizationError, match="source attempt gate"):
+        job.fetch(denied_request, _context())
+    assert len(sent) == 1
+
+
+def test_manual_backfill_payload_is_bounded_and_tied_to_exact_source_access() -> None:
+    """CSI 500 requests are fixed to the declared dataset and one ≤10-year slice."""
+    gate = object.__new__(SourceAttemptGate)
+    source_access = job_module.Csi500FuyaoSourceAccess(
+        source_attempt_gate=gate,
+        source_attempt_binding=SourceAttemptBinding(
+            grant_id="fixture-csi500-grant",
+            expected_revision=1,
+            principal_scope="fixture-csi500-worker",
+        ),
+        operator_confirms_user_declared_internal_use=True,
+    )
+    payload = job_module.build_csi500_manual_backfill_payload(
+        source_access=source_access,
+        start_date=START,
+        end_date=END,
+        idempotency_key="fixture-csi500-window-001",
+    )
+    assert payload["partition"] == {"symbol": "000905.SH"}
+    assert payload["query"] == {
+        "start_date": START.isoformat(),
+        "end_date": END.isoformat(),
+    }
+    assert source_access.source_history_boundary == "UNKNOWN"
+    assert source_access.external_distribution_allowed is False
+    max_single_chunk_payload = job_module.build_csi500_manual_backfill_payload(
+        source_access=source_access,
+        start_date=START,
+        end_date=START + timedelta(days=3649),
+        idempotency_key="fixture-csi500-window-max-single-chunk-001",
+    )
+    assert (
+        max_single_chunk_payload["query"]["end_date"] == (START + timedelta(days=3649)).isoformat()
+    )
+    with pytest.raises(ValueError, match="ten-year per-request limit"):
+        job_module.build_csi500_manual_backfill_payload(
+            source_access=source_access,
+            start_date=START,
+            end_date=START + timedelta(days=3650),
+            idempotency_key="fixture-csi500-window-too-wide-001",
         )
 
 

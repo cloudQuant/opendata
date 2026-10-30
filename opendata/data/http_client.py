@@ -1604,6 +1604,7 @@ class GovernedHttpClient:
                 principal_scope=binding.principal_scope,
                 host=host,
                 run_key=binding.run_key,
+                expected_rights_evidence_reference=(binding.expected_rights_evidence_reference),
             )
             reservation = gate.reserve_attempt(attempt)
         except Exception:

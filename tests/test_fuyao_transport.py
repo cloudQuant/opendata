@@ -412,6 +412,43 @@ class TestHttpClient:
         assert without_body.attempt_trace == ()
         assert with_body.attempt_trace == ()
 
+    def test_prebuffered_mock_transport_response_content_is_read_within_bound(self):
+        raw_body = _envelope(items=[{"close": 2.0}])
+
+        with _client(
+            lambda _request: httpx.Response(200, content=raw_body),
+            max_response_bytes=len(raw_body),
+            max_attempts=1,
+        ) as client:
+            result = client.get("/api/a-share/prices")
+
+        assert result.raw_content == raw_body
+        assert result.envelope.request_id == "req-abc"
+
+    def test_consumed_uncached_mock_response_fails_closed_without_retry(self):
+        calls = 0
+
+        def handler(_request: httpx.Request) -> httpx.Response:
+            nonlocal calls
+            calls += 1
+            response = httpx.Response(
+                200,
+                stream=httpx.ByteStream(_envelope(items=[{"close": 2.0}])),
+            )
+            # Simulate an injected transport that drains a stream without
+            # materializing Response.content. The client must not replay it.
+            assert b"".join(response.iter_raw())
+            assert response.is_stream_consumed
+            return response
+
+        with _client(handler, max_attempts=3) as client, pytest.raises(FuyaoError) as exc:
+            client.get("/api/a-share/prices")
+
+        assert calls == 1
+        assert exc.value.category == "network"
+        assert exc.value.retryable is False
+        assert "response_body_unavailable" in exc.value.code
+
     def test_gated_timeout_then_success_keeps_distinct_local_attempt_traces(self, monkeypatch):
         calls = 0
 
@@ -653,6 +690,25 @@ class TestHttpClient:
     def test_response_size_bound_is_enforced(self):
         def handler(request: httpx.Request) -> httpx.Response:
             return httpx.Response(200, content=b"x" * 512)
+
+        with (
+            _client(handler, max_response_bytes=64, max_attempts=1) as client,
+            pytest.raises(FuyaoError) as exc,
+        ):
+            client.get("/api/a-share/prices")
+
+        assert exc.value.category == "response_too_large"
+
+    @pytest.mark.parametrize("declared_length", [None, "1"])
+    def test_prebuffered_body_size_is_enforced_without_trusting_short_length(
+        self, declared_length: str | None
+    ):
+        def handler(_request: httpx.Request) -> httpx.Response:
+            response = httpx.Response(200, content=b"x" * 512)
+            response.headers.pop("content-length", None)
+            if declared_length is not None:
+                response.headers["content-length"] = declared_length
+            return response
 
         with (
             _client(handler, max_response_bytes=64, max_attempts=1) as client,

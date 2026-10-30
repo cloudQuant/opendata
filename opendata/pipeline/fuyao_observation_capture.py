@@ -401,6 +401,7 @@ def _validate_source_attempt(
             principal_scope=attempt.principal_scope,
             host=attempt.host,
             run_key=attempt.run_key,
+            expected_rights_evidence_reference=attempt.expected_rights_evidence_reference,
         )
     except (AttributeError, TypeError, ValueError):
         raise FuyaoObservationCaptureBridgeError(

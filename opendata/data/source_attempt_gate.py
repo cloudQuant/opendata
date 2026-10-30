@@ -67,6 +67,7 @@ _ATTEMPT_DENIAL_CODES = frozenset(
         "grant_conditions_unresolved",
         "grant_evidence_incomplete",
         "grant_expired",
+        "grant_evidence_reference_mismatch",
         "grant_host_mismatch",
         "grant_hosts_invalid",
         "grant_hosts_unsealed",
@@ -315,7 +316,12 @@ class TransportAttempt:
     The caller must create a new ``attempt_id`` and increment ``attempt_no``
     for every retry. ``host`` is an exact DNS hostname, without scheme/port.
     ``run_key`` participates in idempotency binding only; this gate does not
-    count per-run, daily, or task-level attempts.
+    count per-run, daily, or task-level attempts. The optional expected
+    evidence reference binds a grant's persisted declaration in the same
+    transaction as a new v1 attempt reservation. The v1 reservation table does
+    not persist that reference: a repeated identity is classified from the
+    stored columns, so a ``DUPLICATE`` or ``ID_CONFLICT`` is never a send
+    permit. V2 rejects this optional field until its scope schema can bind it.
     """
 
     attempt_id: str
@@ -329,6 +335,7 @@ class TransportAttempt:
     principal_scope: str
     host: str
     run_key: str | None = None
+    expected_rights_evidence_reference: str | None = None
 
     def __post_init__(self) -> None:
         """Validate bounded identifiers and freeze a canonical host value."""
@@ -343,6 +350,15 @@ class TransportAttempt:
             _validate_identifier(getattr(self, field_name), field_name)
         if self.run_key is not None:
             _validate_identifier(self.run_key, "run_key")
+        evidence_reference = self.expected_rights_evidence_reference
+        if evidence_reference is not None and (
+            type(evidence_reference) is not str
+            or not evidence_reference
+            or evidence_reference != evidence_reference.strip()
+            or len(evidence_reference) > 512
+            or any(ord(character) < 32 or ord(character) == 127 for character in evidence_reference)
+        ):
+            raise SourceAttemptInputError("expected evidence reference is invalid")
         if type(self.attempt_no) is not int or not 1 <= self.attempt_no <= MAX_ATTEMPT_NO:
             raise SourceAttemptInputError("attempt_no is outside the supported range")
         if (
@@ -797,11 +813,16 @@ class SourceAttemptGate:
             "CREATE TABLE alembic_version_source_gate ( version_num VARCHAR(32) NOT NULL, "
             "CONSTRAINT alembic_version_source_gate_pkc PRIMARY KEY (version_num))"
         )
+        normalized_sql = None
+        if isinstance(marker_sql, str):
+            normalized_sql = re.sub(r"\s+", " ", marker_sql).strip().rstrip(";")
+            # SQLite preserves Alembic's newline between the nested and outer
+            # closing parentheses. Normalize only that optional final gap.
+            normalized_sql = re.sub(r"\) \)$", "))", normalized_sql)
         if (
             len(marker_tables) != 1
             or marker_tables[0].get("type") != "table"
-            or not isinstance(marker_sql, str)
-            or re.sub(r"\s+", " ", marker_sql).strip().rstrip(";") != expected_sql
+            or normalized_sql != expected_sql
         ):
             return False
         literal = _quote_sqlite_literal(table_name)
@@ -1210,7 +1231,14 @@ class SourceAttemptGate:
     def _find_existing_attempt(
         self, connection: Connection, attempt: TransportAttempt
     ) -> AttemptReservation | None:
-        """Resolve both unique keys without exposing an old reservation as a permit."""
+        """Resolve v1 identities from stored columns; no duplicate is a send permit.
+
+        V1 does not store ``expected_rights_evidence_reference``. Therefore an
+        identical persisted identity with a changed evidence reference is
+        classified as ``DUPLICATE``; ``ID_CONFLICT`` applies only to a
+        difference in fields that the v1 row does store. Neither result allows
+        transport to send.
+        """
         by_id = self._fetch_one(
             connection,
             "SELECT * FROM od_source_attempt_reservations WHERE attempt_id = :attempt_id",
@@ -1564,7 +1592,12 @@ class SourceAttemptGate:
         }
 
     def _same_attempt_scope(self, row: Mapping[str, object], attempt: TransportAttempt) -> bool:
-        """Compare every immutable caller-supplied scope field in an old row."""
+        """Compare all immutable fields available in a v1 reservation row.
+
+        The v1 schema omits the expected evidence reference, so it is checked
+        against the grant for a fresh reservation but cannot affect duplicate
+        versus conflict classification for an already stored identity.
+        """
         expected = (
             attempt.attempt_id,
             attempt.request_id,
@@ -2011,6 +2044,11 @@ class SourceAttemptGate:
             return "grant_expired"
         if not _valid_allowed_declaration(grant, effective_now):
             return "grant_evidence_incomplete"
+        if (
+            attempt.expected_rights_evidence_reference is not None
+            and grant.get("rights_evidence_reference") != attempt.expected_rights_evidence_reference
+        ):
+            return "grant_evidence_reference_mismatch"
         condition_text = grant["conditions_json"]
         if not isinstance(condition_text, str):
             return "grant_conditions_invalid"
@@ -2246,6 +2284,10 @@ class SourceAttemptGate:
 def _scope_v2_document(scope: SourceAttemptScopeV2) -> dict[str, object]:
     """Return the closed v2 JSON object; values are identifiers, pins, and integers only."""
     attempt = scope.attempt
+    if attempt.expected_rights_evidence_reference is not None:
+        raise SourceAttemptInputError(
+            "v2 source attempt scope does not support expected rights evidence references"
+        )
     return {
         "attempt_id": attempt.attempt_id,
         "attempt_no": attempt.attempt_no,

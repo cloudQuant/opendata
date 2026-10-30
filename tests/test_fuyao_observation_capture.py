@@ -63,6 +63,7 @@ def _source_attempt(
     request_id: str = "capture-request-0001",
     attempt_no: int = 1,
     reserved_at_us: int | None = None,
+    expected_rights_evidence_reference: str | None = None,
 ) -> FuyaoSourceAttemptDeclaration:
     """Build a successful but explicitly caller-declared gate attempt."""
     host = urlsplit(DEFAULT_FUYAO_API_BASE_URL).hostname
@@ -78,6 +79,7 @@ def _source_attempt(
         operation="query",
         principal_scope="operator-0001",
         host=host,
+        expected_rights_evidence_reference=expected_rights_evidence_reference,
     )
     reservation = AttemptReservation(
         status=ReservationStatus.RESERVED_NEW,
@@ -280,6 +282,22 @@ def test_bridge_archives_exact_entity_and_returns_store_prepared_values(
     assert evidence.manifest.response_sha256 == fetch_result.body_sha256
     assert evidence.manifest.request_summary_sha256 == fetch_result.request_summary_sha256
     assert evidence.manifest.captured_at_utc >= fetch_result.observed_at
+
+
+def test_bridge_preserves_expected_evidence_reference_when_revalidating_attempt(
+    tmp_path: Path,
+) -> None:
+    evidence_reference = "synthetic:test-evidence-reference"
+    declaration = _source_attempt(
+        expected_rights_evidence_reference=evidence_reference,
+    )
+
+    outcome = _prepare(tmp_path / "evidence-reference", _fetch_result(), declaration)
+
+    assert (
+        outcome.source_attempt_declaration.attempt.expected_rights_evidence_reference
+        == evidence_reference
+    )
 
 
 def test_repeating_bridge_preparation_creates_a_new_manifest_identity(

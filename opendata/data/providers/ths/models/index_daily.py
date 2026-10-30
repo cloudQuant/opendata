@@ -12,7 +12,7 @@ contract spelling for the warehouse view.
 """
 
 from datetime import date, datetime, timezone
-from typing import ClassVar
+from typing import ClassVar, TypedDict
 
 from opendata.data.capability import Capability
 from opendata.data.models import Bar
@@ -23,6 +23,15 @@ from opendata.data.providers.ths.models._client import (
     client,
     resolve_index_code,
 )
+from opendata.data.source_attempt_gate import SourceAttemptGate
+
+
+class _ClientCallOptions(TypedDict, total=False):
+    """Optional arguments forwarded to the shared THS client factory."""
+
+    timeout_seconds: float | None
+    source_attempt_gate: SourceAttemptGate
+    max_attempts: int
 
 
 class ThsIndexDailyQuery(QueryParams):
@@ -42,6 +51,25 @@ class ThsIndexDailyFetcher(Fetcher[ThsIndexDailyQuery, tuple[Bar, ...]]):
     canonical_model: ClassVar[str] = "index_daily"
 
     async_mode = "bounded_thread"
+
+    def __init__(
+        self,
+        *,
+        source_attempt_gate: SourceAttemptGate | None = None,
+        max_attempts: int | None = None,
+    ) -> None:
+        """Inject an optional persistent send gate and retry ceiling.
+
+        Production reviewed jobs that bind a persistent gate must pass it
+        here. The default remains the existing provider behavior for callers
+        outside that reviewed path.
+        """
+        if source_attempt_gate is not None and type(source_attempt_gate) is not SourceAttemptGate:
+            raise TypeError("source_attempt_gate must be a SourceAttemptGate or None")
+        if max_attempts is not None and (type(max_attempts) is not int or max_attempts < 1):
+            raise ValueError("max_attempts must be a positive integer")
+        self._source_attempt_gate = source_attempt_gate
+        self._max_attempts = max_attempts
 
     capability: ClassVar[Capability] = Capability(
         asset_class="index",
@@ -88,7 +116,12 @@ class ThsIndexDailyFetcher(Fetcher[ThsIndexDailyQuery, tuple[Bar, ...]]):
         end = params.end_date or datetime.now(timezone.utc).date()
         # 中台窗口为半开 [start, end)；调用方的 end_date 是闭区间日，故 +1 天。
         window_end = date.fromordinal(end.toordinal() + 1)
-        with client(timeout_seconds=ctx.timeout) as active:
+        client_options: _ClientCallOptions = {"timeout_seconds": ctx.timeout}
+        if self._source_attempt_gate is not None:
+            client_options["source_attempt_gate"] = self._source_attempt_gate
+        if self._max_attempts is not None:
+            client_options["max_attempts"] = self._max_attempts
+        with client(**client_options) as active:
             code = resolve_index_code(active, params.symbol)
             return fetch_index_daily_bars(active, symbol=code, start=start, end=window_end)
 
