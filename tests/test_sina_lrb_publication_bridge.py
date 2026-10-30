@@ -128,6 +128,24 @@ def _grant(source_id: str = "sina-lrb") -> DatasetGrant:
     )
 
 
+def _standalone_capture_context(
+    run_key: str,
+    active_context: RunExecutionContext,
+) -> RunExecutionContext:
+    """Give the second synthetic fixture its own direct, non-ledger identity context.
+
+    The first capture is the RunService-backed path under test. The second body
+    is an independent test fixture combined into the same batch, so it must not
+    inherit the first run's verified snapshot identity.
+    """
+    return RunExecutionContext(
+        run_key=run_key,
+        worker=active_context.worker,
+        fencing_token=active_context.fencing_token,
+        _checkpoint=lambda: None,
+    )
+
+
 async def test_sina_lrb_publication_snapshot_and_records_bridge(tmp_path: Path) -> None:
     """Publish two synthetic captures and read one through fixed, scoped API pages."""
     first_body = _synthetic_response(revenue="123.45", profit="67.89")
@@ -200,6 +218,7 @@ async def test_sina_lrb_publication_snapshot_and_records_bridge(tmp_path: Path) 
                     authorization=authorization,
                     retention_class="restricted",
                     source_history_limit="unknown",
+                    task=task,
                 )
                 archived = capture_handler(capture_request, capture_context)
                 assert type(archived) is SinaLrbArchivedCapture
@@ -214,7 +233,7 @@ async def test_sina_lrb_publication_snapshot_and_records_bridge(tmp_path: Path) 
             second_archived = archive(
                 second_body,
                 second_request,
-                replace(context, run_key=second_capture_id),
+                _standalone_capture_context(second_capture_id, context),
                 retrieved_at_utc=RETRIEVED_AT + timedelta(minutes=5),
             )
             return first_archived, second_archived
@@ -231,12 +250,14 @@ async def test_sina_lrb_publication_snapshot_and_records_bridge(tmp_path: Path) 
                 source_request,
                 context,
                 artifact_root=raw_root,
+                task=task,
             )
             second_batch = normalize_sina_lrb_capture(
                 raw[1],
                 second_request,
-                replace(context, run_key=second_capture_id),
+                _standalone_capture_context(second_capture_id, context),
                 artifact_root=raw_root,
+                task=task,
             )
             evidence_fields = (
                 "capture_id",

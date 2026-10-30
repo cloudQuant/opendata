@@ -26,7 +26,12 @@ from opendata.data.providers.sina.lrb_statement_publication import (
 )
 from opendata.pipeline.contract_publication import ValidatedPublicationWriter
 from opendata.pipeline.reviewed_worker import ProcessFetchHandler
-from opendata.pipeline.run_identity import RunRequest, ScheduleMetadata, TaskDefinition
+from opendata.pipeline.run_identity import (
+    RunRequest,
+    ScheduleMetadata,
+    TaskDefinition,
+    build_run_identity,
+)
 from opendata.pipeline.run_service import (
     NormalizedBatch,
     NormalizedRecord,
@@ -61,7 +66,6 @@ if TYPE_CHECKING:
 _SYMBOL = "600519.SH"
 _OTHER_SYMBOL = "000001.SZ"
 _RETRIEVED_AT = datetime(2020, 1, 2, 3, 4, 5, 456789, tzinfo=timezone.utc)
-_RUN_KEY = "a" * 64
 _BODY = json.dumps(
     {
         "result": {
@@ -137,6 +141,9 @@ def _request(symbol: str = _SYMBOL, token: str = "manual-capture") -> RunRequest
     )
 
 
+_RUN_KEY = build_run_identity(_task(), _request()).idempotency_key
+
+
 def _context(
     run_key: str = _RUN_KEY,
     checkpoint: Callable[[], None] | None = None,
@@ -177,18 +184,23 @@ def _archive(
     capture: object,
     root: Path,
     *,
-    run_key: str = _RUN_KEY,
+    run_key: str | None = None,
+    request_token: str = "manual-capture",
     requested_symbol: str = _SYMBOL,
 ) -> SinaLrbArchivedCapture:
     """Persist and verify one synthetic capture through the production wrapper."""
+    request = _request(requested_symbol, request_token)
+    identity = build_run_identity(_task(), request)
     handler = SinaLrbRawCaptureHandler(
         _FixedProcessHandler(capture),
         artifact_root=root,
         authorization=_authorization(),
         retention_class="restricted",
         source_history_limit="unknown",
+        task=_task(),
     )
-    return handler(_request(requested_symbol), _context(run_key))  # type: ignore[return-value]
+    context_run_key = identity.idempotency_key if run_key is None else run_key
+    return handler(request, _context(context_run_key))  # type: ignore[return-value]
 
 
 def _synthetic_batch(
@@ -265,6 +277,18 @@ def test_builder_requires_both_source_and_retention_authorizations(
 ) -> None:
     with pytest.raises(ValueError, match="sina_lrb_raw_authorization_denied"):
         _build_job(_task(), tmp_path / "raw", authorization=authorization)
+
+
+def test_builder_rejects_wrong_authorization_runtime_type(tmp_path: Path) -> None:
+    with pytest.raises(TypeError, match="authorization must be a SinaLrbRawAuthorization"):
+        build_sina_lrb_job(
+            _task(),
+            contract_registry=_registry(),
+            artifact_root=tmp_path / "raw",
+            authorization=object(),  # type: ignore[arg-type]
+            retention_class="restricted",
+            source_history_limit="unknown",
+        )
 
 
 def test_builder_requires_exact_dataset_contract(tmp_path: Path) -> None:
@@ -463,6 +487,7 @@ def test_parent_normalizer_binds_archive_to_run_and_publication_provenance(
         _request(),
         _context(checkpoint=checkpoint),
         artifact_root=root,
+        task=_task(),
     )
 
     assert checkpoints == 2
@@ -497,6 +522,7 @@ def test_parent_normalizer_rejects_mismatched_instrument_capture_and_run_identit
             _request(),
             _context(),
             artifact_root=root,
+            task=_task(),
         )
 
     archived = _archive(_capture(), root)
@@ -506,6 +532,7 @@ def test_parent_normalizer_rejects_mismatched_instrument_capture_and_run_identit
             _request(_OTHER_SYMBOL),
             _context(),
             artifact_root=root,
+            task=_task(),
         )
 
     with pytest.raises(ValueError, match="sina_lrb_capture_invalid"):
@@ -514,10 +541,17 @@ def test_parent_normalizer_rejects_mismatched_instrument_capture_and_run_identit
             _request(),
             _context("invalid-run-key"),
             artifact_root=root,
+            task=_task(),
         )
-    wrong_run = _archive(_capture(), root, run_key="c" * 64)
+    wrong_run = _archive(_capture(), root, request_token="another-manual-capture")
     with pytest.raises(ValueError, match="sina_lrb_capture_invalid"):
-        normalize_sina_lrb_capture(wrong_run, _request(), _context(), artifact_root=root)
+        normalize_sina_lrb_capture(
+            wrong_run,
+            _request(),
+            _context(),
+            artifact_root=root,
+            task=_task(),
+        )
 
 
 def test_normalizer_requires_archived_capture_and_revalidates_manifest(
@@ -527,10 +561,14 @@ def test_normalizer_requires_archived_capture_and_revalidates_manifest(
     archived = _archive(_capture(), root)
 
     with pytest.raises(ValueError, match="sina_lrb_capture_invalid"):
-        normalize_sina_lrb_capture(_capture(), _request(), _context(), artifact_root=root)
+        normalize_sina_lrb_capture(
+            _capture(), _request(), _context(), artifact_root=root, task=_task()
+        )
 
     with pytest.raises(ValueError, match="sina_lrb_capture_invalid"):
-        normalize_sina_lrb_capture(object(), _request(), _context(), artifact_root=root)
+        normalize_sina_lrb_capture(
+            object(), _request(), _context(), artifact_root=root, task=_task()
+        )
 
     with pytest.raises(ValueError, match="sina_lrb_capture_invalid"):
         normalize_sina_lrb_capture(
@@ -538,6 +576,7 @@ def test_normalizer_requires_archived_capture_and_revalidates_manifest(
             _request(),
             _context(),
             artifact_root=root,
+            task=_task(),
         )
 
 
@@ -550,6 +589,7 @@ def test_normalizer_checks_context_capture_and_lease_checkpoints(tmp_path: Path)
             _request(),
             object(),  # type: ignore[arg-type]
             artifact_root=root,
+            task=_task(),
         )
 
     for fail_on_checkpoint in (1, 2):
@@ -567,6 +607,7 @@ def test_normalizer_checks_context_capture_and_lease_checkpoints(tmp_path: Path)
                 _request(),
                 _context(checkpoint=checkpoint),
                 artifact_root=root,
+                task=_task(),
             )
 
 
@@ -599,6 +640,7 @@ def test_normalizer_rejects_serializer_output_outside_the_contract(
             _request(),
             _context(),
             artifact_root=root,
+            task=_task(),
         )
 
 
@@ -614,6 +656,7 @@ def test_parent_normalizer_rejects_invalid_source_document_without_partial_batch
             _request(),
             _context(),
             artifact_root=root,
+            task=_task(),
         )
 
     oversized = b"x" * (MAX_RAW_RESPONSE_BYTES + 1)

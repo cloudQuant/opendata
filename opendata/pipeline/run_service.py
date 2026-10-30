@@ -43,6 +43,7 @@ MAX_RESULT_TEXT = 4_096
 _RUN_LEDGER_ENQUEUE_METHOD = RunLedger.enqueue
 _RUN_LEDGER_CLAIM_RUN_METHOD = RunLedger.claim_run
 _UNSET_COMMIT_PAYLOAD = object()
+_RUN_SNAPSHOT_IDENTITY_ISSUER = object()
 _ERROR_NAME = re.compile(r"^_?[A-Za-z][A-Za-z0-9_]{0,79}$")
 _SECRET_KEY_MARKERS = (
     "accesskey",
@@ -264,6 +265,21 @@ class ReviewedJobRegistry:
 
 
 @dataclass(frozen=True, slots=True)
+class _VerifiedRunSnapshot:
+    """Canonical snapshot provenance issued by RunService for one validated claim.
+
+    The issuer marker prevents accidental construction by callers. It is not a
+    security boundary against hostile code in this Python process; the trusted
+    boundary remains RunService validation plus RunLedger's fenced commit.
+    """
+
+    run_key: str
+    payload_hash: str
+    canonical_json: str
+    _issuer: object = field(repr=False, compare=False)
+
+
+@dataclass(frozen=True, slots=True)
 class RunExecutionContext:
     """Read-only execution context with an explicit lease renewal checkpoint."""
 
@@ -272,6 +288,11 @@ class RunExecutionContext:
     fencing_token: int
     _checkpoint: Callable[[], None]
     _cooperative_checkpoint: _CooperativeCheckpoint | None = None
+    _snapshot_identity: _VerifiedRunSnapshot | None = field(
+        default=None,
+        repr=False,
+        compare=False,
+    )
 
     def __post_init__(self) -> None:
         """Bind a local fallback throttle for contexts built outside RunService."""
@@ -293,6 +314,33 @@ class RunExecutionContext:
         """Renew the lease when cooperative CPU work reaches its safe cadence."""
         if self._cooperative_checkpoint is not None:
             self._cooperative_checkpoint()
+
+    def _verified_snapshot_json(self) -> str | None:
+        """Return the canonical snapshot only when this is a RunService-issued context.
+
+        The snapshot is reparsed and its run key is revalidated on every read.
+        LRB consumers additionally bind its task and business request to their
+        arguments. This is provenance for trusted in-process composition, not
+        protection from hostile code that can mutate this process.
+        """
+        identity = self._snapshot_identity
+        if identity is None:
+            return None
+        if (
+            type(identity) is not _VerifiedRunSnapshot
+            or identity._issuer is not _RUN_SNAPSHOT_IDENTITY_ISSUER
+            or identity.run_key != self.run_key
+        ):
+            raise ValueError("run context snapshot identity is invalid")
+        try:
+            snapshot = _parse_snapshot(identity.canonical_json)
+            _request_from_snapshot(snapshot, identity.run_key)
+            snapshot_hash = hashlib.sha256(identity.canonical_json.encode("utf-8")).hexdigest()
+        except Exception as exc:
+            raise ValueError("run context snapshot identity is invalid") from exc
+        if snapshot_hash != identity.payload_hash:
+            raise ValueError("run context snapshot identity is invalid")
+        return identity.canonical_json
 
 
 @dataclass(frozen=True, slots=True)
@@ -432,7 +480,7 @@ class RunService:
     def _execute_claimed(self, record: RunRecord, worker: str, ttl: timedelta) -> RunOutcome:
         """Validate a stored snapshot, run handlers, then publish atomically."""
         try:
-            job, request = self._resolve_snapshot(record)
+            job, request, snapshot_identity = self._resolve_snapshot(record)
             if not job.reviewed:
                 raise _JobNotRunnableError("job_not_reviewed")
             if job.one_shot_only:
@@ -445,7 +493,7 @@ class RunService:
                     raise _JobNotRunnableError("one_shot_only_contract_invalid")
             elif not job.task.enabled:
                 raise _JobNotRunnableError("job_disabled")
-            context = self._execution_context(record, worker, ttl)
+            context = self._execution_context(record, worker, ttl, snapshot_identity)
             context.checkpoint()
             raw = job.fetch(request, context)
             context.checkpoint()
@@ -524,9 +572,19 @@ class RunService:
         return job
 
     def _execution_context(
-        self, record: RunRecord, worker: str, ttl: timedelta
+        self,
+        record: RunRecord,
+        worker: str,
+        ttl: timedelta,
+        snapshot_identity: _VerifiedRunSnapshot,
     ) -> RunExecutionContext:
         """Bind lease renewals to one claimed record and fencing token."""
+        if (
+            type(snapshot_identity) is not _VerifiedRunSnapshot
+            or snapshot_identity._issuer is not _RUN_SNAPSHOT_IDENTITY_ISSUER
+            or snapshot_identity.run_key != record.run_key
+        ):
+            raise ValueError("run snapshot identity is invalid")
 
         def checkpoint() -> None:
             renewed = self._ledger.heartbeat(
@@ -550,9 +608,12 @@ class RunService:
                 interval_seconds=min(0.25, ttl.total_seconds() / 5),
                 immediate=False,
             ),
+            _snapshot_identity=snapshot_identity,
         )
 
-    def _resolve_snapshot(self, record: RunRecord) -> tuple[ReviewedJob, RunRequest]:
+    def _resolve_snapshot(
+        self, record: RunRecord
+    ) -> tuple[ReviewedJob, RunRequest, _VerifiedRunSnapshot]:
         """Parse and verify a bounded canonical snapshot against the registry."""
         snapshot = _parse_snapshot(record.job_snapshot_json)
         job_data = snapshot["job"]
@@ -574,7 +635,13 @@ class RunService:
         if job_data != expected_job:
             raise _SnapshotInvalidError("job_snapshot_mismatch")
         request = _request_from_snapshot(snapshot, record.run_key)
-        return job, request
+        snapshot_identity = _VerifiedRunSnapshot(
+            run_key=record.run_key,
+            payload_hash=hashlib.sha256(record.job_snapshot_json.encode("utf-8")).hexdigest(),
+            canonical_json=record.job_snapshot_json,
+            _issuer=_RUN_SNAPSHOT_IDENTITY_ISSUER,
+        )
+        return job, request, snapshot_identity
 
     def _validate_batch(
         self,
