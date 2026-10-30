@@ -41,6 +41,7 @@ from opendata.data.request_budget import (
     RequestOperation,
     request_execution_scope,
 )
+from opendata.data.request_summary import request_summary_sha256
 
 if TYPE_CHECKING:  # pragma: no cover
     from collections.abc import Mapping
@@ -52,7 +53,9 @@ __all__ = [
     "SINA_LRB_PROCESS_PROTOCOL",
     "SinaLrbProcessError",
     "SinaLrbQuery",
+    "build_sina_lrb_query_parameters",
     "fetch_sina_lrb_capture",
+    "sina_lrb_request_summary_sha256",
 ]
 
 SINA_LRB_PROCESS_OPERATION_ID = "sina.lrb.capture.v1"
@@ -82,8 +85,10 @@ _ERROR_CODES = frozenset(
         "response_too_large",
         "deadline_exceeded",
         "cancelled",
+        "request_summary_invalid",
     }
 )
+_REQUEST_SUMMARY_FIELDS = frozenset({"paper_code", "source", "type", "page", "num"})
 
 
 class SinaLrbProcessError(RuntimeError):
@@ -105,6 +110,61 @@ class SinaLrbQuery:
         """Validate the exact exchange-qualified symbol without coercion."""
         if type(self.symbol) is not str or _SYMBOL_PATTERN.fullmatch(self.symbol) is None:
             raise SinaLrbProcessError("invalid_query")
+
+
+def build_sina_lrb_query_parameters(instrument_id: object) -> dict[str, str]:
+    """Build the one provider query shared by transport and request provenance.
+
+    Args:
+        instrument_id: Canonical six-digit SH or SZ symbol.
+
+    Returns:
+        A new mapping of the exact wire query parameters.
+
+    Raises:
+        SinaLrbProcessError: If the instrument identifier is not canonical.
+    """
+    if type(instrument_id) is not str:
+        raise SinaLrbProcessError("invalid_query")
+    query = SinaLrbQuery(instrument_id)
+    market = "sh" if query.symbol.endswith(".SH") else "sz"
+    return {
+        "paperCode": f"{market}{query.symbol[:6]}",
+        "source": "lrb",
+        "type": "0",
+        "page": "1",
+        "num": "1000",
+    }
+
+
+def sina_lrb_request_summary_sha256(instrument_id: object) -> str:
+    """Hash the same fixed wire values used by the actual Sina LRB request.
+
+    Args:
+        instrument_id: Canonical six-digit SH or SZ symbol.
+
+    Returns:
+        Lowercase SHA-256 digest for the canonical request summary.
+
+    Raises:
+        SinaLrbProcessError: If the symbol or bounded summary is invalid.
+    """
+    parameters = build_sina_lrb_query_parameters(instrument_id)
+    summary_parameters = {
+        "paper_code": parameters["paperCode"],
+        "source": parameters["source"],
+        "type": parameters["type"],
+        "page": parameters["page"],
+        "num": parameters["num"],
+    }
+    try:
+        digest: str = request_summary_sha256(
+            summary_parameters,
+            allowed_fields=_REQUEST_SUMMARY_FIELDS,
+        )
+        return digest
+    except Exception:
+        raise SinaLrbProcessError("request_summary_invalid") from None
 
 
 def fetch_sina_lrb_capture(parameters: Mapping[str, JsonValue]) -> dict[str, JsonValue]:
@@ -155,14 +215,7 @@ def _capture_sina_lrb_response(
     if context.request_budget is None or context.operation is not RequestOperation.QUERY:
         raise SinaLrbProcessError("admission_denied")
 
-    market = "sh" if query.symbol.endswith(".SH") else "sz"
-    query_params = {
-        "paperCode": f"{market}{query.symbol[:6]}",
-        "source": "lrb",
-        "type": "0",
-        "page": "1",
-        "num": "1000",
-    }
+    query_params = build_sina_lrb_query_parameters(query.symbol)
     deadline = context._deadline_monotonic
     if deadline is None:
         deadline = time.monotonic() + OVERALL_TIMEOUT_SECONDS

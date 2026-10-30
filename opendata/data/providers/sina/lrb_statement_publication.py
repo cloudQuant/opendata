@@ -21,7 +21,7 @@ import hashlib
 import json
 import re
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from typing import TYPE_CHECKING, Literal, NoReturn, TypeAlias, TypeGuard
@@ -37,6 +37,12 @@ from opendata.data.providers.sina.lrb_statement_parser import (
     SinaLrbWireError,
     parse_sina_lrb_response,
 )
+from opendata.data.providers.sina.lrb_statement_process import (
+    SINA_LRB_PROCESS_OPERATION_ID,
+    sina_lrb_request_summary_sha256,
+)
+from opendata.pipeline.raw_evidence import RawResponseManifest, RawResponseSource
+from opendata.pipeline.raw_evidence_reader import RawEvidenceReadResult
 from opendata.pipeline.run_service import (
     MAX_RESULT_BYTES,
     MAX_RESULT_DEPTH,
@@ -52,6 +58,7 @@ __all__ = [
     "SINA_LRB_DATASET_ID",
     "SINA_LRB_RESPONSE_ENCODING",
     "SinaLrbPublicationError",
+    "bind_sina_lrb_raw_provenance",
     "build_sina_lrb_observation_contract",
     "reconstruct_sina_lrb_source_document",
     "serialize_sina_lrb_response",
@@ -66,8 +73,24 @@ _STATEMENT_CODE = "lrb"
 _SOURCE_PAPER_CODE_PREFIX = {"SH": "sh", "SZ": "sz"}
 _SYMBOL = re.compile(r"[0-9]{6}\.(?:SH|SZ)\Z", re.ASCII)
 _CAPTURE_ID = re.compile(r"[0-9a-f]{64}\Z", re.ASCII)
+_SHA256 = _CAPTURE_ID
+_AUTHORIZATION_REFERENCE = re.compile(
+    r"^(?:source-auth|raw-retention):[A-Za-z][A-Za-z0-9_.-]{0,63}$",
+    re.ASCII,
+)
+_SECRET_SHAPED_REFERENCE = re.compile(
+    r"(?:\bsk-[A-Za-z0-9_-]{16,}\b|\b(?:gh[pousr]_[A-Za-z0-9]{20,}|"
+    r"github_pat_[A-Za-z0-9_]{20,})\b|\bAKIA[0-9A-Z]{16}\b|"
+    r"\bxox[baprs]-[A-Za-z0-9-]{10,}\b|\bBearer\s+)",
+    re.ASCII | re.IGNORECASE,
+)
 _REPORT_DATE_VALUE = re.compile(r"[0-9]{8}\Z", re.ASCII)
 _UTC = timezone.utc
+_RAW_RESPONSE_SOURCE = RawResponseSource(
+    provider_id="sina",
+    dataset_id=SINA_LRB_DATASET_ID,
+    operation_id=SINA_LRB_PROCESS_OPERATION_ID,
+)
 
 # A single source report is independently addressable by the generic snapshot
 # API. Keep each row below the publication-store hard limit and bound the full
@@ -89,6 +112,7 @@ _PUBLICATION_ERROR_MESSAGES: dict[str, str] = {
     "invalid_input": "Sina LRB publication input is invalid.",
     "invalid_response": "Sina LRB publication response is invalid.",
     "limit_exceeded": "Sina LRB publication exceeded a downstream limit.",
+    "raw_evidence_mismatch": "Sina LRB raw-evidence provenance does not match the batch.",
 }
 
 
@@ -96,7 +120,10 @@ class SinaLrbPublicationError(ValueError):
     """Sanitized failure raised while building or reversing an LRB publication."""
 
     def __init__(
-        self, code: Literal["invalid_input", "invalid_response", "limit_exceeded"]
+        self,
+        code: Literal[
+            "invalid_input", "invalid_response", "limit_exceeded", "raw_evidence_mismatch"
+        ],
     ) -> None:
         """Initialize a stable, value-free public error."""
         message = _PUBLICATION_ERROR_MESSAGES.get(code)
@@ -177,6 +204,121 @@ def build_sina_lrb_observation_contract() -> DatasetContract:
         timezone="UTC",
         pit_policy="unsupported",
     )
+
+
+def bind_sina_lrb_raw_provenance(
+    batch: NormalizedBatch,
+    *,
+    evidence: RawEvidenceReadResult,
+    instrument_id: str,
+    run_key: str,
+    source_access_ref: str,
+    raw_retention_ref: str,
+    retrieved_at_utc: datetime,
+) -> NormalizedBatch:
+    """Bind verified raw-evidence hashes to an LRB publication batch.
+
+    The caller supplies the exact result from ``RawResponseArtifactReader``.
+    This function rechecks its source identity, request summary, HTTP status,
+    response size/hash, manifest digest shape, and collection time before
+    matching the serializer's independent response digest and every row. This
+    binds one immutable manifest address to this body/request/run in publication
+    provenance; it does not create a RunLedger recovery journal.
+
+    Args:
+        batch: Unmodified result of serializing the exact verified response body.
+        evidence: Exact artifact-reader result used to supply that response body.
+        instrument_id: Canonical SH/SZ instrument from the archived capture.
+        run_key: Fenced RunService key used as the publication capture identity.
+        source_access_ref: Non-secret authorization review reference.
+        raw_retention_ref: Non-secret raw-retention review reference.
+        retrieved_at_utc: UTC instant decoded from the source response.
+
+    Returns:
+        A copied batch whose provenance contains the linked raw evidence hashes.
+
+    Raises:
+        SinaLrbPublicationError: If any supplied evidence conflicts with the
+            serialized capture or is malformed.
+    """
+    if (
+        type(batch) is not NormalizedBatch
+        or type(evidence) is not RawEvidenceReadResult
+        or type(evidence.manifest) is not RawResponseManifest
+        or type(evidence.body) is not bytes
+        or evidence.manifest.source != _RAW_RESPONSE_SOURCE
+        or evidence.manifest.http_status != 200
+        or evidence.manifest.response_size_bytes != len(evidence.body)
+        or evidence.manifest.response_sha256 != hashlib.sha256(evidence.body).hexdigest()
+        or type(evidence.manifest_sha256) is not str
+        or _SHA256.fullmatch(evidence.manifest_sha256) is None
+        or type(instrument_id) is not str
+        or _SYMBOL.fullmatch(instrument_id) is None
+        or type(run_key) is not str
+        or _CAPTURE_ID.fullmatch(run_key) is None
+        or type(source_access_ref) is not str
+        or _AUTHORIZATION_REFERENCE.fullmatch(source_access_ref) is None
+        or not source_access_ref.startswith("source-auth:")
+        or _SECRET_SHAPED_REFERENCE.search(source_access_ref) is not None
+        or type(raw_retention_ref) is not str
+        or _AUTHORIZATION_REFERENCE.fullmatch(raw_retention_ref) is None
+        or not raw_retention_ref.startswith("raw-retention:")
+        or _SECRET_SHAPED_REFERENCE.search(raw_retention_ref) is not None
+        or type(retrieved_at_utc) is not datetime
+    ):
+        _raise("raw_evidence_mismatch")
+
+    try:
+        expected_request_summary = sina_lrb_request_summary_sha256(instrument_id)
+        normalized_captured_at = _normalize_utc_datetime(evidence.manifest.captured_at_utc)
+        normalized_retrieved_at = _normalize_utc_datetime(retrieved_at_utc)
+        if normalized_captured_at < normalized_retrieved_at:
+            _raise("raw_evidence_mismatch")
+        retrieved_time_text = _utc_iso(normalized_retrieved_at)
+        capture_time_text = _utc_iso(normalized_captured_at)
+    except Exception:
+        _raise("raw_evidence_mismatch")
+    if evidence.manifest.request_summary_sha256 != expected_request_summary:
+        _raise("raw_evidence_mismatch")
+
+    provenance = batch.provenance
+    response_sha256 = evidence.manifest.response_sha256
+    if (
+        not isinstance(provenance, Mapping)
+        or provenance.get("raw_response_persisted") is not False
+        or provenance.get("capture_id") != run_key
+        or provenance.get("response_sha256") != response_sha256
+        or provenance.get("retrieved_at_utc") != retrieved_time_text
+        or batch.schema_version != _SCHEMA_VERSION
+        or batch.semantic_version != _SEMANTIC_VERSION
+        or not batch.records
+    ):
+        _raise("raw_evidence_mismatch")
+
+    for record in batch.records:
+        if (
+            type(record) is not NormalizedRecord
+            or not isinstance(record.payload, Mapping)
+            or record.payload.get("instrument_id") != instrument_id
+            or record.payload.get("capture_id") != run_key
+            or record.payload.get("response_sha256") != response_sha256
+            or record.observed_at != normalized_retrieved_at
+        ):
+            _raise("raw_evidence_mismatch")
+
+    linked_provenance = dict(provenance)
+    linked_provenance.update(
+        {
+            "run_key": run_key,
+            "raw_response_persisted": True,
+            "raw_manifest_sha256": evidence.manifest_sha256,
+            "request_summary_sha256": evidence.manifest.request_summary_sha256,
+            "source_access_ref": source_access_ref,
+            "raw_retention_ref": raw_retention_ref,
+            "raw_captured_at_utc": capture_time_text,
+        }
+    )
+    return replace(batch, provenance=linked_provenance)
 
 
 def serialize_sina_lrb_response(
@@ -987,6 +1129,22 @@ def _paper_code(symbol: str) -> str:
     return f"{_SOURCE_PAPER_CODE_PREFIX[exchange]}{code}"
 
 
+def _normalize_utc_datetime(value: object) -> datetime:
+    """Normalize an exact aware zero-offset datetime for provenance binding."""
+    if type(value) is not datetime or value.tzinfo is None:
+        _raise("raw_evidence_mismatch")
+    try:
+        offset = value.utcoffset()
+        normalized = value.astimezone(_UTC)
+    except Exception:
+        _raise("raw_evidence_mismatch")
+    if type(offset) is not timedelta or offset != timedelta(0):
+        _raise("raw_evidence_mismatch")
+    if type(normalized) is not datetime or normalized.tzinfo is not _UTC:
+        _raise("raw_evidence_mismatch")
+    return normalized
+
+
 def _utc_iso(value: datetime | None) -> str:
     """Render an explicit UTC timestamp in the stable API representation."""
     if type(value) is not datetime or value.tzinfo is not _UTC:
@@ -994,6 +1152,8 @@ def _utc_iso(value: datetime | None) -> str:
     return value.isoformat(timespec="microseconds").replace("+00:00", "Z")
 
 
-def _raise(code: Literal["invalid_input", "invalid_response", "limit_exceeded"]) -> NoReturn:
+def _raise(
+    code: Literal["invalid_input", "invalid_response", "limit_exceeded", "raw_evidence_mismatch"],
+) -> NoReturn:
     """Raise one fixed publication error without attaching source details."""
     raise SinaLrbPublicationError(code) from None

@@ -33,6 +33,8 @@ from opendata.data.providers.sina.lrb_statement_process import (
     _new_session,
     _transport_error_code,
     _validated_query,
+    build_sina_lrb_query_parameters,
+    sina_lrb_request_summary_sha256,
 )
 from opendata.data.request_budget import (
     GrantDecision,
@@ -96,6 +98,30 @@ def _client(
 
 def _parameters(symbol: str = "600519.SH") -> dict[str, str]:
     return {"protocol": SINA_LRB_PROCESS_PROTOCOL, "symbol": symbol}
+
+
+def test_query_parameter_builder_is_the_golden_summary_source() -> None:
+    assert build_sina_lrb_query_parameters("600519.SH") == {
+        "paperCode": "sh600519",
+        "source": "lrb",
+        "type": "0",
+        "page": "1",
+        "num": "1000",
+    }
+    assert build_sina_lrb_query_parameters("000001.SZ") == {
+        "paperCode": "sz000001",
+        "source": "lrb",
+        "type": "0",
+        "page": "1",
+        "num": "1000",
+    }
+    assert (
+        sina_lrb_request_summary_sha256("600519.SH")
+        == "3efc9094f5d1bcb908eb943d40dae109f4e571710766edc8bdadeccb64a36b70"
+    )
+    for invalid in ("600519", "600519.BJ", object()):
+        with pytest.raises(SinaLrbProcessError, match="invalid_query"):
+            build_sina_lrb_query_parameters(invalid)
 
 
 def test_fixed_query_accepts_only_canonical_shenzhen_or_shanghai_symbols() -> None:

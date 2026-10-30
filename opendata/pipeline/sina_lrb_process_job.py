@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import base64
 import binascii
+import hashlib
 import re
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
 from pydantic import ValidationError
@@ -26,20 +27,34 @@ from opendata.data.providers.sina.lrb_statement_process import (
     fetch_sina_lrb_capture,
 )
 from opendata.data.providers.sina.lrb_statement_publication import (
+    SinaLrbPublicationError,
+    bind_sina_lrb_raw_provenance,
     build_sina_lrb_observation_contract,
     serialize_sina_lrb_response,
 )
 from opendata.pipeline.contract_publication import ValidatedPublicationWriter
 from opendata.pipeline.run_identity import RunRequest, TaskDefinition
 from opendata.pipeline.run_service import NormalizedBatch, ReviewedJob, RunExecutionContext
+from opendata.pipeline.sina_lrb_raw_capture import (
+    SinaLrbArchivedCapture,
+    SinaLrbRawAuthorization,
+    SinaLrbRawCaptureError,
+    SinaLrbRawCaptureHandler,
+    read_sina_lrb_archived_evidence,
+    sina_lrb_request_summary_sha256,
+)
 
 if TYPE_CHECKING:  # pragma: no cover
+    from pathlib import Path
+
     from pydantic import JsonValue
 
+    from opendata.pipeline.raw_evidence import HistoryLimit, RetentionClass
     from opendata.pipeline.reviewed_worker import ProcessFetchHandler
 
 __all__ = [
     "SinaLrbProcessCapture",
+    "SinaLrbRawCaptureNormalizer",
     "build_sina_lrb_job",
     "build_sina_lrb_manual_payload",
     "build_sina_lrb_process_source",
@@ -66,6 +81,7 @@ _CAPTURE_ERROR = "sina_lrb_capture_invalid"
 _TASK_ERROR = "sina_lrb_task_definition_invalid"
 _CONTRACT_ERROR = "sina_lrb_dataset_contract_invalid"
 _NORMALIZE_ERROR = "sina_lrb_normalization_failed"
+_RAW_AUTHORIZATION_ERROR = "sina_lrb_raw_authorization_denied"
 _UTC = timezone.utc
 
 
@@ -77,6 +93,27 @@ class SinaLrbProcessCapture:
     status_code: int
     retrieved_at_utc: datetime
     body: bytes
+
+
+@dataclass(frozen=True, slots=True)
+class SinaLrbRawCaptureNormalizer:
+    """Normalize only body-free archive references from the explicit raw root."""
+
+    artifact_root: Path | str
+
+    def __call__(
+        self,
+        raw: object,
+        request: RunRequest,
+        context: RunExecutionContext,
+    ) -> NormalizedBatch:
+        """Read the configured verified artifact and build its bound batch."""
+        return normalize_sina_lrb_capture(
+            raw,
+            request,
+            context,
+            artifact_root=self.artifact_root,
+        )
 
 
 def build_sina_lrb_manual_payload(
@@ -159,17 +196,30 @@ def build_sina_lrb_job(
     task: TaskDefinition,
     *,
     contract_registry: DatasetContractRegistry,
+    artifact_root: Path | str,
+    authorization: SinaLrbRawAuthorization,
+    retention_class: RetentionClass,
+    source_history_limit: HistoryLimit,
 ) -> ReviewedJob:
     """Build the disabled, unscheduled, unreviewed LRB one-shot process job.
 
-    The current process composition is opt-in, sets ``reviewed=False``, and is
-    not registered by a production app. Even if a later version is reviewed,
-    ``one_shot_only`` restricts requests to explicit manual submissions. These
-    controls do not establish a persistent source quota across separate runs.
+    The process fetch is wrapped by a bounded raw archive writer. Both source
+    access and raw retention require explicit caller decisions, and the raw root
+    and retention labels are mandatory inputs. The returned job remains opt-in,
+    ``reviewed=False``, disabled, unscheduled, and unregistered. Successful
+    publication provenance links the run key, manifest digest, response digest,
+    request-summary digest, and authorization references. There is no durable
+    RunLedger capture journal or automatic recovery of an artifact written
+    before a crash or failed publication; such orphan files require manual
+    reconciliation.
 
     Args:
         task: Exact disabled ``sina-lrb-capture/process-v1`` metadata.
         contract_registry: Explicit registry containing the LRB source contract.
+        artifact_root: Explicit private root for raw response objects/manifests.
+        authorization: Separate caller-reviewed source and raw-retention grants.
+        retention_class: Explicit retention classification for the manifest.
+        source_history_limit: Explicit source-history boundary for the manifest.
 
     Returns:
         A preparation-only job with process fetch, source-native normalization,
@@ -177,7 +227,8 @@ def build_sina_lrb_job(
 
     Raises:
         TypeError: If dependencies do not have their required runtime types.
-        ValueError: If task metadata or registered contract differs from LRB.
+        ValueError: If task, contract, authorization, root, or retention policy
+            differs from the reviewed LRB contract.
     """
     task = _validated_task(task)
     if (
@@ -192,11 +243,26 @@ def build_sina_lrb_job(
         raise ValueError(_TASK_ERROR)
     if not isinstance(contract_registry, DatasetContractRegistry):
         raise TypeError("contract_registry must be a DatasetContractRegistry")
+    if type(authorization) is not SinaLrbRawAuthorization:
+        raise TypeError("authorization must be a SinaLrbRawAuthorization")
+    if (
+        authorization.source_access_authorized is not True
+        or authorization.raw_retention_authorized is not True
+    ):
+        raise ValueError(_RAW_AUTHORIZATION_ERROR)
     _validate_registered_contract(contract_registry)
+    process_fetch = build_sina_lrb_process_source()
+    archived_fetch = SinaLrbRawCaptureHandler(
+        process_fetch,
+        artifact_root=artifact_root,
+        authorization=authorization,
+        retention_class=retention_class,
+        source_history_limit=source_history_limit,
+    )
     return ReviewedJob(
         task=task,
-        fetch=build_sina_lrb_process_source(),
-        normalize=normalize_sina_lrb_capture,
+        fetch=archived_fetch,
+        normalize=SinaLrbRawCaptureNormalizer(artifact_root),
         publish=ValidatedPublicationWriter(contract_registry),
         reviewed=False,
         one_shot_only=True,
@@ -207,18 +273,25 @@ def normalize_sina_lrb_capture(
     raw: object,
     request: RunRequest,
     context: RunExecutionContext,
+    *,
+    artifact_root: Path | str,
 ) -> NormalizedBatch:
-    """Parse one process capture and build its source-native LRB publication batch.
+    """Read an archived response and build its raw-evidence-bound publication batch.
 
-    The run key is the capture identity. The LRB serializer preserves report and
-    context JSON structure without assigning accounting, unit, currency, or PIT
-    semantics. Exact response bytes are carried in memory only; this job does
-    not persist a raw-evidence manifest or provide crash recovery.
+    The archived run key must equal the current RunExecutionContext, and its
+    instrument must equal the strict manual request. The reader revalidates the
+    content-addressed manifest and body before parsing. The serializer's
+    independently computed response hash is then checked and linked, together
+    with manifest/request digests and authorization references, into batch
+    provenance. No durable RunLedger capture journal or crash recovery is
+    provided.
 
     Args:
-        raw: Exact capture DTO returned by the fixed process result decoder.
+        raw: Exact body-free :class:`SinaLrbArchivedCapture` returned by the
+            raw-capture fetch wrapper.
         request: Manual single-instrument RunRequest.
         context: Run context carrying the fenced lease checkpoints.
+        artifact_root: Explicit root injected into the fetch wrapper.
 
     Returns:
         The LRB source-native NormalizedBatch from the explicit contract module.
@@ -231,17 +304,39 @@ def normalize_sina_lrb_capture(
         raise TypeError("context must be a RunExecutionContext")
     context.checkpoint()
     expected_symbol = _request_symbol(request)
-    capture = _validate_capture(raw, expected_symbol=expected_symbol)
     if type(context.run_key) is not str or _CAPTURE_ID_PATTERN.fullmatch(context.run_key) is None:
+        raise ValueError(_CAPTURE_ERROR)
+    capture = _validate_archived_capture(
+        raw,
+        expected_symbol=expected_symbol,
+        expected_run_key=context.run_key,
+    )
+    try:
+        evidence = read_sina_lrb_archived_evidence(capture, artifact_root=artifact_root)
+    except SinaLrbRawCaptureError:
+        raise ValueError(_CAPTURE_ERROR) from None
+    if hashlib.sha256(evidence.body).hexdigest() != capture.response_sha256:
         raise ValueError(_CAPTURE_ERROR)
     try:
         batch = serialize_sina_lrb_response(
-            capture.body,
+            evidence.body,
             instrument_id=expected_symbol,
             retrieved_at_utc=capture.retrieved_at_utc,
             capture_id=context.run_key,
         )
     except Exception:
+        raise ValueError(_NORMALIZE_ERROR) from None
+    try:
+        batch = bind_sina_lrb_raw_provenance(
+            batch,
+            evidence=evidence,
+            instrument_id=capture.instrument_id,
+            run_key=capture.run_key,
+            source_access_ref=capture.source_access_ref,
+            raw_retention_ref=capture.raw_retention_ref,
+            retrieved_at_utc=capture.retrieved_at_utc,
+        )
+    except SinaLrbPublicationError:
         raise ValueError(_NORMALIZE_ERROR) from None
     context.checkpoint()
     if type(batch) is not NormalizedBatch:
@@ -372,40 +467,38 @@ def _request_symbol(request: RunRequest) -> str:
         raise ValueError(_PROCESS_REQUEST_ERROR) from None
 
 
-def _validate_capture(raw: object, *, expected_symbol: str) -> SinaLrbProcessCapture:
-    """Require one successful response bound to the requested instrument."""
-    if type(raw) is not SinaLrbProcessCapture:
-        raise ValueError(_CAPTURE_ERROR)
-    if (
-        type(raw.query) is not SinaLrbQuery
-        or raw.query.symbol != expected_symbol
-        or type(raw.status_code) is not int
-        or raw.status_code != 200
-        or type(raw.body) is not bytes
-        or len(raw.body) > MAX_RAW_RESPONSE_BYTES
-    ):
+def _validate_archived_capture(
+    raw: object,
+    *,
+    expected_symbol: str,
+    expected_run_key: str,
+) -> SinaLrbArchivedCapture:
+    """Rebuild and validate one body-free archive reference for this run."""
+    if type(raw) is not SinaLrbArchivedCapture:
         raise ValueError(_CAPTURE_ERROR)
     try:
-        retrieved_at_utc = _canonicalize_utc_datetime(raw.retrieved_at_utc)
+        capture = SinaLrbArchivedCapture(
+            instrument_id=raw.instrument_id,
+            run_key=raw.run_key,
+            status_code=raw.status_code,
+            retrieved_at_utc=raw.retrieved_at_utc,
+            captured_at_utc=raw.captured_at_utc,
+            request_summary_sha256=raw.request_summary_sha256,
+            response_sha256=raw.response_sha256,
+            manifest_sha256=raw.manifest_sha256,
+            source_access_ref=raw.source_access_ref,
+            raw_retention_ref=raw.raw_retention_ref,
+        )
     except Exception:
         raise ValueError(_CAPTURE_ERROR) from None
-    return SinaLrbProcessCapture(
-        query=raw.query,
-        status_code=200,
-        retrieved_at_utc=retrieved_at_utc,
-        body=raw.body,
-    )
-
-
-def _canonicalize_utc_datetime(value: object) -> datetime:
-    """Require one valid aware UTC datetime and normalize its tzinfo object."""
-    if type(value) is not datetime or value.tzinfo is None:
+    if (
+        capture.instrument_id != expected_symbol
+        or capture.run_key != expected_run_key
+        or capture.status_code != 200
+        or capture.request_summary_sha256 != sina_lrb_request_summary_sha256(expected_symbol)
+    ):
         raise ValueError(_CAPTURE_ERROR)
-    offset = value.utcoffset()
-    if type(offset) is not timedelta or offset != timedelta(0):
-        raise ValueError(_CAPTURE_ERROR)
-    normalized = value.astimezone(_UTC)
-    return normalized
+    return capture
 
 
 def _canonical_query(instrument_id: object) -> SinaLrbQuery:

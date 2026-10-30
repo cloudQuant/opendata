@@ -8,6 +8,7 @@ verify production bearer-token or API-key authentication.
 
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import replace
 from datetime import datetime, timedelta, timezone
@@ -31,7 +32,10 @@ from opendata.api.published_data import (
 from opendata.data.dataset_contract_registry import DatasetContractRegistry
 from opendata.data.platform_contracts import SourceIdentity
 from opendata.data.providers.sina.lrb_statement_parser import parse_sina_lrb_response
-from opendata.data.providers.sina.lrb_statement_process import SinaLrbQuery
+from opendata.data.providers.sina.lrb_statement_process import (
+    SinaLrbQuery,
+    sina_lrb_request_summary_sha256,
+)
 from opendata.data.providers.sina.lrb_statement_publication import (
     SINA_LRB_DATASET_ID,
     build_sina_lrb_observation_contract,
@@ -40,6 +44,7 @@ from opendata.data.providers.sina.lrb_statement_publication import (
 from opendata.models.user import User, UserRole
 from opendata.pipeline.contract_publication import ValidatedPublicationWriter
 from opendata.pipeline.publication_store import PUBLICATION_METADATA, PublicationStore
+from opendata.pipeline.reviewed_worker import ProcessFetchHandler
 from opendata.pipeline.run_identity import (
     RunRequest,
     ScheduleMetadata,
@@ -58,12 +63,32 @@ from opendata.pipeline.sina_lrb_process_job import (
     SinaLrbProcessCapture,
     normalize_sina_lrb_capture,
 )
+from opendata.pipeline.sina_lrb_raw_capture import (
+    SinaLrbArchivedCapture,
+    SinaLrbRawAuthorization,
+    SinaLrbRawCaptureHandler,
+)
 
 UTC = timezone.utc
 INSTRUMENT_ID = "600519.SH"
 OTHER_INSTRUMENT_ID = "600001.SH"
-RETRIEVED_AT = datetime(2026, 10, 30, 12, 34, 56, 123456, tzinfo=UTC)
+RETRIEVED_AT = datetime(2020, 1, 2, 3, 4, 5, 123456, tzinfo=UTC)
 SIGNING_KEY = b"od204-sina-lrb-bridge-test-signing-key"
+
+
+class _FixedProcessHandler(ProcessFetchHandler):
+    """Return one synthetic source capture without launching a child process."""
+
+    def __init__(self, capture: SinaLrbProcessCapture) -> None:
+        self._capture = capture
+
+    @property
+    def heartbeat_interval_seconds(self) -> float:
+        return 0.05
+
+    def __call__(self, request: RunRequest, context: RunExecutionContext) -> object:
+        del request, context
+        return self._capture
 
 
 def _synthetic_response(*, revenue: str, profit: str) -> bytes:
@@ -142,26 +167,57 @@ async def test_sina_lrb_publication_snapshot_and_records_bridge(tmp_path: Path) 
         ledger = RunLedger(engine)
         store = PublicationStore(engine, cursor_signing_key=SIGNING_KEY)
         writer = ValidatedPublicationWriter(contracts)
+        raw_root = tmp_path / "raw-evidence"
+        authorization = SinaLrbRawAuthorization(
+            source_access_ref="source-auth:synthetic-bridge-grant",
+            raw_retention_ref="raw-retention:synthetic-bridge-grant",
+            source_access_authorized=True,
+            raw_retention_authorized=True,
+        )
 
         def fetch(
             source_request: RunRequest,
-            _context: RunExecutionContext,
-        ) -> tuple[SinaLrbProcessCapture, SinaLrbProcessCapture]:
+            context: RunExecutionContext,
+        ) -> tuple[SinaLrbArchivedCapture, SinaLrbArchivedCapture]:
             assert source_request.partition == {"instrument_id": INSTRUMENT_ID}
-            return (
-                SinaLrbProcessCapture(
+
+            def archive(
+                response_body: bytes,
+                capture_request: RunRequest,
+                capture_context: RunExecutionContext,
+                *,
+                retrieved_at_utc: datetime,
+            ) -> SinaLrbArchivedCapture:
+                process_capture = SinaLrbProcessCapture(
                     query=SinaLrbQuery(INSTRUMENT_ID),
                     status_code=200,
-                    retrieved_at_utc=RETRIEVED_AT,
-                    body=first_body,
-                ),
-                SinaLrbProcessCapture(
-                    query=SinaLrbQuery(INSTRUMENT_ID),
-                    status_code=200,
-                    retrieved_at_utc=RETRIEVED_AT + timedelta(minutes=5),
-                    body=second_body,
-                ),
+                    retrieved_at_utc=retrieved_at_utc,
+                    body=response_body,
+                )
+                capture_handler = SinaLrbRawCaptureHandler(
+                    _FixedProcessHandler(process_capture),
+                    artifact_root=raw_root,
+                    authorization=authorization,
+                    retention_class="restricted",
+                    source_history_limit="unknown",
+                )
+                archived = capture_handler(capture_request, capture_context)
+                assert type(archived) is SinaLrbArchivedCapture
+                return archived
+
+            first_archived = archive(
+                first_body,
+                source_request,
+                context,
+                retrieved_at_utc=RETRIEVED_AT,
             )
+            second_archived = archive(
+                second_body,
+                second_request,
+                replace(context, run_key=second_capture_id),
+                retrieved_at_utc=RETRIEVED_AT + timedelta(minutes=5),
+            )
+            return first_archived, second_archived
 
         def normalize(
             raw: object,
@@ -170,24 +226,41 @@ async def test_sina_lrb_publication_snapshot_and_records_bridge(tmp_path: Path) 
         ) -> NormalizedBatch:
             assert type(raw) is tuple and len(raw) == 2
             assert source_request.partition == {"instrument_id": INSTRUMENT_ID}
-            first_batch = normalize_sina_lrb_capture(raw[0], source_request, context)
+            first_batch = normalize_sina_lrb_capture(
+                raw[0],
+                source_request,
+                context,
+                artifact_root=raw_root,
+            )
             second_batch = normalize_sina_lrb_capture(
                 raw[1],
                 second_request,
                 replace(context, run_key=second_capture_id),
+                artifact_root=raw_root,
+            )
+            evidence_fields = (
+                "capture_id",
+                "run_key",
+                "response_sha256",
+                "retrieved_at_utc",
+                "raw_manifest_sha256",
+                "request_summary_sha256",
+                "source_access_ref",
+                "raw_retention_ref",
+                "raw_captured_at_utc",
             )
             capture_observations = [
-                {
-                    "capture_id": capture_batch.provenance["capture_id"],
-                    "response_sha256": capture_batch.provenance["response_sha256"],
-                    "retrieved_at_utc": capture_batch.provenance["retrieved_at_utc"],
-                }
+                {field: capture_batch.provenance[field] for field in evidence_fields}
                 for capture_batch in (first_batch, second_batch)
             ]
             provenance = dict(first_batch.provenance)
-            for field in ("capture_id", "response_sha256", "retrieved_at_utc"):
+            for field in (*evidence_fields, "raw_response_persisted"):
                 provenance.pop(field)
             provenance["capture_observations"] = capture_observations
+            provenance["raw_response_persisted"] = all(
+                capture_batch.provenance["raw_response_persisted"] is True
+                for capture_batch in (first_batch, second_batch)
+            )
             combined_batch = replace(
                 first_batch,
                 records=tuple(
@@ -227,6 +300,25 @@ async def test_sina_lrb_publication_snapshot_and_records_bridge(tmp_path: Path) 
         assert {record.payload["capture_id"] for record in batch.records} == {
             capture_id,
             second_capture_id,
+        }
+        assert batch.provenance["raw_response_persisted"] is True
+        capture_observations = batch.provenance["capture_observations"]
+        assert isinstance(capture_observations, list) and len(capture_observations) == 2
+        assert {item["run_key"] for item in capture_observations} == {
+            capture_id,
+            second_capture_id,
+        }
+        assert all(
+            item["capture_id"] == item["run_key"]
+            and item["request_summary_sha256"] == sina_lrb_request_summary_sha256(INSTRUMENT_ID)
+            and item["source_access_ref"] == "source-auth:synthetic-bridge-grant"
+            and item["raw_retention_ref"] == "raw-retention:synthetic-bridge-grant"
+            and len(item["raw_manifest_sha256"]) == 64
+            for item in capture_observations
+        )
+        assert {item["response_sha256"] for item in capture_observations} == {
+            hashlib.sha256(first_body).hexdigest(),
+            hashlib.sha256(second_body).hexdigest(),
         }
 
         app = FastAPI()
