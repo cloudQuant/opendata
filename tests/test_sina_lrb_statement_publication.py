@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from copy import deepcopy
+from dataclasses import replace
 from datetime import datetime, timedelta, timezone, tzinfo
 from decimal import Decimal
 from typing import cast
@@ -19,18 +21,56 @@ from opendata.data.providers.sina.lrb_statement_parser import (
     SinaLrbRawValue,
     parse_sina_lrb_response,
 )
+from opendata.data.providers.sina.lrb_statement_process import (
+    SINA_LRB_PROCESS_OPERATION_ID,
+    sina_lrb_request_summary_sha256,
+)
 from opendata.data.providers.sina.lrb_statement_publication import (
     SINA_LRB_DATASET_ID,
     SINA_LRB_RESPONSE_ENCODING,
     SinaLrbPublicationError,
+    bind_sina_lrb_raw_provenance,
     build_sina_lrb_observation_contract,
     reconstruct_sina_lrb_source_document,
     serialize_sina_lrb_response,
 )
+from opendata.pipeline.raw_evidence import RawResponseManifest, RawResponseSource
+from opendata.pipeline.raw_evidence_reader import RawEvidenceReadResult
 from opendata.pipeline.run_service import NormalizedBatch, NormalizedRecord
 
 _CAPTURE_ID = "a" * 64
 _RETRIEVED_AT = datetime(2026, 10, 30, 12, 34, 56, 123456, tzinfo=timezone.utc)
+_RAW_SOURCE = RawResponseSource(
+    provider_id="sina",
+    dataset_id="sina_lrb_report_observations",
+    operation_id=SINA_LRB_PROCESS_OPERATION_ID,
+)
+
+
+def _raw_evidence(
+    body: bytes,
+    *,
+    manifest_updates: dict[str, object] | None = None,
+    manifest_sha256: str = "b" * 64,
+) -> RawEvidenceReadResult:
+    """Construct a synthetic reader result for isolated binder boundary checks."""
+    manifest = RawResponseManifest(
+        source=_RAW_SOURCE,
+        request_summary_sha256=sina_lrb_request_summary_sha256("600519.SH"),
+        captured_at_utc=_RETRIEVED_AT + timedelta(seconds=1),
+        http_status=200,
+        response_sha256=hashlib.sha256(body).hexdigest(),
+        response_size_bytes=len(body),
+        retention_class="restricted",
+        source_history_limit="unknown",
+    )
+    if manifest_updates:
+        manifest = manifest.model_copy(update=manifest_updates)
+    return RawEvidenceReadResult(
+        body=body,
+        manifest=manifest,
+        manifest_sha256=manifest_sha256,
+    )
 
 
 def _body() -> bytes:
@@ -57,6 +97,99 @@ def _batch(body: bytes | None = None):
         retrieved_at_utc=_RETRIEVED_AT,
         capture_id=_CAPTURE_ID,
     )
+
+
+def test_raw_provenance_binds_verified_manifest_body_request_and_run() -> None:
+    body = _body()
+    batch = _batch(body)
+    response_sha256 = hashlib.sha256(body).hexdigest()
+    request_digest = sina_lrb_request_summary_sha256("600519.SH")
+    evidence = _raw_evidence(body)
+
+    bound = bind_sina_lrb_raw_provenance(
+        batch,
+        evidence=evidence,
+        instrument_id="600519.SH",
+        run_key=_CAPTURE_ID,
+        source_access_ref="source-auth:synthetic-grant-1",
+        raw_retention_ref="raw-retention:synthetic-grant-1",
+        retrieved_at_utc=_RETRIEVED_AT,
+    )
+
+    assert batch.provenance["raw_response_persisted"] is False
+    assert bound.provenance["raw_response_persisted"] is True
+    assert bound.provenance["run_key"] == _CAPTURE_ID
+    assert bound.provenance["raw_manifest_sha256"] == evidence.manifest_sha256
+    assert bound.provenance["request_summary_sha256"] == request_digest
+    assert bound.provenance["response_sha256"] == response_sha256
+    assert bound.provenance["source_access_ref"] == "source-auth:synthetic-grant-1"
+    assert bound.provenance["raw_retention_ref"] == "raw-retention:synthetic-grant-1"
+    assert all(
+        row.payload["capture_id"] == _CAPTURE_ID
+        and row.payload["response_sha256"] == response_sha256
+        for row in bound.records
+    )
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [
+        {"manifest_updates": {"request_summary_sha256": "c" * 64}},
+        {"manifest_updates": {"response_sha256": "d" * 64}},
+        {"manifest_updates": {"response_size_bytes": len(_body()) + 1}},
+        {"manifest_updates": {"http_status": 201}},
+        {
+            "manifest_updates": {
+                "source": RawResponseSource(
+                    provider_id="other",
+                    dataset_id="sina_lrb_report_observations",
+                    operation_id=SINA_LRB_PROCESS_OPERATION_ID,
+                )
+            }
+        },
+        {"manifest_sha256": "invalid"},
+        {"evidence_body": b"tampered body"},
+        {"run_key": "e" * 64},
+        {"instrument_id": "000001.SZ"},
+        {"source_access_ref": "source-auth:sk-example-0123456789abcdef"},
+        {"manifest_updates": {"captured_at_utc": _RETRIEVED_AT - timedelta(seconds=1)}},
+        {"retrieved_at_utc": _RETRIEVED_AT + timedelta(seconds=1)},
+    ],
+)
+def test_raw_provenance_rejects_hash_identity_and_time_mismatches(
+    changes: dict[str, object],
+) -> None:
+    body = _body()
+    manifest_updates = changes.get("manifest_updates", {})
+    assert isinstance(manifest_updates, dict)
+    manifest_sha256 = changes.get("manifest_sha256", "b" * 64)
+    assert isinstance(manifest_sha256, str)
+    evidence = _raw_evidence(
+        body,
+        manifest_updates=manifest_updates,
+        manifest_sha256=manifest_sha256,
+    )
+    if "evidence_body" in changes:
+        assert type(changes["evidence_body"]) is bytes
+        evidence = replace(evidence, body=changes["evidence_body"])
+    arguments: dict[str, object] = {
+        "evidence": evidence,
+        "instrument_id": "600519.SH",
+        "run_key": _CAPTURE_ID,
+        "source_access_ref": "source-auth:synthetic-grant-1",
+        "raw_retention_ref": "raw-retention:synthetic-grant-1",
+        "retrieved_at_utc": _RETRIEVED_AT,
+        **{
+            key: value
+            for key, value in changes.items()
+            if key not in {"manifest_updates", "manifest_sha256", "evidence_body"}
+        },
+    }
+
+    with pytest.raises(SinaLrbPublicationError) as raised:
+        bind_sina_lrb_raw_provenance(_batch(body), **arguments)  # type: ignore[arg-type]
+
+    assert raised.value.code == "raw_evidence_mismatch"
 
 
 def _payloads() -> list[dict[str, object]]:

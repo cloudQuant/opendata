@@ -5,7 +5,8 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
-from datetime import date, datetime, timedelta, timezone, tzinfo
+from dataclasses import replace
+from datetime import date, datetime, timezone
 from typing import TYPE_CHECKING
 
 import pytest
@@ -18,6 +19,7 @@ from opendata.data.providers.sina.lrb_statement_process import (
     SINA_LRB_PROCESS_PROTOCOL,
     SinaLrbProcessError,
     SinaLrbQuery,
+    sina_lrb_request_summary_sha256,
 )
 from opendata.data.providers.sina.lrb_statement_publication import (
     build_sina_lrb_observation_contract,
@@ -25,28 +27,40 @@ from opendata.data.providers.sina.lrb_statement_publication import (
 from opendata.pipeline.contract_publication import ValidatedPublicationWriter
 from opendata.pipeline.reviewed_worker import ProcessFetchHandler
 from opendata.pipeline.run_identity import RunRequest, ScheduleMetadata, TaskDefinition
-from opendata.pipeline.run_service import NormalizedBatch, NormalizedRecord, RunExecutionContext
+from opendata.pipeline.run_service import (
+    NormalizedBatch,
+    NormalizedRecord,
+    ReviewedJob,
+    RunExecutionContext,
+)
 from opendata.pipeline.sina_lrb_process_job import (
     SinaLrbProcessCapture,
+    SinaLrbRawCaptureNormalizer,
     _build_process_parameters,
     _decode_body,
     _decode_process_result,
     _decode_retrieved_at,
     _request_symbol,
-    _validate_capture,
     _validated_task,
     build_sina_lrb_job,
     build_sina_lrb_manual_payload,
     build_sina_lrb_process_source,
     normalize_sina_lrb_capture,
 )
+from opendata.pipeline.sina_lrb_raw_capture import (
+    SinaLrbArchivedCapture,
+    SinaLrbRawAuthorization,
+    SinaLrbRawCaptureError,
+    SinaLrbRawCaptureHandler,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from pathlib import Path
 
 _SYMBOL = "600519.SH"
 _OTHER_SYMBOL = "000001.SZ"
-_RETRIEVED_AT = datetime(2026, 10, 30, 1, 2, 3, 456789, tzinfo=timezone.utc)
+_RETRIEVED_AT = datetime(2020, 1, 2, 3, 4, 5, 456789, tzinfo=timezone.utc)
 _RUN_KEY = "a" * 64
 _BODY = json.dumps(
     {
@@ -87,6 +101,35 @@ def _registry() -> DatasetContractRegistry:
     return DatasetContractRegistry([build_sina_lrb_observation_contract()])
 
 
+def _authorization(
+    *, source_access: bool = True, raw_retention: bool = True
+) -> SinaLrbRawAuthorization:
+    return SinaLrbRawAuthorization(
+        source_access_ref="source-auth:synthetic-grant-1",
+        raw_retention_ref="raw-retention:synthetic-grant-1",
+        source_access_authorized=source_access,
+        raw_retention_authorized=raw_retention,
+    )
+
+
+def _build_job(
+    task: TaskDefinition,
+    root: Path,
+    *,
+    registry: DatasetContractRegistry | None = None,
+    authorization: SinaLrbRawAuthorization | None = None,
+) -> ReviewedJob:
+    """Build the production job with explicit synthetic archival policy."""
+    return build_sina_lrb_job(
+        task,
+        contract_registry=_registry() if registry is None else registry,
+        artifact_root=root,
+        authorization=_authorization() if authorization is None else authorization,
+        retention_class="restricted",
+        source_history_limit="unknown",
+    )
+
+
 def _request(symbol: str = _SYMBOL, token: str = "manual-capture") -> RunRequest:
     return RunRequest(
         run_type="manual",
@@ -115,6 +158,39 @@ def _capture(symbol: str = _SYMBOL, body: bytes = _BODY) -> SinaLrbProcessCaptur
     )
 
 
+class _FixedProcessHandler(ProcessFetchHandler):
+    """Return one synthetic process capture without starting a child process."""
+
+    def __init__(self, capture: object) -> None:
+        self.capture = capture
+
+    @property
+    def heartbeat_interval_seconds(self) -> float:
+        return 0.05
+
+    def __call__(self, request: RunRequest, context: RunExecutionContext) -> object:
+        del request, context
+        return self.capture
+
+
+def _archive(
+    capture: object,
+    root: Path,
+    *,
+    run_key: str = _RUN_KEY,
+    requested_symbol: str = _SYMBOL,
+) -> SinaLrbArchivedCapture:
+    """Persist and verify one synthetic capture through the production wrapper."""
+    handler = SinaLrbRawCaptureHandler(
+        _FixedProcessHandler(capture),
+        artifact_root=root,
+        authorization=_authorization(),
+        retention_class="restricted",
+        source_history_limit="unknown",
+    )
+    return handler(_request(requested_symbol), _context(run_key))  # type: ignore[return-value]
+
+
 def _synthetic_batch(
     *,
     schema_version: str = "source-native-report-v1",
@@ -135,9 +211,11 @@ def _synthetic_batch(
     )
 
 
-def test_builder_exposes_only_disabled_unreviewed_manual_one_shot_job() -> None:
+def test_builder_exposes_only_disabled_unreviewed_manual_one_shot_job(
+    tmp_path: Path,
+) -> None:
     task = _task()
-    job = build_sina_lrb_job(task, contract_registry=_registry())
+    job = _build_job(task, tmp_path / "raw")
     source = build_sina_lrb_process_source()
 
     assert job.task == task
@@ -145,10 +223,12 @@ def test_builder_exposes_only_disabled_unreviewed_manual_one_shot_job() -> None:
     assert job.task.schedule is None
     assert job.reviewed is False
     assert job.one_shot_only is True
-    assert type(job.fetch) is ProcessFetchHandler
-    assert job.fetch._operation_id == SINA_LRB_PROCESS_OPERATION_ID
-    assert job.fetch._timeout_seconds == 30.0
-    assert job.normalize is normalize_sina_lrb_capture
+    assert isinstance(job.fetch, ProcessFetchHandler)
+    assert type(job.fetch) is SinaLrbRawCaptureHandler
+    assert job.fetch._delegate._operation_id == SINA_LRB_PROCESS_OPERATION_ID
+    assert job.fetch._delegate._timeout_seconds == 30.0
+    assert type(job.normalize) is SinaLrbRawCaptureNormalizer
+    assert job.normalize.artifact_root == tmp_path / "raw"
     assert isinstance(job.publish, ValidatedPublicationWriter)
     assert source._operation_id == SINA_LRB_PROCESS_OPERATION_ID
     assert source._executor._registry.resolve(SINA_LRB_PROCESS_OPERATION_ID) is not None
@@ -167,38 +247,78 @@ def test_builder_exposes_only_disabled_unreviewed_manual_one_shot_job() -> None:
         _task(model="other-model"),
     ],
 )
-def test_builder_rejects_enabled_or_drifted_task(task: TaskDefinition) -> None:
+def test_builder_rejects_enabled_or_drifted_task(task: TaskDefinition, tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="sina_lrb_task_definition_invalid"):
-        build_sina_lrb_job(task, contract_registry=_registry())
+        _build_job(task, tmp_path / "raw")
 
 
-def test_builder_requires_exact_dataset_contract() -> None:
+@pytest.mark.parametrize(
+    "authorization",
+    [
+        _authorization(source_access=False),
+        _authorization(raw_retention=False),
+    ],
+)
+def test_builder_requires_both_source_and_retention_authorizations(
+    authorization: SinaLrbRawAuthorization,
+    tmp_path: Path,
+) -> None:
+    with pytest.raises(ValueError, match="sina_lrb_raw_authorization_denied"):
+        _build_job(_task(), tmp_path / "raw", authorization=authorization)
+
+
+def test_builder_requires_exact_dataset_contract(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="sina_lrb_dataset_contract_invalid"):
-        build_sina_lrb_job(_task(), contract_registry=DatasetContractRegistry([]))
+        _build_job(
+            _task(),
+            tmp_path / "raw",
+            registry=DatasetContractRegistry([]),
+        )
 
     drifted = build_sina_lrb_observation_contract().model_copy(update={"timezone": "Asia/Shanghai"})
     with pytest.raises(ValueError, match="sina_lrb_dataset_contract_invalid"):
-        build_sina_lrb_job(_task(), contract_registry=DatasetContractRegistry([drifted]))
+        _build_job(
+            _task(),
+            tmp_path / "raw",
+            registry=DatasetContractRegistry([drifted]),
+        )
 
     # The public builder validates dependencies before resolving any contract.
     with pytest.raises(TypeError, match="contract_registry must be a DatasetContractRegistry"):
-        build_sina_lrb_job(_task(), contract_registry=object())  # type: ignore[arg-type]
+        build_sina_lrb_job(
+            _task(),
+            contract_registry=object(),  # type: ignore[arg-type]
+            artifact_root=tmp_path / "raw",
+            authorization=_authorization(),
+            retention_class="restricted",
+            source_history_limit="unknown",
+        )
     with pytest.raises(TypeError, match="task must be a TaskDefinition"):
-        build_sina_lrb_job(object(), contract_registry=_registry())  # type: ignore[arg-type]
+        build_sina_lrb_job(
+            object(),  # type: ignore[arg-type]
+            contract_registry=_registry(),
+            artifact_root=tmp_path / "raw",
+            authorization=_authorization(),
+            retention_class="restricted",
+            source_history_limit="unknown",
+        )
     with pytest.raises(TypeError, match="task must be a TaskDefinition"):
         _validated_task(object())  # type: ignore[arg-type]
 
     malformed_task = _task().model_copy(update={"timezone": "Not/A_Real_Zone"})
     with pytest.raises(ValueError, match="sina_lrb_task_definition_invalid"):
-        build_sina_lrb_job(malformed_task, contract_registry=_registry())
+        _build_job(malformed_task, tmp_path / "raw")
 
 
-def test_builder_rejects_non_contract_registry_resolution(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_builder_rejects_non_contract_registry_resolution(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
     registry = _registry()
     monkeypatch.setattr(DatasetContractRegistry, "resolve", lambda self, *args: object())
 
     with pytest.raises(ValueError, match="sina_lrb_dataset_contract_invalid"):
-        build_sina_lrb_job(_task(), contract_registry=registry)
+        _build_job(_task(), tmp_path / "raw", registry=registry)
 
 
 def test_manual_payload_and_process_request_have_one_fixed_instrument_selector() -> None:
@@ -250,7 +370,7 @@ def test_process_result_decoder_checks_protocol_symbol_time_and_base64() -> None
     envelope = {
         "protocol": SINA_LRB_PROCESS_PROTOCOL,
         "query": {"symbol": _SYMBOL},
-        "retrieved_at_utc": "2026-10-30T01:02:03.456789Z",
+        "retrieved_at_utc": "2020-01-02T03:04:05.456789Z",
         "status_code": 200,
         "body_b64": base64.b64encode(_BODY).decode("ascii"),
     }
@@ -274,7 +394,7 @@ def test_process_result_decoder_checks_protocol_symbol_time_and_base64() -> None
         {**envelope, "query": {"symbol": _SYMBOL, "extra": "not allowed"}},
         {**envelope, "query": {"symbol": 600519}},
         {**envelope, "query": {"symbol": "600519.BJ"}},
-        {**envelope, "retrieved_at_utc": "2026-10-30T01:02:03Z"},
+        {**envelope, "retrieved_at_utc": "2020-01-02T03:04:05Z"},
         {**envelope, "retrieved_at_utc": "2026-99-30T01:02:03.456789Z"},
         {**envelope, "retrieved_at_utc": None},
         {**envelope, "body_b64": None},
@@ -318,7 +438,7 @@ def test_base64_decoder_checks_encoded_and_decoded_size_before_returning(
     "value",
     [
         None,
-        "2026-10-30T01:02:03Z",
+        "2020-01-02T03:04:05Z",
         "2026-99-30T01:02:03.456789Z",
     ],
 )
@@ -327,17 +447,22 @@ def test_retrieval_timestamp_decoder_requires_canonical_valid_utc_text(value: ob
         _decode_retrieved_at(value)
 
 
-def test_parent_normalizer_binds_capture_to_manual_request_and_preserves_source_evidence() -> None:
+def test_parent_normalizer_binds_archive_to_run_and_publication_provenance(
+    tmp_path: Path,
+) -> None:
     checkpoints = 0
+    root = tmp_path / "raw"
+    archived = _archive(_capture(), root)
 
     def checkpoint() -> None:
         nonlocal checkpoints
         checkpoints += 1
 
     batch = normalize_sina_lrb_capture(
-        _capture(),
+        archived,
         _request(),
         _context(checkpoint=checkpoint),
+        artifact_root=root,
     )
 
     assert checkpoints == 2
@@ -349,25 +474,83 @@ def test_parent_normalizer_binds_capture_to_manual_request_and_preserves_source_
     assert all(record.payload["instrument_id"] == _SYMBOL for record in batch.records)
     assert all(record.business_date is None for record in batch.records)
     assert batch.provenance["response_sha256"] == hashlib.sha256(_BODY).hexdigest()
-    assert batch.provenance["raw_response_persisted"] is False
+    assert batch.provenance["raw_response_persisted"] is True
+    assert batch.provenance["run_key"] == _RUN_KEY
+    assert batch.provenance["raw_manifest_sha256"] == archived.manifest_sha256
+    assert batch.provenance["request_summary_sha256"] == sina_lrb_request_summary_sha256(_SYMBOL)
+    assert batch.provenance["source_access_ref"] == archived.source_access_ref
+    assert batch.provenance["raw_retention_ref"] == archived.raw_retention_ref
 
 
-def test_parent_normalizer_rejects_mismatched_instrument_capture_and_run_identity() -> None:
+def test_parent_normalizer_rejects_mismatched_instrument_capture_and_run_identity(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "raw"
+    wrong_symbol = _archive(
+        _capture(_OTHER_SYMBOL),
+        root,
+        requested_symbol=_OTHER_SYMBOL,
+    )
     with pytest.raises(ValueError, match="sina_lrb_capture_invalid"):
-        normalize_sina_lrb_capture(_capture(_OTHER_SYMBOL), _request(), _context())
+        normalize_sina_lrb_capture(
+            wrong_symbol,
+            _request(),
+            _context(),
+            artifact_root=root,
+        )
+
+    archived = _archive(_capture(), root)
+    with pytest.raises(ValueError, match="sina_lrb_capture_invalid"):
+        normalize_sina_lrb_capture(
+            archived,
+            _request(_OTHER_SYMBOL),
+            _context(),
+            artifact_root=root,
+        )
 
     with pytest.raises(ValueError, match="sina_lrb_capture_invalid"):
-        normalize_sina_lrb_capture(_capture(), _request(_OTHER_SYMBOL), _context())
+        normalize_sina_lrb_capture(
+            archived,
+            _request(),
+            _context("invalid-run-key"),
+            artifact_root=root,
+        )
+    wrong_run = _archive(_capture(), root, run_key="c" * 64)
+    with pytest.raises(ValueError, match="sina_lrb_capture_invalid"):
+        normalize_sina_lrb_capture(wrong_run, _request(), _context(), artifact_root=root)
+
+
+def test_normalizer_requires_archived_capture_and_revalidates_manifest(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "raw"
+    archived = _archive(_capture(), root)
 
     with pytest.raises(ValueError, match="sina_lrb_capture_invalid"):
-        normalize_sina_lrb_capture(_capture(), _request(), _context("invalid-run-key"))
+        normalize_sina_lrb_capture(_capture(), _request(), _context(), artifact_root=root)
+
     with pytest.raises(ValueError, match="sina_lrb_capture_invalid"):
-        normalize_sina_lrb_capture(_capture(), _request(), _context(123))  # type: ignore[arg-type]
+        normalize_sina_lrb_capture(object(), _request(), _context(), artifact_root=root)
+
+    with pytest.raises(ValueError, match="sina_lrb_capture_invalid"):
+        normalize_sina_lrb_capture(
+            replace(archived, response_sha256="d" * 64),
+            _request(),
+            _context(),
+            artifact_root=root,
+        )
 
 
-def test_normalizer_checks_context_capture_and_lease_checkpoints() -> None:
+def test_normalizer_checks_context_capture_and_lease_checkpoints(tmp_path: Path) -> None:
+    root = tmp_path / "raw"
+    archived = _archive(_capture(), root)
     with pytest.raises(TypeError, match="context must be a RunExecutionContext"):
-        normalize_sina_lrb_capture(_capture(), _request(), object())  # type: ignore[arg-type]
+        normalize_sina_lrb_capture(
+            archived,
+            _request(),
+            object(),  # type: ignore[arg-type]
+            artifact_root=root,
+        )
 
     for fail_on_checkpoint in (1, 2):
         checkpoints = 0
@@ -379,7 +562,12 @@ def test_normalizer_checks_context_capture_and_lease_checkpoints() -> None:
                 raise RuntimeError("lease no longer owned")
 
         with pytest.raises(RuntimeError, match="lease no longer owned"):
-            normalize_sina_lrb_capture(_capture(), _request(), _context(checkpoint=checkpoint))
+            normalize_sina_lrb_capture(
+                archived,
+                _request(),
+                _context(checkpoint=checkpoint),
+                artifact_root=root,
+            )
 
 
 @pytest.mark.parametrize(
@@ -395,6 +583,7 @@ def test_normalizer_checks_context_capture_and_lease_checkpoints() -> None:
 def test_normalizer_rejects_serializer_output_outside_the_contract(
     serializer_result: object,
     monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
 ) -> None:
     def serialize(*args: object, **kwargs: object) -> object:
         if isinstance(serializer_result, Exception):
@@ -402,70 +591,32 @@ def test_normalizer_rejects_serializer_output_outside_the_contract(
         return serializer_result
 
     monkeypatch.setattr(job_module, "serialize_sina_lrb_response", serialize)
+    root = tmp_path / "raw"
+    archived = _archive(_capture(), root)
     with pytest.raises(ValueError, match="sina_lrb_normalization_failed"):
-        normalize_sina_lrb_capture(_capture(), _request(), _context())
+        normalize_sina_lrb_capture(
+            archived,
+            _request(),
+            _context(),
+            artifact_root=root,
+        )
 
 
-class _BrokenTimezone(tzinfo):
-    def utcoffset(self, dt: datetime | None) -> timedelta:
-        raise RuntimeError("timezone details must not escape")
-
-    def dst(self, dt: datetime | None) -> timedelta:
-        return timedelta(0)
-
-
-@pytest.mark.parametrize(
-    "capture",
-    [
-        object(),
-        SinaLrbProcessCapture(
-            query=object(),  # type: ignore[arg-type]
-            status_code=200,
-            retrieved_at_utc=_RETRIEVED_AT,
-            body=_BODY,
-        ),
-        SinaLrbProcessCapture(
-            query=SinaLrbQuery(_SYMBOL),
-            status_code=True,  # type: ignore[arg-type]
-            retrieved_at_utc=_RETRIEVED_AT,
-            body=_BODY,
-        ),
-        SinaLrbProcessCapture(
-            query=SinaLrbQuery(_SYMBOL),
-            status_code=200,
-            retrieved_at_utc=datetime(2026, 10, 30, 1, 2, 3),
-            body=_BODY,
-        ),
-        SinaLrbProcessCapture(
-            query=SinaLrbQuery(_SYMBOL),
-            status_code=200,
-            retrieved_at_utc=datetime(2026, 10, 30, 1, 2, 3, tzinfo=timezone(timedelta(hours=1))),
-            body=_BODY,
-        ),
-        SinaLrbProcessCapture(
-            query=SinaLrbQuery(_SYMBOL),
-            status_code=200,
-            retrieved_at_utc=datetime(2026, 10, 30, tzinfo=_BrokenTimezone()),
-            body=_BODY,
-        ),
-        SinaLrbProcessCapture(
-            query=SinaLrbQuery(_SYMBOL),
-            status_code=200,
-            retrieved_at_utc=_RETRIEVED_AT,
-            body=bytearray(_BODY),  # type: ignore[arg-type]
-        ),
-    ],
-)
-def test_capture_dto_rejects_untrusted_or_noncanonical_fields(capture: object) -> None:
-    with pytest.raises(ValueError, match="sina_lrb_capture_invalid"):
-        _validate_capture(capture, expected_symbol=_SYMBOL)
-
-
-def test_parent_normalizer_rejects_invalid_source_document_without_partial_batch() -> None:
+def test_parent_normalizer_rejects_invalid_source_document_without_partial_batch(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "raw"
     mismatched_date = _BODY.replace(b"20301231", b"20301230", 1)
+    archived = _archive(_capture(body=mismatched_date), root)
     with pytest.raises(ValueError, match="sina_lrb_normalization_failed"):
-        normalize_sina_lrb_capture(_capture(body=mismatched_date), _request(), _context())
+        normalize_sina_lrb_capture(
+            archived,
+            _request(),
+            _context(),
+            artifact_root=root,
+        )
 
     oversized = b"x" * (MAX_RAW_RESPONSE_BYTES + 1)
-    with pytest.raises(ValueError, match="sina_lrb_capture_invalid"):
-        normalize_sina_lrb_capture(_capture(body=oversized), _request(), _context())
+    with pytest.raises(SinaLrbRawCaptureError) as error:
+        _archive(_capture(body=oversized), root)
+    assert error.value.code == "invalid_capture"
