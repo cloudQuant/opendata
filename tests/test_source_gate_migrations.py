@@ -4,13 +4,16 @@ from __future__ import annotations
 
 import sqlite3
 from contextlib import closing
+from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
-from types import SimpleNamespace
+from types import ModuleType, SimpleNamespace
 from typing import TYPE_CHECKING
 
 import pytest
 from alembic.config import Config
-from sqlalchemy import create_engine
+from alembic.migration import MigrationContext
+from alembic.operations import Operations
+from sqlalchemy import create_engine, event
 from sqlalchemy.exc import SQLAlchemyError
 
 from alembic import command
@@ -28,6 +31,9 @@ if TYPE_CHECKING:
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = PROJECT_ROOT / "alembic_source_gate.ini"
+V3_MIGRATION_PATH = (
+    PROJECT_ROOT / "alembic_source_gate" / "versions" / "sg0003_source_attempt_scope_v3.py"
+)
 
 
 def _insert_reserved_attempt(
@@ -88,6 +94,15 @@ def _downgrade(path: Path, revision: str) -> None:
     command.downgrade(config, revision)
 
 
+def _load_v3_migration() -> ModuleType:
+    """Load the V3 revision so its exact parent checks can be tested directly."""
+    spec = spec_from_file_location("source_gate_migration_scope_v3_test", V3_MIGRATION_PATH)
+    assert spec is not None and spec.loader is not None
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def _sqlite_rows(
     path: Path,
     statement: str,
@@ -113,11 +128,11 @@ def _marker(path: Path) -> str | None:
 
 
 def test_complete_v1_is_adopted_and_unrelated_data_is_preserved(tmp_path: Path) -> None:
-    """Adoption changes only the private revision marker and leaves data intact."""
+    """The V2 target adopts v1 and leaves unrelated warehouse data intact."""
     path = tmp_path / "source-gate.sqlite"
     _create_v1_database(path)
 
-    _upgrade(path)
+    _upgrade(path, schema_contract.V2_REVISION)
 
     assert _marker(path) == schema_contract.V2_REVISION
     assert _sqlite_rows(path, "SELECT id, value FROM warehouse_sentinel") == [(1, "keep-me")]
@@ -126,6 +141,54 @@ def test_complete_v1_is_adopted_and_unrelated_data_is_preserved(tmp_path: Path) 
         path,
         "SELECT attempt_id FROM od_source_attempt_reservations",
     ) == [("historical-attempt",)]
+
+
+def test_head_migration_installs_v3_without_backfilling_scopes(tmp_path: Path) -> None:
+    """The actual Alembic head is V3 and neither additive sidecar is backfilled."""
+    path = tmp_path / "source-gate-head.sqlite"
+    _create_v1_database(path)
+
+    _upgrade(path)
+
+    assert _marker(path) == schema_contract.V3_REVISION
+    assert _sqlite_rows(path, "SELECT COUNT(*) FROM od_source_attempt_scope_v2") == [(0,)]
+    assert _sqlite_rows(path, "SELECT COUNT(*) FROM od_source_attempt_scope_v3") == [(0,)]
+    assert _sqlite_rows(
+        path,
+        "SELECT attempt_id FROM od_source_attempt_reservations",
+    ) == [("historical-attempt",)]
+    engine = create_engine(f"sqlite+pysqlite:///{path}")
+    try:
+        with engine.connect() as connection:
+            assert (
+                schema_contract.validate_migration_state(connection) == schema_contract.V3_REVISION
+            )
+    finally:
+        engine.dispose()
+
+
+def test_scope_v3_upgrade_requires_exact_v2_lineage(tmp_path: Path) -> None:
+    """A V1 marker cannot be used to skip the required V2 parent revision."""
+    path = tmp_path / "source-gate-v3-wrong-parent.sqlite"
+    _create_v1_database(path)
+    _upgrade(path, schema_contract.V1_REVISION)
+    engine = create_engine(f"sqlite+pysqlite:///{path}")
+    migration = _load_v3_migration()
+    try:
+        with (
+            engine.begin() as connection,
+            Operations.context(MigrationContext.configure(connection)),
+            pytest.raises(RuntimeError, match="requires the exact v2 revision"),
+        ):
+            migration.upgrade()
+    finally:
+        engine.dispose()
+
+    assert _marker(path) == schema_contract.V1_REVISION
+    assert not _sqlite_rows(
+        path,
+        "SELECT name FROM sqlite_master WHERE name='od_source_attempt_scope_v3'",
+    )
 
 
 def test_partial_v1_schema_fails_without_creating_marker_or_sidecar(tmp_path: Path) -> None:
@@ -358,10 +421,10 @@ def test_forged_empty_marker_is_rejected_before_upgrade(tmp_path: Path) -> None:
 
 
 def test_scope_sidecar_constraints_and_immutable_triggers(tmp_path: Path) -> None:
-    """The v2 table binds a reservation and rejects malformed or mutable rows."""
+    """The V2 target binds reservations and rejects malformed or mutable sidecar rows."""
     path = tmp_path / "scope-v2.sqlite"
     _create_v1_database(path)
-    _upgrade(path)
+    _upgrade(path, schema_contract.V2_REVISION)
     with closing(sqlite3.connect(f"file:{path}?mode=rw", uri=True)) as connection, connection:
         connection.execute("PRAGMA foreign_keys=ON")
         _insert_reserved_attempt(connection, "a1", "r1", 1)
@@ -409,7 +472,7 @@ def test_v2_migration_failure_rolls_back_marker_and_ddl(
     )
 
     with pytest.raises(SQLAlchemyError):
-        _upgrade(path)
+        _upgrade(path, schema_contract.V2_REVISION)
 
     assert _marker(path) is None
     assert not _sqlite_rows(
@@ -423,7 +486,7 @@ def test_v2_downgrade_refuses_to_drop_persisted_scope_rows(tmp_path: Path) -> No
     """Once a scope is recorded, downgrade cannot discard the audit sidecar."""
     path = tmp_path / "no-loss.sqlite"
     _create_v1_database(path)
-    _upgrade(path)
+    _upgrade(path, schema_contract.V2_REVISION)
     with closing(sqlite3.connect(path)) as connection, connection:
         connection.execute("PRAGMA foreign_keys=ON")
         _insert_reserved_attempt(connection, "attempt", "request", 1)
@@ -438,3 +501,65 @@ def test_v2_downgrade_refuses_to_drop_persisted_scope_rows(tmp_path: Path) -> No
         _downgrade(path, schema_contract.V1_REVISION)
 
     assert _marker(path) == schema_contract.V2_REVISION
+
+
+def test_scope_v3_downgrade_requires_exact_v3_lineage(tmp_path: Path) -> None:
+    """A V2 marker is rejected before the V3 sidecar is inspected or removed."""
+    path = tmp_path / "source-gate-v3-wrong-downgrade-parent.sqlite"
+    _create_v1_database(path)
+    _upgrade(path, schema_contract.V2_REVISION)
+    engine = create_engine(f"sqlite+pysqlite:///{path}")
+    migration = _load_v3_migration()
+    try:
+        with (
+            engine.begin() as connection,
+            Operations.context(MigrationContext.configure(connection)),
+            pytest.raises(RuntimeError, match="requires the exact v3 revision"),
+        ):
+            migration.downgrade()
+    finally:
+        engine.dispose()
+
+    assert _marker(path) == schema_contract.V2_REVISION
+    assert not _sqlite_rows(
+        path,
+        "SELECT name FROM sqlite_master WHERE name='od_source_attempt_scope_v3'",
+    )
+
+
+def test_scope_v3_downgrade_wraps_sidecar_count_database_errors(tmp_path: Path) -> None:
+    """A count-query storage error fails closed and leaves the V3 schema intact."""
+    path = tmp_path / "source-gate-v3-count-error.sqlite"
+    _create_v1_database(path)
+    _upgrade(path)
+    engine = create_engine(f"sqlite+pysqlite:///{path}")
+    migration = _load_v3_migration()
+
+    def fail_scope_count(
+        _connection: object,
+        _cursor: object,
+        statement: str,
+        _parameters: object,
+        _context: object,
+        _executemany: bool,
+    ) -> None:
+        if statement == "SELECT COUNT(*) FROM od_source_attempt_scope_v3":
+            raise SQLAlchemyError("synthetic source scope count failure")
+
+    event.listen(engine, "before_cursor_execute", fail_scope_count)
+    try:
+        with (
+            engine.begin() as connection,
+            Operations.context(MigrationContext.configure(connection)),
+            pytest.raises(RuntimeError, match="scope v3 schema is unavailable"),
+        ):
+            migration.downgrade()
+    finally:
+        event.remove(engine, "before_cursor_execute", fail_scope_count)
+        engine.dispose()
+
+    assert _marker(path) == schema_contract.V3_REVISION
+    assert _sqlite_rows(
+        path,
+        "SELECT name FROM sqlite_master WHERE name='od_source_attempt_scope_v3'",
+    ) == [("od_source_attempt_scope_v3",)]
