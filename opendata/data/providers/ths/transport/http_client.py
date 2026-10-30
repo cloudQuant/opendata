@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 import random
 import ssl
 import threading
@@ -38,6 +39,7 @@ from opendata.data.providers.ths.transport.rate_limiter import (
 from opendata.data.request_budget import (
     SOURCE_ATTEMPT_SCOPE_V1,
     SOURCE_ATTEMPT_SCOPE_V3,
+    SOURCE_ATTEMPT_SCOPE_V4,
     RequestAuthorizationError,
     RequestBudgetError,
     RequestExecutionDeadlineError,
@@ -52,6 +54,7 @@ from opendata.data.request_budget import (
     reserve_scoped_attempt,
     scoped_host_slot,
     validate_source_attempt_scope_v3,
+    validate_source_attempt_scope_v4,
 )
 from opendata.data.request_summary import RawEvidenceError, request_summary_sha256
 from opendata.data.source_attempt_gate import (
@@ -108,11 +111,23 @@ DEFAULT_MAX_RESPONSE_BYTES = 32 * 1024 * 1024
 #: 默认单请求超时（秒）。
 DEFAULT_TIMEOUT_SECONDS = 20.0
 
-# V3 method identity assumes this module is imported by trusted process startup.
-# It detects later class/instance replacement but cannot authenticate code that
-# patched HTTPX before this module was imported.
+# These fingerprints assume this module loads during trusted process startup.
+# They detect later class/instance replacement, but are not a sandbox against
+# same-process malicious code or code that patches dependencies before import.
 _HTTPX_CLIENT_BUILD_REQUEST = httpx.Client.build_request
 _HTTPX_CLIENT_SEND = httpx.Client.send
+_SOURCE_ATTEMPT_GATE_RESERVE_ONE_SHOT = SourceAttemptGate.reserve_one_shot_attempt
+_SOURCE_ATTEMPT_GATE_RESERVE_ATTEMPT = SourceAttemptGate._reserve_attempt
+
+_V4_ALLOWED_REQUEST_HEADER_VALUES = {
+    "accept": "*/*",
+    "accept-encoding": "identity",
+    "connection": "keep-alive",
+    "user-agent": f"python-httpx/{httpx.__version__}",
+}
+_V4_ALLOWED_REQUEST_HEADER_NAMES = frozenset(
+    {"accept", "accept-encoding", "connection", "host", "user-agent", API_KEY_HEADER.lower()}
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -227,6 +242,85 @@ def _validate_v3_target_url(url: str, pin: SourceAttemptScopeV3Pin) -> None:
         or parts.path != pin.expected_path
     ):
         raise RequestAuthorizationError("V3 target URL differs from its exact route pins")
+
+
+def _validate_v4_request_headers(
+    request: httpx.Request,
+    *,
+    pin: SourceAttemptScopeV3Pin,
+    api_key: str,
+) -> None:
+    """Allow only the fixed HTTPX defaults, pinned Host, and Fuyao API key."""
+    try:
+        headers = tuple(request.headers.multi_items())
+    except Exception:
+        raise RequestAuthorizationError("prepared one-shot request headers are invalid") from None
+    grouped: dict[str, list[str]] = {}
+    for name, value in headers:
+        if type(name) is not str or type(value) is not str:
+            raise RequestAuthorizationError("prepared one-shot request headers are invalid")
+        normalized_name = name.lower()
+        if normalized_name not in _V4_ALLOWED_REQUEST_HEADER_NAMES:
+            raise RequestAuthorizationError("prepared one-shot request has an unapproved header")
+        grouped.setdefault(normalized_name, []).append(value)
+    if any(len(values) != 1 for values in grouped.values()):
+        raise RequestAuthorizationError("prepared one-shot request has duplicate headers")
+
+    required_values = {
+        "accept-encoding": _V4_ALLOWED_REQUEST_HEADER_VALUES["accept-encoding"],
+        API_KEY_HEADER.lower(): api_key,
+    }
+    host_values = {pin.expected_https_host, f"{pin.expected_https_host}:443"}
+    host_headers = grouped.get("host", [])
+    if len(host_headers) != 1 or host_headers[0] not in host_values:
+        raise RequestAuthorizationError("prepared one-shot Host header differs from its pin")
+    for name, expected in required_values.items():
+        if grouped.get(name) != [expected]:
+            raise RequestAuthorizationError(
+                "prepared one-shot request credentials or encoding differ"
+            )
+    for name, expected in _V4_ALLOWED_REQUEST_HEADER_VALUES.items():
+        if name in grouped and grouped[name] != [expected]:
+            raise RequestAuthorizationError("prepared one-shot request has an unapproved header")
+
+
+def _validate_v4_gate_fingerprint(
+    gate: SourceAttemptGate | None,
+    expected_gate: SourceAttemptGate | None,
+) -> None:
+    """Reject replaced gate instances or V4 reservation method implementations.
+
+    The fingerprint detects later runtime swaps. It cannot authenticate code
+    patched before this module loads or contain malicious code in this process.
+    """
+    if gate is None or gate is not expected_gate or type(gate) is not SourceAttemptGate:
+        raise RequestAuthorizationError("one-shot source attempt gate identity changed")
+    try:
+        instance_attributes = object.__getattribute__(gate, "__dict__")
+        bound_method = object.__getattribute__(gate, "reserve_one_shot_attempt")
+        storage_method = object.__getattribute__(gate, "_reserve_attempt")
+    except Exception:
+        raise RequestAuthorizationError("one-shot source attempt gate method is invalid") from None
+    gate_class = type(gate)
+    class_method = gate_class.__dict__.get("reserve_one_shot_attempt")
+    class_storage_method = gate_class.__dict__.get("_reserve_attempt")
+    storage_method_overridden = "_reserve_attempt" in instance_attributes
+    if (
+        "reserve_one_shot_attempt" in instance_attributes
+        or class_method is not _SOURCE_ATTEMPT_GATE_RESERVE_ONE_SHOT
+        or getattr(bound_method, "__self__", None) is not gate
+        or getattr(bound_method, "__func__", None) is not _SOURCE_ATTEMPT_GATE_RESERVE_ONE_SHOT
+        or class_storage_method is not _SOURCE_ATTEMPT_GATE_RESERVE_ATTEMPT
+        or storage_method_overridden
+        or (
+            not storage_method_overridden
+            and getattr(storage_method, "__func__", None)
+            is not _SOURCE_ATTEMPT_GATE_RESERVE_ATTEMPT
+        )
+        or "__getattribute__" in gate_class.__dict__
+        or "__getattr__" in gate_class.__dict__
+    ):
+        raise RequestAuthorizationError("one-shot source attempt gate method identity changed")
 
 
 @dataclass(frozen=True)
@@ -397,6 +491,9 @@ class FuyaoHttpClient:
         self._concurrency_host = host
         self._raw_response_cache_override = raw_response_cache
         self._source_attempt_gate = source_attempt_gate
+        self._source_attempt_gate_identity = source_attempt_gate
+        if source_attempt_gate is not None:
+            self._validate_v4_gate_integrity()
         self._request_lock = threading.RLock()
 
     def close(self) -> None:
@@ -528,7 +625,13 @@ class FuyaoHttpClient:
         if not scopes:
             raise RequestAuthorizationError("raw exchange requires an active request scope")
         url = f"{self.credentials.base_url}{endpoint}"
-        request_id = uuid.uuid4().hex
+        if self._source_attempt_scope_version(scopes) == SOURCE_ATTEMPT_SCOPE_V4:
+            _binding, _pin, locked_scope, _model, _operation = validate_source_attempt_scope_v4(
+                scopes
+            )
+            request_id = locked_scope.attempt.request_id
+        else:
+            request_id = uuid.uuid4().hex
         started = time.monotonic()
         status: int | None = None
         gate_reservation: tuple[str, AttemptReservation] | None = None
@@ -537,8 +640,14 @@ class FuyaoHttpClient:
         body: bytes | None = None
 
         try:
-            if self._source_attempt_scope_version(scopes) == SOURCE_ATTEMPT_SCOPE_V3:
+            scope_version = self._source_attempt_scope_version(scopes)
+            if scope_version == SOURCE_ATTEMPT_SCOPE_V3:
                 _binding, pin, _canonical_model, _operation = validate_source_attempt_scope_v3(
+                    scopes
+                )
+                _validate_v3_target_url(url, pin)
+            elif scope_version == SOURCE_ATTEMPT_SCOPE_V4:
+                _binding, pin, _locked_scope, _model, _operation = validate_source_attempt_scope_v4(
                     scopes
                 )
                 _validate_v3_target_url(url, pin)
@@ -551,7 +660,10 @@ class FuyaoHttpClient:
             authorize_request(scopes, "ths", request_host)
             self._validate_scoped_client()
             self._validate_raw_exchange_client()
-            if self._source_attempt_scope_version(scopes) == SOURCE_ATTEMPT_SCOPE_V3:
+            if self._source_attempt_scope_version(scopes) in (
+                SOURCE_ATTEMPT_SCOPE_V3,
+                SOURCE_ATTEMPT_SCOPE_V4,
+            ):
                 self._validate_v3_httpx_methods()
             request = self._client.build_request(
                 "GET",
@@ -580,7 +692,14 @@ class FuyaoHttpClient:
                 self._validate_v3_prepared_request(scopes, request)
                 reserve_scoped_attempt(scopes, "ths", request_host)
                 if self._source_attempt_gate is not None:
-                    if self._source_attempt_scope_version(scopes) == SOURCE_ATTEMPT_SCOPE_V3:
+                    scope_version = self._source_attempt_scope_version(scopes)
+                    if scope_version == SOURCE_ATTEMPT_SCOPE_V4:
+                        gate_reservation = self._reserve_one_shot_source_attempt(
+                            scopes,
+                            host=request_host,
+                            prepared_request=request,
+                        )
+                    elif scope_version == SOURCE_ATTEMPT_SCOPE_V3:
                         gate_reservation = self._reserve_source_attempt(
                             scopes,
                             host=request_host,
@@ -728,10 +847,22 @@ class FuyaoHttpClient:
         """Run one GET while holding the client-state lock."""
         self._validate_source_attempt_mode(scopes)
         last_error = error_for_transport("unknown")
-        request_id = uuid.uuid4().hex
+        if self._source_attempt_scope_version(scopes) == SOURCE_ATTEMPT_SCOPE_V4:
+            _binding, _pin, locked_scope, _model, _operation = validate_source_attempt_scope_v4(
+                scopes
+            )
+            request_id = locked_scope.attempt.request_id
+        else:
+            request_id = uuid.uuid4().hex
         url = f"{self.credentials.base_url}{endpoint}"
-        if self._source_attempt_scope_version(scopes) == SOURCE_ATTEMPT_SCOPE_V3:
+        scope_version = self._source_attempt_scope_version(scopes)
+        if scope_version == SOURCE_ATTEMPT_SCOPE_V3:
             _binding, pin, _canonical_model, _operation = validate_source_attempt_scope_v3(scopes)
+            _validate_v3_target_url(url, pin)
+        elif scope_version == SOURCE_ATTEMPT_SCOPE_V4:
+            _binding, pin, _locked_scope, _canonical_model, _operation = (
+                validate_source_attempt_scope_v4(scopes)
+            )
             _validate_v3_target_url(url, pin)
         gate_enabled = self._source_attempt_gate is not None
         raw_cache = None if gate_enabled else self._raw_response_cache_override
@@ -861,7 +992,10 @@ class FuyaoHttpClient:
                     authorize_request(scopes, "ths", request_host)
                     self._validate_scoped_client()
                     timeout = self._scoped_timeout(scopes)
-                    if self._source_attempt_scope_version(scopes) == SOURCE_ATTEMPT_SCOPE_V3:
+                    if self._source_attempt_scope_version(scopes) in (
+                        SOURCE_ATTEMPT_SCOPE_V3,
+                        SOURCE_ATTEMPT_SCOPE_V4,
+                    ):
                         self._validate_v3_httpx_methods()
                     prepared_request = self._client.build_request(
                         "GET",
@@ -888,10 +1022,14 @@ class FuyaoHttpClient:
                         self._validate_v3_prepared_request(scopes, prepared_request)
                         reserve_scoped_attempt(scopes, "ths", request_host)
                         if gate_enabled:
-                            if (
-                                self._source_attempt_scope_version(scopes)
-                                == SOURCE_ATTEMPT_SCOPE_V3
-                            ):
+                            scope_version = self._source_attempt_scope_version(scopes)
+                            if scope_version == SOURCE_ATTEMPT_SCOPE_V4:
+                                gate_reservation = self._reserve_one_shot_source_attempt(
+                                    scopes,
+                                    host=request_host,
+                                    prepared_request=prepared_request,
+                                )
+                            elif scope_version == SOURCE_ATTEMPT_SCOPE_V3:
                                 gate_reservation = self._reserve_source_attempt(
                                     scopes,
                                     host=request_host,
@@ -1210,11 +1348,31 @@ class FuyaoHttpClient:
         """Require the explicitly selected gate version and its complete binding."""
         scope_version = self._source_attempt_scope_version(scopes)
         if self._source_attempt_gate is None:
-            if scope_version == SOURCE_ATTEMPT_SCOPE_V3 or any(
+            if scope_version in (SOURCE_ATTEMPT_SCOPE_V3, SOURCE_ATTEMPT_SCOPE_V4) or any(
                 scope.source_attempt_binding is not None for scope in scopes
             ):
                 raise RequestAuthorizationError(
                     "source attempt binding requires a configured durable gate"
+                )
+            return
+        if scope_version == SOURCE_ATTEMPT_SCOPE_V4:
+            self._validate_v3_httpx_methods()
+            self._validate_v4_gate_integrity()
+            binding, _pin, locked_scope, source_model, operation = validate_source_attempt_scope_v4(
+                scopes
+            )
+            self._validate_v4_transport_limits()
+            if (
+                scopes[0].source != "ths"
+                or not source_model
+                or locked_scope.attempt.attempt_no != 1
+                or locked_scope.attempt.request_id == ""
+                or locked_scope.attempt.attempt_id == ""
+                or locked_scope.attempt.operation != operation.value
+                or locked_scope.attempt.grant_id != binding.grant_id
+            ):
+                raise RequestAuthorizationError(
+                    "source attempt V4 requires one exact pre-locked attempt"
                 )
             return
         if scope_version == SOURCE_ATTEMPT_SCOPE_V3:
@@ -1238,6 +1396,7 @@ class FuyaoHttpClient:
             if type(value) is not int or value not in (
                 SOURCE_ATTEMPT_SCOPE_V1,
                 SOURCE_ATTEMPT_SCOPE_V3,
+                SOURCE_ATTEMPT_SCOPE_V4,
             ):
                 raise RequestAuthorizationError("source attempt scope version is invalid")
             versions.append(value)
@@ -1245,11 +1404,20 @@ class FuyaoHttpClient:
             raise RequestAuthorizationError("source attempt scope versions are inconsistent")
         version = versions[0]
         if version == SOURCE_ATTEMPT_SCOPE_V1 and any(
-            getattr(scope, "source_attempt_scope_v3_pin", None) is not None for scope in scopes
+            getattr(scope, "source_attempt_scope_v3_pin", None) is not None
+            or getattr(scope, "source_attempt_one_shot_scope_v4", None) is not None
+            for scope in scopes
         ):
             raise RequestAuthorizationError("V3 pin cannot be used with the legacy gate version")
         if version == SOURCE_ATTEMPT_SCOPE_V3:
+            if any(
+                getattr(scope, "source_attempt_one_shot_scope_v4", None) is not None
+                for scope in scopes
+            ):
+                raise RequestAuthorizationError("V4 scope cannot be used with the V3 gate version")
             validate_source_attempt_scope_v3(scopes)
+        elif version == SOURCE_ATTEMPT_SCOPE_V4:
+            validate_source_attempt_scope_v4(scopes)
         return version
 
     def _validate_v3_prepared_request(
@@ -1257,12 +1425,41 @@ class FuyaoHttpClient:
         scopes: tuple[RequestExecutionScope, ...],
         request: httpx.Request,
     ) -> None:
-        """Recheck V3 pins against the same prepared request immediately before send."""
-        if self._source_attempt_scope_version(scopes) != SOURCE_ATTEMPT_SCOPE_V3:
+        """Recheck V3/V4 pins against the same request immediately before send."""
+        version = self._source_attempt_scope_version(scopes)
+        if version not in (SOURCE_ATTEMPT_SCOPE_V3, SOURCE_ATTEMPT_SCOPE_V4):
             return
         self._validate_v3_httpx_methods()
-        _binding, pin, _canonical_model, _operation = validate_source_attempt_scope_v3(scopes)
+        if version == SOURCE_ATTEMPT_SCOPE_V3:
+            _binding, pin, _canonical_model, _operation = validate_source_attempt_scope_v3(scopes)
+        else:
+            _binding, pin, _locked_scope, _canonical_model, _operation = (
+                validate_source_attempt_scope_v4(scopes)
+            )
+            self._validate_v4_gate_integrity()
+            self._validate_v4_transport_limits()
+            _validate_v4_request_headers(request, pin=pin, api_key=self.credentials.api_key)
         _prepared_request_v3_identity(request, pin)
+
+    def _validate_v4_gate_integrity(self) -> None:
+        """Check the pinned gate and its storage entrypoint for this transport."""
+        _validate_v4_gate_fingerprint(
+            self._source_attempt_gate,
+            self._source_attempt_gate_identity,
+        )
+
+    def _validate_v4_transport_limits(self) -> None:
+        """Keep a V4 request to one bounded attempt with a finite timeout."""
+        if (
+            type(self._max_attempts) is not int
+            or self._max_attempts != 1
+            or type(self._timeout_seconds) not in (int, float)
+            or not math.isfinite(self._timeout_seconds)
+            or self._timeout_seconds <= 0
+        ):
+            raise RequestAuthorizationError(
+                "one-shot transport requires max_attempts=1 and a finite positive timeout"
+            )
 
     @staticmethod
     def _validated_source_attempt_scope(
@@ -1316,6 +1513,10 @@ class FuyaoHttpClient:
         if gate is None:
             raise RequestAuthorizationError("source attempt gate is not configured")
         scope_version = self._source_attempt_scope_version(scopes)
+        if scope_version == SOURCE_ATTEMPT_SCOPE_V4:
+            raise RequestAuthorizationError(
+                "V4 one-shot requests require the dedicated one-shot gate method"
+            )
         if scope_version == SOURCE_ATTEMPT_SCOPE_V3:
             try:
                 if prepared_request is None:
@@ -1398,6 +1599,60 @@ class FuyaoHttpClient:
         ):
             raise RequestAuthorizationError("source attempt gate did not authorize transport")
         return attempt.attempt_id, reservation
+
+    def _reserve_one_shot_source_attempt(
+        self,
+        scopes: tuple[RequestExecutionScope, ...],
+        *,
+        host: str,
+        prepared_request: httpx.Request | None,
+    ) -> tuple[str, AttemptReservation]:
+        """Consume the exact locked V4 identity; never create replacement IDs."""
+        gate = self._source_attempt_gate
+        self._validate_v4_gate_integrity()
+        try:
+            if prepared_request is None:
+                raise RequestAuthorizationError(
+                    "one-shot source attempt requires the prepared request"
+                )
+            binding, pin, locked_scope, _canonical_model, _operation = (
+                validate_source_attempt_scope_v4(scopes)
+            )
+            identity = _prepared_request_v3_identity(prepared_request, pin)
+            attempt = locked_scope.attempt
+            if (
+                host != identity.request_host
+                or identity.request_scheme != locked_scope.request_scheme
+                or identity.request_method != locked_scope.request_method
+                or identity.request_host != locked_scope.request_host
+                or identity.request_path != locked_scope.request_path
+                or identity.request_summary_sha256 != locked_scope.request_summary_sha256
+                or attempt.attempt_no != 1
+                or attempt.source != "ths"
+                or attempt.host != host
+                or attempt.grant_id != binding.grant_id
+                or attempt.expected_revision != binding.expected_revision
+                or attempt.principal_scope != binding.principal_scope
+                or attempt.run_key != binding.run_key
+                or attempt.expected_rights_evidence_reference
+                != binding.expected_rights_evidence_reference
+            ):
+                raise RequestAuthorizationError("prepared request differs from locked V4 scope")
+            self._validate_v4_gate_integrity()
+            reservation = _SOURCE_ATTEMPT_GATE_RESERVE_ONE_SHOT(gate, locked_scope)
+            self._validate_v4_gate_integrity()
+        except Exception:
+            raise RequestAuthorizationError(
+                "one-shot source attempt gate did not authorize transport"
+            ) from None
+        if (
+            type(reservation) is not AttemptReservation
+            or reservation.status is not ReservationStatus.RESERVED_NEW
+        ):
+            raise RequestAuthorizationError(
+                "one-shot source attempt gate did not authorize transport"
+            )
+        return locked_scope.attempt.attempt_id, reservation
 
     @staticmethod
     @contextmanager

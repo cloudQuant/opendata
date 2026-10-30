@@ -23,6 +23,8 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Iterable, Iterator
     from threading import Event
 
+    from opendata.data.source_attempt_gate import SourceAttemptScopeV3
+
 
 MAX_TASK_ATTEMPTS = 10
 MAX_SOURCE_ATTEMPTS = 3
@@ -32,6 +34,7 @@ MAX_BOUNDED_TASK_ATTEMPTS = 256
 MAX_BOUNDED_SOURCE_ATTEMPTS = 64
 SOURCE_ATTEMPT_SCOPE_V1 = 1
 SOURCE_ATTEMPT_SCOPE_V3 = 3
+SOURCE_ATTEMPT_SCOPE_V4 = 4
 _HOST_LOCK_POLL_SECONDS = 0.05
 _SOURCE_ATTEMPT_BINDING_IDENTIFIER_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,127}")
 _MAX_SOURCE_ATTEMPT_BINDING_REVISION = 2_147_483_647
@@ -503,6 +506,7 @@ class RequestExecutionScope:
     source_attempt_binding: SourceAttemptBinding | None = field(default=None, repr=False)
     source_attempt_scope_version: int = SOURCE_ATTEMPT_SCOPE_V1
     source_attempt_scope_v3_pin: SourceAttemptScopeV3Pin | None = field(default=None, repr=False)
+    source_attempt_one_shot_scope_v4: SourceAttemptScopeV3 | None = field(default=None, repr=False)
 
     def check_live(self) -> None:
         """Raise when cancellation or the enclosing deadline has fired."""
@@ -576,6 +580,105 @@ def validate_source_attempt_scope_v3(
         scope.source_attempt_binding.validate_integrity()
         scope.source_attempt_scope_v3_pin.validate_integrity()
     return binding, pin, canonical_model, operation
+
+
+def validate_source_attempt_scope_v4(
+    scopes: tuple[RequestExecutionScope, ...],
+) -> tuple[
+    SourceAttemptBinding,
+    SourceAttemptScopeV3Pin,
+    SourceAttemptScopeV3,
+    str,
+    RequestOperation,
+]:
+    """Validate a V4 transport pin and its complete, pre-locked V3 gate scope.
+
+    V4 carries both objects: the V3 pin validates the prepared HTTP request,
+    while the complete V3 gate scope supplies the immutable request and attempt
+    identifiers configured before transport. Every shared field must agree.
+    This validates caller data only; the dedicated V4 gate method must still
+    prove the exact scope was previously locked and remains unused.
+    """
+    from opendata.data.source_attempt_gate import SourceAttemptScopeV3
+
+    if not scopes or any(type(scope) is not RequestExecutionScope for scope in scopes):
+        raise RequestAuthorizationError("source attempt V4 scope is missing or invalid")
+    first = scopes[0]
+    binding = first.source_attempt_binding
+    pin = first.source_attempt_scope_v3_pin
+    locked_scope = first.source_attempt_one_shot_scope_v4
+    canonical_model = first.canonical_model
+    operation = first.operation
+    if (
+        type(first.source) is not str
+        or first.source != "ths"
+        or type(canonical_model) is not str
+        or not canonical_model
+        or canonical_model != canonical_model.strip()
+        or type(operation) is not RequestOperation
+        or operation is not RequestOperation.QUERY
+        or type(first.source_attempt_scope_version) is not int
+        or first.source_attempt_scope_version != SOURCE_ATTEMPT_SCOPE_V4
+        or type(binding) is not SourceAttemptBinding
+        or type(pin) is not SourceAttemptScopeV3Pin
+        or type(locked_scope) is not SourceAttemptScopeV3
+    ):
+        raise RequestAuthorizationError("source attempt V4 scope is incomplete or invalid")
+    binding.validate_integrity()
+    pin.validate_integrity()
+    attempt = locked_scope.attempt
+    if type(attempt.attempt_no) is not int or attempt.attempt_no != 1:
+        raise RequestAuthorizationError("source attempt V4 requires attempt_no 1")
+    if (
+        attempt.source != first.source
+        or attempt.canonical_model != canonical_model
+        or attempt.operation != operation.value
+        or attempt.grant_id != binding.grant_id
+        or attempt.expected_revision != binding.expected_revision
+        or attempt.principal_scope != binding.principal_scope
+        or attempt.run_key != binding.run_key
+        or attempt.expected_rights_evidence_reference != binding.expected_rights_evidence_reference
+        or attempt.host != pin.expected_https_host
+        or locked_scope.request_scheme != "https"
+        or locked_scope.request_method != pin.expected_method
+        or locked_scope.request_host != pin.expected_https_host
+        or locked_scope.request_path != pin.expected_path
+        or locked_scope.capture_intent_id != pin.capture_intent_id
+        or locked_scope.request_summary_sha256 != pin.request_summary_sha256
+        or locked_scope.source_policy_id != pin.source_policy_id
+        or locked_scope.source_policy_revision != pin.source_policy_revision
+        or locked_scope.source_policy_sha256 != pin.source_policy_sha256
+        or locked_scope.budget_binding_sha256 != pin.budget_binding_sha256
+        or locked_scope.budget_quota_key != pin.budget_quota_key
+        or locked_scope.budget_policy_revision != pin.budget_policy_revision
+        or locked_scope.budget_policy_sha256 != pin.budget_policy_sha256
+    ):
+        raise RequestAuthorizationError("source attempt V4 identities or policy pins disagree")
+    if (
+        type(binding.run_key) is not str
+        or not binding.expected_rights_evidence_reference
+        or binding.expected_rights_evidence_reference
+        != binding.expected_rights_evidence_reference.strip()
+    ):
+        raise RequestAuthorizationError("source attempt V4 binding is incomplete")
+    for scope in scopes:
+        if (
+            scope.source != first.source
+            or scope.canonical_model != canonical_model
+            or scope.operation is not operation
+            or type(scope.source_attempt_scope_version) is not int
+            or scope.source_attempt_scope_version != SOURCE_ATTEMPT_SCOPE_V4
+            or type(scope.source_attempt_binding) is not SourceAttemptBinding
+            or scope.source_attempt_binding != binding
+            or type(scope.source_attempt_scope_v3_pin) is not SourceAttemptScopeV3Pin
+            or scope.source_attempt_scope_v3_pin != pin
+            or type(scope.source_attempt_one_shot_scope_v4) is not SourceAttemptScopeV3
+            or scope.source_attempt_one_shot_scope_v4 != locked_scope
+        ):
+            raise RequestAuthorizationError("source attempt V4 scopes are inconsistent")
+        scope.source_attempt_binding.validate_integrity()
+        scope.source_attempt_scope_v3_pin.validate_integrity()
+    return binding, pin, locked_scope, canonical_model, operation
 
 
 @dataclass(frozen=True, slots=True)
@@ -973,6 +1076,7 @@ def request_execution_scope(
     source_attempt_binding: SourceAttemptBinding | None = None,
     source_attempt_scope_version: int | None = None,
     source_attempt_scope_v3_pin: SourceAttemptScopeV3Pin | None = None,
+    source_attempt_one_shot_scope_v4: SourceAttemptScopeV3 | None = None,
 ) -> Iterator[RequestExecutionScope | None]:
     """Establish a nested scope without permitting budget replacement.
 
@@ -981,8 +1085,9 @@ def request_execution_scope(
     leave the current behavior unchanged. A source-attempt binding and V3 pin
     may be set only at the outermost scope; nested scopes inherit them or repeat
     the exact same values. Version 1 is the legacy default. Version 3 must be
-    selected explicitly and requires a complete binding and pin; neither
-    version can silently downgrade to the other.
+    selected explicitly and requires a complete binding and pin. Version 4
+    additionally requires a complete pre-locked V3 gate scope with stable
+    request/attempt IDs. Versions never silently downgrade to one another.
     """
     current = _copy_scope_stack(_CURRENT_SCOPES.get(), inherited_scopes)
     if not isinstance(operation, RequestOperation):
@@ -994,14 +1099,22 @@ def request_execution_scope(
         raise ValueError("source_attempt_binding must be a SourceAttemptBinding or None")
     if source_attempt_scope_version is not None and (
         type(source_attempt_scope_version) is not int
-        or source_attempt_scope_version not in (SOURCE_ATTEMPT_SCOPE_V1, SOURCE_ATTEMPT_SCOPE_V3)
+        or source_attempt_scope_version
+        not in (SOURCE_ATTEMPT_SCOPE_V1, SOURCE_ATTEMPT_SCOPE_V3, SOURCE_ATTEMPT_SCOPE_V4)
     ):
-        raise ValueError("source_attempt_scope_version must be 1, 3, or None")
+        raise ValueError("source_attempt_scope_version must be 1, 3, 4, or None")
     if (
         source_attempt_scope_v3_pin is not None
         and type(source_attempt_scope_v3_pin) is not SourceAttemptScopeV3Pin
     ):
         raise ValueError("source_attempt_scope_v3_pin must be a SourceAttemptScopeV3Pin or None")
+    if source_attempt_one_shot_scope_v4 is not None:
+        from opendata.data.source_attempt_gate import SourceAttemptScopeV3
+
+        if type(source_attempt_one_shot_scope_v4) is not SourceAttemptScopeV3:
+            raise ValueError(
+                "source_attempt_one_shot_scope_v4 must be a SourceAttemptScopeV3 or None"
+            )
 
     effective_source_attempt_binding = source_attempt_binding
     effective_scope_version = (
@@ -1010,6 +1123,7 @@ def request_execution_scope(
         else source_attempt_scope_version
     )
     effective_scope_v3_pin = source_attempt_scope_v3_pin
+    effective_one_shot_scope_v4 = source_attempt_one_shot_scope_v4
     if current:
         inherited_binding = current[0].source_attempt_binding
         if any(scope.source_attempt_binding != inherited_binding for scope in current):
@@ -1021,9 +1135,11 @@ def request_execution_scope(
         effective_source_attempt_binding = inherited_binding
         inherited_scope_version = current[0].source_attempt_scope_version
         inherited_scope_v3_pin = current[0].source_attempt_scope_v3_pin
+        inherited_one_shot_scope_v4 = current[0].source_attempt_one_shot_scope_v4
         if any(
             scope.source_attempt_scope_version != inherited_scope_version
             or scope.source_attempt_scope_v3_pin != inherited_scope_v3_pin
+            or scope.source_attempt_one_shot_scope_v4 != inherited_one_shot_scope_v4
             for scope in current
         ):
             raise RequestBudgetScopeError("active source-attempt scope pins are inconsistent")
@@ -1037,14 +1153,28 @@ def request_execution_scope(
             and source_attempt_scope_v3_pin != inherited_scope_v3_pin
         ):
             raise RequestBudgetScopeError("nested request scope cannot replace its V3 gate pin")
+        if (
+            source_attempt_one_shot_scope_v4 is not None
+            and source_attempt_one_shot_scope_v4 != inherited_one_shot_scope_v4
+        ):
+            raise RequestBudgetScopeError(
+                "nested request scope cannot replace its V4 one-shot gate scope"
+            )
         effective_scope_version = inherited_scope_version
         effective_scope_v3_pin = inherited_scope_v3_pin
+        effective_one_shot_scope_v4 = inherited_one_shot_scope_v4
 
     if effective_scope_version == SOURCE_ATTEMPT_SCOPE_V1:
         if effective_scope_v3_pin is not None:
             raise RequestBudgetScopeError("V3 gate pin requires the explicit V3 scope version")
+        if effective_one_shot_scope_v4 is not None:
+            raise RequestBudgetScopeError("V4 one-shot gate scope requires the explicit V4 version")
     elif effective_scope_version == SOURCE_ATTEMPT_SCOPE_V3:
-        if effective_scope_v3_pin is None or effective_source_attempt_binding is None:
+        if (
+            effective_scope_v3_pin is None
+            or effective_source_attempt_binding is None
+            or effective_one_shot_scope_v4 is not None
+        ):
             raise RequestAuthorizationError("V3 gate scope requires a binding and complete pin")
         effective_scope_v3_pin.validate_integrity()
         effective_source_attempt_binding.validate_integrity()
@@ -1053,6 +1183,22 @@ def request_execution_scope(
             or not effective_source_attempt_binding.expected_rights_evidence_reference
         ):
             raise RequestAuthorizationError("V3 gate scope requires a run key and exact rights ref")
+    elif effective_scope_version == SOURCE_ATTEMPT_SCOPE_V4:
+        if (
+            effective_scope_v3_pin is None
+            or effective_source_attempt_binding is None
+            or effective_one_shot_scope_v4 is None
+        ):
+            raise RequestAuthorizationError(
+                "V4 one-shot scope requires a binding, transport pin, and locked gate scope"
+            )
+        effective_scope_v3_pin.validate_integrity()
+        effective_source_attempt_binding.validate_integrity()
+        if (
+            effective_source_attempt_binding.run_key is None
+            or not effective_source_attempt_binding.expected_rights_evidence_reference
+        ):
+            raise RequestAuthorizationError("V4 gate scope requires a run key and exact rights ref")
     else:  # pragma: no cover - guarded above and by inherited-scope consistency
         raise RequestBudgetScopeError("unsupported source-attempt scope version")
 
@@ -1083,7 +1229,10 @@ def request_execution_scope(
         source_attempt_binding=effective_source_attempt_binding,
         source_attempt_scope_version=effective_scope_version,
         source_attempt_scope_v3_pin=effective_scope_v3_pin,
+        source_attempt_one_shot_scope_v4=effective_one_shot_scope_v4,
     )
+    if effective_scope_version == SOURCE_ATTEMPT_SCOPE_V4:
+        validate_source_attempt_scope_v4(current + (scope,))
     token: Token[tuple[RequestExecutionScope, ...]] = _CURRENT_SCOPES.set(current + (scope,))
     try:
         yield scope
