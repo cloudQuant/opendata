@@ -376,8 +376,8 @@ def test_locked_scope_reserves_once_and_replay_never_reissues_permit(
     scope = _scope()
     _lock_scope(gate, gate_engine, scope, monkeypatch)
 
-    first = gate.reserve_attempt_v3(scope)
-    replay = gate.reserve_attempt_v3(scope)
+    first = gate.reserve_one_shot_attempt(scope)
+    replay = gate.reserve_one_shot_attempt(scope)
     changed_id = replace(scope, attempt=replace(scope.attempt, attempt_id="attempt-2"))
     changed_request = replace(scope, attempt=replace(scope.attempt, request_id="request-2"))
     changed_intent = replace(scope, capture_intent_id="intent-2")
@@ -402,8 +402,30 @@ def test_locked_scope_reserves_once_and_replay_never_reissues_permit(
         changed_rights,
         changed_policy,
     ):
-        assert gate.reserve_attempt_v3(changed).status is ReservationStatus.ID_CONFLICT
+        assert gate.reserve_one_shot_attempt(changed).status is ReservationStatus.ID_CONFLICT
     assert _counts(gate_engine) == (1, 1, 0, 1)
+
+
+def test_compat_v3_api_rejects_a_locked_scope_without_consuming_its_permit(
+    gate_engine: Engine,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The compatibility V3 method cannot consume a scope sealed for one-shot use."""
+    gate = SourceAttemptGate(gate_engine)
+    scope = _scope()
+    _lock_scope(gate, gate_engine, scope, monkeypatch)
+    before = _clock_and_bucket_snapshot(gate_engine)
+
+    def unexpected_clock_advance(_connection: Connection) -> int:
+        pytest.fail("the compatibility V3 method must reject before advancing the gate clock")
+
+    monkeypatch.setattr(gate, "_advance_clock", unexpected_clock_advance)
+
+    with pytest.raises(SourceAttemptOneShotConflictError, match="reserve_one_shot_attempt"):
+        gate.reserve_attempt_v3(scope)
+
+    assert _counts(gate_engine) == (0, 0, 0, 0)
+    assert _clock_and_bucket_snapshot(gate_engine) == before
 
 
 def test_consumed_permit_without_exact_duplicate_fails_closed(
@@ -414,11 +436,11 @@ def test_consumed_permit_without_exact_duplicate_fails_closed(
     gate = SourceAttemptGate(gate_engine)
     scope = _scope()
     _lock_scope(gate, gate_engine, scope, monkeypatch)
-    assert gate.reserve_attempt_v3(scope).status is ReservationStatus.RESERVED_NEW
+    assert gate.reserve_one_shot_attempt(scope).status is ReservationStatus.RESERVED_NEW
     monkeypatch.setattr(gate, "_find_existing_v3_attempt", lambda *_args: None)
 
     with pytest.raises(SourceAttemptGateUnavailable, match="history is incomplete"):
-        gate.reserve_attempt_v3(scope)
+        gate.reserve_one_shot_attempt(scope)
 
     assert _counts(gate_engine) == (1, 1, 0, 1)
 
@@ -697,7 +719,7 @@ def test_scope_match_fails_closed_on_unreadable_locked_scope_json(
         lambda _connection: {"scope_json": stored_scope_json},
     )
 
-    result = gate.reserve_attempt_v3(scope)
+    result = gate.reserve_one_shot_attempt(scope)
 
     assert result.status is ReservationStatus.ID_CONFLICT
     assert _counts(gate_engine) == (0, 0, 0, 0)
@@ -774,7 +796,7 @@ def test_insert_or_replace_cannot_reopen_one_shot_or_attempt_rows(
         )
     assert _counts(gate_engine) == (0, 0, 0, 0)
 
-    assert gate.reserve_attempt_v3(scope).status is ReservationStatus.RESERVED_NEW
+    assert gate.reserve_one_shot_attempt(scope).status is ReservationStatus.RESERVED_NEW
     replacements = (
         (
             "INSERT OR REPLACE INTO od_source_one_shot_permits "
@@ -817,8 +839,8 @@ def test_denied_exact_scope_consumes_the_only_permit(
     )
 
     assert revoked.revision == 2
-    denied = gate.reserve_attempt_v3(scope)
-    replay = gate.reserve_attempt_v3(scope)
+    denied = gate.reserve_one_shot_attempt(scope)
+    replay = gate.reserve_one_shot_attempt(scope)
 
     assert denied.status is ReservationStatus.DENIED
     assert denied.denial_code == "grant_not_allowed"
@@ -947,7 +969,7 @@ def test_concurrent_replay_serializes_to_one_reserved_result(
     scope = _scope()
     _lock_scope(gate, gate_engine, scope, monkeypatch)
     with ThreadPoolExecutor(max_workers=2) as executor:
-        results = list(executor.map(gate.reserve_attempt_v3, (scope, scope)))
+        results = list(executor.map(gate.reserve_one_shot_attempt, (scope, scope)))
 
     statuses = sorted(result.status.value for result in results)
     assert statuses == sorted(
@@ -973,11 +995,11 @@ def test_commit_acknowledgement_uncertainty_never_reissues_a_consumed_permit(
 
     monkeypatch.setattr(gate, "_commit", commit_then_raise)
     with pytest.raises(SourceAttemptGateUnavailable, match="uncertain"):
-        gate.reserve_attempt_v3(scope)
+        gate.reserve_one_shot_attempt(scope)
     assert _counts(gate_engine) == (1, 1, 0, 1)
 
     monkeypatch.setattr(gate, "_commit", original_commit)
-    assert gate.reserve_attempt_v3(scope).status is ReservationStatus.DUPLICATE
+    assert gate.reserve_one_shot_attempt(scope).status is ReservationStatus.DUPLICATE
     assert _counts(gate_engine) == (1, 1, 0, 1)
 
 
@@ -999,7 +1021,7 @@ def test_scope_sidecar_failure_rolls_back_the_permit_and_reservation(
 
     monkeypatch.setattr(gate, "_insert_attempt_scope_v3", fail_after_scope_insert)
     with pytest.raises(SourceAttemptGateUnavailable):
-        gate.reserve_attempt_v3(scope)
+        gate.reserve_one_shot_attempt(scope)
     assert _counts(gate_engine) == (0, 0, 0, 0)
     assert _clock_and_bucket_snapshot(gate_engine) == before
 
