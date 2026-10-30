@@ -1091,6 +1091,7 @@ class FuyaoHttpClient:
                 principal_scope=binding.principal_scope,
                 host=host,
                 run_key=binding.run_key,
+                expected_rights_evidence_reference=(binding.expected_rights_evidence_reference),
             )
             reservation = gate.reserve_attempt(attempt)
         except Exception:
@@ -1271,6 +1272,31 @@ class FuyaoHttpClient:
             len(content_encodings) != 1 or content_encodings[0].casefold() != "identity"
         ):
             raise error_for_transport("envelope_invalid", detail="content_encoding")
+
+        # HTTPX's standard MockTransport ``Response(content=...)`` constructor
+        # eagerly reads its ByteStream, leaving ``is_stream_consumed`` true but
+        # retaining the bounded test/injected body on ``response.content``.
+        # Accept that already-buffered shape without restarting the stream. A
+        # real HTTP response still follows the incremental raw-stream path
+        # below; an already-consumed, uncached stream remains a hard failure.
+        if response.is_stream_consumed:
+            if scopes:
+                check_scope_liveness(scopes)
+            try:
+                buffered_content = response.content
+            except httpx.ResponseNotRead:
+                stream_error = error_for_transport("network", detail="response_body_unavailable")
+                stream_error.retryable = False
+                raise stream_error from None
+            if len(buffered_content) > self._max_response_bytes:
+                raise error_for_transport(
+                    "response_too_large", detail=str(self._max_response_bytes)
+                )
+            if expected_length is not None and len(buffered_content) != expected_length:
+                raise error_for_transport("envelope_invalid", detail="content_length")
+            if scopes:
+                check_scope_liveness(scopes)
+            return buffered_content
 
         content = bytearray()
         # Leave chunking to the transport. Passing ``chunk_size`` makes HTTPX's

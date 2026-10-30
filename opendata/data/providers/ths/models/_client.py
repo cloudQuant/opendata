@@ -18,7 +18,7 @@ they must be requested qualified; see :func:`resolve_option_code`.
 from __future__ import annotations
 
 from contextlib import contextmanager
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypedDict
 
 from opendata.core.config import settings
 from opendata.data.providers.ths import FuyaoCredentials, FuyaoHttpClient
@@ -35,6 +35,14 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
 
     from opendata.data.source_attempt_gate import SourceAttemptGate
+
+
+class _FuyaoConstructorOptions(TypedDict, total=False):
+    """Typed optional kwargs forwarded to the concrete HTTP client."""
+
+    timeout_seconds: float
+    source_attempt_gate: SourceAttemptGate
+    max_attempts: int
 
 
 #: 股票代码的交易所后缀（指数等其它后缀不参与解析）。
@@ -90,6 +98,7 @@ def client(
     *,
     timeout_seconds: float | None = None,
     source_attempt_gate: SourceAttemptGate | None = None,
+    max_attempts: int | None = None,
 ) -> Iterator[FuyaoHttpClient]:
     """Build a short-lived client for one fetch call.
 
@@ -98,25 +107,23 @@ def client(
         source_attempt_gate: Optional explicitly injected durable gate. The
             caller must provide a matching trusted request-scope binding; this
             helper never discovers a gate or authorization from API input.
+        max_attempts: Optional transport retry ceiling for a deliberately
+            bounded source call. When omitted, the transport default applies.
 
     Yields:
         A configured client, closed on exit.
     """
     resolved = credentials()
-    if source_attempt_gate is None:
-        active = (
-            FuyaoHttpClient(credentials=resolved)
-            if timeout_seconds is None
-            else FuyaoHttpClient(credentials=resolved, timeout_seconds=timeout_seconds)
-        )
-    elif timeout_seconds is None:
-        active = FuyaoHttpClient(credentials=resolved, source_attempt_gate=source_attempt_gate)
-    else:
-        active = FuyaoHttpClient(
-            credentials=resolved,
-            timeout_seconds=timeout_seconds,
-            source_attempt_gate=source_attempt_gate,
-        )
+    if max_attempts is not None and (type(max_attempts) is not int or max_attempts < 1):
+        raise ValueError("max_attempts must be a positive integer")
+    options: _FuyaoConstructorOptions = {}
+    if timeout_seconds is not None:
+        options["timeout_seconds"] = timeout_seconds
+    if source_attempt_gate is not None:
+        options["source_attempt_gate"] = source_attempt_gate
+    if max_attempts is not None:
+        options["max_attempts"] = max_attempts
+    active = FuyaoHttpClient(credentials=resolved, **options)
     try:
         yield active
     finally:
