@@ -24,6 +24,7 @@ if TYPE_CHECKING:
     from sqlalchemy.engine import Connection
 
 VERSION_TABLE = "alembic_version_source_gate"
+V0_REVISION = "sg0000_gate_v1_initialize"
 V1_REVISION = "sg0001_gate_v1_adopt"
 V2_REVISION = "sg0002_source_attempt_scope_v2"
 V3_REVISION = "sg0003_source_attempt_scope_v3"
@@ -641,7 +642,7 @@ def read_migration_marker(connection: Connection) -> str | None:
 def validate_migration_state(connection: Connection) -> str | None:
     """Validate the marker and exact source-gate schema before or after upgrade."""
     marker = read_migration_marker(connection)
-    if marker is None or marker == V1_REVISION:
+    if marker is None or marker in {V0_REVISION, V1_REVISION}:
         validate_v1_schema(connection)
         return marker
     if marker == V2_REVISION:
@@ -691,6 +692,7 @@ def create_one_shot_v4(connection: Connection) -> None:
 
 __all__ = [
     "VERSION_TABLE",
+    "V0_REVISION",
     "V1_REVISION",
     "V2_REVISION",
     "V3_REVISION",

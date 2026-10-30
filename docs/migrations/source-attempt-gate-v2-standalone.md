@@ -1,9 +1,10 @@
 # Standalone source-attempt gate migration
 
 The source-attempt gate is a local file-backed SQLite store. Its schema has an
-independent Alembic chain and version table, `alembic_version_source_gate`.
-This chain never runs as part of OpenData startup and does not invoke or advance
-`alembic_data`.
+independent Alembic chain (`sg0000` through `sg0004`) and version table,
+`alembic_version_source_gate`. This chain never runs as part of OpenData startup
+and does not invoke or advance `alembic_data` or create its
+`alembic_version_data` marker.
 
 ## Explicit upgrade
 
@@ -22,15 +23,40 @@ The command captures the target's device/inode and checks it again after SQLite
 opens the file, before schema reads, after obtaining `BEGIN IMMEDIATE`, and
 before commit. These checks detect ordinary path replacement during the
 workflow, but do not pin an OS file handle or eliminate a same-user process's
-ability to swap a pathname away and back between checks.
+ability to swap a pathname away and back between checks. SQLite's write lock
+coordinates SQLite writers on the opened database; it is not a security boundary
+against a process running as the same user that can change the path or edit the
+file outside this migration. The operator must keep the target path and its
+parent directory under trusted control for the duration of the command.
 
-The gate-schema comparison intentionally allows unrelated tables and rows to
-coexist with a complete v1 gate, and preserves them. It therefore cannot prove
-that the selected SQLite file is a standalone source-gate database or
-distinguish a warehouse database that also contains the exact v1 gate schema.
-The operator must select and review the intended local file before invoking
-this migration; stronger database identity and provenance design remains a
-separate follow-up.
+For legacy adoption, the gate-schema comparison intentionally allows unrelated
+tables and rows to coexist with a complete v1 gate, and preserves them. It
+therefore cannot prove that the selected SQLite file is a standalone
+source-gate database or distinguish a warehouse database that also contains the
+exact v1 gate schema. The operator must select and review the intended local
+file before invoking this migration; stronger database identity and provenance
+design remains a separate follow-up. Explicit empty-file initialization below
+has a stricter rule and rejects any pre-existing user schema object.
+
+### Explicit initialization of an empty SQLite file
+
+The default command still rejects an empty file. To initialize one, first
+prepare an existing regular, non-symlink UTF-8 SQLite file with no user tables,
+indexes, views, or triggers, then opt in explicitly:
+
+```bash
+python scripts/migrate_source_gate.py \
+  --database-path /absolute/path/to/empty-source-gate.sqlite \
+  --initialize-empty
+```
+
+The option does not create the file. The migration verifies the pinned v1
+reference, installs that schema, then continues the independent source-gate
+chain to `sg0004_source_one_shot_v4`. The only Alembic bookkeeping table
+created is `alembic_version_source_gate`; it never fabricates or advances a
+data-chain head in `alembic_version_data` and does not seed grants, policies,
+bindings, quota, attempts, or scope records. The required source-gate clock
+starts at `(clock_id=1, highwater_us=0)`.
 
 ## Adoption and v2 scope
 
@@ -67,15 +93,18 @@ input order.
 
 ## Transaction and recovery boundary
 
-Before taking a write lock, the environment performs read-only checks. It then
-uses one explicit SQLite `BEGIN IMMEDIATE` transaction for the standalone
-version table and both revisions, validates the resulting v2 schema, and only
-then commits. A migration exception rolls back that transaction, including the
-marker and DDL. The integration acceptance must still verify this behavior on a
-fresh disposable copy of a real v1 database before this migration is considered
-accepted. This procedure does not prove protection from a privileged process
-that can directly edit the SQLite file, nor does it verify filesystem backup
-integrity or prevent same-user path races.
+Before taking a write lock, the environment performs read-only checks. After
+`BEGIN IMMEDIATE`, it rechecks the target device/inode and starting schema, then
+uses that one SQLite write transaction for the source-gate version table, all
+revisions needed to reach the requested target, and final schema validation.
+For empty initialization this includes the v1 DDL and source-gate marker; a
+programmatic upgrade stopped at `sg0000_gate_v1_initialize` can be resumed later
+from that exact V0 marker. The standalone CLI requests `head`, currently
+`sg0004_source_one_shot_v4`. A migration exception rolls back the transaction,
+including the marker and DDL. Acceptance should verify this behavior on fresh
+disposable copies of both an empty file and an exact legacy v1 database. These
+checks do not pin an OS file handle, prevent a same-user path race or direct file
+edit, or verify filesystem backup integrity.
 
 Downgrading the v1 adoption marker is prohibited. The v2 revision refuses to
 discard persisted scope evidence; archive and recovery procedures must be
