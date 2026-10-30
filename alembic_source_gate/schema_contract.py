@@ -27,6 +27,7 @@ VERSION_TABLE = "alembic_version_source_gate"
 V1_REVISION = "sg0001_gate_v1_adopt"
 V2_REVISION = "sg0002_source_attempt_scope_v2"
 V3_REVISION = "sg0003_source_attempt_scope_v3"
+V4_REVISION = "sg0004_source_one_shot_v4"
 V1_REFERENCE_SHA256 = "74d9b163a309eb37b35200f83d7b7d224fc3f05a433b59847f4fb03b3d865cf5"
 V1_REFERENCE_REVISION = "0015_source_attempt_gate"
 V1_REFERENCE_PARENT = "0014_sina_fzb_slot_reconciliation"
@@ -97,6 +98,8 @@ V1_TABLES = frozenset(
 )
 V2_TABLE = "od_source_attempt_scope_v2"
 V3_TABLE = "od_source_attempt_scope_v3"
+V4_CONFIG_TABLE = "od_source_one_shot_configs"
+V4_PERMIT_TABLE = "od_source_one_shot_permits"
 V2_OBJECT_SQL = (
     """CREATE TABLE od_source_attempt_scope_v2 (
         attempt_id TEXT NOT NULL PRIMARY KEY,
@@ -147,6 +150,233 @@ V3_OBJECT_SQL = (
         BEFORE DELETE ON od_source_attempt_scope_v3
         BEGIN
             SELECT RAISE(ABORT, 'source attempt scope v3 rows are permanent');
+        END""",
+)
+V4_OBJECT_SQL = (
+    """CREATE TABLE od_source_one_shot_configs (
+        config_id INTEGER NOT NULL PRIMARY KEY CHECK (config_id = 1),
+        scope_version INTEGER NOT NULL CHECK (scope_version = 3),
+        scope_json TEXT NOT NULL CHECK (
+            length(CAST(scope_json AS BLOB)) BETWEEN 1 AND 16384
+        ),
+        scope_sha256 TEXT NOT NULL CHECK (
+            length(scope_sha256) = 64 AND scope_sha256 NOT GLOB '*[^0-9a-f]*'
+        ),
+        attempt_id VARCHAR(128) NOT NULL UNIQUE CHECK (
+            length(trim(attempt_id)) BETWEEN 1 AND 128
+        ),
+        request_id VARCHAR(128) NOT NULL CHECK (
+            length(trim(request_id)) BETWEEN 1 AND 128
+        ),
+        attempt_no BIGINT NOT NULL CHECK (attempt_no BETWEEN 1 AND 1000000),
+        grant_id VARCHAR(128) NOT NULL CHECK (length(trim(grant_id)) BETWEEN 1 AND 128),
+        expected_revision BIGINT NOT NULL CHECK (expected_revision BETWEEN 1 AND 2147483647),
+        source VARCHAR(128) NOT NULL CHECK (length(trim(source)) BETWEEN 1 AND 128),
+        canonical_model VARCHAR(128) NOT NULL CHECK (
+            length(trim(canonical_model)) BETWEEN 1 AND 128
+        ),
+        operation VARCHAR(16) NOT NULL CHECK (
+            operation IN ('query', 'store', 'export', 'subscribe')
+        ),
+        principal_scope VARCHAR(128) NOT NULL CHECK (
+            length(trim(principal_scope)) BETWEEN 1 AND 128
+        ),
+        host VARCHAR(253) NOT NULL CHECK (length(trim(host)) BETWEEN 1 AND 253),
+        run_key VARCHAR(128) NOT NULL CHECK (length(trim(run_key)) BETWEEN 1 AND 128),
+        capture_intent_id VARCHAR(128) NOT NULL UNIQUE CHECK (
+            length(trim(capture_intent_id)) BETWEEN 1 AND 128
+        ),
+        expected_rights_evidence_reference VARCHAR(512) NOT NULL CHECK (
+            length(trim(expected_rights_evidence_reference)) BETWEEN 1 AND 512
+        ),
+        locked_at_us BIGINT NOT NULL CHECK (locked_at_us BETWEEN 0 AND 253402300799999999),
+        FOREIGN KEY (grant_id) REFERENCES od_source_grants (grant_id) ON DELETE RESTRICT
+    )""",
+    """CREATE TABLE od_source_one_shot_permits (
+        config_id INTEGER NOT NULL PRIMARY KEY CHECK (config_id = 1),
+        attempt_id VARCHAR(128) NOT NULL UNIQUE CHECK (
+            length(trim(attempt_id)) BETWEEN 1 AND 128
+        ),
+        capture_intent_id VARCHAR(128) NOT NULL UNIQUE CHECK (
+            length(trim(capture_intent_id)) BETWEEN 1 AND 128
+        ),
+        scope_sha256 TEXT NOT NULL CHECK (
+            length(scope_sha256) = 64 AND scope_sha256 NOT GLOB '*[^0-9a-f]*'
+        ),
+        consumed_at_us BIGINT NOT NULL CHECK (
+            consumed_at_us BETWEEN 0 AND 253402300799999999
+        ),
+        FOREIGN KEY (config_id)
+            REFERENCES od_source_one_shot_configs (config_id) ON DELETE RESTRICT
+    )""",
+    """CREATE TRIGGER trg_od_source_one_shot_config_fresh_insert
+        BEFORE INSERT ON od_source_one_shot_configs
+        WHEN EXISTS (SELECT 1 FROM od_source_one_shot_configs)
+          OR EXISTS (SELECT 1 FROM od_source_attempt_reservations)
+          OR EXISTS (SELECT 1 FROM od_source_attempt_scope_v2)
+          OR EXISTS (SELECT 1 FROM od_source_attempt_scope_v3)
+          OR (SELECT COUNT(*) FROM od_source_grants) != 1
+          OR (SELECT COUNT(*) FROM od_source_gate_policies) != 1
+          OR (SELECT COUNT(*) FROM od_source_gate_source_bindings) != 1
+          OR (SELECT COUNT(*) FROM od_source_gate_state) != 1
+          OR NOT EXISTS (
+              SELECT 1 FROM od_source_grants AS g
+              WHERE g.grant_id = NEW.grant_id
+                AND g.revision = NEW.expected_revision
+                AND g.source = NEW.source
+                AND g.canonical_model = NEW.canonical_model
+                AND g.operation = NEW.operation
+                AND g.principal_scope = NEW.principal_scope
+                AND g.rights_evidence_reference = NEW.expected_rights_evidence_reference
+                AND g.decision = 'ALLOWED'
+                AND g.not_before_us <= NEW.locked_at_us
+                AND g.expires_at_us > NEW.locked_at_us
+                AND g.revoked_at_us IS NULL
+                AND g.conditions_json = '[]'
+          )
+        BEGIN
+            SELECT RAISE(ABORT, 'one-shot configuration requires one fresh exact grant and bucket');
+        END""",
+    """CREATE TRIGGER trg_od_source_one_shot_config_immutable_update
+        BEFORE UPDATE ON od_source_one_shot_configs
+        BEGIN
+            SELECT RAISE(ABORT, 'one-shot configuration is immutable');
+        END""",
+    """CREATE TRIGGER trg_od_source_one_shot_config_immutable_delete
+        BEFORE DELETE ON od_source_one_shot_configs
+        BEGIN
+            SELECT RAISE(ABORT, 'one-shot configuration is permanent');
+        END""",
+    """CREATE TRIGGER trg_od_source_one_shot_permit_exact_insert
+        BEFORE INSERT ON od_source_one_shot_permits
+        WHEN EXISTS (SELECT 1 FROM od_source_one_shot_permits)
+          OR NOT EXISTS (
+            SELECT 1 FROM od_source_one_shot_configs AS c
+            WHERE c.config_id = NEW.config_id
+              AND c.attempt_id = NEW.attempt_id
+              AND c.capture_intent_id = NEW.capture_intent_id
+              AND c.scope_sha256 = NEW.scope_sha256
+              AND NEW.consumed_at_us >= c.locked_at_us
+        )
+          OR EXISTS (
+              SELECT 1 FROM od_source_attempt_reservations AS a
+              WHERE a.attempt_id = NEW.attempt_id
+          )
+        BEGIN
+            SELECT RAISE(ABORT, 'one-shot permit does not match the locked scope');
+        END""",
+    """CREATE TRIGGER trg_od_source_one_shot_permit_immutable_update
+        BEFORE UPDATE ON od_source_one_shot_permits
+        BEGIN
+            SELECT RAISE(ABORT, 'one-shot permits are immutable');
+        END""",
+    """CREATE TRIGGER trg_od_source_one_shot_permit_immutable_delete
+        BEFORE DELETE ON od_source_one_shot_permits
+        BEGIN
+            SELECT RAISE(ABORT, 'one-shot permits are permanent');
+        END""",
+    """CREATE TRIGGER trg_od_source_one_shot_block_new_grants
+        BEFORE INSERT ON od_source_grants
+        WHEN EXISTS (SELECT 1 FROM od_source_one_shot_configs)
+        BEGIN
+            SELECT RAISE(ABORT, 'new grants are blocked after one-shot configuration lock');
+        END""",
+    """CREATE TRIGGER trg_od_source_one_shot_block_policy_insert
+        BEFORE INSERT ON od_source_gate_policies
+        WHEN EXISTS (SELECT 1 FROM od_source_one_shot_configs)
+        BEGIN
+            SELECT RAISE(ABORT, 'quota policy is locked after one-shot configuration');
+        END""",
+    """CREATE TRIGGER trg_od_source_one_shot_block_policy_update
+        BEFORE UPDATE ON od_source_gate_policies
+        WHEN EXISTS (SELECT 1 FROM od_source_one_shot_configs)
+        BEGIN
+            SELECT RAISE(ABORT, 'quota policy is locked after one-shot configuration');
+        END""",
+    """CREATE TRIGGER trg_od_source_one_shot_block_policy_delete
+        BEFORE DELETE ON od_source_gate_policies
+        WHEN EXISTS (SELECT 1 FROM od_source_one_shot_configs)
+        BEGIN
+            SELECT RAISE(ABORT, 'quota policy is locked after one-shot configuration');
+        END""",
+    """CREATE TRIGGER trg_od_source_one_shot_block_binding_insert
+        BEFORE INSERT ON od_source_gate_source_bindings
+        WHEN EXISTS (SELECT 1 FROM od_source_one_shot_configs)
+        BEGIN
+            SELECT RAISE(ABORT, 'source binding is locked after one-shot configuration');
+        END""",
+    """CREATE TRIGGER trg_od_source_one_shot_block_binding_update
+        BEFORE UPDATE ON od_source_gate_source_bindings
+        WHEN EXISTS (SELECT 1 FROM od_source_one_shot_configs)
+        BEGIN
+            SELECT RAISE(ABORT, 'source binding is locked after one-shot configuration');
+        END""",
+    """CREATE TRIGGER trg_od_source_one_shot_block_binding_delete
+        BEFORE DELETE ON od_source_gate_source_bindings
+        WHEN EXISTS (SELECT 1 FROM od_source_one_shot_configs)
+        BEGIN
+            SELECT RAISE(ABORT, 'source binding is locked after one-shot configuration');
+        END""",
+    """CREATE TRIGGER trg_od_source_one_shot_reservation_permit
+        BEFORE INSERT ON od_source_attempt_reservations
+        WHEN EXISTS (SELECT 1 FROM od_source_one_shot_configs)
+          AND (
+            EXISTS (SELECT 1 FROM od_source_attempt_reservations)
+            OR NOT EXISTS (
+              SELECT 1 FROM od_source_one_shot_permits AS p
+              JOIN od_source_one_shot_configs AS c ON c.config_id = p.config_id
+              WHERE p.config_id = 1
+                AND p.attempt_id = NEW.attempt_id
+                AND p.capture_intent_id = c.capture_intent_id
+                AND p.scope_sha256 = c.scope_sha256
+                AND NEW.attempt_id = c.attempt_id
+                AND NEW.request_id = c.request_id
+                AND NEW.attempt_no = c.attempt_no
+                AND NEW.grant_id = c.grant_id
+                AND NEW.expected_revision = c.expected_revision
+                AND NEW.source = c.source
+                AND NEW.canonical_model = c.canonical_model
+                AND NEW.operation = c.operation
+                AND NEW.principal_scope = c.principal_scope
+                AND NEW.host = c.host
+                AND NEW.run_key = c.run_key
+                AND NEW.decided_at_us = p.consumed_at_us
+            )
+          )
+        BEGIN
+            SELECT RAISE(ABORT, 'source attempt requires the locked one-shot permit');
+        END""",
+    """CREATE TRIGGER trg_od_source_one_shot_block_v2_scope
+        BEFORE INSERT ON od_source_attempt_scope_v2
+        WHEN EXISTS (SELECT 1 FROM od_source_one_shot_configs)
+        BEGIN
+            SELECT RAISE(ABORT, 'v2 source attempts are disabled after one-shot lock');
+        END""",
+    """CREATE TRIGGER trg_od_source_one_shot_v3_scope_permit
+        BEFORE INSERT ON od_source_attempt_scope_v3
+        WHEN EXISTS (SELECT 1 FROM od_source_one_shot_configs)
+          AND (
+            EXISTS (
+                SELECT 1 FROM od_source_attempt_scope_v3 AS existing
+                WHERE existing.attempt_id = NEW.attempt_id
+            )
+            OR NOT EXISTS (
+              SELECT 1 FROM od_source_one_shot_permits AS p
+              JOIN od_source_one_shot_configs AS c ON c.config_id = p.config_id
+              WHERE p.config_id = 1
+                AND p.attempt_id = NEW.attempt_id
+                AND NEW.scope_version = c.scope_version
+                AND NEW.scope_json = c.scope_json
+                AND NEW.scope_sha256 = c.scope_sha256
+                AND p.consumed_at_us = NEW.recorded_at_us
+                AND NEW.recorded_at_us = (
+                    SELECT decided_at_us FROM od_source_attempt_reservations
+                    WHERE attempt_id = NEW.attempt_id
+                )
+            )
+          )
+        BEGIN
+            SELECT RAISE(ABORT, 'v3 source scope requires the locked one-shot permit');
         END""",
 )
 
@@ -254,7 +484,7 @@ def _apply_v1_reference(connection: Connection) -> None:
 
 
 def _reference_schema(
-    *, include_v2: bool, include_v3: bool = False
+    *, include_v2: bool, include_v3: bool = False, include_v4: bool = False
 ) -> dict[tuple[str, str, str], str | None]:
     """Build the pinned expected schema in memory and return its gate objects."""
     engine = create_engine("sqlite+pysqlite:///:memory:", poolclass=StaticPool)
@@ -267,6 +497,9 @@ def _reference_schema(
             if include_v3:
                 for statement in V3_OBJECT_SQL:
                     connection.exec_driver_sql(statement)
+            if include_v4:
+                for statement in V4_OBJECT_SQL:
+                    connection.exec_driver_sql(statement)
             objects = _gate_objects(connection)
             tables = {
                 name
@@ -277,6 +510,7 @@ def _reference_schema(
                 V1_TABLES
                 | ({V2_TABLE} if include_v2 else set())
                 | ({V3_TABLE} if include_v3 else set())
+                | ({V4_CONFIG_TABLE, V4_PERMIT_TABLE} if include_v4 else set())
             )
             if tables != expected_tables:
                 raise RuntimeError("pinned source gate reference has an unexpected table set")
@@ -295,7 +529,13 @@ def _require_utf8_database(connection: Connection) -> None:
 def _require_source_gate_foreign_keys(connection: Connection) -> None:
     """Reject existing source-gate rows that violate their pinned references."""
     rows = connection.exec_driver_sql("PRAGMA foreign_key_check")
-    invalid_tables = sorted({row[0] for row in rows if row[0] in V1_TABLES | {V2_TABLE, V3_TABLE}})
+    invalid_tables = sorted(
+        {
+            row[0]
+            for row in rows
+            if row[0] in V1_TABLES | {V2_TABLE, V3_TABLE, V4_CONFIG_TABLE, V4_PERMIT_TABLE}
+        }
+    )
     if invalid_tables:
         names = ", ".join(invalid_tables)
         raise RuntimeError(f"source gate foreign-key check failed for: {names}")
@@ -311,10 +551,18 @@ def _require_v1_clock_row(connection: Connection) -> None:
 
 
 def _compare_reference_schema(
-    connection: Connection, *, include_v2: bool, include_v3: bool = False
+    connection: Connection,
+    *,
+    include_v2: bool,
+    include_v3: bool = False,
+    include_v4: bool = False,
 ) -> None:
     """Require the exact pinned DDL and trigger set for the selected revision."""
-    expected = _reference_schema(include_v2=include_v2, include_v3=include_v3)
+    expected = _reference_schema(
+        include_v2=include_v2,
+        include_v3=include_v3,
+        include_v4=include_v4,
+    )
     actual = _gate_objects(connection)
     if actual == expected:
         return
@@ -408,6 +656,12 @@ def validate_migration_state(connection: Connection) -> str | None:
         _require_v1_clock_row(connection)
         _require_source_gate_foreign_keys(connection)
         return marker
+    if marker == V4_REVISION:
+        _require_utf8_database(connection)
+        _compare_reference_schema(connection, include_v2=True, include_v3=True, include_v4=True)
+        _require_v1_clock_row(connection)
+        _require_source_gate_foreign_keys(connection)
+        return marker
     raise RuntimeError(f"source gate migration marker is unknown: {marker}")
 
 
@@ -427,19 +681,32 @@ def create_scope_v3(connection: Connection) -> None:
         connection.exec_driver_sql(statement)
 
 
+def create_one_shot_v4(connection: Connection) -> None:
+    """Add immutable one-shot configuration, permit, and legacy-writer guards."""
+    if connection.dialect.name != "sqlite":
+        raise RuntimeError("source gate one-shot v4 requires SQLite")
+    for statement in V4_OBJECT_SQL:
+        connection.exec_driver_sql(statement)
+
+
 __all__ = [
     "VERSION_TABLE",
     "V1_REVISION",
     "V2_REVISION",
     "V3_REVISION",
+    "V4_REVISION",
     "V2_SCOPE_JSON_FIELDS",
     "V3_SCOPE_JSON_FIELDS",
     "V2_TABLE",
     "V2_OBJECT_SQL",
     "V3_TABLE",
     "V3_OBJECT_SQL",
+    "V4_CONFIG_TABLE",
+    "V4_PERMIT_TABLE",
+    "V4_OBJECT_SQL",
     "create_scope_v3",
     "create_scope_v2",
+    "create_one_shot_v4",
     "read_migration_marker",
     "validate_migration_state",
     "validate_v1_schema",

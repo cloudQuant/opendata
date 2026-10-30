@@ -1,26 +1,26 @@
 # CSI500 Fuyao 单次采样 Gate 设计
 
-状态：离线技术设计，尚未实现、测试或启用。本文只定义单个受控 SQLite source-gate 文件内的发送上限；它不证明数据供应商授权，也不证明上游已收到请求。
+状态：sg0004 gate 已通过隔离离线验收（370 项测试通过），THS transport 集成和真实采集验收尚未完成，禁止 live 启用。本文只定义单个受控 SQLite source-gate 文件内的发送上限；它不证明数据供应商授权，也不证明上游已收到请求。
 
 ## 目标与边界
 
 CSI500 样本拟使用一条 THS/Fuyao 历史行情请求，最多发起一次受 gate 管理的 HTTP 请求。持久上限必须独立于 token bucket：等待 refill、追加 grant、更换 attempt ID 或重启进程都不能重新取得同一采样任务的发送许可。
 
-保证范围是同一持久 SQLite gate 文件、同一固定 one-shot 配置和通过受控 THS HTTP client 的请求。绕过 gate 的网络调用、另建 gate 文件、恢复发送前的备份、直接修改 SQLite 文件或主机上其他独立进程发出的请求不在此保证范围内。需要跨进程、跨文件或跨主机的全局上限时，应改用唯一的中心 gate 服务和统一出站入口。
+未来的保证范围应是同一持久 SQLite gate 文件、同一固定 one-shot 配置和通过受控 THS HTTP client 的请求。当前 sg0004 只实现本地 gate，尚未约束 THS job/transport；现有 transport 每次生成新的 UUID，与固定 attempt/request ID 不兼容。当前已合入的 gate 不核对最终 prepared request 的 `Host` header；工作区中的 transport 候选新增了该校验，尚待独立验收和合入。live 集成必须校验该 header 与锁定的 request host 一致。因此测试与 transport 集成验收完成前必须保持 live 路径关闭。绕过 gate 的网络调用、另建 gate 文件、恢复发送前的备份、直接修改 SQLite 文件或主机上其他独立进程发出的请求不在该设计保证范围内。需要跨进程、跨文件或跨主机的全局上限时，应改用唯一的中心 gate 服务和统一出站入口。
 
 “最多一次”不是“恰好一次”。进程可能在提交发送许可后、真正发送前崩溃，也可能在上游收到请求后没有拿到响应。无法证明结果时必须牺牲自动恢复，将本次采样标为结果未知并停止重试。只有供应商提供且本端到端验证过幂等键语义后，才可重新讨论安全重试。
 
 ## 迁移与锁定顺序
 
 1. 先完成并审阅 source-attempt scope V3，按 `sg0001 → sg0002 → sg0003` 顺序迁移，并让 runtime schema validator 精确识别 V3。V3 用不可变 sidecar 记录 rights reference、method、host、path 和请求摘要；它本身**不**提供单次计数。
-2. 在此基础上增加 one-shot migration（建议 `sg0004`），建立不可变的 one-shot 配置与单次消耗账本，并将其 DDL、索引、触发器纳入 schema drift 校验。迁移只扩展 schema，不回填历史 reservation。若无法确认当前精确 lineage，必须拒绝配置。
-3. 准备一个专用、持久且权限收紧的 SQLite gate 文件。所有拥有该文件写权限的进程都必须可信。文件只接受一个已密封的精确 THS `index_daily/query` grant。先确定本次业务日期、CSI500 标的、Fuyao HTTPS endpoint、允许的查询字段、rights reference 和 quota policy pins；校验这些内容后，才在一个事务中写入 quota、source binding 和 one-shot 配置。配置行提交后即为**锁定点**，不可更新、撤销后重开或删除。
-4. 锁定配置必须固定唯一的样本运行 ID 和 `capture_intent_id`，并固定 grant ID/revision、principal、rights evidence reference、source/model/operation、host、method/path、业务日期对应的 query digest，以及 budget binding/policy revision/hash。调用方不能在重试或重启后生成新的 intent 来绕过这条配置。
-5. 计划新增 `BEFORE INSERT ON od_source_grants` 触发器：one-shot 配置锁定后拒绝任何新 grant。配置后如需更换样本日期、grant、路由或 policy，应终止并归档这个 gate，按新审批创建新的采样任务；不能把新任务伪装成旧任务的 retry。
+2. 在此基础上使用 `sg0004_source_one_shot_v4` 建立不可变的 one-shot 配置与单次消耗账本，并将其 DDL、索引、触发器纳入 schema drift 校验。迁移只扩展 schema，不回填历史 reservation。若无法确认当前精确 lineage，必须拒绝配置。
+3. 准备一个专用、持久且权限收紧的 SQLite gate 文件。所有拥有该文件写权限的进程都必须可信。文件只接受一个已密封的精确 THS `index_daily/query` grant。先确定本次业务日期、CSI500 标的、Fuyao HTTPS endpoint、允许的查询字段、rights reference 和 quota policy pins；先单独配置并提交 quota policy、source binding 和对应 bucket。随后在另一笔 `BEGIN IMMEDIATE` 事务中重验精确 V4 schema、空历史、唯一 grant、host seal、时间、binding/policy pins，再写入 one-shot 配置。quota/binding 配置与 one-shot 锁定**不是同一事务**；配置行提交后才是**锁定点**，不可更新、撤销后重开或删除。锁定成功之前不得发送请求。
+4. 锁定配置必须固定唯一的样本运行 ID 和 `capture_intent_id`，并固定 grant ID/revision、principal、rights evidence reference、source/model/operation、host、method/path、业务日期对应的 query digest，以及 budget binding/policy revision/hash。source-policy ID/revision/hash 会作为完整 scope 中的调用方声明一并锁定，但 gate 没有独立 source-policy registry 来验证其真实性。调用方不能在重试或重启后生成新的 intent、attempt ID 或 request ID 来绕过配置；当前 THS UUID 身份与此要求不兼容，稳定身份传递属于尚未完成的 live 阻断集成。
+5. sg0004 新增 `BEFORE INSERT ON od_source_grants` 触发器：one-shot 配置锁定后拒绝任何新 grant。配置后如需更换样本日期、grant、路由或 policy，应终止并归档这个 gate，按新审批创建新的采样任务；不能把新任务伪装成旧任务的 retry。
 
 本方案要求 gate 文件的所有写入者都是可信进程。SQLite 触发器用于阻止受控 API 或旧版程序意外走错路径；它们不能抵御拥有相同文件写权限的进程直接执行 SQL、删除/替换数据库或还原旧备份。
 
-目前 CSI quota provisioner 仍按 V2 fresh-gate 契约检查 schema 和 V2 sidecar。实现前必须将 provisioner 与 V3 lineage 对齐，并确认 V3 sidecar 表无历史行；不能在 V2-only 契约上配置 V3 样本。
+已提交到 dev 的 CSI quota provisioner 尚不存在。当前工作区候选已对齐 V3 fresh-gate 契约，但仍未验收或合入 dev，也不提供持久 one-shot cap。启用本方案前必须先验收并合入该候选，确认实际 provisioner 使用精确 V3 lineage 且 V3 sidecar 表无历史行；不能在 V2-only 契约上配置 V3 样本。
 
 ## 持久单次上限
 
@@ -56,7 +56,7 @@ Gate 文件必须持久保存并限制写权限。恢复到尚未消耗 permit �
 
 | 场景 | 验收结果 |
 | --- | --- |
-| V2 lineage 上尝试配置 one-shot | 拒绝；先迁移到完整 V3，不写 quota/config |
+| V2 lineage 上尝试配置 one-shot | 拒绝；先完成 V2→V3→V4 并通过精确 schema 校验；预先配置的 quota/binding 不与 one-shot 锁定同事务 |
 | 精确 V3 scope、grant 和 quota pin 完全匹配 | 单个事务提交一条 permit、reservation 和 sidecar，返回一次 `RESERVED_NEW` |
 | 同一 intent 使用新 attempt ID/request ID/attempt number 再申请 | 无第二个 `RESERVED_NEW`；transport send 计数不增加 |
 | 修改 intent、run ID、日期、标的、host、path、query digest、rights reference 或 policy pin | 锁定配置校验失败；不创建 permit、不发送 |

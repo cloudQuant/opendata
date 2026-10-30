@@ -143,16 +143,18 @@ def test_complete_v1_is_adopted_and_unrelated_data_is_preserved(tmp_path: Path) 
     ) == [("historical-attempt",)]
 
 
-def test_head_migration_installs_v3_without_backfilling_scopes(tmp_path: Path) -> None:
-    """The actual Alembic head is V3 and neither additive sidecar is backfilled."""
+def test_head_migration_installs_v4_without_backfilling_scopes(tmp_path: Path) -> None:
+    """The actual Alembic head is V4 and no scope or one-shot state is backfilled."""
     path = tmp_path / "source-gate-head.sqlite"
     _create_v1_database(path)
 
     _upgrade(path)
 
-    assert _marker(path) == schema_contract.V3_REVISION
+    assert _marker(path) == schema_contract.V4_REVISION
     assert _sqlite_rows(path, "SELECT COUNT(*) FROM od_source_attempt_scope_v2") == [(0,)]
     assert _sqlite_rows(path, "SELECT COUNT(*) FROM od_source_attempt_scope_v3") == [(0,)]
+    assert _sqlite_rows(path, "SELECT COUNT(*) FROM od_source_one_shot_configs") == [(0,)]
+    assert _sqlite_rows(path, "SELECT COUNT(*) FROM od_source_one_shot_permits") == [(0,)]
     assert _sqlite_rows(
         path,
         "SELECT attempt_id FROM od_source_attempt_reservations",
@@ -161,7 +163,7 @@ def test_head_migration_installs_v3_without_backfilling_scopes(tmp_path: Path) -
     try:
         with engine.connect() as connection:
             assert (
-                schema_contract.validate_migration_state(connection) == schema_contract.V3_REVISION
+                schema_contract.validate_migration_state(connection) == schema_contract.V4_REVISION
             )
     finally:
         engine.dispose()
@@ -531,7 +533,7 @@ def test_scope_v3_downgrade_wraps_sidecar_count_database_errors(tmp_path: Path) 
     """A count-query storage error fails closed and leaves the V3 schema intact."""
     path = tmp_path / "source-gate-v3-count-error.sqlite"
     _create_v1_database(path)
-    _upgrade(path)
+    _upgrade(path, schema_contract.V3_REVISION)
     engine = create_engine(f"sqlite+pysqlite:///{path}")
     migration = _load_v3_migration()
 
