@@ -1,10 +1,19 @@
 """Offline, SQLite-only source attempt reservations and shared token buckets.
 
-The gate records one database reservation per transport attempt. It does not
-send HTTP, prove source rights, impose run/day attempt ceilings, or limit
-cross-process in-flight concurrency. Its operator-declared evidence fields are
-references and attestations, not automatic legal confirmation. The module has
-no grant-issuance API and an empty database authorizes nothing.
+The default gate records one database reservation per transport attempt. The
+opt-in sg0004 one-shot mode adds one immutable local permit for one exact v3
+scope in one SQLite file. It does not send HTTP, prove source rights, impose
+general run/day ceilings, or limit requests made outside the controlled gate.
+No current THS job/transport adapter prepares the stable identities required
+by that lock; keep V4 as an offline gate candidate until that integration is
+reviewed and uses the configured attempt and request IDs unchanged.
+Its operator-declared evidence fields are references and attestations, not
+automatic legal confirmation. The module has no grant-issuance API and an
+empty database authorizes nothing.
+V3 source-policy identifiers and hashes are locked as caller-declared scope
+bytes; this gate has no source-policy registry against which to authenticate
+them. Budget policy and binding pins are checked against the persisted gate
+tables.
 Attempt rows retain validated policy metadata, not a full bucket-state replay.
 File identity checks detect misdirected/replaced connections but cannot prevent
 privileged operating-system races or make SQLite audit rows tamper-proof.
@@ -45,9 +54,12 @@ SOURCE_GRANT_EVENT_TABLE = "od_source_grant_events"
 SOURCE_ATTEMPT_TABLE = "od_source_attempt_reservations"
 SOURCE_ATTEMPT_SCOPE_V2_TABLE = "od_source_attempt_scope_v2"
 SOURCE_ATTEMPT_SCOPE_V3_TABLE = "od_source_attempt_scope_v3"
+SOURCE_ONE_SHOT_CONFIG_TABLE = "od_source_one_shot_configs"
+SOURCE_ONE_SHOT_PERMIT_TABLE = "od_source_one_shot_permits"
 SOURCE_GATE_VERSION_TABLE = "alembic_version_source_gate"
 SOURCE_GATE_SCOPE_V2_REVISION = "sg0002_source_attempt_scope_v2"
 SOURCE_GATE_SCOPE_V3_REVISION = "sg0003_source_attempt_scope_v3"
+SOURCE_GATE_ONE_SHOT_V4_REVISION = "sg0004_source_one_shot_v4"
 
 MICROTOKENS_PER_TOKEN = 1_000_000
 MICROSECONDS_PER_SECOND = 1_000_000
@@ -190,6 +202,10 @@ class SourceAttemptGateUnavailableError(SourceAttemptGateError):
 
 class SourceAttemptGateConfigurationError(SourceAttemptGateError):
     """The gate was constructed for a dialect not verified by this release."""
+
+
+class SourceAttemptOneShotConflictError(SourceAttemptGateError):
+    """The local gate is not fresh or its one-shot scope is already locked."""
 
 
 class SourceAttemptInputError(ValueError):
@@ -563,6 +579,18 @@ class AttemptReservation:
     reserved_at_us: int | None = None
 
 
+@dataclass(frozen=True, slots=True, repr=False)
+class SourceAttemptOneShotReceipt:
+    """Receipt for one immutable local scope lock, not proof of provider delivery."""
+
+    scope_sha256: str
+    locked_at_us: int
+
+    def __repr__(self) -> str:
+        """Avoid logging attempt and task identifiers through a default repr."""
+        return "SourceAttemptOneShotReceipt(scope_sha256=<redacted>, locked_at_us=<redacted>)"
+
+
 @dataclass(frozen=True, slots=True)
 class GrantRevocationResult:
     """Compare-and-revoke outcome without exposing grant evidence contents."""
@@ -596,10 +624,12 @@ class _PolicySnapshot:
 class SourceAttemptGate:
     """Persistently reserve attempts through an explicitly supplied SQLite engine.
 
-    This first version proves local file-backed SQLite serialization only.
-    PostgreSQL, MySQL, multi-host locking, HTTP integration, and concurrency
-    leases remain unverified and are deliberately rejected or out of scope.
-    Filesystem checks are not an operating-system-level race or tamper defense.
+    The default APIs persist one row per attempt. An explicitly locked sg0004
+    scope additionally permits only one exact v3 attempt in this SQLite file.
+    Neither mode proves provider receipt or covers other files, restored backups,
+    or requests outside this gate. PostgreSQL, MySQL, and multi-host locking
+    remain unverified. Filesystem checks are not an operating-system-level race
+    or tamper defense.
     """
 
     def __init__(self, engine: Engine) -> None:
@@ -674,6 +704,73 @@ class SourceAttemptGate:
         _scope_v3_bytes(scope)
         return self._reserve_attempt(scope.attempt, scope)
 
+    def lock_one_shot_scope(self, scope: SourceAttemptScopeV3) -> SourceAttemptOneShotReceipt:
+        """Lock one exact v3 scope in a fresh, already configured SQLite gate.
+
+        This is an operator-only setup action. It requires the exact sg0004
+        schema, exactly one current allowed grant, matching sealed host and
+        quota pins, and no prior attempt or scope history. The row is permanent;
+        a second call is an error even when the supplied scope is identical.
+        Quota policy and source binding must already be committed; their setup
+        is not atomic with this separate configuration-lock transaction.
+        Source-policy ID/revision/hash are frozen as caller-declared scope data;
+        this schema has no independent source-policy registry to authenticate
+        those declarations.
+        This gate API does not configure a THS job or transport; a caller must
+        supply the locked attempt and request IDs unchanged before integration.
+        Caller-provided rights and policy references remain declarations, not
+        independent proof of supplier permission. The receipt records only a
+        local SQLite configuration lock, not a sent request or provider reply.
+
+        Args:
+            scope: The complete v3 request identity that will be the only
+                scope permitted by this file-backed gate.
+
+        Returns:
+            The immutable local scope digest and the database clock value used
+            when the configuration row was committed.
+
+        Raises:
+            SourceAttemptInputError: If the supplied v3 scope is malformed.
+            SourceAttemptOneShotConflictError: If the gate is used, the grant
+                is not exact and active, or the scope is already locked.
+            SourceAttemptGateUnavailable: If schema, clock, or commit state is
+                unavailable or cannot be verified.
+        """
+        if type(scope) is not SourceAttemptScopeV3:
+            raise SourceAttemptInputError("scope must be a SourceAttemptScopeV3")
+        scope_json, scope_sha256 = _scope_v3_bytes_and_digest(scope)
+        connection = self._open_write_connection()
+        try:
+            self._require_v4_schema(connection)
+            if self._load_one_shot_config(connection) is not None:
+                raise SourceAttemptOneShotConflictError(
+                    "one-shot configuration already exists; inspect the gate offline"
+                )
+
+            effective_now = self._advance_clock(connection)
+            self._require_fresh_one_shot_gate(connection)
+            self._require_one_shot_grant_and_quota(connection, scope, effective_now)
+            self._insert_one_shot_config(
+                connection,
+                scope,
+                scope_json.decode("utf-8"),
+                scope_sha256,
+                effective_now,
+            )
+            self._commit(connection)
+            return SourceAttemptOneShotReceipt(scope_sha256, effective_now)
+        except SourceAttemptGateUnavailable:
+            raise
+        except SourceAttemptOneShotConflictError:
+            raise
+        except SQLAlchemyError:
+            raise SourceAttemptGateUnavailable(
+                "one-shot source gate configuration is unavailable"
+            ) from None
+        finally:
+            connection.close()
+
     def _reserve_attempt(
         self,
         attempt: TransportAttempt,
@@ -686,7 +783,29 @@ class SourceAttemptGate:
                 self._require_v3_schema(connection)
             elif type(scope) is SourceAttemptScopeV2:
                 self._require_v2_schema(connection)
+
+            one_shot_config = self._load_one_shot_config(connection)
+            if one_shot_config is not None:
+                if type(scope) is not SourceAttemptScopeV3:
+                    raise SourceAttemptGateUnavailable(
+                        "one-shot source gate rejects v1 and v2 reservation paths"
+                    )
+                if not self._one_shot_scope_matches(one_shot_config, scope):
+                    connection.rollback()
+                    return AttemptReservation(ReservationStatus.ID_CONFLICT)
+
             effective_now = self._advance_clock(connection)
+            if one_shot_config is not None:
+                consumed = self._one_shot_consumed_state(connection, one_shot_config)
+                if consumed:
+                    duplicate = self._find_existing_v3_attempt(connection, scope)
+                    if duplicate is None or duplicate.status is not ReservationStatus.DUPLICATE:
+                        raise SourceAttemptGateUnavailable(
+                            "one-shot permit history is incomplete or conflicts with its scope"
+                        )
+                    self._commit(connection)
+                    return duplicate
+
             if type(scope) is SourceAttemptScopeV3:
                 duplicate = self._find_existing_v3_attempt(connection, scope)
             elif type(scope) is SourceAttemptScopeV2:
@@ -696,6 +815,9 @@ class SourceAttemptGate:
             if duplicate is not None:
                 self._commit(connection)
                 return duplicate
+
+            if one_shot_config is not None:
+                self._insert_one_shot_permit(connection, one_shot_config, effective_now)
 
             if scope is not None:
                 decision, bucket_update, policy_snapshot = self._evaluate_attempt_v2(
@@ -870,6 +992,9 @@ class SourceAttemptGate:
                 V2_TABLE,
                 V3_REVISION,
                 V3_TABLE,
+                V4_CONFIG_TABLE,
+                V4_PERMIT_TABLE,
+                V4_REVISION,
                 VERSION_TABLE,
                 _reference_schema,
             )
@@ -893,6 +1018,19 @@ class SourceAttemptGate:
                 expected = _reference_schema(include_v2=True, include_v3=True)
                 gate_tables = V1_TABLES | {V2_TABLE, V3_TABLE}
                 expected_revision = V3_REVISION
+            elif marker == V4_REVISION:
+                expected = _reference_schema(
+                    include_v2=True,
+                    include_v3=True,
+                    include_v4=True,
+                )
+                gate_tables = V1_TABLES | {
+                    V2_TABLE,
+                    V3_TABLE,
+                    V4_CONFIG_TABLE,
+                    V4_PERMIT_TABLE,
+                }
+                expected_revision = V4_REVISION
             else:
                 return False
         except Exception:
@@ -1140,7 +1278,7 @@ class SourceAttemptGate:
 
     def _grant_seal_event_matches(
         self,
-        connection: sqlite3.Connection,
+        connection: Connection | sqlite3.Connection,
         request: SourceGrantInspectionRequest,
     ) -> bool:
         """Bind an allowed grant's host seal to its single immutable audit event."""
@@ -1546,10 +1684,18 @@ class SourceAttemptGate:
         if reason is not None:
             raise SourceAttemptGateUnavailable("source attempt gate v3 schema is unavailable")
 
+    def _require_v4_schema(self, connection: Connection | sqlite3.Connection) -> None:
+        """Fail closed unless the exact V1/V2/V3/V4 schema lineage is installed."""
+        reason = self._v4_schema_reason(connection)
+        if reason is not None:
+            raise SourceAttemptGateUnavailable(
+                "source attempt gate one-shot v4 schema is unavailable"
+            )
+
     def _v2_schema_reason(
         self, connection: Connection | sqlite3.Connection
     ) -> AttemptLookupReasonCode | None:
-        """Validate the v2 sidecar DDL under either supported current marker."""
+        """Validate the v2 sidecar DDL under any additive current marker."""
         try:
             version_table = self._query_rows(
                 connection,
@@ -1563,10 +1709,16 @@ class SourceAttemptGate:
                 "SELECT version_num FROM alembic_version_source_gate",
                 {},
             )
-            if len(versions) != 1 or versions[0].get("version_num") not in {
-                SOURCE_GATE_SCOPE_V2_REVISION,
-                SOURCE_GATE_SCOPE_V3_REVISION,
-            }:
+            if len(versions) != 1:
+                return AttemptLookupReasonCode.SCHEMA_UNAVAILABLE
+            marker = versions[0].get("version_num")
+            if marker == SOURCE_GATE_ONE_SHOT_V4_REVISION:
+                return (
+                    None
+                    if self._source_gate_snapshot_schema_valid(connection)
+                    else AttemptLookupReasonCode.SCHEMA_UNAVAILABLE
+                )
+            if marker not in {SOURCE_GATE_SCOPE_V2_REVISION, SOURCE_GATE_SCOPE_V3_REVISION}:
                 return AttemptLookupReasonCode.SCHEMA_UNAVAILABLE
 
             sidecar_tables = self._query_rows(
@@ -1676,16 +1828,26 @@ class SourceAttemptGate:
     def _v3_schema_reason(
         self, connection: Connection | sqlite3.Connection
     ) -> AttemptLookupReasonCode | None:
-        """Validate the exact complete V1/V2/V3 source-gate schema and marker."""
+        """Validate the exact complete V1/V2/V3 or additive V4 schema and marker."""
         try:
-            from alembic_source_gate.schema_contract import V3_REVISION, VERSION_TABLE
+            from alembic_source_gate.schema_contract import V3_REVISION, V4_REVISION, VERSION_TABLE
 
             if not self._source_gate_snapshot_schema_valid(connection):
+                return AttemptLookupReasonCode.SCHEMA_UNAVAILABLE
+            versions = self._query_rows(
+                connection,
+                "SELECT version_num FROM alembic_version_source_gate",
+                {},
+            )
+            if len(versions) != 1 or versions[0].get("version_num") not in {
+                V3_REVISION,
+                V4_REVISION,
+            }:
                 return AttemptLookupReasonCode.SCHEMA_UNAVAILABLE
             if not self._readonly_migration_marker_matches(
                 connection,
                 VERSION_TABLE,
-                V3_REVISION,
+                str(versions[0]["version_num"]),
             ):
                 return AttemptLookupReasonCode.SCHEMA_UNAVAILABLE
         except (sqlite3.Error, SQLAlchemyError):
@@ -1693,6 +1855,399 @@ class SourceAttemptGate:
         except Exception:
             return AttemptLookupReasonCode.SCHEMA_UNAVAILABLE
         return None
+
+    def _v4_schema_reason(
+        self, connection: Connection | sqlite3.Connection
+    ) -> AttemptLookupReasonCode | None:
+        """Validate the exact source-gate V4 schema including all one-shot triggers."""
+        try:
+            from alembic_source_gate.schema_contract import V4_REVISION, VERSION_TABLE
+
+            if not self._source_gate_snapshot_schema_valid(connection):
+                return AttemptLookupReasonCode.SCHEMA_UNAVAILABLE
+            if not self._readonly_migration_marker_matches(
+                connection,
+                VERSION_TABLE,
+                V4_REVISION,
+            ):
+                return AttemptLookupReasonCode.SCHEMA_UNAVAILABLE
+        except (sqlite3.Error, SQLAlchemyError):
+            return AttemptLookupReasonCode.DATABASE_UNAVAILABLE
+        except Exception:
+            return AttemptLookupReasonCode.SCHEMA_UNAVAILABLE
+        return None
+
+    def _load_one_shot_config(
+        self, connection: Connection | sqlite3.Connection
+    ) -> dict[str, object] | None:
+        """Read one validated immutable config, rejecting partial or foreign V4 state."""
+        tables = self._query_rows(
+            connection,
+            "SELECT type FROM sqlite_master WHERE name = :name",
+            {"name": SOURCE_ONE_SHOT_CONFIG_TABLE},
+        )
+        version_table = self._query_rows(
+            connection,
+            "SELECT type FROM sqlite_master WHERE name = :name",
+            {"name": SOURCE_GATE_VERSION_TABLE},
+        )
+        versions = (
+            self._query_rows(
+                connection,
+                "SELECT version_num FROM alembic_version_source_gate",
+                {},
+            )
+            if version_table
+            else []
+        )
+        marker = versions[0].get("version_num") if len(versions) == 1 else None
+        if not tables:
+            if marker == SOURCE_GATE_ONE_SHOT_V4_REVISION:
+                raise SourceAttemptGateUnavailable("one-shot v4 configuration table is missing")
+            return None
+        if len(tables) != 1 or tables[0].get("type") != "table":
+            raise SourceAttemptGateUnavailable("one-shot configuration object is ambiguous")
+        self._require_v4_schema(connection)
+        rows = self._query_rows(
+            connection,
+            "SELECT * FROM od_source_one_shot_configs",
+            {},
+        )
+        if not rows:
+            return None
+        if len(rows) != 1:
+            raise SourceAttemptGateUnavailable("one-shot configuration row is ambiguous")
+        row = rows[0]
+        scope_json = row.get("scope_json")
+        scope_sha256 = row.get("scope_sha256")
+        if (
+            row.get("config_id") != 1
+            or row.get("scope_version") != 3
+            or not isinstance(scope_json, str)
+            or not isinstance(scope_sha256, str)
+            or not _valid_sha256(scope_sha256)
+        ):
+            raise SourceAttemptGateUnavailable("one-shot configuration record is malformed")
+        try:
+            scope_bytes = scope_json.encode("utf-8", errors="strict")
+        except UnicodeError:
+            raise SourceAttemptGateUnavailable(
+                "one-shot configuration record is malformed"
+            ) from None
+        if hashlib.sha256(scope_bytes).hexdigest() != scope_sha256:
+            raise SourceAttemptGateUnavailable("one-shot configuration digest is invalid")
+        locked_at = _bounded_int_or_none(row.get("locked_at_us"), 0, MAX_TIMESTAMP_US)
+        if locked_at is None:
+            raise SourceAttemptGateUnavailable("one-shot configuration clock is invalid")
+        return row
+
+    def _require_fresh_one_shot_gate(self, connection: Connection) -> None:
+        """Require one V3 grant and bucket with no historical attempts or lock rows."""
+        counts = {
+            SOURCE_GRANT_TABLE: 1,
+            SOURCE_GATE_POLICY_TABLE: 1,
+            SOURCE_GATE_BINDING_TABLE: 1,
+            SOURCE_GATE_STATE_TABLE: 1,
+            SOURCE_ATTEMPT_TABLE: 0,
+            SOURCE_ATTEMPT_SCOPE_V2_TABLE: 0,
+            SOURCE_ATTEMPT_SCOPE_V3_TABLE: 0,
+            SOURCE_ONE_SHOT_CONFIG_TABLE: 0,
+            SOURCE_ONE_SHOT_PERMIT_TABLE: 0,
+        }
+        count_queries = {
+            SOURCE_GRANT_TABLE: "SELECT COUNT(*) AS row_count FROM od_source_grants",
+            SOURCE_GATE_POLICY_TABLE: "SELECT COUNT(*) AS row_count FROM od_source_gate_policies",
+            SOURCE_GATE_BINDING_TABLE: (
+                "SELECT COUNT(*) AS row_count FROM od_source_gate_source_bindings"
+            ),
+            SOURCE_GATE_STATE_TABLE: "SELECT COUNT(*) AS row_count FROM od_source_gate_state",
+            SOURCE_ATTEMPT_TABLE: "SELECT COUNT(*) AS row_count "
+            "FROM od_source_attempt_reservations",
+            SOURCE_ATTEMPT_SCOPE_V2_TABLE: "SELECT COUNT(*) AS row_count "
+            "FROM od_source_attempt_scope_v2",
+            SOURCE_ATTEMPT_SCOPE_V3_TABLE: "SELECT COUNT(*) AS row_count "
+            "FROM od_source_attempt_scope_v3",
+            SOURCE_ONE_SHOT_CONFIG_TABLE: "SELECT COUNT(*) AS row_count "
+            "FROM od_source_one_shot_configs",
+            SOURCE_ONE_SHOT_PERMIT_TABLE: "SELECT COUNT(*) AS row_count "
+            "FROM od_source_one_shot_permits",
+        }
+        for table_name, expected_count in counts.items():
+            actual_count = self._fetch_one(
+                connection,
+                count_queries[table_name],
+                {},
+            )
+            if actual_count is None or actual_count.get("row_count") != expected_count:
+                raise SourceAttemptOneShotConflictError(
+                    "one-shot lock requires one grant and configured bucket with empty history"
+                )
+
+    def _require_one_shot_grant_and_quota(
+        self,
+        connection: Connection,
+        scope: SourceAttemptScopeV3,
+        effective_now: int,
+    ) -> None:
+        """Verify the exact active sealed grant and all persisted budget pins."""
+        attempt = scope.attempt
+        grant = self._fetch_one(
+            connection,
+            "SELECT * FROM od_source_grants WHERE grant_id = :grant_id",
+            {"grant_id": attempt.grant_id},
+        )
+        if self._grant_denial(connection, grant, attempt, effective_now) is not None:
+            raise SourceAttemptOneShotConflictError(
+                "one-shot lock requires an exact active source grant"
+            )
+        inspection = SourceGrantInspectionRequest(
+            grant_id=attempt.grant_id,
+            revision=attempt.expected_revision,
+            source=attempt.source,
+            canonical_model=attempt.canonical_model,
+            operation=attempt.operation,
+            principal_scope=attempt.principal_scope,
+            host=attempt.host,
+        )
+        if not self._grant_seal_event_matches(connection, inspection):
+            raise SourceAttemptOneShotConflictError(
+                "one-shot lock requires the exact immutable host-seal event"
+            )
+        hosts = self._fetch_all(
+            connection,
+            "SELECT host FROM od_source_grant_hosts WHERE grant_id = :grant_id",
+            {"grant_id": attempt.grant_id},
+        )
+        if len(hosts) != 1 or hosts[0].get("host") != attempt.host:
+            raise SourceAttemptOneShotConflictError(
+                "one-shot lock requires a grant sealed to exactly one matching host"
+            )
+
+        binding = self._fetch_one(
+            connection,
+            "SELECT * FROM od_source_gate_source_bindings WHERE source = :source",
+            {"source": attempt.source},
+        )
+        if (
+            binding is None
+            or self._binding_value(binding, effective_now) != scope.budget_quota_key
+            or binding.get("binding_sha256") != scope.budget_binding_sha256
+        ):
+            raise SourceAttemptOneShotConflictError(
+                "one-shot lock source binding does not match the requested pins"
+            )
+        policy = self._fetch_one(
+            connection,
+            "SELECT * FROM od_source_gate_policies WHERE quota_key = :quota_key",
+            {"quota_key": scope.budget_quota_key},
+        )
+        policy_values = self._policy_values(policy, effective_now)
+        if (
+            policy is None
+            or policy_values is None
+            or policy_values[0] != scope.budget_policy_revision
+            or policy.get("policy_sha256") != scope.budget_policy_sha256
+        ):
+            raise SourceAttemptOneShotConflictError(
+                "one-shot lock source policy does not match the requested pins"
+            )
+        state = self._fetch_one(
+            connection,
+            "SELECT * FROM od_source_gate_state WHERE quota_key = :quota_key",
+            {"quota_key": scope.budget_quota_key},
+        )
+        state_values = self._state_values(state, effective_now)
+        if state_values is None or state_values[0] != scope.budget_policy_revision:
+            raise SourceAttemptOneShotConflictError(
+                "one-shot lock requires a valid bucket at the pinned policy revision"
+            )
+
+    def _insert_one_shot_config(
+        self,
+        connection: Connection,
+        scope: SourceAttemptScopeV3,
+        scope_json: str,
+        scope_sha256: str,
+        locked_at_us: int,
+    ) -> None:
+        """Insert the single immutable scope lock under the caller's write lock."""
+        attempt = scope.attempt
+        connection.execute(
+            text(
+                "INSERT INTO od_source_one_shot_configs "
+                "(config_id, scope_version, scope_json, scope_sha256, attempt_id, request_id, "
+                "attempt_no, grant_id, expected_revision, source, canonical_model, operation, "
+                "principal_scope, host, run_key, capture_intent_id, "
+                "expected_rights_evidence_reference, locked_at_us) VALUES "
+                "(1, 3, :scope_json, :scope_sha256, :attempt_id, :request_id, :attempt_no, "
+                ":grant_id, :expected_revision, :source, :canonical_model, :operation, "
+                ":principal_scope, :host, :run_key, :capture_intent_id, :rights_reference, "
+                ":locked_at_us)"
+            ),
+            {
+                "scope_json": scope_json,
+                "scope_sha256": scope_sha256,
+                "attempt_id": attempt.attempt_id,
+                "request_id": attempt.request_id,
+                "attempt_no": attempt.attempt_no,
+                "grant_id": attempt.grant_id,
+                "expected_revision": attempt.expected_revision,
+                "source": attempt.source,
+                "canonical_model": attempt.canonical_model,
+                "operation": attempt.operation,
+                "principal_scope": attempt.principal_scope,
+                "host": attempt.host,
+                "run_key": attempt.run_key,
+                "capture_intent_id": scope.capture_intent_id,
+                "rights_reference": attempt.expected_rights_evidence_reference,
+                "locked_at_us": locked_at_us,
+            },
+        )
+
+    def _one_shot_scope_matches(
+        self,
+        config: Mapping[str, object],
+        scope: SourceAttemptScopeV3,
+    ) -> bool:
+        """Compare every canonical scope byte and SQL-enforced attempt identity pin."""
+        try:
+            expected_json, expected_sha256 = _scope_v3_bytes_and_digest(scope)
+            stored_json = config.get("scope_json")
+            if not isinstance(stored_json, str):
+                return False
+            stored_bytes = stored_json.encode("utf-8", errors="strict")
+        except (SourceAttemptInputError, UnicodeError):
+            return False
+        attempt = scope.attempt
+        return (
+            stored_bytes == expected_json
+            and config.get("scope_sha256") == expected_sha256
+            and config.get("attempt_id") == attempt.attempt_id
+            and config.get("request_id") == attempt.request_id
+            and config.get("attempt_no") == attempt.attempt_no
+            and config.get("grant_id") == attempt.grant_id
+            and config.get("expected_revision") == attempt.expected_revision
+            and config.get("source") == attempt.source
+            and config.get("canonical_model") == attempt.canonical_model
+            and config.get("operation") == attempt.operation
+            and config.get("principal_scope") == attempt.principal_scope
+            and config.get("host") == attempt.host
+            and config.get("run_key") == attempt.run_key
+            and config.get("capture_intent_id") == scope.capture_intent_id
+            and config.get("expected_rights_evidence_reference")
+            == attempt.expected_rights_evidence_reference
+        )
+
+    def _one_shot_consumed_state(
+        self,
+        connection: Connection,
+        config: Mapping[str, object],
+    ) -> bool:
+        """Require either no history or one complete permit/reservation/scope tuple."""
+        permits = self._fetch_all(
+            connection,
+            "SELECT * FROM od_source_one_shot_permits WHERE config_id = 1",
+            {},
+        )
+        attempt_count = self._fetch_one(
+            connection,
+            "SELECT COUNT(*) AS row_count FROM od_source_attempt_reservations",
+            {},
+        )
+        scope_v2_count = self._fetch_one(
+            connection,
+            "SELECT COUNT(*) AS row_count FROM od_source_attempt_scope_v2",
+            {},
+        )
+        scope_v3_count = self._fetch_one(
+            connection,
+            "SELECT COUNT(*) AS row_count FROM od_source_attempt_scope_v3",
+            {},
+        )
+        if attempt_count is None or scope_v2_count is None or scope_v3_count is None:
+            raise SourceAttemptGateUnavailable("one-shot history is unavailable")
+        counts = (
+            attempt_count["row_count"],
+            scope_v2_count["row_count"],
+            scope_v3_count["row_count"],
+        )
+        if not permits:
+            if counts != (0, 0, 0):
+                raise SourceAttemptGateUnavailable("one-shot history exists without its permit")
+            return False
+        if len(permits) != 1 or counts != (1, 0, 1):
+            raise SourceAttemptGateUnavailable("one-shot permit history is incomplete")
+        permit = permits[0]
+        consumed_at_us = _bounded_int_or_none(permit.get("consumed_at_us"), 0, MAX_TIMESTAMP_US)
+        if (
+            permit.get("config_id") != 1
+            or permit.get("attempt_id") != config.get("attempt_id")
+            or permit.get("capture_intent_id") != config.get("capture_intent_id")
+            or permit.get("scope_sha256") != config.get("scope_sha256")
+            or consumed_at_us is None
+        ):
+            raise SourceAttemptGateUnavailable("one-shot permit record does not match its lock")
+        attempt = self._fetch_one(
+            connection,
+            "SELECT * FROM od_source_attempt_reservations WHERE attempt_id = :attempt_id",
+            {"attempt_id": config.get("attempt_id")},
+        )
+        scope = self._fetch_one(
+            connection,
+            "SELECT scope_version, scope_json, scope_sha256, recorded_at_us "
+            "FROM od_source_attempt_scope_v3 "
+            "WHERE attempt_id = :attempt_id",
+            {"attempt_id": config.get("attempt_id")},
+        )
+        if attempt is None or scope is None:
+            raise SourceAttemptGateUnavailable("one-shot permit has no complete attempt scope")
+        base_identity = (
+            "attempt_id",
+            "request_id",
+            "attempt_no",
+            "grant_id",
+            "expected_revision",
+            "source",
+            "canonical_model",
+            "operation",
+            "principal_scope",
+            "host",
+            "run_key",
+        )
+        if (
+            any(attempt.get(name) != config.get(name) for name in base_identity)
+            or attempt.get("decided_at_us") != consumed_at_us
+        ):
+            raise SourceAttemptGateUnavailable("one-shot reservation does not match its lock")
+        if (
+            scope.get("scope_version") != 3
+            or scope.get("scope_json") != config.get("scope_json")
+            or scope.get("scope_sha256") != config.get("scope_sha256")
+            or scope.get("recorded_at_us") != consumed_at_us
+        ):
+            raise SourceAttemptGateUnavailable("one-shot scope sidecar does not match its lock")
+        return True
+
+    def _insert_one_shot_permit(
+        self,
+        connection: Connection,
+        config: Mapping[str, object],
+        consumed_at_us: int,
+    ) -> None:
+        """Insert the sole permit before evaluation in the reservation transaction."""
+        connection.execute(
+            text(
+                "INSERT INTO od_source_one_shot_permits "
+                "(config_id, attempt_id, capture_intent_id, scope_sha256, consumed_at_us) "
+                "VALUES (1, :attempt_id, :capture_intent_id, :scope_sha256, :consumed_at_us)"
+            ),
+            {
+                "attempt_id": config["attempt_id"],
+                "capture_intent_id": config["capture_intent_id"],
+                "scope_sha256": config["scope_sha256"],
+                "consumed_at_us": consumed_at_us,
+            },
+        )
 
     def _has_v2_scope_checks(self, create_sql: str) -> bool:
         """Require exactly the version, UTF-8 byte bound, and digest CHECK clauses."""
@@ -3169,6 +3724,8 @@ __all__ = [
     "SourceAttemptGateUnavailable",
     "SourceAttemptGateUnavailableError",
     "SourceAttemptInputError",
+    "SourceAttemptOneShotConflictError",
+    "SourceAttemptOneShotReceipt",
     "SourceAttemptScopeV2",
     "SourceAttemptScopeV3",
     "SourceGrantInspectionReason",
