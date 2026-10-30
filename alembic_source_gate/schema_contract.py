@@ -26,6 +26,7 @@ if TYPE_CHECKING:
 VERSION_TABLE = "alembic_version_source_gate"
 V1_REVISION = "sg0001_gate_v1_adopt"
 V2_REVISION = "sg0002_source_attempt_scope_v2"
+V3_REVISION = "sg0003_source_attempt_scope_v3"
 V1_REFERENCE_SHA256 = "74d9b163a309eb37b35200f83d7b7d224fc3f05a433b59847f4fb03b3d865cf5"
 V1_REFERENCE_REVISION = "0015_source_attempt_gate"
 V1_REFERENCE_PARENT = "0014_sina_fzb_slot_reconciliation"
@@ -52,6 +53,34 @@ V2_SCOPE_JSON_FIELDS = (
     "source_policy_revision",
     "source_policy_sha256",
 )
+V3_SCOPE_JSON_FIELDS = (
+    "attempt_id",
+    "attempt_no",
+    "budget_binding_sha256",
+    "budget_policy_revision",
+    "budget_policy_sha256",
+    "budget_quota_key",
+    "canonical_model",
+    "capture_intent_id",
+    "expected_grant_revision",
+    "expected_rights_evidence_reference",
+    "grant_id",
+    "host",
+    "operation",
+    "principal_scope",
+    "request_host",
+    "request_id",
+    "request_method",
+    "request_path",
+    "request_scheme",
+    "request_summary_sha256",
+    "run_key",
+    "scope_version",
+    "source",
+    "source_policy_id",
+    "source_policy_revision",
+    "source_policy_sha256",
+)
 
 V1_TABLES = frozenset(
     {
@@ -67,6 +96,7 @@ V1_TABLES = frozenset(
     }
 )
 V2_TABLE = "od_source_attempt_scope_v2"
+V3_TABLE = "od_source_attempt_scope_v3"
 V2_OBJECT_SQL = (
     """CREATE TABLE od_source_attempt_scope_v2 (
         attempt_id TEXT NOT NULL PRIMARY KEY,
@@ -91,6 +121,32 @@ V2_OBJECT_SQL = (
         BEFORE DELETE ON od_source_attempt_scope_v2
         BEGIN
             SELECT RAISE(ABORT, 'source attempt scope v2 rows are permanent');
+        END""",
+)
+V3_OBJECT_SQL = (
+    """CREATE TABLE od_source_attempt_scope_v3 (
+        attempt_id TEXT NOT NULL PRIMARY KEY,
+        scope_version INTEGER NOT NULL CHECK (scope_version = 3),
+        scope_json TEXT NOT NULL CHECK (
+            length(CAST(scope_json AS BLOB)) BETWEEN 1 AND 16384
+        ),
+        scope_sha256 TEXT NOT NULL CHECK (
+            length(scope_sha256) = 64 AND scope_sha256 NOT GLOB '*[^0-9a-f]*'
+        ),
+        recorded_at_us INTEGER NOT NULL,
+        FOREIGN KEY (attempt_id)
+            REFERENCES od_source_attempt_reservations (attempt_id)
+            ON DELETE RESTRICT
+    )""",
+    """CREATE TRIGGER trg_od_source_attempt_scope_v3_immutable_update
+        BEFORE UPDATE ON od_source_attempt_scope_v3
+        BEGIN
+            SELECT RAISE(ABORT, 'source attempt scope v3 rows are immutable');
+        END""",
+    """CREATE TRIGGER trg_od_source_attempt_scope_v3_immutable_delete
+        BEFORE DELETE ON od_source_attempt_scope_v3
+        BEGIN
+            SELECT RAISE(ABORT, 'source attempt scope v3 rows are permanent');
         END""",
 )
 
@@ -197,7 +253,9 @@ def _apply_v1_reference(connection: Connection) -> None:
     module.upgrade()
 
 
-def _reference_schema(*, include_v2: bool) -> dict[tuple[str, str, str], str | None]:
+def _reference_schema(
+    *, include_v2: bool, include_v3: bool = False
+) -> dict[tuple[str, str, str], str | None]:
     """Build the pinned expected schema in memory and return its gate objects."""
     engine = create_engine("sqlite+pysqlite:///:memory:", poolclass=StaticPool)
     try:
@@ -206,13 +264,20 @@ def _reference_schema(*, include_v2: bool) -> dict[tuple[str, str, str], str | N
             if include_v2:
                 for statement in V2_OBJECT_SQL:
                     connection.exec_driver_sql(statement)
+            if include_v3:
+                for statement in V3_OBJECT_SQL:
+                    connection.exec_driver_sql(statement)
             objects = _gate_objects(connection)
             tables = {
                 name
                 for object_type, name, _table_name in objects
                 if object_type == "table" and name.startswith("od_source_")
             }
-            expected_tables = V1_TABLES | ({V2_TABLE} if include_v2 else set())
+            expected_tables = (
+                V1_TABLES
+                | ({V2_TABLE} if include_v2 else set())
+                | ({V3_TABLE} if include_v3 else set())
+            )
             if tables != expected_tables:
                 raise RuntimeError("pinned source gate reference has an unexpected table set")
             return objects
@@ -230,7 +295,7 @@ def _require_utf8_database(connection: Connection) -> None:
 def _require_source_gate_foreign_keys(connection: Connection) -> None:
     """Reject existing source-gate rows that violate their pinned references."""
     rows = connection.exec_driver_sql("PRAGMA foreign_key_check")
-    invalid_tables = sorted({row[0] for row in rows if row[0] in V1_TABLES | {V2_TABLE}})
+    invalid_tables = sorted({row[0] for row in rows if row[0] in V1_TABLES | {V2_TABLE, V3_TABLE}})
     if invalid_tables:
         names = ", ".join(invalid_tables)
         raise RuntimeError(f"source gate foreign-key check failed for: {names}")
@@ -245,9 +310,11 @@ def _require_v1_clock_row(connection: Connection) -> None:
         raise RuntimeError("source gate v1 singleton clock row is missing or malformed")
 
 
-def _compare_reference_schema(connection: Connection, *, include_v2: bool) -> None:
+def _compare_reference_schema(
+    connection: Connection, *, include_v2: bool, include_v3: bool = False
+) -> None:
     """Require the exact pinned DDL and trigger set for the selected revision."""
-    expected = _reference_schema(include_v2=include_v2)
+    expected = _reference_schema(include_v2=include_v2, include_v3=include_v3)
     actual = _gate_objects(connection)
     if actual == expected:
         return
@@ -335,6 +402,12 @@ def validate_migration_state(connection: Connection) -> str | None:
         _require_v1_clock_row(connection)
         _require_source_gate_foreign_keys(connection)
         return marker
+    if marker == V3_REVISION:
+        _require_utf8_database(connection)
+        _compare_reference_schema(connection, include_v2=True, include_v3=True)
+        _require_v1_clock_row(connection)
+        _require_source_gate_foreign_keys(connection)
+        return marker
     raise RuntimeError(f"source gate migration marker is unknown: {marker}")
 
 
@@ -346,11 +419,26 @@ def create_scope_v2(connection: Connection) -> None:
         connection.exec_driver_sql(statement)
 
 
+def create_scope_v3(connection: Connection) -> None:
+    """Create the immutable scope-v3 sidecar and its structural guards."""
+    if connection.dialect.name != "sqlite":
+        raise RuntimeError("source gate scope v3 requires SQLite")
+    for statement in V3_OBJECT_SQL:
+        connection.exec_driver_sql(statement)
+
+
 __all__ = [
     "VERSION_TABLE",
     "V1_REVISION",
     "V2_REVISION",
+    "V3_REVISION",
     "V2_SCOPE_JSON_FIELDS",
+    "V3_SCOPE_JSON_FIELDS",
+    "V2_TABLE",
+    "V2_OBJECT_SQL",
+    "V3_TABLE",
+    "V3_OBJECT_SQL",
+    "create_scope_v3",
     "create_scope_v2",
     "read_migration_marker",
     "validate_migration_state",
