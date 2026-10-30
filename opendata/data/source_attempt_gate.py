@@ -4,9 +4,10 @@ The default gate records one database reservation per transport attempt. The
 opt-in sg0004 one-shot mode adds one immutable local permit for one exact v3
 scope in one SQLite file. It does not send HTTP, prove source rights, impose
 general run/day ceilings, or limit requests made outside the controlled gate.
-No current THS job/transport adapter prepares the stable identities required
-by that lock; keep V4 as an offline gate candidate until that integration is
-reviewed and uses the configured attempt and request IDs unchanged.
+The V4-aware THS transport integration remains a local candidate; it has not
+been accepted or live-validated. Keep V4 execution offline until its
+single-send behavior is accepted, with the configured attempt and request IDs
+unchanged.
 Its operator-declared evidence fields are references and attestations, not
 automatic legal confirmation. The module has no grant-issuance API and an
 empty database authorizes nothing.
@@ -339,6 +340,24 @@ class AttemptLookupReasonCode(str, Enum):
     SCOPE_MISMATCH = "SCOPE_MISMATCH"
     SCOPE_CORRUPT = "SCOPE_CORRUPT"
     RECORD_CORRUPT = "RECORD_CORRUPT"
+
+
+class OneShotScopeInspectionStatus(str, Enum):
+    """Bounded read-only state of a locked one-shot scope; never a send permit."""
+
+    UNCONFIGURED = "UNCONFIGURED"
+    UNUSED = "UNUSED"
+    CONSUMED = "CONSUMED"
+    SCOPE_MISMATCH = "SCOPE_MISMATCH"
+    INDETERMINATE = "INDETERMINATE"
+
+
+@dataclass(frozen=True, slots=True)
+class OneShotScopeInspection:
+    """Fixed, non-sensitive one-shot state with no recovery or permit fields."""
+
+    status: OneShotScopeInspectionStatus
+    reason_code: AttemptLookupReasonCode | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -704,6 +723,39 @@ class SourceAttemptGate:
         _scope_v3_bytes(scope)
         return self._reserve_attempt(scope.attempt, scope)
 
+    def reserve_one_shot_attempt(self, scope: SourceAttemptScopeV3) -> AttemptReservation:
+        """Reserve one exact pre-locked V4 scope, failing closed without a lock.
+
+        Unlike the compatibility ``reserve_attempt_v3`` API, this method
+        requires the exact V4 marker/schema and an existing immutable one-shot
+        configuration. It checks the canonical scope bytes, digest, and all
+        persisted identity columns under the same ``BEGIN IMMEDIATE`` writer
+        transaction that writes the one-shot permit, attempt reservation, and
+        v3 sidecar. A repeated reservation can only return ``DUPLICATE`` or
+        ``ID_CONFLICT``. If commit acknowledgement is uncertain, the caller
+        must not send or retry automatically; this API provides no recovery
+        permit.
+
+        Args:
+            scope: The complete V3 identity already sealed into this gate file.
+
+        Returns:
+            A one-use reservation decision. Only a newly committed
+            ``RESERVED_NEW`` result is eligible for the matching transport
+            call; every other result denies a send.
+
+        Raises:
+            SourceAttemptInputError: If the supplied scope is malformed.
+            SourceAttemptOneShotConflictError: If no exact lock exists or the
+                stored one-shot history is already inconsistent.
+            SourceAttemptGateUnavailable: If the V4 schema, transaction, or
+                commit state cannot be trusted.
+        """
+        if type(scope) is not SourceAttemptScopeV3:
+            raise SourceAttemptInputError("scope must be a SourceAttemptScopeV3")
+        _scope_v3_bytes(scope)
+        return self._reserve_attempt(scope.attempt, scope, require_one_shot=True)
+
     def lock_one_shot_scope(self, scope: SourceAttemptScopeV3) -> SourceAttemptOneShotReceipt:
         """Lock one exact v3 scope in a fresh, already configured SQLite gate.
 
@@ -716,8 +768,10 @@ class SourceAttemptGate:
         Source-policy ID/revision/hash are frozen as caller-declared scope data;
         this schema has no independent source-policy registry to authenticate
         those declarations.
-        This gate API does not configure a THS job or transport; a caller must
-        supply the locked attempt and request IDs unchanged before integration.
+        This gate API does not configure a THS job or transport. The controlled
+        transport must reserve with ``reserve_one_shot_attempt`` and supply
+        the locked attempt and request IDs unchanged; the compatibility
+        ``reserve_attempt_v3`` API does not require a one-shot lock.
         Caller-provided rights and policy references remain declarations, not
         independent proof of supplier permission. The receipt records only a
         local SQLite configuration lock, not a sent request or provider reply.
@@ -775,17 +829,33 @@ class SourceAttemptGate:
         self,
         attempt: TransportAttempt,
         scope: SourceAttemptScopeV2 | SourceAttemptScopeV3 | None,
+        *,
+        require_one_shot: bool = False,
     ) -> AttemptReservation:
         """Share the v1 writer while persisting versioned scope atomically."""
         connection = self._open_write_connection()
         try:
-            if type(scope) is SourceAttemptScopeV3:
+            if require_one_shot:
+                if type(scope) is not SourceAttemptScopeV3:
+                    raise SourceAttemptGateUnavailable(
+                        "one-shot reservation requires an exact v3 scope"
+                    )
+                self._require_v4_schema(connection)
+            elif type(scope) is SourceAttemptScopeV3:
                 self._require_v3_schema(connection)
             elif type(scope) is SourceAttemptScopeV2:
                 self._require_v2_schema(connection)
 
             one_shot_config = self._load_one_shot_config(connection)
+            if require_one_shot and one_shot_config is None:
+                raise SourceAttemptOneShotConflictError(
+                    "one-shot reservation requires an existing exact V4 scope lock"
+                )
             if one_shot_config is not None:
+                if not require_one_shot and type(scope) is SourceAttemptScopeV3:
+                    raise SourceAttemptOneShotConflictError(
+                        "locked one-shot scopes require reserve_one_shot_attempt"
+                    )
                 if type(scope) is not SourceAttemptScopeV3:
                     raise SourceAttemptGateUnavailable(
                         "one-shot source gate rejects v1 and v2 reservation paths"
@@ -843,6 +913,70 @@ class SourceAttemptGate:
         except Exception:
             raise
         finally:
+            connection.close()
+
+    def inspect_one_shot_scope(self, scope: SourceAttemptScopeV3) -> OneShotScopeInspection:
+        """Inspect a one-shot scope from one read-only V4 snapshot.
+
+        ``CONSUMED`` means only that the local permit and matching attempt
+        tombstones are complete. It does not prove an HTTP call was made or
+        received, and it never authorizes a retry. This bounded inspection
+        returns no identifiers, scope contents, or send permit.
+        """
+        if type(scope) is not SourceAttemptScopeV3:
+            raise SourceAttemptInputError("scope must be a SourceAttemptScopeV3")
+        _scope_v3_bytes(scope)
+        try:
+            connection = self._open_readonly_connection()
+        except Exception:
+            return OneShotScopeInspection(
+                OneShotScopeInspectionStatus.INDETERMINATE,
+                AttemptLookupReasonCode.DATABASE_UNAVAILABLE,
+            )
+        try:
+            reason_code = self._v4_schema_reason(connection)
+            if reason_code is not None:
+                return OneShotScopeInspection(
+                    OneShotScopeInspectionStatus.INDETERMINATE,
+                    reason_code,
+                )
+            try:
+                config = self._load_one_shot_config(connection)
+            except SourceAttemptGateUnavailable:
+                return OneShotScopeInspection(
+                    OneShotScopeInspectionStatus.INDETERMINATE,
+                    AttemptLookupReasonCode.RECORD_CORRUPT,
+                )
+            if config is None:
+                return OneShotScopeInspection(OneShotScopeInspectionStatus.UNCONFIGURED)
+            if not self._one_shot_scope_matches(config, scope):
+                return OneShotScopeInspection(OneShotScopeInspectionStatus.SCOPE_MISMATCH)
+            try:
+                consumed = self._one_shot_consumed_state(connection, config)
+            except (sqlite3.Error, SQLAlchemyError):
+                return OneShotScopeInspection(
+                    OneShotScopeInspectionStatus.INDETERMINATE,
+                    AttemptLookupReasonCode.DATABASE_UNAVAILABLE,
+                )
+            except Exception:
+                return OneShotScopeInspection(
+                    OneShotScopeInspectionStatus.INDETERMINATE,
+                    AttemptLookupReasonCode.RECORD_CORRUPT,
+                )
+            status = (
+                OneShotScopeInspectionStatus.CONSUMED
+                if consumed
+                else OneShotScopeInspectionStatus.UNUSED
+            )
+            return OneShotScopeInspection(status)
+        except Exception:
+            return OneShotScopeInspection(
+                OneShotScopeInspectionStatus.INDETERMINATE,
+                AttemptLookupReasonCode.DATABASE_UNAVAILABLE,
+            )
+        finally:
+            with suppress(sqlite3.Error):
+                connection.rollback()
             connection.close()
 
     def lookup_attempt_v2(self, scope: SourceAttemptScopeV2) -> GateAttemptLookupResult:
@@ -2140,7 +2274,7 @@ class SourceAttemptGate:
 
     def _one_shot_consumed_state(
         self,
-        connection: Connection,
+        connection: Connection | sqlite3.Connection,
         config: Mapping[str, object],
     ) -> bool:
         """Require either no history or one complete permit/reservation/scope tuple."""
@@ -3717,6 +3851,8 @@ __all__ = [
     "GateAttemptLookupResult",
     "GrantRevocationResult",
     "GrantRevocationStatus",
+    "OneShotScopeInspection",
+    "OneShotScopeInspectionStatus",
     "ReservationStatus",
     "SourceAttemptGate",
     "SourceAttemptGateConfigurationError",
