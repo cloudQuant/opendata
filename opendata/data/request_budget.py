@@ -30,9 +30,18 @@ MAX_SOURCE_ATTEMPTS = 3
 # not provider-published quotas or evidence that a source permits this volume.
 MAX_BOUNDED_TASK_ATTEMPTS = 256
 MAX_BOUNDED_SOURCE_ATTEMPTS = 64
+SOURCE_ATTEMPT_SCOPE_V1 = 1
+SOURCE_ATTEMPT_SCOPE_V3 = 3
 _HOST_LOCK_POLL_SECONDS = 0.05
 _SOURCE_ATTEMPT_BINDING_IDENTIFIER_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,127}")
 _MAX_SOURCE_ATTEMPT_BINDING_REVISION = 2_147_483_647
+_SOURCE_ATTEMPT_SCOPE_SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
+_REQUEST_SUMMARY_FIELD_PATTERN = re.compile(r"[a-z][a-z0-9_]{0,63}")
+_SOURCE_ATTEMPT_HOST_LABEL_PATTERN = re.compile(r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?")
+_SOURCE_ATTEMPT_METHOD_PATTERN = re.compile(r"[A-Z][A-Z0-9!#$%&'*+.^_`|~-]{0,31}")
+_SOURCE_ATTEMPT_PATH_CHARS = frozenset(
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~!$&'()*+,;=:@/"
+)
 
 
 class RequestBudgetError(RuntimeError):
@@ -107,9 +116,15 @@ class SourceAttemptBinding:
     principal_scope: str
     run_key: str | None = None
     expected_rights_evidence_reference: str | None = None
+    _seal: tuple[object, ...] = field(init=False, repr=False, compare=False)
 
     def __post_init__(self) -> None:
         """Validate exact field types and bounded gate identifiers."""
+        self._validate_fields()
+        object.__setattr__(self, "_seal", self._snapshot())
+
+    def _validate_fields(self) -> None:
+        """Validate current binding fields without changing the integrity seal."""
         _validate_source_attempt_binding_identifier(self.grant_id, "grant_id")
         _validate_source_attempt_binding_identifier(self.principal_scope, "principal_scope")
         if self.run_key is not None:
@@ -131,6 +146,163 @@ class SourceAttemptBinding:
                 "expected_revision must be an integer from 1 through "
                 f"{_MAX_SOURCE_ATTEMPT_BINDING_REVISION}"
             )
+
+    def _snapshot(self) -> tuple[object, ...]:
+        """Return the immutable binding fields used by a V3 send scope."""
+        return (
+            self.grant_id,
+            self.expected_revision,
+            self.principal_scope,
+            self.run_key,
+            self.expected_rights_evidence_reference,
+        )
+
+    def validate_integrity(self) -> None:
+        """Reject post-construction mutation of the grant and rights binding."""
+        try:
+            self._validate_fields()
+        except Exception as exc:
+            raise RequestAuthorizationError("source attempt binding is invalid") from exc
+        if self._snapshot() != self._seal:
+            raise RequestAuthorizationError("source attempt binding integrity check failed")
+
+
+@dataclass(frozen=True, slots=True)
+class SourceAttemptScopeV3Pin:
+    """Trusted, stable pins used to build one V3 gate scope per HTTP attempt.
+
+    The request digest uses the project's version 1 allowlisted scalar query
+    summary. ``request_summary_allowed_fields`` is a fixed trusted-code
+    declaration and must exactly match the keys in the prepared GET query.
+    The separately pinned HTTPS host, path, and method are checked against the
+    prepared request. All policy and route values remain caller assertions from
+    trusted job code; this carrier does not authenticate its caller or consult
+    a source-policy registry. Its integrity seal detects accidental mutation,
+    not malicious code in the same process. It does not describe headers,
+    network delivery, or provider receipt. Grant identity and the exact rights
+    reference remain in :class:`SourceAttemptBinding`.
+    """
+
+    capture_intent_id: str
+    request_summary_sha256: str
+    request_summary_allowed_fields: tuple[str, ...]
+    expected_https_host: str
+    expected_path: str
+    expected_method: str
+    source_policy_id: str
+    source_policy_revision: str
+    source_policy_sha256: str
+    budget_binding_sha256: str
+    budget_quota_key: str
+    budget_policy_revision: int
+    budget_policy_sha256: str
+    _seal: tuple[object, ...] = field(init=False, repr=False, compare=False)
+
+    def __post_init__(self) -> None:
+        """Validate and seal bounded identity and policy pins."""
+        self._validate_fields()
+        object.__setattr__(self, "_seal", self._snapshot())
+
+    def _validate_fields(self) -> None:
+        """Validate current fields without changing the original integrity seal."""
+        for field_name in (
+            "capture_intent_id",
+            "source_policy_id",
+            "source_policy_revision",
+            "budget_quota_key",
+        ):
+            _validate_source_attempt_binding_identifier(getattr(self, field_name), field_name)
+        for field_name in (
+            "request_summary_sha256",
+            "source_policy_sha256",
+            "budget_binding_sha256",
+            "budget_policy_sha256",
+        ):
+            value = getattr(self, field_name)
+            if (
+                type(value) is not str
+                or _SOURCE_ATTEMPT_SCOPE_SHA256_PATTERN.fullmatch(value) is None
+            ):
+                raise ValueError(f"{field_name} must be a lowercase SHA-256 digest")
+        if type(self.budget_policy_revision) is not int or not (
+            1 <= self.budget_policy_revision <= _MAX_SOURCE_ATTEMPT_BINDING_REVISION
+        ):
+            raise ValueError("budget_policy_revision is outside the supported range")
+        fields = self.request_summary_allowed_fields
+        if type(fields) is not tuple or any(
+            type(name) is not str or _REQUEST_SUMMARY_FIELD_PATTERN.fullmatch(name) is None
+            for name in fields
+        ):
+            raise ValueError("request_summary_allowed_fields must be a tuple of exact field names")
+        if len(fields) != len(set(fields)):
+            raise ValueError("request_summary_allowed_fields must not contain duplicates")
+        if tuple(sorted(fields)) != fields:
+            raise ValueError("request_summary_allowed_fields must use sorted canonical order")
+        _validate_source_attempt_scope_v3_host(self.expected_https_host)
+        _validate_source_attempt_scope_v3_path(self.expected_path)
+        if (
+            type(self.expected_method) is not str
+            or _SOURCE_ATTEMPT_METHOD_PATTERN.fullmatch(self.expected_method) is None
+            or self.expected_method != "GET"
+        ):
+            raise ValueError("expected_method must be the supported exact GET method")
+
+    def _snapshot(self) -> tuple[object, ...]:
+        """Return the immutable fields that bind this V3 transport pin."""
+        return (
+            self.capture_intent_id,
+            self.request_summary_sha256,
+            self.request_summary_allowed_fields,
+            self.expected_https_host,
+            self.expected_path,
+            self.expected_method,
+            self.source_policy_id,
+            self.source_policy_revision,
+            self.source_policy_sha256,
+            self.budget_binding_sha256,
+            self.budget_quota_key,
+            self.budget_policy_revision,
+            self.budget_policy_sha256,
+        )
+
+    def validate_integrity(self) -> None:
+        """Reject post-construction mutation of the frozen transport pins."""
+        try:
+            self._validate_fields()
+        except Exception as exc:
+            raise RequestAuthorizationError("source attempt V3 pin is invalid") from exc
+        if self._snapshot() != self._seal:
+            raise RequestAuthorizationError("source attempt V3 pin integrity check failed")
+
+
+def _validate_source_attempt_scope_v3_host(host: object) -> None:
+    """Require one canonical DNS-style HTTPS host without userinfo or port."""
+    if type(host) is not str or not host or len(host) > 253 or host != host.lower():
+        raise ValueError("expected_https_host must be a canonical lowercase host")
+    labels = host.split(".")
+    if any(
+        len(label) > 63 or _SOURCE_ATTEMPT_HOST_LABEL_PATTERN.fullmatch(label) is None
+        for label in labels
+    ):
+        raise ValueError("expected_https_host must be a canonical lowercase host")
+
+
+def _validate_source_attempt_scope_v3_path(path: object) -> None:
+    """Require one canonical ASCII origin-form path without ambiguous segments."""
+    if (
+        type(path) is not str
+        or len(path) > 2048
+        or not path.startswith("/")
+        or "//" in path
+        or "?" in path
+        or "#" in path
+        or "\\" in path
+        or any(character not in _SOURCE_ATTEMPT_PATH_CHARS for character in path)
+    ):
+        raise ValueError("expected_path must be an exact ASCII absolute path")
+    segments = path[1:].split("/")
+    if any(segment in (".", "..") for segment in segments):
+        raise ValueError("expected_path must not contain dot segments")
 
 
 def _validate_source_attempt_binding_identifier(value: object, field_name: str) -> None:
@@ -329,6 +501,8 @@ class RequestExecutionScope:
     deadline: float | None = None
     cancellation: Event | None = field(default=None, repr=False, compare=False)
     source_attempt_binding: SourceAttemptBinding | None = field(default=None, repr=False)
+    source_attempt_scope_version: int = SOURCE_ATTEMPT_SCOPE_V1
+    source_attempt_scope_v3_pin: SourceAttemptScopeV3Pin | None = field(default=None, repr=False)
 
     def check_live(self) -> None:
         """Raise when cancellation or the enclosing deadline has fired."""
@@ -343,6 +517,65 @@ class RequestExecutionScope:
                 raise RequestExecutionDeadlineError("request execution deadline is invalid")
             if time.monotonic() >= self.deadline:
                 raise RequestExecutionDeadlineError("request execution deadline expired")
+
+
+def validate_source_attempt_scope_v3(
+    scopes: tuple[RequestExecutionScope, ...],
+) -> tuple[SourceAttemptBinding, SourceAttemptScopeV3Pin, str, RequestOperation]:
+    """Validate and return one complete V3 grant binding and policy pin set.
+
+    All enclosing scopes must carry the same explicit V3 discriminator, grant
+    binding, exact rights reference, and policy pins. This function validates
+    in-memory caller pins only; the durable gate must still recheck database
+    state in the same transaction as each attempt reservation.
+    """
+    if not scopes:
+        raise RequestAuthorizationError("source attempt V3 scope is missing")
+    if any(type(scope) is not RequestExecutionScope for scope in scopes):
+        raise RequestAuthorizationError("source attempt V3 scope type is invalid")
+    first = scopes[0]
+    source = first.source
+    canonical_model = first.canonical_model
+    operation = first.operation
+    binding = first.source_attempt_binding
+    pin = first.source_attempt_scope_v3_pin
+    if (
+        type(first.source) is not str
+        or not source
+        or source != source.strip()
+        or type(canonical_model) is not str
+        or not canonical_model
+        or canonical_model != canonical_model.strip()
+        or type(operation) is not RequestOperation
+        or type(first.source_attempt_scope_version) is not int
+        or first.source_attempt_scope_version != SOURCE_ATTEMPT_SCOPE_V3
+        or type(binding) is not SourceAttemptBinding
+        or type(pin) is not SourceAttemptScopeV3Pin
+    ):
+        raise RequestAuthorizationError("source attempt V3 scope is incomplete or invalid")
+    binding.validate_integrity()
+    pin.validate_integrity()
+    rights_reference = binding.expected_rights_evidence_reference
+    if type(binding.run_key) is not str or not rights_reference:
+        raise RequestAuthorizationError("source attempt V3 binding is incomplete")
+    if rights_reference != rights_reference.strip():
+        raise RequestAuthorizationError("source attempt V3 rights reference is invalid")
+    for scope in scopes:
+        if (
+            scope.source != source
+            or scope.canonical_model != canonical_model
+            or scope.operation is not operation
+            or type(scope.source_attempt_scope_version) is not int
+            or scope.source_attempt_scope_version != SOURCE_ATTEMPT_SCOPE_V3
+            or type(scope.source_attempt_binding) is not SourceAttemptBinding
+            or scope.source_attempt_binding != binding
+            or type(scope.source_attempt_scope_v3_pin) is not SourceAttemptScopeV3Pin
+            or scope.source_attempt_scope_v3_pin != pin
+        ):
+            raise RequestAuthorizationError("source attempt V3 scopes are inconsistent")
+        scope.source_attempt_binding.validate_integrity()
+        scope.source_attempt_scope_v3_pin.validate_integrity()
+    return binding, pin, canonical_model, operation
 
 
 @dataclass(frozen=True, slots=True)
@@ -738,14 +971,18 @@ def request_execution_scope(
     cancellation: Event | None = None,
     inherited_scopes: tuple[RequestExecutionScope, ...] | None = None,
     source_attempt_binding: SourceAttemptBinding | None = None,
+    source_attempt_scope_version: int | None = None,
+    source_attempt_scope_v3_pin: SourceAttemptScopeV3Pin | None = None,
 ) -> Iterator[RequestExecutionScope | None]:
     """Establish a nested scope without permitting budget replacement.
 
     Canonical models with no explicit budget receive a shared immutable zero
     budget. Legacy Fetchers without a canonical model and without a budget
-    leave the current behavior unchanged. A source-attempt binding may be set
-    only at the outermost scope; nested scopes inherit it or repeat the exact
-    same value and cannot add, replace, or remove it.
+    leave the current behavior unchanged. A source-attempt binding and V3 pin
+    may be set only at the outermost scope; nested scopes inherit them or repeat
+    the exact same values. Version 1 is the legacy default. Version 3 must be
+    selected explicitly and requires a complete binding and pin; neither
+    version can silently downgrade to the other.
     """
     current = _copy_scope_stack(_CURRENT_SCOPES.get(), inherited_scopes)
     if not isinstance(operation, RequestOperation):
@@ -755,8 +992,24 @@ def request_execution_scope(
         and type(source_attempt_binding) is not SourceAttemptBinding
     ):
         raise ValueError("source_attempt_binding must be a SourceAttemptBinding or None")
+    if source_attempt_scope_version is not None and (
+        type(source_attempt_scope_version) is not int
+        or source_attempt_scope_version not in (SOURCE_ATTEMPT_SCOPE_V1, SOURCE_ATTEMPT_SCOPE_V3)
+    ):
+        raise ValueError("source_attempt_scope_version must be 1, 3, or None")
+    if (
+        source_attempt_scope_v3_pin is not None
+        and type(source_attempt_scope_v3_pin) is not SourceAttemptScopeV3Pin
+    ):
+        raise ValueError("source_attempt_scope_v3_pin must be a SourceAttemptScopeV3Pin or None")
 
     effective_source_attempt_binding = source_attempt_binding
+    effective_scope_version = (
+        SOURCE_ATTEMPT_SCOPE_V1
+        if source_attempt_scope_version is None
+        else source_attempt_scope_version
+    )
+    effective_scope_v3_pin = source_attempt_scope_v3_pin
     if current:
         inherited_binding = current[0].source_attempt_binding
         if any(scope.source_attempt_binding != inherited_binding for scope in current):
@@ -766,6 +1019,42 @@ def request_execution_scope(
                 "nested request scope cannot add or replace its source-attempt binding"
             )
         effective_source_attempt_binding = inherited_binding
+        inherited_scope_version = current[0].source_attempt_scope_version
+        inherited_scope_v3_pin = current[0].source_attempt_scope_v3_pin
+        if any(
+            scope.source_attempt_scope_version != inherited_scope_version
+            or scope.source_attempt_scope_v3_pin != inherited_scope_v3_pin
+            for scope in current
+        ):
+            raise RequestBudgetScopeError("active source-attempt scope pins are inconsistent")
+        if (
+            source_attempt_scope_version is not None
+            and source_attempt_scope_version != inherited_scope_version
+        ):
+            raise RequestBudgetScopeError("nested request scope cannot replace its gate version")
+        if (
+            source_attempt_scope_v3_pin is not None
+            and source_attempt_scope_v3_pin != inherited_scope_v3_pin
+        ):
+            raise RequestBudgetScopeError("nested request scope cannot replace its V3 gate pin")
+        effective_scope_version = inherited_scope_version
+        effective_scope_v3_pin = inherited_scope_v3_pin
+
+    if effective_scope_version == SOURCE_ATTEMPT_SCOPE_V1:
+        if effective_scope_v3_pin is not None:
+            raise RequestBudgetScopeError("V3 gate pin requires the explicit V3 scope version")
+    elif effective_scope_version == SOURCE_ATTEMPT_SCOPE_V3:
+        if effective_scope_v3_pin is None or effective_source_attempt_binding is None:
+            raise RequestAuthorizationError("V3 gate scope requires a binding and complete pin")
+        effective_scope_v3_pin.validate_integrity()
+        effective_source_attempt_binding.validate_integrity()
+        if (
+            effective_source_attempt_binding.run_key is None
+            or not effective_source_attempt_binding.expected_rights_evidence_reference
+        ):
+            raise RequestAuthorizationError("V3 gate scope requires a run key and exact rights ref")
+    else:  # pragma: no cover - guarded above and by inherited-scope consistency
+        raise RequestBudgetScopeError("unsupported source-attempt scope version")
 
     effective_budget = budget
     if effective_budget is None:
@@ -792,6 +1081,8 @@ def request_execution_scope(
         deadline=deadline,
         cancellation=cancellation,
         source_attempt_binding=effective_source_attempt_binding,
+        source_attempt_scope_version=effective_scope_version,
+        source_attempt_scope_v3_pin=effective_scope_v3_pin,
     )
     token: Token[tuple[RequestExecutionScope, ...]] = _CURRENT_SCOPES.set(current + (scope,))
     try:

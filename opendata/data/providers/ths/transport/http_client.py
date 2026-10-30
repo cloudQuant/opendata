@@ -36,6 +36,8 @@ from opendata.data.providers.ths.transport.rate_limiter import (
     shared_host_request,
 )
 from opendata.data.request_budget import (
+    SOURCE_ATTEMPT_SCOPE_V1,
+    SOURCE_ATTEMPT_SCOPE_V3,
     RequestAuthorizationError,
     RequestBudgetError,
     RequestExecutionDeadlineError,
@@ -43,16 +45,20 @@ from opendata.data.request_budget import (
     RequestOperation,
     RequestRedirectError,
     SourceAttemptBinding,
+    SourceAttemptScopeV3Pin,
     authorize_request,
     check_scope_liveness,
     current_request_scopes,
     reserve_scoped_attempt,
     scoped_host_slot,
+    validate_source_attempt_scope_v3,
 )
+from opendata.data.request_summary import RawEvidenceError, request_summary_sha256
 from opendata.data.source_attempt_gate import (
     AttemptReservation,
     ReservationStatus,
     SourceAttemptGate,
+    SourceAttemptScopeV3,
     TransportAttempt,
 )
 
@@ -101,6 +107,126 @@ DEFAULT_MAX_RESPONSE_BYTES = 32 * 1024 * 1024
 
 #: 默认单请求超时（秒）。
 DEFAULT_TIMEOUT_SECONDS = 20.0
+
+# V3 method identity assumes this module is imported by trusted process startup.
+# It detects later class/instance replacement but cannot authenticate code that
+# patched HTTPX before this module was imported.
+_HTTPX_CLIENT_BUILD_REQUEST = httpx.Client.build_request
+_HTTPX_CLIENT_SEND = httpx.Client.send
+
+
+@dataclass(frozen=True, slots=True)
+class _PreparedRequestV3Identity:
+    """Validated route and query identity for one prepared HTTPX request."""
+
+    request_scheme: str
+    request_method: str
+    request_host: str
+    request_path: str
+    request_summary_sha256: str
+
+
+def _prepared_request_v3_identity(
+    request: httpx.Request,
+    pin: SourceAttemptScopeV3Pin,
+) -> _PreparedRequestV3Identity:
+    """Check a V3 pin against exact URL routing and its prepared GET query.
+
+    The version 1 summary covers only scalar query parameters. The HTTP Host
+    authority is checked against the URL and caller pin, but other headers,
+    transport delivery, and provider receipt are not bound. Host/path/method
+    pins are caller assertions carried by trusted job code, not a source-policy
+    registry or proof of authorization.
+    """
+    pin.validate_integrity()
+    request_url = request.url
+    try:
+        route_parts = urlsplit(str(request_url))
+        port = route_parts.port
+        request_path = request_url.raw_path.partition(b"?")[0].decode("ascii", errors="strict")
+    except (AttributeError, UnicodeError, ValueError):
+        raise RequestAuthorizationError("prepared request route is invalid") from None
+    request_host = request_url.host
+    if (
+        request.method != pin.expected_method
+        or route_parts.scheme != "https"
+        or route_parts.hostname != request_host
+        or request_host != pin.expected_https_host
+        or port not in (None, 443)
+        or route_parts.username is not None
+        or route_parts.password is not None
+        or request_url.fragment
+        or request_path != pin.expected_path
+    ):
+        raise RequestAuthorizationError("prepared request route differs from its V3 pins")
+    try:
+        host_headers = request.headers.get_list("host", split_commas=False)
+    except Exception:
+        raise RequestAuthorizationError("prepared request Host header is invalid") from None
+    expected_host_header = pin.expected_https_host
+    allowed_host_headers = {expected_host_header, f"{expected_host_header}:443"}
+    if (
+        len(host_headers) != 1
+        or type(host_headers[0]) is not str
+        or host_headers[0] not in allowed_host_headers
+    ):
+        raise RequestAuthorizationError("prepared request Host header differs from its V3 pins")
+    try:
+        body = request.content
+    except Exception:
+        raise RequestAuthorizationError("prepared request body is unavailable") from None
+    if pin.expected_method != "GET" or body:
+        raise RequestAuthorizationError("V3 scope requires a bodyless prepared GET request")
+    try:
+        query_items = tuple(request.url.params.multi_items())
+    except Exception as exc:
+        raise RequestAuthorizationError("prepared request query is invalid") from exc
+    query_keys = tuple(key for key, _value in query_items)
+    if (
+        len(query_keys) != len(set(query_keys))
+        or set(query_keys) != set(pin.request_summary_allowed_fields)
+        or any(type(key) is not str or type(value) is not str for key, value in query_items)
+    ):
+        raise RequestAuthorizationError("prepared request query differs from its V3 allowlist")
+    try:
+        digest = request_summary_sha256(
+            dict(query_items),
+            allowed_fields=pin.request_summary_allowed_fields,
+        )
+    except (RawEvidenceError, TypeError, ValueError):
+        raise RequestAuthorizationError("prepared request query summary is invalid") from None
+    if digest != pin.request_summary_sha256:
+        raise RequestAuthorizationError("prepared request query differs from its V3 summary pin")
+    return _PreparedRequestV3Identity(
+        request_scheme=route_parts.scheme,
+        request_method=request.method,
+        request_host=request_host,
+        request_path=request_path,
+        request_summary_sha256=digest,
+    )
+
+
+def _validate_v3_target_url(url: str, pin: SourceAttemptScopeV3Pin) -> None:
+    """Reject URL input normalization or route drift before HTTPX builds it."""
+    pin.validate_integrity()
+    try:
+        parts = urlsplit(url)
+        port = parts.port
+    except ValueError:
+        raise RequestAuthorizationError("V3 target URL is invalid") from None
+    if (
+        parts.scheme != "https"
+        or parts.hostname != pin.expected_https_host
+        or port not in (None, 443)
+        or parts.username is not None
+        or parts.password is not None
+        or parts.query
+        or parts.fragment
+        or "?" in url
+        or "#" in url
+        or parts.path != pin.expected_path
+    ):
+        raise RequestAuthorizationError("V3 target URL differs from its exact route pins")
 
 
 @dataclass(frozen=True)
@@ -411,6 +537,11 @@ class FuyaoHttpClient:
         body: bytes | None = None
 
         try:
+            if self._source_attempt_scope_version(scopes) == SOURCE_ATTEMPT_SCOPE_V3:
+                _binding, pin, _canonical_model, _operation = validate_source_attempt_scope_v3(
+                    scopes
+                )
+                _validate_v3_target_url(url, pin)
             self._validate_raw_exchange_client()
             self._limiter.wait_and_acquire(self._scoped_sleep(scopes))
             check_scope_liveness(scopes)
@@ -420,6 +551,8 @@ class FuyaoHttpClient:
             authorize_request(scopes, "ths", request_host)
             self._validate_scoped_client()
             self._validate_raw_exchange_client()
+            if self._source_attempt_scope_version(scopes) == SOURCE_ATTEMPT_SCOPE_V3:
+                self._validate_v3_httpx_methods()
             request = self._client.build_request(
                 "GET",
                 url,
@@ -444,14 +577,24 @@ class FuyaoHttpClient:
                 request.extensions["timeout"] = httpx.Timeout(
                     self._scoped_timeout(scopes)
                 ).as_dict()
+                self._validate_v3_prepared_request(scopes, request)
                 reserve_scoped_attempt(scopes, "ths", request_host)
                 if self._source_attempt_gate is not None:
-                    gate_reservation = self._reserve_source_attempt(
-                        scopes,
-                        host=request_host,
-                        request_id=request_id,
-                        attempt_no=1,
-                    )
+                    if self._source_attempt_scope_version(scopes) == SOURCE_ATTEMPT_SCOPE_V3:
+                        gate_reservation = self._reserve_source_attempt(
+                            scopes,
+                            host=request_host,
+                            request_id=request_id,
+                            attempt_no=1,
+                            prepared_request=request,
+                        )
+                    else:
+                        gate_reservation = self._reserve_source_attempt(
+                            scopes,
+                            host=request_host,
+                            request_id=request_id,
+                            attempt_no=1,
+                        )
                     check_scope_liveness(scopes)
                     authorize_request(scopes, "ths", request_host)
                     self._validate_scoped_client(require_attempt_gate=True)
@@ -459,6 +602,7 @@ class FuyaoHttpClient:
                     request.extensions["timeout"] = httpx.Timeout(
                         self._scoped_timeout(scopes)
                     ).as_dict()
+                    self._validate_v3_prepared_request(scopes, request)
                 send_started = True
                 response = self._client.send(
                     request,
@@ -586,6 +730,9 @@ class FuyaoHttpClient:
         last_error = error_for_transport("unknown")
         request_id = uuid.uuid4().hex
         url = f"{self.credentials.base_url}{endpoint}"
+        if self._source_attempt_scope_version(scopes) == SOURCE_ATTEMPT_SCOPE_V3:
+            _binding, pin, _canonical_model, _operation = validate_source_attempt_scope_v3(scopes)
+            _validate_v3_target_url(url, pin)
         gate_enabled = self._source_attempt_gate is not None
         raw_cache = None if gate_enabled else self._raw_response_cache_override
         if raw_cache is None and not gate_enabled:
@@ -714,6 +861,8 @@ class FuyaoHttpClient:
                     authorize_request(scopes, "ths", request_host)
                     self._validate_scoped_client()
                     timeout = self._scoped_timeout(scopes)
+                    if self._source_attempt_scope_version(scopes) == SOURCE_ATTEMPT_SCOPE_V3:
+                        self._validate_v3_httpx_methods()
                     prepared_request = self._client.build_request(
                         "GET",
                         url,
@@ -736,14 +885,27 @@ class FuyaoHttpClient:
                         self._validate_scoped_client()
                         timeout = self._scoped_timeout(scopes)
                         prepared_request.extensions["timeout"] = httpx.Timeout(timeout).as_dict()
+                        self._validate_v3_prepared_request(scopes, prepared_request)
                         reserve_scoped_attempt(scopes, "ths", request_host)
                         if gate_enabled:
-                            gate_reservation = self._reserve_source_attempt(
-                                scopes,
-                                host=request_host,
-                                request_id=request_id,
-                                attempt_no=attempt,
-                            )
+                            if (
+                                self._source_attempt_scope_version(scopes)
+                                == SOURCE_ATTEMPT_SCOPE_V3
+                            ):
+                                gate_reservation = self._reserve_source_attempt(
+                                    scopes,
+                                    host=request_host,
+                                    request_id=request_id,
+                                    attempt_no=attempt,
+                                    prepared_request=prepared_request,
+                                )
+                            else:
+                                gate_reservation = self._reserve_source_attempt(
+                                    scopes,
+                                    host=request_host,
+                                    request_id=request_id,
+                                    attempt_no=attempt,
+                                )
                             check_scope_liveness(scopes)
                             authorize_request(scopes, "ths", request_host)
                             # Recheck the complete client configuration after
@@ -755,6 +917,7 @@ class FuyaoHttpClient:
                             prepared_request.extensions["timeout"] = httpx.Timeout(
                                 timeout
                             ).as_dict()
+                            self._validate_v3_prepared_request(scopes, prepared_request)
                         send_started = True
                         response = self._client.send(
                             prepared_request,
@@ -957,6 +1120,32 @@ class FuyaoHttpClient:
         if self._source_attempt_gate is not None or require_attempt_gate:
             self._validate_attempt_gated_client()
 
+    def _validate_v3_httpx_methods(self) -> None:
+        """Reject changed HTTPX request/send methods for explicit V3 scopes.
+
+        Original descriptors were captured when this module loaded. This catches
+        later class- and instance-level replacement; it assumes trusted process
+        startup and does not protect against code that patched HTTPX before import.
+        """
+        if (
+            httpx.Client.build_request is not _HTTPX_CLIENT_BUILD_REQUEST
+            or httpx.Client.send is not _HTTPX_CLIENT_SEND
+        ):
+            raise RequestAuthorizationError("source attempt V3 HTTPX methods are not verified")
+        namespace = getattr(self._client, "__dict__", {})
+        if any(name in namespace for name in ("build_request", "send")):
+            raise RequestAuthorizationError(
+                "source attempt V3 client methods cannot be overridden on the instance"
+            )
+        if any(
+            getattr(getattr(self._client, name, None), "__func__", None) is not expected
+            for name, expected in (
+                ("build_request", _HTTPX_CLIENT_BUILD_REQUEST),
+                ("send", _HTTPX_CLIENT_SEND),
+            )
+        ):
+            raise RequestAuthorizationError("source attempt V3 client methods are not verified")
+
     def _validate_unscoped_client(self) -> None:
         """Reject HTTPX features that can add hidden sends or body reads."""
         if type(self._client) is not httpx.Client:
@@ -1018,14 +1207,62 @@ class FuyaoHttpClient:
             raise RequestAuthorizationError("source attempt TLS transport is not verified")
 
     def _validate_source_attempt_mode(self, scopes: tuple[RequestExecutionScope, ...]) -> None:
-        """Require durable gate and binding to be configured as one trusted pair."""
+        """Require the explicitly selected gate version and its complete binding."""
+        scope_version = self._source_attempt_scope_version(scopes)
         if self._source_attempt_gate is None:
-            if any(scope.source_attempt_binding is not None for scope in scopes):
+            if scope_version == SOURCE_ATTEMPT_SCOPE_V3 or any(
+                scope.source_attempt_binding is not None for scope in scopes
+            ):
                 raise RequestAuthorizationError(
                     "source attempt binding requires a configured durable gate"
                 )
             return
+        if scope_version == SOURCE_ATTEMPT_SCOPE_V3:
+            self._validate_v3_httpx_methods()
+            binding, _pin, source_model, _operation = validate_source_attempt_scope_v3(scopes)
+            if scopes[0].source != "ths" or not source_model or binding.run_key is None:
+                raise RequestAuthorizationError("source attempt V3 scope is invalid for THS")
+            return
         self._validated_source_attempt_scope(scopes)
+
+    @staticmethod
+    def _source_attempt_scope_version(
+        scopes: tuple[RequestExecutionScope, ...],
+    ) -> int:
+        """Return one exact version discriminator or reject an ambiguous stack."""
+        if not scopes:
+            return SOURCE_ATTEMPT_SCOPE_V1
+        versions: list[int] = []
+        for scope in scopes:
+            value = getattr(scope, "source_attempt_scope_version", SOURCE_ATTEMPT_SCOPE_V1)
+            if type(value) is not int or value not in (
+                SOURCE_ATTEMPT_SCOPE_V1,
+                SOURCE_ATTEMPT_SCOPE_V3,
+            ):
+                raise RequestAuthorizationError("source attempt scope version is invalid")
+            versions.append(value)
+        if any(version != versions[0] for version in versions):
+            raise RequestAuthorizationError("source attempt scope versions are inconsistent")
+        version = versions[0]
+        if version == SOURCE_ATTEMPT_SCOPE_V1 and any(
+            getattr(scope, "source_attempt_scope_v3_pin", None) is not None for scope in scopes
+        ):
+            raise RequestAuthorizationError("V3 pin cannot be used with the legacy gate version")
+        if version == SOURCE_ATTEMPT_SCOPE_V3:
+            validate_source_attempt_scope_v3(scopes)
+        return version
+
+    def _validate_v3_prepared_request(
+        self,
+        scopes: tuple[RequestExecutionScope, ...],
+        request: httpx.Request,
+    ) -> None:
+        """Recheck V3 pins against the same prepared request immediately before send."""
+        if self._source_attempt_scope_version(scopes) != SOURCE_ATTEMPT_SCOPE_V3:
+            return
+        self._validate_v3_httpx_methods()
+        _binding, pin, _canonical_model, _operation = validate_source_attempt_scope_v3(scopes)
+        _prepared_request_v3_identity(request, pin)
 
     @staticmethod
     def _validated_source_attempt_scope(
@@ -1072,11 +1309,68 @@ class FuyaoHttpClient:
         host: str,
         request_id: str,
         attempt_no: int,
+        prepared_request: httpx.Request | None = None,
     ) -> tuple[str, AttemptReservation]:
         """Persist and return the local one-use reservation immediately before send."""
         gate = self._source_attempt_gate
         if gate is None:
             raise RequestAuthorizationError("source attempt gate is not configured")
+        scope_version = self._source_attempt_scope_version(scopes)
+        if scope_version == SOURCE_ATTEMPT_SCOPE_V3:
+            try:
+                if prepared_request is None:
+                    raise RequestAuthorizationError(
+                        "source attempt V3 requires the prepared request"
+                    )
+                binding, pin, canonical_model, operation = validate_source_attempt_scope_v3(scopes)
+                request_identity = _prepared_request_v3_identity(prepared_request, pin)
+                if host != request_identity.request_host:
+                    raise RequestAuthorizationError(
+                        "V3 prepared host differs from the reserved attempt host"
+                    )
+                attempt = TransportAttempt(
+                    attempt_id=uuid.uuid4().hex,
+                    request_id=request_id,
+                    attempt_no=attempt_no,
+                    grant_id=binding.grant_id,
+                    expected_revision=binding.expected_revision,
+                    source="ths",
+                    canonical_model=canonical_model,
+                    operation=operation.value,
+                    principal_scope=binding.principal_scope,
+                    host=request_identity.request_host,
+                    run_key=binding.run_key,
+                    expected_rights_evidence_reference=(binding.expected_rights_evidence_reference),
+                )
+                v3_scope = SourceAttemptScopeV3(
+                    attempt=attempt,
+                    request_scheme=request_identity.request_scheme,
+                    request_method=request_identity.request_method,
+                    request_host=request_identity.request_host,
+                    request_path=request_identity.request_path,
+                    capture_intent_id=pin.capture_intent_id,
+                    request_summary_sha256=request_identity.request_summary_sha256,
+                    source_policy_id=pin.source_policy_id,
+                    source_policy_revision=pin.source_policy_revision,
+                    source_policy_sha256=pin.source_policy_sha256,
+                    budget_binding_sha256=pin.budget_binding_sha256,
+                    budget_quota_key=pin.budget_quota_key,
+                    budget_policy_revision=pin.budget_policy_revision,
+                    budget_policy_sha256=pin.budget_policy_sha256,
+                )
+                reservation = gate.reserve_attempt_v3(v3_scope)
+            except Exception:
+                raise RequestAuthorizationError(
+                    "source attempt V3 gate did not authorize transport"
+                ) from None
+            if (
+                type(reservation) is not AttemptReservation
+                or reservation.status is not ReservationStatus.RESERVED_NEW
+            ):
+                raise RequestAuthorizationError(
+                    "source attempt V3 gate did not authorize transport"
+                )
+            return attempt.attempt_id, reservation
         try:
             binding, canonical_model, operation = self._validated_source_attempt_scope(scopes)
             attempt = TransportAttempt(
