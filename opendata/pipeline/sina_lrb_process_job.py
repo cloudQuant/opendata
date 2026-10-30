@@ -36,10 +36,13 @@ from opendata.pipeline.contract_publication import ValidatedPublicationWriter
 from opendata.pipeline.run_identity import RunRequest, TaskDefinition
 from opendata.pipeline.run_service import NormalizedBatch, ReviewedJob, RunExecutionContext
 from opendata.pipeline.sina_lrb_raw_capture import (
+    CaptureReceiptSigner,
     SinaLrbArchivedCapture,
+    SinaLrbCaptureRecoveryJournal,
     SinaLrbRawAuthorization,
     SinaLrbRawCaptureError,
     SinaLrbRawCaptureHandler,
+    _sina_lrb_request_identity,
     read_sina_lrb_archived_evidence,
     sina_lrb_request_summary_sha256,
 )
@@ -100,6 +103,8 @@ class SinaLrbRawCaptureNormalizer:
     """Normalize only body-free archive references from the explicit raw root."""
 
     artifact_root: Path | str
+    task: TaskDefinition
+    receipt_signer: CaptureReceiptSigner | None = None
 
     def __call__(
         self,
@@ -113,6 +118,8 @@ class SinaLrbRawCaptureNormalizer:
             request,
             context,
             artifact_root=self.artifact_root,
+            task=self.task,
+            receipt_signer=self.receipt_signer,
         )
 
 
@@ -200,6 +207,8 @@ def build_sina_lrb_job(
     authorization: SinaLrbRawAuthorization,
     retention_class: RetentionClass,
     source_history_limit: HistoryLimit,
+    receipt_signer: CaptureReceiptSigner | None = None,
+    reuse_prior_captures: bool = False,
 ) -> ReviewedJob:
     """Build the disabled, unscheduled, unreviewed LRB one-shot process job.
 
@@ -208,10 +217,12 @@ def build_sina_lrb_job(
     and retention labels are mandatory inputs. The returned job remains opt-in,
     ``reviewed=False``, disabled, unscheduled, and unregistered. Successful
     publication provenance links the run key, manifest digest, response digest,
-    request-summary digest, and authorization references. There is no durable
-    RunLedger capture journal or automatic recovery of an artifact written
-    before a crash or failed publication; such orphan files require manual
-    reconciliation.
+    request-summary digest, and authorization references. An optional external
+    signer enables durable receipt journaling. Reuse remains disabled unless
+    ``reuse_prior_captures`` is explicitly true and a live ledger lease is
+    checked before and after the receipt and artifact validation. The ledger
+    schema does not join capture receipts to publication transactions, so this
+    remains a disabled, unreviewed preparation job.
 
     Args:
         task: Exact disabled ``sina-lrb-capture/process-v1`` metadata.
@@ -220,6 +231,10 @@ def build_sina_lrb_job(
         authorization: Separate caller-reviewed source and raw-retention grants.
         retention_class: Explicit retention classification for the manifest.
         source_history_limit: Explicit source-history boundary for the manifest.
+        receipt_signer: Optional external signer whose verification keys remain
+            available after worker restarts. No key is stored in the repository.
+        reuse_prior_captures: Explicitly permit reusing one verified capture
+            under a new active fencing token. It does not claim a ledger lease.
 
     Returns:
         A preparation-only job with process fetch, source-native normalization,
@@ -258,11 +273,14 @@ def build_sina_lrb_job(
         authorization=authorization,
         retention_class=retention_class,
         source_history_limit=source_history_limit,
+        task=task,
+        receipt_signer=receipt_signer,
+        reuse_prior_captures=reuse_prior_captures,
     )
     return ReviewedJob(
         task=task,
         fetch=archived_fetch,
-        normalize=SinaLrbRawCaptureNormalizer(artifact_root),
+        normalize=SinaLrbRawCaptureNormalizer(artifact_root, task, receipt_signer),
         publish=ValidatedPublicationWriter(contract_registry),
         reviewed=False,
         one_shot_only=True,
@@ -275,16 +293,21 @@ def normalize_sina_lrb_capture(
     context: RunExecutionContext,
     *,
     artifact_root: Path | str,
+    task: TaskDefinition,
+    receipt_signer: CaptureReceiptSigner | None = None,
 ) -> NormalizedBatch:
     """Read an archived response and build its raw-evidence-bound publication batch.
 
-    The archived run key must equal the current RunExecutionContext, and its
-    instrument must equal the strict manual request. The reader revalidates the
-    content-addressed manifest and body before parsing. The serializer's
+    The archived run key and non-null fencing token must match the current
+    RunExecutionContext, and its instrument must equal the strict manual request.
+    The required task metadata binds the full canonical payload hash even when
+    no signed journal is configured. The reader revalidates the content-addressed
+    manifest and body before parsing. The serializer's
     independently computed response hash is then checked and linked, together
     with manifest/request digests and authorization references, into batch
-    provenance. No durable RunLedger capture journal or crash recovery is
-    provided.
+    provenance. When a receipt signer is configured, the signed receipt must
+    match the current run identity and fencing token before the raw bytes are
+    accepted. RunLedger remains responsible for the atomic publication fence.
 
     Args:
         raw: Exact body-free :class:`SinaLrbArchivedCapture` returned by the
@@ -292,6 +315,10 @@ def normalize_sina_lrb_capture(
         request: Manual single-instrument RunRequest.
         context: Run context carrying the fenced lease checkpoints.
         artifact_root: Explicit root injected into the fetch wrapper.
+        task: Required fixed task metadata used to recompute the canonical run
+            identity and payload hash.
+        receipt_signer: Optional external signer required to verify a capture
+            receipt from the configured journal.
 
     Returns:
         The LRB source-native NormalizedBatch from the explicit contract module.
@@ -311,6 +338,37 @@ def normalize_sina_lrb_capture(
         expected_symbol=expected_symbol,
         expected_run_key=context.run_key,
     )
+    if (
+        type(context.fencing_token) is not int
+        or context.fencing_token < 1
+        or capture.fencing_token is None
+        or capture.fencing_token != context.fencing_token
+    ):
+        raise ValueError(_CAPTURE_ERROR)
+    try:
+        identity_run_key, identity_payload_sha256 = _sina_lrb_request_identity(
+            task,
+            request,
+            expected_run_key=context.run_key,
+            snapshot_json=context._verified_snapshot_json(),
+        )
+    except Exception:
+        raise ValueError(_CAPTURE_ERROR) from None
+    if (
+        identity_run_key != context.run_key
+        or capture.request_payload_sha256 != identity_payload_sha256
+    ):
+        raise ValueError(_CAPTURE_ERROR)
+    request_payload_sha256 = identity_payload_sha256
+    if receipt_signer is not None:
+        context.checkpoint()
+        journal = SinaLrbCaptureRecoveryJournal(artifact_root, receipt_signer)
+        journal.verify_capture_receipt(
+            capture,
+            request_payload_sha256=request_payload_sha256,
+            fencing_token=context.fencing_token,
+        )
+        context.checkpoint()
     try:
         evidence = read_sina_lrb_archived_evidence(capture, artifact_root=artifact_root)
     except SinaLrbRawCaptureError:
@@ -488,6 +546,9 @@ def _validate_archived_capture(
             manifest_sha256=raw.manifest_sha256,
             source_access_ref=raw.source_access_ref,
             raw_retention_ref=raw.raw_retention_ref,
+            request_payload_sha256=raw.request_payload_sha256,
+            fencing_token=raw.fencing_token,
+            origin_fencing_token=raw.origin_fencing_token,
         )
     except Exception:
         raise ValueError(_CAPTURE_ERROR) from None

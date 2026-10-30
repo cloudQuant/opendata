@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import replace
 from datetime import date, datetime, timedelta, timezone
@@ -12,6 +13,7 @@ import pytest
 from sqlalchemy import create_engine, update
 
 import opendata.pipeline.run_service as run_service_module
+import opendata.pipeline.sina_lrb_raw_capture as raw_capture_module
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -1432,3 +1434,55 @@ def test_nonstandard_exception_class_is_replaced_by_safe_error_code() -> None:
 
     assert outcome is not None and outcome.record is not None
     assert outcome.record.error_text == "execution_failed:UnhandledError"
+
+
+def test_context_carries_verified_snapshot_for_prefix_shaped_user_key() -> None:
+    """RunService snapshot provenance restores only its own synthetic request key."""
+    token = f"sha256-{'a' * 64}"
+    request = RunRequest(
+        run_type="manual",
+        query={},
+        partition={"instrument_id": "600519.SH"},
+        idempotency_key=token,
+    )
+    expected_identity = build_run_identity(make_task(), request)
+    seen: dict[str, object] = {}
+
+    def fetch(reconstructed: RunRequest, context: RunExecutionContext) -> object:
+        seen["request_key"] = reconstructed.idempotency_key
+        seen["run_key"] = context.run_key
+        snapshot_json = context._verified_snapshot_json()
+        seen["snapshot_json"] = snapshot_json
+        seen["raw_identity"] = raw_capture_module._sina_lrb_request_identity(
+            make_task(),
+            reconstructed,
+            expected_run_key=context.run_key,
+            snapshot_json=snapshot_json,
+        )
+        assert snapshot_json is not None
+        snapshot_identity = context._snapshot_identity
+        assert snapshot_identity is not None
+        tampered = json.loads(snapshot_json)
+        tampered["run"]["business_request"]["partition"]["instrument_id"] = "600001.SH"
+        tampered_json = json.dumps(tampered, sort_keys=True, separators=(",", ":"))
+        forged_identity = replace(snapshot_identity, canonical_json=tampered_json)
+        forged_context = replace(context, _snapshot_identity=forged_identity)
+        with pytest.raises(ValueError, match="snapshot identity is invalid"):
+            forged_context._verified_snapshot_json()
+        return {"bars": 1}
+
+    service, _ledger, _job = make_service(make_job(fetch=fetch))
+    submitted = service.submit("stock-daily", "v1", request)
+
+    outcome = service.run_once("worker-a", TTL)
+
+    assert submitted.run_key == expected_identity.idempotency_key
+    assert outcome is not None and outcome.record is not None
+    assert outcome.record.status == "succeeded"
+    assert seen["run_key"] == expected_identity.idempotency_key
+    assert seen["request_key"] == f"sha256-{hashlib.sha256(token.encode('utf-8')).hexdigest()}"
+    assert seen["snapshot_json"] == expected_identity.canonical_json
+    assert seen["raw_identity"] == (
+        expected_identity.idempotency_key,
+        expected_identity.payload_hash,
+    )
