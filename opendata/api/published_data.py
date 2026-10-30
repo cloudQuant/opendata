@@ -75,6 +75,9 @@ from opendata.data.platform_contracts import (
 from opendata.data.providers.sina.financial_statement_publication import (
     build_sina_fzb_observation_contract,
 )
+from opendata.data.providers.sina.lrb_statement_publication import (
+    build_sina_lrb_observation_contract,
+)
 from opendata.data.providers.ths.index_daily_publication import (
     INDEX_SOURCE_ID,
     INDEX_SYMBOL_BY_DATASET_ID,
@@ -126,6 +129,8 @@ _ATEMPORAL_TABLE_BUSINESS_DATE_SEMANTICS = (
 _ROUTER_PREFIX = "/api/v2"
 _SINA_FZB_DATASET_ID = "sina_fzb_report_observations"
 _SINA_FZB_INSTRUMENT_PATTERN = re.compile(r"[0-9]{6}\.(?:SH|SZ)\Z", re.ASCII)
+_SINA_LRB_DATASET_ID = "sina_lrb_report_observations"
+_SINA_LRB_INSTRUMENT_PATTERN = re.compile(r"[0-9]{6}\.(?:SH|SZ)\Z", re.ASCII)
 # Market-symbol publication reads stay unavailable until production query-plan
 # evidence establishes an acceptable snapshot-creation scan budget.
 _MARKET_SYMBOL_API_ENABLED = False
@@ -1569,6 +1574,8 @@ def _resolve_contract(
         raise _service_unavailable()
     if contract.dataset_id == _SINA_FZB_DATASET_ID:
         _require_sina_fzb_observation_contract(contract)
+    elif contract.dataset_id == _SINA_LRB_DATASET_ID:
+        _require_sina_lrb_observation_contract(contract)
     try:
         selection_profile(contract)
         market_profile = market_symbol_selection_profile(contract)
@@ -1590,6 +1597,17 @@ def _require_sina_fzb_observation_contract(contract: DatasetContract) -> None:
     except (TypeError, ValueError):
         raise _service_unavailable() from None
     if contract.dataset_id != _SINA_FZB_DATASET_ID or not contract_matches:
+        raise _service_unavailable()
+
+
+def _require_sina_lrb_observation_contract(contract: DatasetContract) -> None:
+    """Reject any drift from the reserved source-native Sina LRB contract."""
+    try:
+        expected = build_sina_lrb_observation_contract()
+        contract_matches = canonical_sha256(contract) == canonical_sha256(expected)
+    except (TypeError, ValueError):
+        raise _service_unavailable() from None
+    if contract.dataset_id != _SINA_LRB_DATASET_ID or not contract_matches:
         raise _service_unavailable()
 
 
@@ -1699,6 +1717,7 @@ def _request_selection(
     if was_supplied and selection is None:
         raise _http_problem(422, "invalid_selection", "Instrument/capture selection is invalid")
     _validate_sina_fzb_instrument(contract, selection)
+    _validate_sina_lrb_instrument(contract, selection)
     return selection
 
 
@@ -1717,6 +1736,7 @@ def _snapshot_selection(
         raise _service_unavailable() from None
     try:
         _validate_sina_fzb_instrument(contract, selection)
+        _validate_sina_lrb_instrument(contract, selection)
     except HTTPException:
         raise _service_unavailable() from None
     return selection
@@ -1731,6 +1751,19 @@ def _validate_sina_fzb_instrument(
         contract.dataset_id == _SINA_FZB_DATASET_ID
         and selection is not None
         and _SINA_FZB_INSTRUMENT_PATTERN.fullmatch(selection.instrument_id) is None
+    ):
+        raise _http_problem(422, "invalid_selection", "Instrument/capture selection is invalid")
+
+
+def _validate_sina_lrb_instrument(
+    contract: DatasetContract,
+    selection: InstrumentCaptureSelection | None,
+) -> None:
+    """Require canonical SH/SZ A-share IDs for the reserved Sina LRB dataset."""
+    if (
+        contract.dataset_id == _SINA_LRB_DATASET_ID
+        and selection is not None
+        and _SINA_LRB_INSTRUMENT_PATTERN.fullmatch(selection.instrument_id) is None
     ):
         raise _http_problem(422, "invalid_selection", "Instrument/capture selection is invalid")
 
@@ -1776,7 +1809,9 @@ def _is_sina_contract(contract: DatasetContract) -> bool:
     """Recognize the source identity that must remain capture-pair only."""
     return (
         contract.dataset_id == _SINA_FZB_DATASET_ID
+        or contract.dataset_id == _SINA_LRB_DATASET_ID
         or contract.source.source_id.casefold() == "sina-fzb"
+        or contract.source.source_id.casefold() == "sina-lrb"
         or contract.source.source.casefold() == "sina"
     )
 
