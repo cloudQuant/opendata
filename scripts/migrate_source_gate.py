@@ -24,6 +24,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
             "Adopt and upgrade an existing file-backed SQLite source-attempt gate. "
+            "Use --initialize-empty only for a pre-existing empty SQLite file. "
             "The command never creates a database or migrates warehouse tables."
         )
     )
@@ -32,6 +33,14 @@ def build_parser() -> argparse.ArgumentParser:
         required=True,
         type=Path,
         help="absolute path to the existing local source-gate SQLite file",
+    )
+    parser.add_argument(
+        "--initialize-empty",
+        action="store_true",
+        help=(
+            "initialize a pre-existing empty UTF-8 SQLite file; the file is never created "
+            "and any existing schema object blocks initialization"
+        ),
     )
     return parser
 
@@ -48,6 +57,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     config = Config(str(CONFIG_PATH))
     config.attributes["source_gate_path"] = database_path
     config.attributes["source_gate_file_identity"] = file_identity
+    config.attributes["source_gate_initialize_empty"] = arguments.initialize_empty
+    config.attributes["source_gate_require_empty"] = arguments.initialize_empty
     command.upgrade(config, "head")
     return 0
 

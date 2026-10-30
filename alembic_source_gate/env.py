@@ -23,6 +23,53 @@ if TYPE_CHECKING:
     from sqlalchemy.engine import Connection
 
 config = context.config
+INITIALIZATION_MODE_ATTRIBUTE = "source_gate_initialization_mode"
+INITIALIZE_EMPTY_ATTRIBUTE = "source_gate_initialize_empty"
+REQUIRE_EMPTY_ATTRIBUTE = "source_gate_require_empty"
+
+
+def _has_schema_objects(connection: Connection) -> bool:
+    """Return whether the SQLite file contains any schema objects."""
+    rows = connection.exec_driver_sql(
+        "SELECT name FROM sqlite_master WHERE type IN ('table', 'index', 'view', 'trigger')"
+    )
+    return rows.first() is not None
+
+
+def _classify_initialization_state(
+    connection: Connection,
+    *,
+    allow_empty_initialization: bool,
+    require_empty_target: bool,
+) -> str:
+    """Validate a supported starting state before Alembic writes anything."""
+    if require_empty_target and _has_schema_objects(connection):
+        raise RuntimeError("source gate require-empty target contains schema objects")
+
+    marker = schema_contract.read_migration_marker(connection)
+    if marker is not None:
+        schema_contract.validate_migration_state(connection)
+        return f"existing-marked:{marker}"
+
+    try:
+        schema_contract.validate_v1_schema(connection)
+        return "adopt-existing-v1"
+    except RuntimeError as v1_error:
+        if _has_schema_objects(connection):
+            raise
+        # Preserve the pinned 0015 source-integrity check before treating this
+        # mismatch as the expected empty-file state.
+        schema_contract._reference_schema(include_v2=False)
+        if not allow_empty_initialization:
+            raise RuntimeError(
+                "an empty source-gate SQLite file requires --initialize-empty"
+            ) from v1_error
+        encoding = connection.exec_driver_sql("PRAGMA encoding").scalar_one()
+        if encoding != "UTF-8":
+            raise RuntimeError(
+                "empty source-gate SQLite file must use UTF-8 encoding"
+            ) from v1_error
+        return "initialize-empty"
 
 
 def _explicit_database_path() -> tuple[Path, path_contract.DatabaseFileIdentity]:
@@ -76,7 +123,13 @@ def _run_migrations(
     """Preflight, migrate, and verify the target under one explicit write lock."""
     # The DBAPI connection is open, but no target schema has been read yet.
     path_contract.assert_database_file_identity(path, expected_identity)
-    schema_contract.validate_migration_state(connection)
+    allow_empty_initialization = config.attributes.get(INITIALIZE_EMPTY_ATTRIBUTE) is True
+    require_empty_target = config.attributes.get(REQUIRE_EMPTY_ATTRIBUTE) is True
+    initial_state = _classify_initialization_state(
+        connection,
+        allow_empty_initialization=allow_empty_initialization,
+        require_empty_target=require_empty_target,
+    )
 
     # End SQLAlchemy's read transaction from preflight before acquiring the
     # write reservation. The raw BEGIN is the first statement of this new
@@ -86,6 +139,14 @@ def _run_migrations(
         connection.exec_driver_sql("BEGIN IMMEDIATE")
         # Check again after acquiring SQLite's write lock, before any migration DDL.
         path_contract.assert_database_file_identity(path, expected_identity)
+        locked_state = _classify_initialization_state(
+            connection,
+            allow_empty_initialization=allow_empty_initialization,
+            require_empty_target=require_empty_target,
+        )
+        if locked_state != initial_state:
+            raise RuntimeError("source gate schema changed between preflight and write lock")
+        config.attributes[INITIALIZATION_MODE_ATTRIBUTE] = locked_state
         context.configure(
             connection=connection,
             target_metadata=None,

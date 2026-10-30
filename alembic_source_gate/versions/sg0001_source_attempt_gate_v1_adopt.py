@@ -1,7 +1,7 @@
 """Adopt only the exact existing SQLite source-attempt gate v1 schema.
 
 Revision ID: sg0001_gate_v1_adopt
-Revises:
+Revises: sg0000_gate_v1_initialize
 Create Date: 2026-10-28
 
 This revision writes no source-gate tables or data. It validates the complete
@@ -12,10 +12,10 @@ comparison baseline.
 """
 
 from alembic import op
-from alembic_source_gate.schema_contract import validate_v1_schema
+from alembic_source_gate.schema_contract import V0_REVISION, validate_v1_schema
 
 revision = "sg0001_gate_v1_adopt"
-down_revision = None
+down_revision = V0_REVISION
 branch_labels = None
 depends_on = None
 
