@@ -20,7 +20,9 @@ from opendata.api.published_access import (
 )
 from opendata.api.published_data import (
     _capture_candidate_page_payload,
+    _request_selection,
     _require_sina_fzb_observation_contract,
+    _require_sina_lrb_observation_contract,
     _resolve_contract,
     get_dataset_contracts,
     get_dataset_grants,
@@ -34,6 +36,9 @@ from opendata.data.dataset_contract_registry import (
 from opendata.data.platform_contracts import DatasetContract, FieldContract, SourceIdentity
 from opendata.data.providers.sina.financial_statement_publication import (
     build_sina_fzb_observation_contract,
+)
+from opendata.data.providers.sina.lrb_statement_publication import (
+    build_sina_lrb_observation_contract,
 )
 from opendata.models.user import User, UserRole
 from opendata.pipeline.publication_store import (
@@ -60,6 +65,8 @@ OTHER_INSTRUMENT = "600001.SH"
 CAPTURE_A = "a" * 64
 CAPTURE_B = "b" * 64
 CAPTURE_OTHER = "c" * 64
+LRB_SOURCE_ID = "sina-lrb"
+LRB_DATASET_ID = "sina_lrb_report_observations"
 
 
 @dataclass(frozen=True, slots=True)
@@ -737,6 +744,107 @@ def test_contract_resolution_rejects_drift_even_when_publication_pins_it() -> No
         _resolve_contract(DatasetContractRegistry((drifted,)), access, publication)
 
     assert error.value.status_code == 503
+
+
+def test_reserved_sina_lrb_contract_must_equal_its_canonical_contract(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A self-consistent replacement cannot impersonate the reserved LRB contract."""
+    canonical = build_sina_lrb_observation_contract()
+    _require_sina_lrb_observation_contract(canonical)
+
+    drifted = canonical.model_copy(update={"timezone": "Asia/Shanghai"})
+    with pytest.raises(HTTPException) as error:
+        _require_sina_lrb_observation_contract(drifted)
+    assert error.value.status_code == 503
+
+    def fail_to_build_contract() -> DatasetContract:
+        raise ValueError("synthetic contract construction failure")
+
+    monkeypatch.setattr(
+        "opendata.api.published_data.build_sina_lrb_observation_contract",
+        fail_to_build_contract,
+    )
+    with pytest.raises(HTTPException) as builder_error:
+        _require_sina_lrb_observation_contract(canonical)
+    assert builder_error.value.status_code == 503
+    assert "synthetic" not in str(builder_error.value.detail)
+
+
+def test_lrb_selector_accepts_only_canonical_sh_sz_identifiers() -> None:
+    """The LRB route keeps its source-specific selector within supported exchanges."""
+    contract = build_sina_lrb_observation_contract()
+    for instrument_id in ("600519.SH", "000001.SZ"):
+        selection = _request_selection(
+            contract,
+            instrument_id=instrument_id,
+            capture_id=CAPTURE_A,
+            required=True,
+            was_supplied=True,
+        )
+        assert selection is not None
+        assert selection.instrument_id == instrument_id
+        assert selection.capture_id == CAPTURE_A
+
+    for instrument_id in ("600519.BJ", "SSE:600519", "60051.SH"):
+        with pytest.raises(HTTPException) as error:
+            _request_selection(
+                contract,
+                instrument_id=instrument_id,
+                capture_id=CAPTURE_A,
+                required=True,
+                was_supplied=True,
+            )
+        assert error.value.status_code == 422
+        assert instrument_id not in str(error.value.detail)
+
+
+def test_contract_resolution_rejects_lrb_drift_even_when_publication_pins_it() -> None:
+    """The LRB dataset ID is bound to its canonical factory, not self-declared hashes."""
+    canonical = build_sina_lrb_observation_contract()
+    drifted = canonical.model_copy(update={"timezone": "Asia/Shanghai"})
+    access = require_published_access(
+        _principal(),
+        LRB_DATASET_ID,
+        "data.read",
+        DatasetGrantRegistry((_grant_for_source(LRB_DATASET_ID, LRB_SOURCE_ID),)),
+    )
+    publication = PublicationRecord(
+        publication_id="d" * 32,
+        dataset_id=LRB_DATASET_ID,
+        source_id=LRB_SOURCE_ID,
+        sequence=1,
+        schema_version=drifted.schema_version,
+        semantic_version=drifted.semantic_version,
+        unit="per-field",
+        adjustment_basis=drifted.adjustment_basis,
+        quality={"status": "unknown", "report_id": None, "issue_count": 0},
+        provenance={"contract_sha256": canonical_sha256(drifted)},
+        watermark=None,
+        idempotency_key="synthetic-lrb-drifted-contract",
+        payload_hash="e" * 64,
+        record_count=0,
+        published_at=datetime(2026, 10, 27, 1, tzinfo=UTC),
+    )
+
+    with pytest.raises(HTTPException) as error:
+        _resolve_contract(DatasetContractRegistry((drifted,)), access, publication)
+
+    assert error.value.status_code == 503
+
+
+def _grant_for_source(dataset_id: str, source_id: str) -> DatasetGrant:
+    """Build a fixture grant for a source-specific dataset identity."""
+    return DatasetGrant(
+        dataset_id=dataset_id,
+        domain="equity",
+        source_id=source_id,
+        permitted_operations=("data.read", "snapshot.create", "snapshot.read"),
+        purposes=("research",),
+        valid_from=datetime(2020, 1, 1, tzinfo=UTC),
+        valid_until=datetime(2100, 1, 1, tzinfo=UTC),
+        review_evidence="OD204-TEST",
+    )
 
 
 def test_capture_candidate_payload_serializes_bounded_sorted_page() -> None:
