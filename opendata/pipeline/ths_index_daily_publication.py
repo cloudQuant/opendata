@@ -1,10 +1,11 @@
-"""Fail-closed publication jobs for four separate THS daily index series.
+"""Fail-closed publication jobs and offline request identities for THS indexes.
 
-The default builders remain disabled and unreviewed. A separate CSI 500
-one-shot builder accepts a fixed, user-declared internal-use scope and an
-already-provisioned persistent source gate. It can only fetch one explicit
-window of at most ten years, with one physical transport attempt. The source
-history boundary and cross-execution attempt ceiling remain UNKNOWN.
+The default builders remain disabled and unreviewed. The legacy CSI 500
+V1/V3 paths are kept separate for compatibility and offline boundary tests.
+The explicit V4 sample builder requires an already-locked, target-identity
+matched one-shot gate and carries its exact request scope into transport; no
+production schedule or composition CLI attaches it. Source history boundaries
+and supplier terms remain UNKNOWN or user-declared.
 """
 
 from __future__ import annotations
@@ -12,12 +13,14 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import re
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Final, Literal
 from urllib.parse import urlsplit
 
+from alembic_source_gate.path_contract import inspect_existing_database_path
 from opendata.data.dataset_contract_registry import (
     DatasetContractRegistry,
     DatasetContractRegistryError,
@@ -25,7 +28,11 @@ from opendata.data.dataset_contract_registry import (
 )
 from opendata.data.models.market import Bar
 from opendata.data.protocol import FetchContext
-from opendata.data.providers.ths.endpoints import INDEX_PRICES_ENDPOINT, MAX_WINDOW
+from opendata.data.providers.ths.endpoints import (
+    INDEX_PRICES_ENDPOINT,
+    MAX_WINDOW,
+    build_index_prices_request,
+)
 from opendata.data.providers.ths.index_daily_publication import (
     INDEX_DATASET_ID_BY_SYMBOL,
     INDEX_JOB_ID_BY_SYMBOL,
@@ -37,17 +44,31 @@ from opendata.data.providers.ths.index_daily_publication import (
 from opendata.data.providers.ths.models.index_daily import ThsIndexDailyFetcher
 from opendata.data.providers.ths.transport.credentials import DEFAULT_FUYAO_API_BASE_URL
 from opendata.data.request_budget import (
+    SOURCE_ATTEMPT_SCOPE_V3,
+    SOURCE_ATTEMPT_SCOPE_V4,
     GrantDecision,
     RequestBudget,
     RequestBudgetProfile,
     RequestGrant,
     RequestOperation,
     SourceAttemptBinding,
+    SourceAttemptScopeV3Pin,
     request_execution_scope,
 )
-from opendata.data.source_attempt_gate import SourceAttemptGate
+from opendata.data.request_summary import request_summary_sha256
+from opendata.data.source_attempt_gate import (
+    OneShotScopeInspectionStatus,
+    SourceAttemptGate,
+    SourceAttemptScopeV3,
+    TransportAttempt,
+)
 from opendata.pipeline.contract_publication import ValidatedPublicationWriter
-from opendata.pipeline.run_identity import RunRequest, TaskDefinition
+from opendata.pipeline.run_identity import (
+    RunIdentity,
+    RunRequest,
+    TaskDefinition,
+    build_run_identity,
+)
 from opendata.pipeline.run_service import (
     NormalizedBatch,
     NormalizedRecord,
@@ -71,7 +92,12 @@ _CSI500_DATASET_ID = INDEX_DATASET_ID_BY_SYMBOL[_CSI500_SYMBOL]
 # half-open endpoint range. Its inclusive day count equals that resulting span.
 _MAX_WINDOW_CALENDAR_DAYS = MAX_WINDOW.days
 _MAX_TRANSPORT_ATTEMPTS = 1
+_CSI500_V3_REQUEST_FIELDS = ("end", "interval", "start", "thscode")
+_CSI500_V3_EXPECTED_HTTPS_HOST = "fuyao.aicubes.cn"
+_CSI500_V3_EXPECTED_PATH = INDEX_PRICES_ENDPOINT
+_CSI500_V3_EXPECTED_METHOD = "GET"
 _SOURCE_RIGHTS_EVIDENCE = "docs/data-rights-registry.md#0.1"
+_SHA256_RE = re.compile(r"\A[0-9a-f]{64}\Z")
 _HISTORY_BOUNDARY_UNKNOWN: Final[Literal["UNKNOWN"]] = "UNKNOWN"
 _ALLOWED_INTERNAL_PURPOSES = (
     "automatic_collection",
@@ -84,8 +110,17 @@ __all__ = [
     "SSE50_INDEX_JOB_ID",
     "SSE50_INDEX_JOB_VERSION",
     "Csi500FuyaoSourceAccess",
+    "Csi500FuyaoV3SampleAccess",
+    "Csi500FuyaoV4SampleAccess",
+    "Csi500FuyaoV4SampleSpec",
     "build_authorized_csi500_index_daily_job",
     "build_csi500_manual_backfill_payload",
+    "build_csi500_v3_sample_index_daily_job",
+    "build_csi500_v4_sample_index_daily_job",
+    "build_csi500_v3_sample_payload",
+    "build_csi500_v4_sample_spec",
+    "build_csi500_v4_sample_task_definition",
+    "build_csi500_v4_sample_payload",
     "build_index_daily_backfill_request",
     "build_index_daily_job",
     "build_sse50_index_daily_backfill_request",
@@ -198,6 +233,515 @@ class Csi500FuyaoSourceAccess:
         return "Csi500FuyaoSourceAccess(<redacted>)"
 
 
+@dataclass(frozen=True, slots=True, repr=False)
+class Csi500FuyaoV3SampleAccess:
+    """Explicit opt-in V3 pins for one fixed CSI 500 sample date.
+
+    This type is separate from :class:`Csi500FuyaoSourceAccess`, preserving
+    the accepted V1 #129 call path. The sample composition must only populate
+    budget fields from an exact target-bound quota receipt. It does not itself
+    attest supplier rights or prove a persistent lifetime attempt cap.
+    """
+
+    source_attempt_gate: SourceAttemptGate = field(repr=False, compare=False)
+    source_attempt_binding: SourceAttemptBinding = field(repr=False, compare=False)
+    business_date: date
+    capture_intent_id: str
+    source_policy_id: str
+    source_policy_revision: str
+    source_policy_sha256: str
+    budget_binding_sha256: str
+    budget_quota_key: str
+    budget_policy_revision: int
+    budget_policy_sha256: str
+    target_identity_sha256: str
+    operator_confirms_user_declared_internal_use: bool
+
+    def __post_init__(self) -> None:
+        """Validate the exact one-date sample and all immutable budget pins."""
+        if type(self.source_attempt_gate) is not SourceAttemptGate:
+            raise TypeError("source_attempt_gate must be an exact SourceAttemptGate")
+        if type(self.source_attempt_binding) is not SourceAttemptBinding:
+            raise TypeError("source_attempt_binding must be an exact SourceAttemptBinding")
+        if self.source_attempt_binding.run_key is not None:
+            raise ValueError("source_attempt_binding must leave run_key unset")
+        self.source_attempt_binding.validate_integrity()
+        if type(self.business_date) is not date:
+            raise TypeError("business_date must be an exact date")
+        if (
+            type(self.operator_confirms_user_declared_internal_use) is not bool
+            or not self.operator_confirms_user_declared_internal_use
+        ):
+            raise ValueError("Fuyao CSI 500 internal-use authorization was not confirmed")
+        if type(self.budget_policy_revision) is not int or self.budget_policy_revision < 1:
+            raise ValueError("budget_policy_revision must be positive")
+        for field_name in (
+            "source_policy_sha256",
+            "budget_binding_sha256",
+            "budget_policy_sha256",
+            "target_identity_sha256",
+        ):
+            if (
+                type(getattr(self, field_name)) is not str
+                or _SHA256_RE.fullmatch(getattr(self, field_name)) is None
+            ):
+                raise ValueError(f"{field_name} must be a lowercase SHA-256 digest")
+        self.pin_for_request(self.business_date, self.business_date)
+
+    @property
+    def evidence_reference(self) -> str:
+        """Return the one documented user-declared rights evidence reference."""
+        return _SOURCE_RIGHTS_EVIDENCE
+
+    @property
+    def authorization_basis(self) -> Literal["USER_DECLARED"]:
+        """Identify this as a user declaration, not independently verified rights."""
+        return "USER_DECLARED"
+
+    @property
+    def symbol(self) -> str:
+        """Return the one benchmark fixed by this access record."""
+        return _CSI500_SYMBOL
+
+    @property
+    def dataset_id(self) -> str:
+        """Return the one dataset fixed by this access record."""
+        return _CSI500_DATASET_ID
+
+    @property
+    def endpoint_path(self) -> str:
+        """Return the exact index-daily endpoint pinned by this sample path."""
+        return _CSI500_V3_EXPECTED_PATH
+
+    @property
+    def operation(self) -> Literal["query"]:
+        """Return the only permitted operation."""
+        return "query"
+
+    @property
+    def purposes(self) -> tuple[str, ...]:
+        """Return the internal-use purposes declared by the user."""
+        return _ALLOWED_INTERNAL_PURPOSES
+
+    @property
+    def maximum_window_calendar_days(self) -> int:
+        """Return the request window this opt-in sample actually permits."""
+        return 1
+
+    @property
+    def source_history_boundary(self) -> Literal["UNKNOWN"]:
+        """Keep the source's earliest available date unknown."""
+        return _HISTORY_BOUNDARY_UNKNOWN
+
+    @property
+    def external_distribution_allowed(self) -> Literal[False]:
+        """The user's declaration does not authorize external redistribution."""
+        return False
+
+    def binding_for_run(self, run_key: str) -> SourceAttemptBinding:
+        """Attach the durable grant and exact rights reference to one run."""
+        if type(run_key) is not str or not run_key.strip():
+            raise ValueError("run_key must be a non-empty string")
+        return SourceAttemptBinding(
+            grant_id=self.source_attempt_binding.grant_id,
+            expected_revision=self.source_attempt_binding.expected_revision,
+            principal_scope=self.source_attempt_binding.principal_scope,
+            run_key=run_key,
+            expected_rights_evidence_reference=self.evidence_reference,
+        )
+
+    def pin_for_request(self, start_date: date, end_date: date) -> SourceAttemptScopeV3Pin:
+        """Build V3 pins for the single exact source query accepted by this sample."""
+        if type(start_date) is not date or type(end_date) is not date:
+            raise TypeError("sample request dates must be exact dates")
+        if start_date != self.business_date or end_date != self.business_date:
+            raise ValueError("V3 sample access is bound to one exact business date")
+        endpoint_end = date.fromordinal(end_date.toordinal() + 1)
+        query_parameters = build_index_prices_request(
+            symbol=self.symbol,
+            start=start_date,
+            end=endpoint_end,
+        )
+        wire_parameters = {key: str(value) for key, value in query_parameters.items()}
+        summary = request_summary_sha256(
+            wire_parameters,
+            allowed_fields=_CSI500_V3_REQUEST_FIELDS,
+        )
+        return SourceAttemptScopeV3Pin(
+            capture_intent_id=self.capture_intent_id,
+            request_summary_sha256=summary,
+            request_summary_allowed_fields=_CSI500_V3_REQUEST_FIELDS,
+            source_policy_id=self.source_policy_id,
+            source_policy_revision=self.source_policy_revision,
+            source_policy_sha256=self.source_policy_sha256,
+            budget_binding_sha256=self.budget_binding_sha256,
+            budget_quota_key=self.budget_quota_key,
+            budget_policy_revision=self.budget_policy_revision,
+            budget_policy_sha256=self.budget_policy_sha256,
+            expected_https_host=_CSI500_V3_EXPECTED_HTTPS_HOST,
+            expected_path=_CSI500_V3_EXPECTED_PATH,
+            expected_method=_CSI500_V3_EXPECTED_METHOD,
+        )
+
+    def __repr__(self) -> str:
+        """Keep grant, policy, quota and target identities out of repr output."""
+        return "Csi500FuyaoV3SampleAccess(<redacted>)"
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class Csi500FuyaoV4SampleSpec:
+    """Offline candidate for one complete, stable V4 one-shot request scope.
+
+    ``source_attempt_scope`` is only a candidate until the separate gate lock
+    transaction confirms it. This spec cannot reserve, send, publish, or prove
+    supplier rights. Source-policy fields are caller-declared pins derived
+    from this fixed code path and remain ``USER_DECLARED_UNVERIFIED``.
+    """
+
+    business_date: date
+    capture_intent_id: str
+    intent_sha256: str
+    task_definition: TaskDefinition
+    request: RunRequest
+    run_identity: RunIdentity
+    source_attempt_binding: SourceAttemptBinding = field(repr=False)
+    source_attempt_scope_v3_pin: SourceAttemptScopeV3Pin = field(repr=False)
+    source_attempt_scope: SourceAttemptScopeV3 = field(repr=False)
+    target_id: str
+    target_identity_sha256: str
+    calendar_manifest_sha256: str
+    calendar_artifact_sha256: str
+    authorization_actor: str
+    grant_expires_at_utc: str
+    rights_evidence_sha256: str
+    source_policy_id: str
+    source_policy_revision: str
+    source_policy_sha256: str
+    budget_binding_sha256: str
+    budget_quota_key: str
+    budget_policy_revision: int
+    budget_policy_sha256: str
+
+    def __post_init__(self) -> None:
+        """Recheck that the immutable request, pin and gate scope agree."""
+        if type(self.business_date) is not date:
+            raise TypeError("business_date must be an exact date")
+        if type(self.target_id) is not str or not re.fullmatch(r"[0-9a-f]{32}", self.target_id):
+            raise ValueError("target_id must be a lowercase UUID hex string")
+        if (
+            type(self.authorization_actor) is not str
+            or re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:/+-]{0,127}", self.authorization_actor)
+            is None
+        ):
+            raise ValueError("authorization_actor must be a bounded identifier")
+        if (
+            type(self.grant_expires_at_utc) is not str
+            or len(self.grant_expires_at_utc) > 40
+            or not self.grant_expires_at_utc.endswith("Z")
+        ):
+            raise ValueError("grant_expires_at_utc must be a canonical UTC timestamp")
+        try:
+            parsed_expiry = datetime.fromisoformat(self.grant_expires_at_utc.replace("Z", "+00:00"))
+        except ValueError as exc:
+            raise ValueError("grant_expires_at_utc must be a canonical UTC timestamp") from exc
+        if parsed_expiry.tzinfo is None or parsed_expiry.utcoffset() != timedelta(0):
+            raise ValueError("grant_expires_at_utc must be a canonical UTC timestamp")
+        if type(self.task_definition) is not TaskDefinition:
+            raise TypeError("task_definition must be a TaskDefinition")
+        if type(self.request) is not RunRequest or type(self.run_identity) is not RunIdentity:
+            raise TypeError("request and run_identity must be validated pipeline identities")
+        if build_run_identity(self.task_definition, self.request) != self.run_identity:
+            raise ValueError("V4 sample run identity does not match its task and request")
+        if self.task_definition != build_csi500_v4_sample_task_definition(
+            capture_intent_id=self.capture_intent_id
+        ):
+            raise ValueError("V4 sample task definition differs from its capture intent")
+        if type(self.source_attempt_binding) is not SourceAttemptBinding:
+            raise TypeError("source_attempt_binding must be a SourceAttemptBinding")
+        if type(self.source_attempt_scope_v3_pin) is not SourceAttemptScopeV3Pin:
+            raise TypeError("source_attempt_scope_v3_pin must be a SourceAttemptScopeV3Pin")
+        if type(self.source_attempt_scope) is not SourceAttemptScopeV3:
+            raise TypeError("source_attempt_scope must be a SourceAttemptScopeV3")
+        if (
+            self.request.run_type != "manual"
+            or self.request.query
+            != {
+                "start_date": self.business_date.isoformat(),
+                "end_date": self.business_date.isoformat(),
+            }
+            or self.request.partition != {"symbol": _CSI500_SYMBOL}
+        ):
+            raise ValueError("V4 sample request must target one exact CSI 500 date")
+        if self.request.idempotency_key != self.capture_intent_id:
+            raise ValueError("V4 sample request key must equal its capture intent")
+        if self.run_identity.idempotency_key != self.source_attempt_scope.attempt.run_key:
+            raise ValueError("V4 sample run identity differs from its gate scope")
+        attempt = self.source_attempt_scope.attempt
+        expected_request = _domain_sha256(
+            "opendata.csi500.transport-request.v1",
+            {"capture_intent_id": self.capture_intent_id, "run_key": self.run_key},
+        )
+        expected_attempt = _domain_sha256(
+            "opendata.csi500.transport-attempt.v1",
+            {"capture_intent_id": self.capture_intent_id, "run_key": self.run_key},
+        )
+        query_parameters = build_index_prices_request(
+            symbol=_CSI500_SYMBOL,
+            start=self.business_date,
+            end=date.fromordinal(self.business_date.toordinal() + 1),
+        )
+        expected_request_summary = request_summary_sha256(
+            {key: str(value) for key, value in query_parameters.items()},
+            allowed_fields=_CSI500_V3_REQUEST_FIELDS,
+        )
+        self.source_attempt_binding.validate_integrity()
+        self.source_attempt_scope_v3_pin.validate_integrity()
+        if (
+            attempt.attempt_no != 1
+            or attempt.attempt_id != expected_attempt
+            or attempt.request_id != expected_request
+            or attempt.source != _PROVIDER
+            or attempt.canonical_model != _MODEL
+            or attempt.operation != RequestOperation.QUERY.value
+            or attempt.grant_id != self.source_attempt_binding.grant_id
+            or attempt.expected_revision != self.source_attempt_binding.expected_revision
+            or attempt.principal_scope != self.source_attempt_binding.principal_scope
+            or attempt.run_key != self.source_attempt_binding.run_key
+            or attempt.host != _CSI500_V3_EXPECTED_HTTPS_HOST
+            or attempt.expected_rights_evidence_reference != _SOURCE_RIGHTS_EVIDENCE
+            or self.source_attempt_binding.run_key != self.run_identity.idempotency_key
+            or self.source_attempt_binding.expected_rights_evidence_reference
+            != _SOURCE_RIGHTS_EVIDENCE
+            or self.source_attempt_scope.request_scheme != "https"
+            or self.source_attempt_scope.request_method != _CSI500_V3_EXPECTED_METHOD
+            or self.source_attempt_scope.request_host != _CSI500_V3_EXPECTED_HTTPS_HOST
+            or self.source_attempt_scope.request_path != _CSI500_V3_EXPECTED_PATH
+            or self.source_attempt_scope.capture_intent_id != self.capture_intent_id
+            or self.source_attempt_scope.request_summary_sha256 != expected_request_summary
+            or self.source_attempt_scope_v3_pin.capture_intent_id != self.capture_intent_id
+            or self.source_attempt_scope_v3_pin.request_summary_sha256
+            != self.source_attempt_scope.request_summary_sha256
+            or self.source_attempt_scope_v3_pin.expected_https_host
+            != _CSI500_V3_EXPECTED_HTTPS_HOST
+            or self.source_attempt_scope_v3_pin.expected_path != _CSI500_V3_EXPECTED_PATH
+            or self.source_attempt_scope_v3_pin.expected_method != _CSI500_V3_EXPECTED_METHOD
+            or self.source_attempt_scope_v3_pin.request_summary_allowed_fields
+            != _CSI500_V3_REQUEST_FIELDS
+            or self.source_attempt_scope_v3_pin.source_policy_id
+            != self.source_attempt_scope.source_policy_id
+            or self.source_attempt_scope_v3_pin.source_policy_revision
+            != self.source_attempt_scope.source_policy_revision
+            or self.source_attempt_scope_v3_pin.source_policy_sha256
+            != self.source_attempt_scope.source_policy_sha256
+            or self.source_attempt_scope_v3_pin.budget_binding_sha256
+            != self.source_attempt_scope.budget_binding_sha256
+            or self.source_attempt_scope_v3_pin.budget_quota_key
+            != self.source_attempt_scope.budget_quota_key
+            or self.source_attempt_scope_v3_pin.budget_policy_revision
+            != self.source_attempt_scope.budget_policy_revision
+            or self.source_attempt_scope_v3_pin.budget_policy_sha256
+            != self.source_attempt_scope.budget_policy_sha256
+        ):
+            raise ValueError("V4 sample request pins do not match its gate scope")
+        for field_name in (
+            "intent_sha256",
+            "target_identity_sha256",
+            "calendar_manifest_sha256",
+            "calendar_artifact_sha256",
+            "rights_evidence_sha256",
+            "source_policy_sha256",
+            "budget_binding_sha256",
+            "budget_policy_sha256",
+        ):
+            value = getattr(self, field_name)
+            if type(value) is not str or _SHA256_RE.fullmatch(value) is None:
+                raise ValueError(f"{field_name} must be a lowercase SHA-256 digest")
+        expected_policy_sha256 = _csi500_v4_source_policy_sha256()
+        if (
+            self.source_policy_id != "csi500-fuyao-user-declared-internal-v1"
+            or self.source_policy_revision != "1"
+            or self.source_policy_sha256 != expected_policy_sha256
+        ):
+            raise ValueError("V4 sample source policy differs from its fixed code declaration")
+        if (
+            self.source_policy_id != self.source_attempt_scope.source_policy_id
+            or self.source_policy_revision != self.source_attempt_scope.source_policy_revision
+            or self.source_policy_sha256 != self.source_attempt_scope.source_policy_sha256
+            or self.budget_binding_sha256 != self.source_attempt_scope.budget_binding_sha256
+            or self.budget_quota_key != self.source_attempt_scope.budget_quota_key
+            or self.budget_policy_revision != self.source_attempt_scope.budget_policy_revision
+            or self.budget_policy_sha256 != self.source_attempt_scope.budget_policy_sha256
+        ):
+            raise ValueError("V4 sample spec values do not match its gate scope")
+        context = {
+            "business_date": self.business_date.isoformat(),
+            "budget_binding_sha256": self.budget_binding_sha256,
+            "budget_policy_revision": self.budget_policy_revision,
+            "budget_policy_sha256": self.budget_policy_sha256,
+            "budget_quota_key": self.budget_quota_key,
+            "calendar_artifact_sha256": self.calendar_artifact_sha256,
+            "calendar_manifest_sha256": self.calendar_manifest_sha256,
+            "authorization_actor": self.authorization_actor,
+            "grant_expires_at_utc": self.grant_expires_at_utc,
+            "grant_id": attempt.grant_id,
+            "grant_revision": attempt.expected_revision,
+            "principal_scope": attempt.principal_scope,
+            "request_summary_sha256": self.source_attempt_scope.request_summary_sha256,
+            "rights_evidence_reference": _SOURCE_RIGHTS_EVIDENCE,
+            "rights_evidence_sha256": self.rights_evidence_sha256,
+            "source_policy_id": self.source_policy_id,
+            "source_policy_revision": self.source_policy_revision,
+            "source_policy_sha256": self.source_policy_sha256,
+            "target_id": self.target_id,
+            "target_identity_sha256": self.target_identity_sha256,
+        }
+        if self.capture_intent_id != _domain_sha256("opendata.csi500.capture-intent.v1", context):
+            raise ValueError("V4 sample capture intent does not match its static context")
+        expected_intent_sha256 = _domain_sha256(
+            "opendata.csi500.one-shot-intent.v1",
+            {
+                **context,
+                "attempt_id": attempt.attempt_id,
+                "capture_intent_id": self.capture_intent_id,
+                "job_version": self.task_definition.version,
+                "request_id": attempt.request_id,
+                "run_key": self.run_key,
+                "run_payload_hash": self.run_identity.payload_hash,
+            },
+        )
+        if self.intent_sha256 != expected_intent_sha256:
+            raise ValueError("V4 sample intent digest does not match its full identity")
+
+    @property
+    def run_key(self) -> str:
+        """Return the deterministic durable run key already bound into the scope."""
+        return self.run_identity.idempotency_key
+
+    @property
+    def attempt_id(self) -> str:
+        """Return the precomputed transport attempt identifier."""
+        return self.source_attempt_scope.attempt.attempt_id
+
+    @property
+    def request_id(self) -> str:
+        """Return the precomputed transport request identifier."""
+        return self.source_attempt_scope.attempt.request_id
+
+    def __repr__(self) -> str:
+        """Keep request, grant, quota, and target identifiers out of repr output."""
+        return "Csi500FuyaoV4SampleSpec(<redacted>)"
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class Csi500FuyaoV4SampleAccess:
+    """Bind one V4 CSI sample job to its already-locked isolated SQLite gate.
+
+    Construction checks the current local target identity and performs a
+    read-only inspection that must report the exact scope as UNUSED. That
+    inspection is not a send permit: transport still has to atomically reserve
+    the exact V4 scope and receive RESERVED_NEW immediately before its one
+    HTTP send. The gate constrains the reserved request identity; it does not
+    sandbox HTTPX transports or arbitrary callbacks, and a MockTransport type
+    alone is not proof that no network side effects are possible. A gate lock
+    and the user's declaration do not independently verify supplier rights.
+    """
+
+    source_attempt_gate: SourceAttemptGate = field(repr=False, compare=False)
+    sample_spec: Csi500FuyaoV4SampleSpec = field(repr=False, compare=False)
+    operator_confirms_user_declared_internal_use: bool
+
+    def __post_init__(self) -> None:
+        """Require the exact pre-locked scope and its original target file."""
+        if type(self.source_attempt_gate) is not SourceAttemptGate:
+            raise TypeError("source_attempt_gate must be an exact SourceAttemptGate")
+        if type(self.sample_spec) is not Csi500FuyaoV4SampleSpec:
+            raise TypeError("sample_spec must be an exact Csi500FuyaoV4SampleSpec")
+        if type(self.operator_confirms_user_declared_internal_use) is not bool:
+            raise TypeError("operator confirmation must be an explicit boolean")
+        if not self.operator_confirms_user_declared_internal_use:
+            raise ValueError("Fuyao CSI 500 internal-use declaration was not confirmed")
+
+        try:
+            engine = object.__getattribute__(self.source_attempt_gate, "_engine")
+            database_path = engine.url.database
+            if type(database_path) is not str or not database_path:
+                raise ValueError
+            _resolved_path, identity = inspect_existing_database_path(database_path)
+            payload = json.dumps(
+                {"device": identity.device, "inode": identity.inode},
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+            identity_sha256 = hashlib.sha256(payload).hexdigest()
+        except Exception:
+            raise ValueError("V4 sample gate target identity is unavailable") from None
+        if identity_sha256 != self.sample_spec.target_identity_sha256:
+            raise ValueError("V4 sample gate does not match its reviewed target identity")
+
+        inspection = self.source_attempt_gate.inspect_one_shot_scope(
+            self.sample_spec.source_attempt_scope
+        )
+        if (
+            type(inspection.status) is not OneShotScopeInspectionStatus
+            or inspection.status is not OneShotScopeInspectionStatus.UNUSED
+        ):
+            raise ValueError("V4 sample gate does not contain this unused locked scope")
+
+    @property
+    def evidence_reference(self) -> str:
+        """Return the exact user-declared evidence reference pinned in the scope."""
+        return self.sample_spec.source_attempt_binding.expected_rights_evidence_reference or ""
+
+    @property
+    def authorization_basis(self) -> Literal["USER_DECLARED"]:
+        """Identify the authorization basis as a user declaration only."""
+        return "USER_DECLARED"
+
+    @property
+    def symbol(self) -> str:
+        """Return the one index symbol fixed by the immutable V4 spec."""
+        return _CSI500_SYMBOL
+
+    @property
+    def dataset_id(self) -> str:
+        """Return the one dataset fixed by the immutable V4 spec."""
+        return _CSI500_DATASET_ID
+
+    @property
+    def endpoint_path(self) -> str:
+        """Return the exact historical index endpoint bound by the V4 pins."""
+        return _CSI500_V3_EXPECTED_PATH
+
+    @property
+    def operation(self) -> Literal["query"]:
+        """Return the only operation allowed by the immutable sample scope."""
+        return "query"
+
+    @property
+    def purposes(self) -> tuple[str, ...]:
+        """Return the internal-use purposes declared for this sample."""
+        return _ALLOWED_INTERNAL_PURPOSES
+
+    @property
+    def maximum_window_calendar_days(self) -> int:
+        """Return the sample's one-business-date request bound."""
+        return 1
+
+    @property
+    def source_history_boundary(self) -> Literal["UNKNOWN"]:
+        """Keep the earliest source-available date explicitly unknown."""
+        return _HISTORY_BOUNDARY_UNKNOWN
+
+    @property
+    def external_distribution_allowed(self) -> Literal[False]:
+        """The user's declaration does not authorize external redistribution."""
+        return False
+
+    def __repr__(self) -> str:
+        """Keep gate, intent, grant, and target identifiers out of repr output."""
+        return "Csi500FuyaoV4SampleAccess(<redacted>)"
+
+
 def build_sse50_index_daily_backfill_request(
     *,
     start_date: date,
@@ -275,6 +819,296 @@ def build_csi500_manual_backfill_payload(
     }
 
 
+def build_csi500_v3_sample_payload(
+    *,
+    source_access: Csi500FuyaoV3SampleAccess,
+    idempotency_key: str,
+) -> dict[str, JsonValue]:
+    """Build the V3 path's exact one-business-date manual request."""
+    _require_csi500_v3_sample_access(source_access)
+    request = RunRequest(
+        run_type="manual",
+        query={
+            "start_date": source_access.business_date.isoformat(),
+            "end_date": source_access.business_date.isoformat(),
+        },
+        partition={"symbol": _CSI500_SYMBOL},
+        idempotency_key=idempotency_key,
+    )
+    return {
+        "query": request.query,
+        "partition": request.partition,
+        "shard": request.shard,
+        "idempotency_key": request.idempotency_key,
+    }
+
+
+def build_csi500_v4_sample_spec(
+    *,
+    business_date: date,
+    target_id: str,
+    target_identity_sha256: str,
+    calendar_manifest_sha256: str,
+    calendar_artifact_sha256: str,
+    authorization_actor: str,
+    grant_id: str,
+    grant_revision: int,
+    principal_scope: str,
+    grant_expires_at_utc: str,
+    rights_evidence_sha256: str,
+    budget_binding_sha256: str,
+    budget_quota_key: str,
+    budget_policy_revision: int,
+    budget_policy_sha256: str,
+) -> Csi500FuyaoV4SampleSpec:
+    """Build a deterministic, offline V4 scope candidate for one sample date.
+
+    Every ID is derived from the exact target, calendar, grant, and quota
+    metadata. No database, environment, provider, or network access occurs.
+    The returned gate scope is a candidate only; a separate reviewed operation
+    must persist its one-shot lock before any V4 transport can consume it.
+    """
+    if type(business_date) is not date:
+        raise TypeError("business_date must be an exact date")
+    if type(target_id) is not str or not re.fullmatch(r"[0-9a-f]{32}", target_id):
+        raise ValueError("target_id must be a lowercase UUID hex string")
+    if type(grant_revision) is not int or grant_revision < 1:
+        raise ValueError("grant_revision must be a positive integer")
+    if type(budget_policy_revision) is not int or budget_policy_revision < 1:
+        raise ValueError("budget_policy_revision must be a positive integer")
+    for name, value in (
+        ("target_identity_sha256", target_identity_sha256),
+        ("calendar_manifest_sha256", calendar_manifest_sha256),
+        ("calendar_artifact_sha256", calendar_artifact_sha256),
+        ("rights_evidence_sha256", rights_evidence_sha256),
+        ("budget_binding_sha256", budget_binding_sha256),
+        ("budget_policy_sha256", budget_policy_sha256),
+    ):
+        if type(value) is not str or _SHA256_RE.fullmatch(value) is None:
+            raise ValueError(f"{name} must be a lowercase SHA-256 digest")
+    if type(grant_expires_at_utc) is not str or not grant_expires_at_utc.strip():
+        raise ValueError("grant_expires_at_utc must be a non-empty string")
+    if len(grant_expires_at_utc) > 40:
+        raise ValueError("grant_expires_at_utc is too long")
+    try:
+        expires_at = datetime.fromisoformat(grant_expires_at_utc.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise ValueError("grant_expires_at_utc must be an ISO timestamp") from exc
+    if expires_at.tzinfo is None or expires_at.utcoffset() is None:
+        raise ValueError("grant_expires_at_utc must be timezone-aware")
+    grant_expires_at_utc = (
+        expires_at.astimezone(timezone.utc)
+        .isoformat(timespec="microseconds")
+        .replace("+00:00", "Z")
+    )
+    if budget_quota_key != "csi500-fuyao-sample-204":
+        raise ValueError("budget_quota_key does not match the fixed sample quota")
+
+    query_parameters = build_index_prices_request(
+        symbol=_CSI500_SYMBOL,
+        start=business_date,
+        end=date.fromordinal(business_date.toordinal() + 1),
+    )
+    wire_parameters = {key: str(value) for key, value in query_parameters.items()}
+    request_summary = request_summary_sha256(
+        wire_parameters,
+        allowed_fields=_CSI500_V3_REQUEST_FIELDS,
+    )
+    source_policy_id = "csi500-fuyao-user-declared-internal-v1"
+    source_policy_revision = "1"
+    source_policy_sha256 = _csi500_v4_source_policy_sha256()
+    intent_context = {
+        "business_date": business_date.isoformat(),
+        "budget_binding_sha256": budget_binding_sha256,
+        "budget_policy_revision": budget_policy_revision,
+        "budget_policy_sha256": budget_policy_sha256,
+        "budget_quota_key": budget_quota_key,
+        "calendar_artifact_sha256": calendar_artifact_sha256,
+        "calendar_manifest_sha256": calendar_manifest_sha256,
+        "authorization_actor": authorization_actor,
+        "grant_expires_at_utc": grant_expires_at_utc,
+        "grant_id": grant_id,
+        "grant_revision": grant_revision,
+        "principal_scope": principal_scope,
+        "request_summary_sha256": request_summary,
+        "rights_evidence_reference": _SOURCE_RIGHTS_EVIDENCE,
+        "rights_evidence_sha256": rights_evidence_sha256,
+        "source_policy_id": source_policy_id,
+        "source_policy_revision": source_policy_revision,
+        "source_policy_sha256": source_policy_sha256,
+        "target_id": target_id,
+        "target_identity_sha256": target_identity_sha256,
+    }
+    capture_intent_id = _domain_sha256("opendata.csi500.capture-intent.v1", intent_context)
+    task = build_csi500_v4_sample_task_definition(capture_intent_id=capture_intent_id)
+    request = RunRequest(
+        run_type="manual",
+        query={
+            "start_date": business_date.isoformat(),
+            "end_date": business_date.isoformat(),
+        },
+        partition={"symbol": _CSI500_SYMBOL},
+        idempotency_key=capture_intent_id,
+    )
+    run_identity = build_run_identity(task, request)
+    binding = SourceAttemptBinding(
+        grant_id=grant_id,
+        expected_revision=grant_revision,
+        principal_scope=principal_scope,
+        run_key=run_identity.idempotency_key,
+        expected_rights_evidence_reference=_SOURCE_RIGHTS_EVIDENCE,
+    )
+    attempt = TransportAttempt(
+        attempt_id=_domain_sha256(
+            "opendata.csi500.transport-attempt.v1",
+            {"capture_intent_id": capture_intent_id, "run_key": run_identity.idempotency_key},
+        ),
+        request_id=_domain_sha256(
+            "opendata.csi500.transport-request.v1",
+            {"capture_intent_id": capture_intent_id, "run_key": run_identity.idempotency_key},
+        ),
+        attempt_no=1,
+        grant_id=grant_id,
+        expected_revision=grant_revision,
+        source=_PROVIDER,
+        canonical_model=_MODEL,
+        operation=RequestOperation.QUERY.value,
+        principal_scope=principal_scope,
+        host=_CSI500_V3_EXPECTED_HTTPS_HOST,
+        run_key=run_identity.idempotency_key,
+        expected_rights_evidence_reference=_SOURCE_RIGHTS_EVIDENCE,
+    )
+    pin = SourceAttemptScopeV3Pin(
+        capture_intent_id=capture_intent_id,
+        request_summary_sha256=request_summary,
+        request_summary_allowed_fields=_CSI500_V3_REQUEST_FIELDS,
+        expected_https_host=_CSI500_V3_EXPECTED_HTTPS_HOST,
+        expected_path=_CSI500_V3_EXPECTED_PATH,
+        expected_method=_CSI500_V3_EXPECTED_METHOD,
+        source_policy_id=source_policy_id,
+        source_policy_revision=source_policy_revision,
+        source_policy_sha256=source_policy_sha256,
+        budget_binding_sha256=budget_binding_sha256,
+        budget_quota_key=budget_quota_key,
+        budget_policy_revision=budget_policy_revision,
+        budget_policy_sha256=budget_policy_sha256,
+    )
+    scope = SourceAttemptScopeV3(
+        attempt=attempt,
+        request_scheme="https",
+        request_method=_CSI500_V3_EXPECTED_METHOD,
+        request_host=_CSI500_V3_EXPECTED_HTTPS_HOST,
+        request_path=_CSI500_V3_EXPECTED_PATH,
+        capture_intent_id=capture_intent_id,
+        request_summary_sha256=request_summary,
+        source_policy_id=source_policy_id,
+        source_policy_revision=source_policy_revision,
+        source_policy_sha256=source_policy_sha256,
+        budget_binding_sha256=budget_binding_sha256,
+        budget_quota_key=budget_quota_key,
+        budget_policy_revision=budget_policy_revision,
+        budget_policy_sha256=budget_policy_sha256,
+    )
+    intent_sha256 = _domain_sha256(
+        "opendata.csi500.one-shot-intent.v1",
+        {
+            **intent_context,
+            "attempt_id": attempt.attempt_id,
+            "capture_intent_id": capture_intent_id,
+            "job_version": task.version,
+            "request_id": attempt.request_id,
+            "run_key": run_identity.idempotency_key,
+            "run_payload_hash": run_identity.payload_hash,
+        },
+    )
+    return Csi500FuyaoV4SampleSpec(
+        business_date=business_date,
+        capture_intent_id=capture_intent_id,
+        intent_sha256=intent_sha256,
+        task_definition=task,
+        request=request,
+        run_identity=run_identity,
+        source_attempt_binding=binding,
+        source_attempt_scope_v3_pin=pin,
+        source_attempt_scope=scope,
+        target_id=target_id,
+        target_identity_sha256=target_identity_sha256,
+        calendar_manifest_sha256=calendar_manifest_sha256,
+        calendar_artifact_sha256=calendar_artifact_sha256,
+        authorization_actor=authorization_actor,
+        grant_expires_at_utc=grant_expires_at_utc,
+        rights_evidence_sha256=rights_evidence_sha256,
+        source_policy_id=source_policy_id,
+        source_policy_revision=source_policy_revision,
+        source_policy_sha256=source_policy_sha256,
+        budget_binding_sha256=budget_binding_sha256,
+        budget_quota_key=budget_quota_key,
+        budget_policy_revision=budget_policy_revision,
+        budget_policy_sha256=budget_policy_sha256,
+    )
+
+
+def build_csi500_v4_sample_task_definition(*, capture_intent_id: str) -> TaskDefinition:
+    """Build a disabled/manual-only task identity for one V4 sample intent."""
+    if type(capture_intent_id) is not str or _SHA256_RE.fullmatch(capture_intent_id) is None:
+        raise ValueError("capture_intent_id must be a lowercase SHA-256 digest")
+    return TaskDefinition(
+        job_id=INDEX_JOB_ID_BY_SYMBOL[_CSI500_SYMBOL],
+        version=f"{SSE50_INDEX_JOB_VERSION}.fuyao-v4-sample-{capture_intent_id[:16]}",
+        dataset_id=_CSI500_DATASET_ID,
+        provider=_PROVIDER,
+        model=_MODEL,
+        timezone="Asia/Shanghai",
+        calendar=None,
+        schedule=None,
+        enabled=False,
+    )
+
+
+def build_csi500_v4_sample_payload(*, spec: Csi500FuyaoV4SampleSpec) -> dict[str, JsonValue]:
+    """Serialize the exact manual request represented by an offline spec."""
+    if type(spec) is not Csi500FuyaoV4SampleSpec:
+        raise TypeError("spec must be a Csi500FuyaoV4SampleSpec")
+    request = spec.request
+    return {
+        "query": dict(request.query),
+        "partition": dict(request.partition),
+        "shard": request.shard,
+        "idempotency_key": request.idempotency_key,
+    }
+
+
+def _domain_sha256(domain: str, payload: Mapping[str, object]) -> str:
+    """Hash canonical JSON under a separate domain for deterministic IDs."""
+    encoded = json.dumps(
+        payload,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+        allow_nan=False,
+    ).encode("ascii")
+    return hashlib.sha256(domain.encode("ascii") + b"\0" + encoded).hexdigest()
+
+
+def _csi500_v4_source_policy_sha256() -> str:
+    """Return the digest of this code path's caller-declared fixed policy."""
+    policy_document = {
+        "authorization_basis": "USER_DECLARED_UNVERIFIED",
+        "canonical_model": _MODEL,
+        "dataset_id": _CSI500_DATASET_ID,
+        "external_distribution_allowed": False,
+        "host": _CSI500_V3_EXPECTED_HTTPS_HOST,
+        "method": _CSI500_V3_EXPECTED_METHOD,
+        "operation": "query",
+        "path": _CSI500_V3_EXPECTED_PATH,
+        "purposes": list(_ALLOWED_INTERNAL_PURPOSES),
+        "source": _PROVIDER,
+        "symbol": _CSI500_SYMBOL,
+        "window_calendar_days": 1,
+    }
+    return _domain_sha256("opendata.csi500.source-policy.v1", policy_document)
+
+
 def build_sse50_index_daily_job(
     contract_registry: DatasetContractRegistry,
 ) -> ReviewedJob:
@@ -300,6 +1134,47 @@ def build_authorized_csi500_index_daily_job(
         _CSI500_SYMBOL,
         contract_registry,
         source_access=source_access,
+    )
+
+
+def build_csi500_v3_sample_index_daily_job(
+    contract_registry: DatasetContractRegistry,
+    *,
+    source_access: Csi500FuyaoV3SampleAccess,
+) -> ReviewedJob:
+    """Build the separate V3 CSI 500 sample job without V1 fallback.
+
+    This opt-in path is intentionally distinct from the accepted V1 #129 job.
+    Its durable quota and target-identity receipt still require independent
+    sample-composition review before it can be exposed to a live executor.
+    """
+    _require_csi500_v3_sample_access(source_access)
+    return _build_index_daily_job(
+        _CSI500_SYMBOL,
+        contract_registry,
+        source_access=None,
+        source_access_v3=source_access,
+    )
+
+
+def build_csi500_v4_sample_index_daily_job(
+    contract_registry: DatasetContractRegistry,
+    *,
+    source_access: Csi500FuyaoV4SampleAccess,
+) -> ReviewedJob:
+    """Build the isolated V4 job from one already-locked sample access.
+
+    The task remains disabled and unscheduled. This builder only carries the
+    immutable V4 scope, request pins, and stable IDs into the normal fetcher
+    scope; it does not configure the gate, obtain credentials, or run a
+    provider call.
+    """
+    _require_csi500_v4_sample_access(source_access)
+    return _build_index_daily_job(
+        _CSI500_SYMBOL,
+        contract_registry,
+        source_access=None,
+        source_access_v4=source_access,
     )
 
 
@@ -335,13 +1210,29 @@ def _build_index_daily_job(
     contract_registry: DatasetContractRegistry,
     *,
     source_access: Csi500FuyaoSourceAccess | None,
+    source_access_v3: Csi500FuyaoV3SampleAccess | None = None,
+    source_access_v4: Csi500FuyaoV4SampleAccess | None = None,
 ) -> ReviewedJob:
     """Build the shared per-symbol job, with opt-in one-shot access if bound."""
+    access_count = sum(
+        access is not None for access in (source_access, source_access_v3, source_access_v4)
+    )
+    if access_count > 1:
+        raise ValueError("V1, V3, and V4 source access cannot be combined")
     dataset_id = _validate_symbol(symbol)
     if source_access is not None:
         _require_csi500_source_access(source_access)
         if symbol != _CSI500_SYMBOL or dataset_id != source_access.dataset_id:
             raise ValueError("source access is bound only to the CSI 500 dataset")
+    if source_access_v3 is not None:
+        _require_csi500_v3_sample_access(source_access_v3)
+        if symbol != _CSI500_SYMBOL or dataset_id != source_access_v3.dataset_id:
+            raise ValueError("V3 sample access is bound only to the CSI 500 dataset")
+    if source_access_v4 is not None:
+        _require_csi500_v4_sample_access(source_access_v4)
+        if symbol != _CSI500_SYMBOL or dataset_id != source_access_v4.dataset_id:
+            raise ValueError("V4 sample access is bound only to the CSI 500 dataset")
+    sample_source_access = source_access or source_access_v3 or source_access_v4
     if not isinstance(contract_registry, DatasetContractRegistry):
         raise TypeError("contract_registry must be a DatasetContractRegistry")
     expected_contract = build_index_daily_contract(symbol)
@@ -356,33 +1247,47 @@ def _build_index_daily_job(
     if canonical_sha256(registered_contract) != canonical_sha256(expected_contract):
         raise ValueError("the registered single-index contract does not match this job")
 
-    job_task = TaskDefinition(
-        job_id=INDEX_JOB_ID_BY_SYMBOL[symbol],
-        version=_job_version_for(source_access),
-        dataset_id=dataset_id,
-        provider=_PROVIDER,
-        model=_MODEL,
-        timezone="Asia/Shanghai",
-        calendar=None,
-        schedule=None,
-        enabled=False,
-    )
+    if source_access_v4 is not None:
+        job_task = source_access_v4.sample_spec.task_definition
+    else:
+        job_task = TaskDefinition(
+            job_id=INDEX_JOB_ID_BY_SYMBOL[symbol],
+            version=_job_version_for(source_access or source_access_v3),
+            dataset_id=dataset_id,
+            provider=_PROVIDER,
+            model=_MODEL,
+            timezone="Asia/Shanghai",
+            calendar=None,
+            schedule=None,
+            enabled=False,
+        )
     fetcher = ThsIndexDailyFetcher(
         source_attempt_gate=(
-            source_access.source_attempt_gate if source_access is not None else None
+            source_access.source_attempt_gate
+            if source_access is not None
+            else source_access_v3.source_attempt_gate
+            if source_access_v3 is not None
+            else source_access_v4.source_attempt_gate
+            if source_access_v4 is not None
+            else None
         ),
-        max_attempts=_MAX_TRANSPORT_ATTEMPTS if source_access is not None else None,
+        max_attempts=(_MAX_TRANSPORT_ATTEMPTS if sample_source_access is not None else None),
     )
     writer = ValidatedPublicationWriter(contract_registry)
-    one_shot_only = source_access is not None
+    one_shot_only = sample_source_access is not None
 
     def fetch(request: RunRequest, context: RunExecutionContext) -> object:
         """Fetch one explicitly requested range through the registered THS provider."""
-        start, end = _validate_request(request, symbol, one_shot_only=one_shot_only)
-        context.checkpoint()
-        if source_access is None:
-            _require_ths_source_authorization()
+        if source_access_v4 is not None:
+            start, end = _validate_v4_sample_request(request, source_access_v4)
+            if context.run_key != source_access_v4.sample_spec.run_key:
+                raise ValueError("V4 sample run key differs from its locked transport identity")
+        elif source_access_v3 is not None:
+            start, end = _validate_v3_sample_request(request, source_access_v3)
         else:
+            start, end = _validate_request(request, symbol, one_shot_only=one_shot_only)
+        context.checkpoint()
+        if source_access is not None:
             budget = _csi500_one_attempt_budget()
             binding = source_access.binding_for_run(context.run_key)
             with request_execution_scope(
@@ -401,7 +1306,59 @@ def _build_index_daily_job(
                     start_date=start,
                     end_date=end,
                 )
-        if source_access is None:
+        elif source_access_v3 is not None:
+            if start != source_access_v3.business_date or end != source_access_v3.business_date:
+                raise ValueError("V3 sample request differs from its authorized business date")
+            budget = _csi500_one_attempt_budget()
+            binding = source_access_v3.binding_for_run(context.run_key)
+            v3_pin = source_access_v3.pin_for_request(start, end)
+            with request_execution_scope(
+                source=_PROVIDER,
+                canonical_model=_MODEL,
+                operation=RequestOperation.QUERY,
+                budget=budget,
+                source_attempt_binding=binding,
+                source_attempt_scope_version=SOURCE_ATTEMPT_SCOPE_V3,
+                source_attempt_scope_v3_pin=v3_pin,
+            ):
+                result = fetcher.fetch(
+                    ctx=FetchContext(
+                        timeout=_FETCH_TIMEOUT_SECONDS,
+                        request_budget=budget,
+                    ),
+                    symbol=symbol,
+                    start_date=start,
+                    end_date=end,
+                )
+        elif source_access_v4 is not None:
+            spec = source_access_v4.sample_spec
+            if start != spec.business_date or end != spec.business_date:
+                raise ValueError("V4 sample request differs from its locked business date")
+            if context.run_key != spec.run_key:
+                raise ValueError("V4 sample run key differs from its locked transport identity")
+            budget = _csi500_one_attempt_budget()
+            with request_execution_scope(
+                source=_PROVIDER,
+                canonical_model=_MODEL,
+                operation=RequestOperation.QUERY,
+                budget=budget,
+                source_attempt_binding=spec.source_attempt_binding,
+                source_attempt_scope_version=SOURCE_ATTEMPT_SCOPE_V4,
+                source_attempt_scope_v3_pin=spec.source_attempt_scope_v3_pin,
+                source_attempt_one_shot_scope_v4=spec.source_attempt_scope,
+            ):
+                result = fetcher.fetch(
+                    ctx=FetchContext(
+                        timeout=_FETCH_TIMEOUT_SECONDS,
+                        request_budget=budget,
+                    ),
+                    symbol=symbol,
+                    start_date=start,
+                    end_date=end,
+                )
+        else:
+            _require_ths_source_authorization()
+        if sample_source_access is None:
             result = fetcher.fetch(
                 ctx=FetchContext(timeout=_FETCH_TIMEOUT_SECONDS),
                 symbol=symbol,
@@ -417,7 +1374,14 @@ def _build_index_daily_job(
         context: RunExecutionContext,
     ) -> NormalizedBatch:
         """Validate one provider result and serialize only this index's OHLCV."""
-        start, end = _validate_request(request, symbol, one_shot_only=one_shot_only)
+        if source_access_v4 is not None:
+            start, end = _validate_v4_sample_request(request, source_access_v4)
+            if context.run_key != source_access_v4.sample_spec.run_key:
+                raise ValueError("V4 sample run key differs from its locked transport identity")
+        elif source_access_v3 is not None:
+            start, end = _validate_v3_sample_request(request, source_access_v3)
+        else:
+            start, end = _validate_request(request, symbol, one_shot_only=one_shot_only)
         context.checkpoint()
         if type(raw) is not tuple or not raw:
             raise ValueError("THS index daily result must be a non-empty tuple")
@@ -445,23 +1409,29 @@ def _build_index_daily_job(
                 "dataset_id": dataset_id,
                 "source_rights_status": (
                     "USER_DECLARED_INTERNAL_USE_UNVERIFIED"
-                    if source_access is not None
+                    if sample_source_access is not None
                     else "UNKNOWN"
                 ),
                 "source_rights_basis": (
-                    source_access.authorization_basis if source_access is not None else "UNKNOWN"
+                    sample_source_access.authorization_basis
+                    if sample_source_access is not None
+                    else "UNKNOWN"
                 ),
                 "source_rights_evidence_reference": (
-                    source_access.evidence_reference if source_access is not None else None
+                    sample_source_access.evidence_reference
+                    if sample_source_access is not None
+                    else None
                 ),
                 "source_endpoint_path": (
-                    source_access.endpoint_path if source_access is not None else None
+                    sample_source_access.endpoint_path if sample_source_access is not None else None
                 ),
                 "source_operation": (
-                    source_access.operation if source_access is not None else "UNKNOWN"
+                    sample_source_access.operation
+                    if sample_source_access is not None
+                    else "UNKNOWN"
                 ),
                 "source_allowed_uses": (
-                    list(source_access.purposes) if source_access is not None else []
+                    list(sample_source_access.purposes) if sample_source_access is not None else []
                 ),
                 "source_external_distribution_allowed": False,
                 "source_comparison_status": "unknown",
@@ -470,9 +1440,13 @@ def _build_index_daily_job(
                 "source_history_boundary": _HISTORY_BOUNDARY_UNKNOWN,
                 "source_history_boundary_evidence": None,
                 "source_cross_execution_attempt_limit": "UNKNOWN",
-                "source_per_request_calendar_day_limit": _MAX_WINDOW_CALENDAR_DAYS,
+                "source_per_request_calendar_day_limit": (
+                    sample_source_access.maximum_window_calendar_days
+                    if sample_source_access is not None
+                    else _MAX_WINDOW_CALENDAR_DAYS
+                ),
                 "source_per_run_transport_attempt_limit": (
-                    _MAX_TRANSPORT_ATTEMPTS if source_access is not None else None
+                    _MAX_TRANSPORT_ATTEMPTS if sample_source_access is not None else None
                 ),
                 "requested_start_inclusive": start.isoformat(),
                 "requested_end_inclusive": end.isoformat(),
@@ -487,7 +1461,12 @@ def _build_index_daily_job(
         idempotency_key: str,
     ) -> PublicationReceipt:
         """Enforce the fixed dataset/symbol boundary before the shared writer."""
-        _validate_request(request, symbol, one_shot_only=one_shot_only)
+        if source_access_v4 is not None:
+            _validate_v4_sample_request(request, source_access_v4)
+        elif source_access_v3 is not None:
+            _validate_v3_sample_request(request, source_access_v3)
+        else:
+            _validate_request(request, symbol, one_shot_only=one_shot_only)
         if (
             task.job_id != job_task.job_id
             or task.version != job_task.version
@@ -529,6 +1508,20 @@ def _require_csi500_source_access(value: object) -> Csi500FuyaoSourceAccess:
     """Require the exact CSI 500 user-declared source access binding."""
     if type(value) is not Csi500FuyaoSourceAccess:
         raise TypeError("source_access must be an exact Csi500FuyaoSourceAccess")
+    return value
+
+
+def _require_csi500_v3_sample_access(value: object) -> Csi500FuyaoV3SampleAccess:
+    """Require the explicit V3 sample access type; never upgrade V1 access."""
+    if type(value) is not Csi500FuyaoV3SampleAccess:
+        raise TypeError("source_access must be an exact Csi500FuyaoV3SampleAccess")
+    return value
+
+
+def _require_csi500_v4_sample_access(value: object) -> Csi500FuyaoV4SampleAccess:
+    """Require the exact locked V4 sample access type; never fall back to V1/V3."""
+    if type(value) is not Csi500FuyaoV4SampleAccess:
+        raise TypeError("source_access must be an exact Csi500FuyaoV4SampleAccess")
     return value
 
 
@@ -577,11 +1570,41 @@ def _csi500_one_attempt_budget() -> RequestBudget:
     )
 
 
-def _job_version_for(source_access: Csi500FuyaoSourceAccess | None) -> str:
+def _job_version_for(
+    source_access: Csi500FuyaoSourceAccess | Csi500FuyaoV3SampleAccess | None,
+) -> str:
     """Pin one-shot run snapshots to the exact grant revision and fixed scope."""
     if source_access is None:
         return SSE50_INDEX_JOB_VERSION
     binding = source_access.source_attempt_binding
+    if type(source_access) is Csi500FuyaoV3SampleAccess:
+        scope = "\x00".join(
+            (
+                "source-attempt-scope-v3",
+                source_access.evidence_reference,
+                source_access.dataset_id,
+                source_access.symbol,
+                source_access.endpoint_path,
+                source_access.operation,
+                *source_access.purposes,
+                source_access.business_date.isoformat(),
+                source_access.capture_intent_id,
+                source_access.source_policy_id,
+                source_access.source_policy_revision,
+                source_access.source_policy_sha256,
+                source_access.budget_binding_sha256,
+                source_access.budget_quota_key,
+                str(source_access.budget_policy_revision),
+                source_access.budget_policy_sha256,
+                source_access.target_identity_sha256,
+                binding.grant_id,
+                str(binding.expected_revision),
+                binding.principal_scope,
+                str(_MAX_TRANSPORT_ATTEMPTS),
+            )
+        )
+        digest = hashlib.sha256(scope.encode("utf-8")).hexdigest()[:16]
+        return f"{SSE50_INDEX_JOB_VERSION}.fuyao-v3-sample-{digest}"
     scope = "\x00".join(
         (
             source_access.evidence_reference,
@@ -638,6 +1661,31 @@ def _validate_request(
     ):
         raise ValueError("request must be a fixed-symbol index backfill")
     return _validate_date_order(request.backfill_start, request.backfill_end)
+
+
+def _validate_v3_sample_request(
+    request: RunRequest,
+    source_access: Csi500FuyaoV3SampleAccess,
+) -> tuple[date, date]:
+    """Require a manual request for exactly the authorized sample date."""
+    start, end = _validate_request(request, _CSI500_SYMBOL, one_shot_only=True)
+    if start != source_access.business_date or end != source_access.business_date:
+        raise ValueError("V3 sample request differs from its authorized business date")
+    return start, end
+
+
+def _validate_v4_sample_request(
+    request: RunRequest,
+    source_access: Csi500FuyaoV4SampleAccess,
+) -> tuple[date, date]:
+    """Require the exact RunRequest identity sealed into the V4 scope."""
+    spec = source_access.sample_spec
+    if type(request) is not RunRequest or request != spec.request:
+        raise ValueError("V4 sample request differs from its locked request identity")
+    start, end = _validate_request(request, _CSI500_SYMBOL, one_shot_only=True)
+    if start != spec.business_date or end != spec.business_date:
+        raise ValueError("V4 sample request differs from its locked business date")
+    return start, end
 
 
 def _parse_iso_date(value: object, name: str) -> date:
