@@ -167,6 +167,8 @@ class RunDispatcher:
     enabled and reviewed job version; manual and backfill dispatch preserve
     that same policy. Jobs explicitly marked one-shot-only use a separate
     manual entry point and are never accepted by ordinary dispatch methods.
+    Reviewed execution-only jobs use a separate backfill entry point that keeps
+    the task disabled and unscheduled.
     """
 
     def __init__(
@@ -259,6 +261,24 @@ class RunDispatcher:
         request = _build_request("backfill", None, payload)
         return self._submit(task, request, dry_run=dry_run)
 
+    def dispatch_backfill_execution(
+        self,
+        job_id: str,
+        version: str,
+        payload: Mapping[str, object],
+        *,
+        dry_run: bool = False,
+    ) -> DispatchReceipt:
+        """Preview or enqueue one backfill request for an execution-only job.
+
+        The job must be reviewed, explicitly marked ``execution_only``, and
+        remain disabled and schedule-free. This entry point does not enable
+        ordinary dispatch, scheduling, or a one-shot manual run.
+        """
+        task = self._require_execution_task(job_id, version)
+        request = _build_request("backfill", None, payload)
+        return self._submit_execution(task, request, dry_run=dry_run)
+
     def apscheduler_callback(
         self,
         job_id: str,
@@ -302,6 +322,17 @@ class RunDispatcher:
             raise ValueError("one-shot-only jobs must be disabled and unscheduled")
         return job.task
 
+    def _require_execution_task(self, job_id: str, version: str) -> TaskDefinition:
+        """Resolve a reviewed execution-only job without enabling ordinary dispatch."""
+        job = self._catalog.registry.resolve(job_id, version)
+        if job is None:
+            raise ValueError("job version is not in the reviewed catalog")
+        if job.reviewed is not True or job.execution_only is not True:
+            raise ValueError("job version is not approved for execution-only dispatch")
+        if job.task.enabled is not False or job.task.schedule is not None:
+            raise ValueError("execution-only jobs must be disabled and unscheduled")
+        return job.task
+
     def _submit(
         self,
         task: TaskDefinition,
@@ -334,6 +365,23 @@ class RunDispatcher:
         if dry_run:
             return DispatchReceipt(safe_identity, "dry_run", None)
         record = self._service.submit_one_shot(task.job_id, task.version, request)
+        return DispatchReceipt(safe_identity, record.status, record.created_at)
+
+    def _submit_execution(
+        self,
+        task: TaskDefinition,
+        request: RunRequest,
+        *,
+        dry_run: bool,
+    ) -> DispatchReceipt:
+        """Submit only through the service's persisted execution-only policy."""
+        if not isinstance(dry_run, bool):
+            raise ValueError("dry_run must be a boolean")
+        identity = build_run_identity(task, request)
+        safe_identity = _safe_identity(identity, task)
+        if dry_run:
+            return DispatchReceipt(safe_identity, "dry_run", None)
+        record = self._service.submit_execution(task.job_id, task.version, request)
         return DispatchReceipt(safe_identity, record.status, record.created_at)
 
 

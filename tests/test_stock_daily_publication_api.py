@@ -1,4 +1,4 @@
-"""HTTP acceptance examples for the hard-disabled stock-daily v2 publication bridge."""
+"""HTTP acceptance examples for the default-off stock-daily v2 publication bridge."""
 
 from __future__ import annotations
 
@@ -19,13 +19,16 @@ from opendata.api.published_data import (
     get_dataset_grants,
     get_publication_store,
 )
+from opendata.api.stock_daily_capacity import (
+    StockDailyCapacityAttestation,
+    get_stock_daily_capacity_gate,
+)
 from opendata.api.stock_daily_publication import (
     _EXPECTED_FIELD_ADJUSTMENTS,
     _EXPECTED_FIELD_CURRENCIES,
     _EXPECTED_FIELD_UNITS,
     DATASET_ID,
     _parse_date,
-    _require_stock_daily_api_disabled,
     _validate_stock_daily_contract,
     _validate_stock_rows,
     _validate_stock_selection,
@@ -111,11 +114,38 @@ def stock_daily_api(
     app.dependency_overrides[get_dataset_grants] = lambda: DatasetGrantRegistry((grant,))
     app.dependency_overrides[get_dataset_contracts] = lambda: DatasetContractRegistry((contract,))
     app.dependency_overrides[get_publication_store] = lambda: store
-    app.dependency_overrides[_require_stock_daily_api_disabled] = lambda: None
+    app.dependency_overrides[get_stock_daily_capacity_gate] = lambda: _capacity_attestation(
+        contract,
+        publication.publication_id,
+    )
     try:
         yield app, store, contract, publication.publication_id
     finally:
         engine.dispose()
+
+
+def _capacity_attestation(
+    contract: DatasetContract,
+    publication_id: str | None,
+    *,
+    max_window_days: int = 3_660,
+    max_page_size: int = 1_000,
+) -> StockDailyCapacityAttestation:
+    """Build a valid synthetic capacity attestation for the fixture publication."""
+    return StockDailyCapacityAttestation(
+        schema_version="stock-daily-capacity-v1",
+        dataset_id=DATASET_ID,
+        source_id=SOURCE_ID,
+        semantic_version=contract.semantic_version,
+        contract_sha256=canonical_sha256(contract),
+        publication_id=publication_id,
+        max_window_days=max_window_days,
+        max_page_size=max_page_size,
+        not_before=datetime(2020, 1, 1, tzinfo=UTC),
+        expires_at=datetime(2100, 1, 1, tzinfo=UTC),
+        evidence_ref="tests/test_stock_daily_publication_api.py",
+        attested_by="synthetic-offline-test",
+    )
 
 
 def _contract() -> DatasetContract:
@@ -280,22 +310,25 @@ async def test_continuation_reuses_identical_snapshot_and_rejects_changed_public
 
 
 @pytest.mark.asyncio
-async def test_external_configuration_cannot_enable_hard_disabled_route(
+async def test_flag_without_capacity_attestation_keeps_route_hidden(
     stock_daily_api: tuple[FastAPI, PublicationStore, DatasetContract, str],
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """An environment flag cannot bypass the hard production route gate."""
+    """An enable flag alone cannot bypass the digest-pinned capacity gate."""
     app, store, _, publication_id = stock_daily_api
-    app.dependency_overrides.pop(_require_stock_daily_api_disabled)
-    monkeypatch.setenv("OPENDATA_STOCK_DAILY_PUBLICATION_API_ENABLED", "true")
+    app.dependency_overrides.pop(get_stock_daily_capacity_gate)
+    monkeypatch.setenv("STOCK_DAILY_PUBLICATION_API_ENABLED", "true")
+    monkeypatch.delenv("STOCK_DAILY_PUBLICATION_CAPACITY_FILE", raising=False)
+    monkeypatch.delenv("STOCK_DAILY_PUBLICATION_CAPACITY_SHA256", raising=False)
     assert "/api/v2/stock-daily/records" not in app.openapi()["paths"]
 
     def unexpected_store_call(*args: object, **kwargs: object) -> object:
-        pytest.fail("hard-disabled stock-daily routes must not read publication data")
+        pytest.fail("gated stock-daily routes must not read publication data")
 
     monkeypatch.setattr(store, "get_publication", unexpected_store_call)
     response = await _request(app, params=_first_page_params(publication_id))
     assert response.status_code == 404
+    assert response.json()["error"]["code"] == "not_found"
 
 
 @pytest.mark.asyncio
