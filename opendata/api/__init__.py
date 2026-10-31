@@ -22,6 +22,7 @@ from opendata.api.pipeline import router as pipeline_router
 from opendata.api.provider_models import router as provider_models_router
 from opendata.api.published_data import router as published_data_router
 from opendata.api.scripts import router as scripts_router
+from opendata.api.stock_daily_publication import router as stock_daily_publication_router
 from opendata.api.tables import router as tables_router
 from opendata.api.tasks import router as tasks_router
 from opendata.api.temporal_identity import router as temporal_identity_router
@@ -40,6 +41,7 @@ api_router = APIRouter()
 # routes unchanged while adding new read-only archive endpoints to this group.
 api_v2_router = APIRouter()
 api_v2_router.include_router(published_data_router)
+api_v2_router.include_router(stock_daily_publication_router)
 api_v2_router.include_router(temporal_identity_router)
 api_v2_router.include_router(
     financial_observation_archive_router,
