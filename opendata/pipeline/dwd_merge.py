@@ -458,7 +458,6 @@ class DwdMergeService:
             key=self._key(),
             as_of=as_of,
             merged_at=merged_at,
-            extra_diff_keys=frozenset(affected_keys),
         )
         self.write_dwd(merged)
         return stats
@@ -541,15 +540,13 @@ class DwdMergeService:
         return reader(start, end, affected_keys)
 
     def _contract_keys(self, context: PipelineContext) -> set[tuple]:
-        """Re-spell the run's affected keys as the keys the merge compares.
+        """Re-spell affected keys as the keys source readers compare.
 
         ``context.affected_keys`` is what step 2 just wrote, so it arrives in
         the source's own spelling (``600519.SH``, or ``股票代码`` ordering),
-        while the merged frames are indexed by the contract key. Handing the
-        source spelling straight to ``extra_diff_keys`` made that set
-        unmatchable - the flagging it is supposed to add silently never
-        landed, and only the keys the merge itself found disagreeing got
-        marked.
+        while ODS readers accept the normalized contract key. These keys only
+        expand the read and recompute range; whether a row is different is
+        determined from the source values by :func:`merge_source_frames`.
 
         Args:
             context: The pipeline context of the current run.

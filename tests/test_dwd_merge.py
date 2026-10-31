@@ -18,6 +18,7 @@ import pandas as pd
 import pytest
 
 from opendata.pipeline.dwd_merge import (
+    TRACE_COLUMNS,
     DwdMergeService,
     DwdWriter,
     MergeStats,
@@ -226,6 +227,10 @@ class TestDwdMergeService:
         assert ("600519", date(2023, 12, 29)) in set(
             zip(written[0]["symbol"], written[0]["trade_date"], strict=True)
         )
+        revised = written[0].loc[
+            (written[0]["symbol"] == "600519") & (written[0]["trade_date"] == date(2023, 12, 29))
+        ]
+        assert revised["_diff_flag"].iloc[0] == 0
 
     async def test_service_writes_all_four_point_in_time_faces(self):
         """AC-9 item 6: authority/degrade/source/_diff_flag/_as_of land via the service.
@@ -317,6 +322,7 @@ class TestDwdMergeService:
         assert float(after.loc[revised_key, "close"]) == 6.5
         assert after.loc[revised_key, "source"] == "ths"
         assert after.loc[revised_key, "_as_of"] == AS_OF
+        assert after.loc[revised_key, "_diff_flag"] == 1
 
         await service.run(date(2024, 1, 1), AS_OF)
         assert revised_key not in set(
@@ -428,11 +434,8 @@ class TestDwdMergeService:
         assert reads == {"ths": expected, "akshare": expected}
         assert stats.rows == len(written[0])
 
-    async def test_the_hook_re_spells_the_affected_keys_so_the_flag_lands(self):
-        """Step 2 reports the keys it wrote in the *source* spelling; the merge
-        indexes by contract key. Handing the raw spelling straight to
-        ``extra_diff_keys`` left a row whose symbol was ``600888.SH`` and
-        never marked the ``600888`` key it was meant to mark."""
+    async def test_hook_normalizes_affected_keys_without_marking_a_difference(self):
+        """Source keys expand the read; equal values remain unflagged."""
         from opendata.data.mapping import require_domain_mapping
         from opendata.pipeline.runner import PipelineContext, Window
 
@@ -461,10 +464,38 @@ class TestDwdMergeService:
             )
         )
         assert stats.rows == 3  # the window plus the affected key
-        # Both sources carry the same values for that key, so nothing but the
-        # affected-key set can explain the flag.
-        assert flags[("600888", date(2023, 12, 29))] == 1
+        # Both sources carry the same values for that key. Recomputing the key
+        # must not turn it into a source disagreement.
+        assert stats.diff_flagged == 0
+        assert flags[("600888", date(2023, 12, 29))] == 0
         assert "600888.SH" not in flags
+
+    async def test_single_source_affected_key_remains_unflagged(self):
+        """Passthrough stays clean when an old key is recomputed."""
+        frames = {"ths": _frame(AUTHORITY_ROWS)}
+        written: list[pd.DataFrame] = []
+        service = DwdMergeService(
+            "stock_daily",
+            sources=("ths",),
+            authority=("ths",),
+            readers={"ths": _reader_for(frames, "ths")},
+            write_dwd=lambda frame: written.append(frame) or len(frame),
+            key=KEY,
+            merged_at=MERGED_AT,
+        )
+
+        stats = await service.run(
+            date(2024, 1, 1),
+            date(2024, 1, 31),
+            affected_keys={("600519", date(2023, 12, 29))},
+        )
+
+        revised = written[0].loc[
+            (written[0]["symbol"] == "600519") & (written[0]["trade_date"] == date(2023, 12, 29))
+        ]
+        assert stats.passthrough is True
+        assert stats.diff_flagged == 0
+        assert revised["_diff_flag"].iloc[0] == 0
 
     async def test_a_source_without_a_mapping_keeps_its_keys_as_given(self):
         """Nothing to translate through means pass through, not a guess."""
@@ -605,10 +636,22 @@ class TestDwdMergeService:
             bounded_frame.drop(columns=["_merged_at"]),
             whole_frame.drop(columns=["_merged_at"]),
         )
+        # The affected historical key is recomputed in both layouts, but the
+        # two sources agree on its value, so recomputation alone is not a diff.
         assert (
             bounded_frame.loc[
                 (bounded_frame["symbol"] == symbols[0])
                 & (bounded_frame["trade_date"] == revised_key[1]),
+                "_diff_flag",
+            ].iloc[0]
+            == 0
+        )
+        # A window key has a real source disagreement and must remain flagged;
+        # the frame equality above also checks that partitioning preserves it.
+        assert (
+            bounded_frame.loc[
+                (bounded_frame["symbol"] == symbols[0])
+                & (bounded_frame["trade_date"] == active_day),
                 "_diff_flag",
             ].iloc[0]
             == 1
@@ -999,3 +1042,150 @@ class TestDwdWriteAgainstMysql:
                     text("DELETE FROM `dwd_stock_daily` WHERE symbol IN ('600519', '000001')")
                 )
             engine.dispose()
+
+
+def test_empty_multi_source_merge_preserves_the_contract_shape_and_zero_stats():
+    empty = pd.DataFrame(columns=[*KEY, "close", "volume"])
+
+    merged, stats = merge_source_frames(
+        "stock_daily",
+        {"ths": empty.copy(), "akshare": empty.copy()},
+        authority=("ths", "akshare"),
+        key=KEY,
+        as_of=AS_OF,
+        merged_at=MERGED_AT,
+    )
+
+    assert list(merged.columns) == [*KEY, "close", "volume", *TRACE_COLUMNS]
+    assert stats == MergeStats(rows=0, diff_flagged=0, degraded_rows=0, passthrough=False)
+
+
+def test_multi_source_merge_rejects_unmapped_value_column_drift():
+    ths = _frame(AUTHORITY_ROWS)
+    akshare = _frame(AUTHORITY_ROWS).drop(columns=["amount"])
+
+    with pytest.raises(ValueError, match="disagree on the value columns"):
+        merge_source_frames(
+            "stock_daily",
+            {"ths": ths, "akshare": akshare},
+            authority=("ths", "akshare"),
+            key=KEY,
+            as_of=AS_OF,
+            merged_at=MERGED_AT,
+        )
+
+
+def test_multi_source_diff_uses_relative_numeric_tolerance_and_exact_text():
+    symbols = ("600519", "000001", "000002")
+    trade_dates = [date(2024, 1, 2)] * len(symbols)
+    authority = pd.DataFrame(
+        {
+            "symbol": symbols,
+            "trade_date": trade_dates,
+            "close": [100.0, 100.0, 100.0],
+            "status": ["open", "open", "open"],
+        }
+    )
+    secondary = pd.DataFrame(
+        {
+            "symbol": symbols,
+            "trade_date": trade_dates,
+            # The first delta is below the merge's relative threshold; the
+            # second is above it. Text fields continue to compare exactly.
+            "close": [100.005, 100.02, 100.0],
+            "status": ["open", "open", "halted"],
+        }
+    )
+
+    merged, stats = merge_source_frames(
+        "stock_daily",
+        {"ths": authority, "akshare": secondary},
+        authority=("ths", "akshare"),
+        key=KEY,
+        as_of=AS_OF,
+        merged_at=MERGED_AT,
+    )
+
+    flags = dict(zip(merged["symbol"], merged["_diff_flag"], strict=True))
+    assert flags == {"000001": 1, "000002": 1, "600519": 0}
+    assert stats.diff_flagged == 2
+    assert set(merged["source"]) == {"ths"}
+    assert set(merged["status"]) == {"open"}
+
+
+def test_financial_dwd_rejects_present_contract_field_mismatch_before_transaction():
+    from opendata.pipeline.financial_pit import FinancialPitError, FinancialVersionInput
+
+    payload = {
+        "symbol": "600000",
+        "statement_type": "income",
+        "report_period": date(2024, 3, 31),
+        "announce_date": date(2024, 4, 1),
+        "item": "net_profit",
+        "value": 10.0,
+        "revision": 1,
+    }
+    version = FinancialVersionInput(
+        domain="financial_statement",
+        source="ths",
+        market="CN",
+        payload=payload,
+        source_revision="release-1",
+        revision_order=1,
+        public_time_precision="date",
+        source_timezone="Asia/Shanghai",
+        observed_at=datetime(2026, 10, 31, 1, tzinfo=timezone.utc),
+        provenance="archive://financial-statement/release-1",
+        published_on=date(2024, 4, 1),
+    )
+    dwd_row = {**payload, "announce_date": date(2024, 4, 2), "source": "ths"}
+
+    class NoTransactionEngine:
+        def begin(self) -> None:
+            raise AssertionError("alignment must fail before opening the DWD/PIT transaction")
+
+    with pytest.raises(FinancialPitError, match="contract fields do not match"):
+        DwdWriter(NoTransactionEngine()).write(
+            pd.DataFrame([dwd_row]),
+            table="dwd_financial_statement",
+            key=("symbol", "statement_type", "report_period", "item"),
+            financial_versions=[version],
+        )
+
+
+def test_financial_indicator_alignment_uses_the_indicator_business_key():
+    from opendata.pipeline.dwd_merge import _validate_financial_pit_alignment
+    from opendata.pipeline.financial_pit import FinancialVersionInput
+
+    payload = {
+        "symbol": "600000",
+        "report_period": date(2024, 3, 31),
+        "announce_date": date(2024, 4, 1),
+        "indicator": "roe",
+        "value": 12.5,
+        "unit": "%",
+        "revision": 2,
+    }
+    version = FinancialVersionInput(
+        domain="financial_indicator",
+        source="ths",
+        market="CN",
+        payload=payload,
+        source_revision="indicator-release-2",
+        revision_order=2,
+        public_time_precision="date",
+        source_timezone="Asia/Shanghai",
+        observed_at=datetime(2026, 10, 31, 1, tzinfo=timezone.utc),
+        provenance="archive://financial-indicator/release-2",
+        published_on=date(2024, 4, 1),
+    )
+
+    assert (
+        _validate_financial_pit_alignment(
+            [{**payload, "source": "ths", "_as_of": AS_OF}],
+            table="dwd_financial_indicator",
+            key=("symbol", "report_period", "indicator"),
+            financial_versions=[version],
+        )
+        is None
+    )
