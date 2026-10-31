@@ -132,7 +132,7 @@ paths = [
 [[rules]]
 id = "generic-api-key"
 [rules.allowlist]
-description = "SDMX dataflow keys are public identifiers; API_KEY_FAILURE_DELAY_SECONDS=0.05 is the non-secret delay setting after an empty template value; rows_pointer=refRates is an engine field assignment naming a public release-table section; RIFLGFC*_N.B are the Federal Reserve H.15 maturity series identifiers declared as ColumnSpec.source_key; RIFSGFSW04_N.B is the twelfth, the H.15 4-week bill series the pinned week-4 capture prints last (specs.py:342, capture sha256 23f3ed8ae67b4d7d, header row 5 field 12); environment_variable= is the next kwarg's NAME swallowed as the value of a one-line CredentialSpec whose credential is read from the environment; e53f08f6c9e04bfd9760701085ec93b4 is Cloudflare's public beacon/analytics token shipped in the served HTML of every Finviz page (C149: staging the page captures as member-12 fixtures reported 3 findings on that one literal; the same data-cf-beacon slot holding any other value stays reported)."
+description = "SDMX dataflow keys are public identifiers; API_KEY_FAILURE_DELAY_SECONDS=0.05 is the non-secret delay setting after an empty template value; rows_pointer=refRates is an engine field assignment naming a public release-table section; RIFLGFC*_N.B are the Federal Reserve H.15 maturity series identifiers declared as ColumnSpec.source_key; RIFSGFSW04_N.B is the twelfth, the H.15 4-week bill series the pinned week-4 capture prints last (specs.py:342, capture sha256 23f3ed8ae67b4d7d, header row 5 field 12); environment_variable= is the next kwarg's NAME swallowed as the value of a one-line CredentialSpec whose credential is read from the environment; e53f08f6c9e04bfd9760701085ec93b4 is Cloudflare's public beacon/analytics token shipped in the served HTML of every Finviz page (C149: staging the page captures as member-12 fixtures reported 3 findings on that one literal; the same data-cf-beacon slot holding any other value stays reported); C150's eight literals (fixture-csi500-v3-integration-run, fixture-csi500-v3-quota, fixture-csi500-v3-run, fixture-ths-quota-v1, fixture-observation-quota-v1, fixture-quota-v1, quota-v3-boundary, stock-daily-v2-api-fixture) are the run/quota identifiers the scheduler-ledger and stock-daily tests key their own synthetic rows by, enumerated one by one rather than by prefix."
 regexTarget = "secret"
 regexes = [
   '''^[A-Z0-9]{1,12}(\.[A-Z0-9_]{1,14}){3,}$''',
@@ -148,6 +148,19 @@ regexes = [
   # keeps the last duplicate block), resurrecting 65 previously-exempt findings -- duplicate rule
   # ids are an override, not a merge. One rule id = one block.
   '''^e53f08f6c9e04bfd9760701085ec93b4$''',
+  # C150: eight synthetic run/quota identifiers declared in the scheduler-ledger and stock-daily
+  # tests. `generic-api-key` reads the FIELD NAME (`budget_quota_key`, `run_key`, `QUOTA_KEY`,
+  # `PRINCIPAL`, `source_verification`) as a key name and the quoted value as its value; each of
+  # these eight is a test fixture label the ledger keys its own rows by, and the paired value is
+  # constructed in the same file, never read from an environment or a config. Enumeration, not a
+  # value class: `quota-*`/`fixture-*` prefixes would also exempt a real key typed into the same
+  # slot, which is the widening this file's header refuses. docs/evidence/C150/gitleaks-counterfactual.log
+  # measures the arms: dropping this one regex returns all 10 findings, one extra character on any
+  # of the eight literals is reported again, and a fabricated `ghp_` token written into the very
+  # same `budget_quota_key=` / `PRINCIPAL =` slot is still reported (by `github-pat`; as C75
+  # measured, `generic-api-key` itself skips the prefixed form even with every allowlist removed,
+  # while an unprefixed mixed-case secret in that slot is reported by `generic-api-key`).
+  '''^(?:fixture-csi500-v3-integration-run|fixture-csi500-v3-quota|fixture-csi500-v3-run|fixture-ths-quota-v1|fixture-observation-quota-v1|fixture-quota-v1|quota-v3-boundary|stock-daily-v2-api-fixture)$''',
 ]
 
 # C73: the archived gate/run manifests under docs/evidence/ record, for every tracked
