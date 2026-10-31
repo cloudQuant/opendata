@@ -139,8 +139,171 @@ _FK_NAME = "fk_od_temporal_identity_snapshot_chunks_snapshot"
 _CHECK_TOKEN = re.compile(
     r"\s*('(?:''|[^'])*'|`[^`]+`|\"[^\"]+\"|>=|<=|<>|!=|[(),=]|"
     r"[a-z_][a-z0-9_$]*|[0-9]+)",
-    re.IGNORECASE,
+    re.IGNORECASE | re.ASCII,
 )
+_CHECK_COLUMNS = {
+    "authority_id",
+    "registry_id",
+    "reference_version",
+    "total_bytes",
+    "chunk_count",
+    "created_at_us",
+    "snapshot_sha256",
+    "chunk_no",
+    "chunk_bytes",
+    "chunk_sha256",
+}
+_CHECK_FUNCTIONS = {
+    "length",
+    "typeof",
+    "cast",
+    "char_length",
+    "octet_length",
+    "locate",
+    "char",
+}
+
+
+class _CheckExpressionParser:
+    """Parse only the reviewed CHECK grammar and discard grouping parentheses."""
+
+    def __init__(self, tokens: list[tuple[str, str]], mode: str) -> None:
+        self._tokens = tokens
+        self._mode = mode
+        self._position = 0
+
+    def parse(self) -> tuple[object, ...]:
+        """Return a stable expression tree or reject incomplete and unknown syntax."""
+        if not self._tokens:
+            raise ValueError("empty CHECK expression")
+        expression = self._parse_and()
+        if self._position != len(self._tokens):
+            raise ValueError("unsupported CHECK expression syntax")
+        return expression
+
+    def _parse_and(self) -> tuple[object, ...]:
+        expression = self._parse_boolean_primary()
+        while self._accept("identifier", "and"):
+            expression = ("and", expression, self._parse_boolean_primary())
+        return expression
+
+    def _parse_boolean_primary(self) -> tuple[object, ...]:
+        if self._peek() == ("symbol", "(") and not self._starts_parenthesized_predicate():
+            self._position += 1
+            expression = self._parse_and()
+            self._require("symbol", ")")
+            return expression
+        return self._parse_predicate()
+
+    def _starts_parenthesized_predicate(self) -> bool:
+        """Recognize `(scalar) comparison ...` without weakening boolean parsing."""
+        depth = 0
+        for position in range(self._position, len(self._tokens)):
+            kind, value = self._tokens[position]
+            if kind == "symbol" and value == "(":
+                depth += 1
+            elif kind == "symbol" and value == ")":
+                depth -= 1
+                if depth == 0:
+                    if position + 1 >= len(self._tokens):
+                        return False
+                    next_kind, next_value = self._tokens[position + 1]
+                    return (next_kind, next_value) in {
+                        ("identifier", "between"),
+                        ("operator", "="),
+                        ("operator", ">="),
+                        ("operator", "<="),
+                        ("operator", "<>"),
+                        ("operator", "!="),
+                    }
+        return False
+
+    def _parse_predicate(self) -> tuple[object, ...]:
+        left = self._parse_scalar()
+        if self._accept("identifier", "between"):
+            lower = self._parse_scalar()
+            self._require("identifier", "and")
+            upper = self._parse_scalar()
+            return ("between", left, lower, upper)
+
+        operator = self._peek()
+        if (
+            operator is None
+            or operator[0] != "operator"
+            or operator[1]
+            not in {
+                "=",
+                ">=",
+                "<=",
+                "<>",
+                "!=",
+            }
+        ):
+            raise ValueError("unsupported CHECK predicate")
+        self._position += 1
+        return ("compare", left, operator[1], self._parse_scalar())
+
+    def _parse_scalar(self) -> tuple[object, ...]:
+        token = self._take()
+        kind, value = token
+        if kind == "number":
+            return ("number", value)
+        if kind == "string":
+            return ("string", value)
+        if kind == "symbol" and value == "(":
+            expression = self._parse_scalar()
+            self._require("symbol", ")")
+            return expression
+        if kind not in {"identifier", "quoted_identifier"}:
+            raise ValueError("unsupported CHECK scalar")
+        if kind == "quoted_identifier":
+            if value not in _CHECK_COLUMNS:
+                raise ValueError("quoted CHECK token is not a reviewed column")
+            return ("column", value)
+        if value in _CHECK_COLUMNS:
+            return ("column", value)
+        if value not in _CHECK_FUNCTIONS:
+            raise ValueError("unsupported CHECK identifier")
+        self._require("symbol", "(")
+        if value == "cast":
+            expression = self._parse_scalar()
+            self._require("identifier", "as")
+            self._require("identifier", "blob")
+            self._require("symbol", ")")
+            return ("cast", expression, "blob")
+        function = value
+        if self._mode == "mysql" and value in {"length", "octet_length"}:
+            function = "mysql_byte_length"
+        first = self._parse_scalar()
+        if value == "locate":
+            self._require("symbol", ",")
+            second = self._parse_scalar()
+            self._require("symbol", ")")
+            return ("call", value, first, second)
+        self._require("symbol", ")")
+        return ("call", function, first)
+
+    def _peek(self) -> tuple[str, str] | None:
+        if self._position >= len(self._tokens):
+            return None
+        return self._tokens[self._position]
+
+    def _take(self) -> tuple[str, str]:
+        token = self._peek()
+        if token is None:
+            raise ValueError("incomplete CHECK expression")
+        self._position += 1
+        return token
+
+    def _accept(self, kind: str, value: str) -> bool:
+        if self._peek() != (kind, value):
+            return False
+        self._position += 1
+        return True
+
+    def _require(self, kind: str, value: str) -> None:
+        if not self._accept(kind, value):
+            raise ValueError("unsupported CHECK expression syntax")
 
 
 def _tokenize_check(sql: object, mode: str) -> list[tuple[str, str]]:
@@ -159,11 +322,17 @@ def _tokenize_check(sql: object, mode: str) -> list[tuple[str, str]]:
         if raw.startswith("'"):
             tokens.append(("string", raw[1:-1].replace("''", "'")))
         elif raw.startswith("`"):
-            tokens.append(("identifier", raw[1:-1].casefold()))
+            identifier = raw[1:-1]
+            if not identifier.isascii():
+                raise ValueError("non-ASCII CHECK identifiers are not accepted")
+            tokens.append(("quoted_identifier", identifier.casefold()))
         elif raw.startswith('"'):
             if mode == "mysql":
                 raise ValueError("double-quoted MySQL CHECK tokens are not accepted")
-            tokens.append(("identifier", raw[1:-1].casefold()))
+            identifier = raw[1:-1]
+            if not identifier.isascii():
+                raise ValueError("non-ASCII CHECK identifiers are not accepted")
+            tokens.append(("quoted_identifier", identifier.casefold()))
         elif raw in {"(", ")", ","}:
             tokens.append(("symbol", raw))
         elif raw in {"=", "<>", "!=", ">=", "<="}:
@@ -176,11 +345,9 @@ def _tokenize_check(sql: object, mode: str) -> list[tuple[str, str]]:
 
 
 def _canonical_check(sql: object, mode: str) -> tuple[object, ...]:
-    """Canonicalize CHECK tokens while retaining operator and literal order."""
+    """Parse exact reviewed CHECK semantics while ignoring redundant grouping."""
     tokens = _tokenize_check(sql, mode)
-    if not tokens:
-        raise ValueError("empty CHECK expression")
-    return tuple(tokens)
+    return _CheckExpressionParser(tokens, mode).parse()
 
 
 def _check_matches(actual: object, expected: str, mode: str) -> bool:
@@ -266,6 +433,13 @@ def _sqlite_ddl() -> tuple[str, str]:
     chunks_checks = [
         f"CONSTRAINT {name} CHECK ({expression})" for name, expression in _CHUNK_CHECKS.items()
     ]
+    header_checks_sql = ",\n        ".join(header_checks)
+    chunks_checks_sql = ",\n        ".join(chunks_checks)
+    foreign_key_sql = (
+        f"CONSTRAINT {_FK_NAME} FOREIGN KEY (authority_id, registry_id, reference_version) "
+        f'REFERENCES "{_HEADER}" (authority_id, registry_id, reference_version) '
+        "ON DELETE RESTRICT"
+    )
     header_ddl = f'''CREATE TABLE "{_HEADER}" (
         authority_id VARCHAR(128) COLLATE BINARY NOT NULL,
         registry_id VARCHAR(128) COLLATE BINARY NOT NULL,
@@ -276,7 +450,7 @@ def _sqlite_ddl() -> tuple[str, str]:
         created_at_us BIGINT NOT NULL,
         CONSTRAINT pk_od_temporal_identity_snapshots
             PRIMARY KEY (authority_id, registry_id, reference_version),
-        {", ".join(header_checks)}
+        {header_checks_sql}
     )'''
     chunks_ddl = f'''CREATE TABLE "{_CHUNKS}" (
         authority_id VARCHAR(128) COLLATE BINARY NOT NULL,
@@ -287,10 +461,8 @@ def _sqlite_ddl() -> tuple[str, str]:
         chunk_sha256 BLOB NOT NULL,
         CONSTRAINT pk_od_temporal_identity_snapshot_chunks
             PRIMARY KEY (authority_id, registry_id, reference_version, chunk_no),
-        {", ".join(chunks_checks)},
-        CONSTRAINT {_FK_NAME} FOREIGN KEY (authority_id, registry_id, reference_version)
-            REFERENCES "{_HEADER}" (authority_id, registry_id, reference_version)
-            ON DELETE RESTRICT
+        {chunks_checks_sql},
+        {foreign_key_sql}
     )'''
     return header_ddl, chunks_ddl
 
