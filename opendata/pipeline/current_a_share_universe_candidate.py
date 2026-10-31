@@ -166,6 +166,16 @@ _PAGE_REASONS = (
 )
 
 
+def _market_member(value: Market | str) -> Market:
+    """Return the enum member for an already validated market declaration."""
+    return Market(value)
+
+
+def _format_member(value: EvidenceFormat | str) -> EvidenceFormat:
+    """Return the enum member for an already validated evidence format."""
+    return EvidenceFormat(value)
+
+
 def _iso_utc(value: datetime) -> str:
     """Render a timezone-aware datetime as a stable UTC second-precision string."""
     return value.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -206,8 +216,10 @@ def _require_sha256(value: object, label: str) -> str:
 
 def _canonical_scalar(value: object, label: str) -> FrozenScalar:
     """Validate one flat scalar source value and return an immutable copy."""
-    if value is None or type(value) in (bool, int):
-        if type(value) is int and value.bit_length() > 64:
+    if value is None or type(value) is bool:
+        return value
+    if type(value) is int:
+        if value.bit_length() > 64:
             raise UniverseCandidateError(f"{label}_invalid")
         return value
     if type(value) is float:
@@ -436,7 +448,7 @@ class SourceEvidence:
     @property
     def exchange(self) -> str:
         """Return the explicit exchange qualifier for this declared market."""
-        return _MARKET_EXCHANGE[self.market.value]
+        return _MARKET_EXCHANGE[_market_member(self.market).value]
 
 
 @dataclass(frozen=True, slots=True)
@@ -669,8 +681,8 @@ class CurrentAShareUniverseCandidate:
                 {
                     "source_id": source.source_id,
                     "capture_id": source.capture_id,
-                    "market": source.market.value,
-                    "format": source.format.value,
+                    "market": _market_member(source.market).value,
+                    "format": _format_member(source.format).value,
                     "as_of": _iso_utc(source.as_of),
                     "path": source.path,
                     "sha256": source.sha256,
@@ -679,7 +691,7 @@ class CurrentAShareUniverseCandidate:
                 for source in sorted(
                     self.sources,
                     key=lambda item: (
-                        item.market.value,
+                        _market_member(item.market).value,
                         item.source_id,
                         item.capture_id,
                         item.page.page_sequence if item.page else 0,
@@ -724,8 +736,8 @@ def _source_summary(outcome: _SourceOutcome) -> dict[str, object]:
     return {
         "source_id": source.source_id,
         "capture_id": source.capture_id,
-        "market": source.market.value,
-        "format": source.format.value,
+        "market": _market_member(source.market).value,
+        "format": _format_member(source.format).value,
         "as_of": _iso_utc(source.as_of),
         "path": source.path,
         "sha256": source.sha256,
@@ -822,7 +834,7 @@ def _record_from_row(
 
     native_value = _field_value(row, symbol_field)
     native = native_value if type(native_value) is str else None
-    symbol, suffix_exchange, code_reason = _parse_native_code(native, source.market)
+    symbol, suffix_exchange, code_reason = _parse_native_code(native, _market_member(source.market))
     observed_exchange_value = _field_value(row, exchange_field)
     observed_exchange = observed_exchange_value if type(observed_exchange_value) is str else None
     name_value = _field_value(row, name_field)
@@ -856,7 +868,7 @@ def _record_from_row(
             reason = "asset_type_not_supported"
 
     return CandidateRecord(
-        market=source.market,
+        market=_market_member(source.market),
         symbol=symbol,
         source_native_code=native,
         source_id=source.source_id,
@@ -917,7 +929,7 @@ def _parse_normalized_source(source: SourceEvidence, budget: _ReadBudget) -> _So
             page_sequence=page_sequence,
             source_page_number=None,
             source_row_number=index,
-            source_context=source.format.value,
+            source_context=_format_member(source.format).value,
         )
         for index, row in enumerate(rows, start=1)
     )
@@ -1303,8 +1315,8 @@ def _reconcile(
         if record.disposition is RowDisposition.CANDIDATE and record.symbol is not None:
             groups[(record.market, record.symbol)].append(record)
 
-    conflict_groups: list[Mapping[str, object]] = []
-    duplicate_groups: list[Mapping[str, object]] = []
+    conflict_groups: list[dict[str, object]] = []
+    duplicate_groups: list[dict[str, object]] = []
     candidates: list[Mapping[str, object]] = []
     conflicting_keys: set[tuple[Market, str]] = set()
     for (market, symbol), members in sorted(
@@ -1337,24 +1349,23 @@ def _reconcile(
                     ),
                     "market": market.value,
                     "symbol": symbol,
-                    "values": sorted(
-                        (
-                            {
-                                "value": member.display_name,
-                                "source_id": member.source_id,
-                                "capture_id": member.capture_id,
-                                "source_row_number": member.source_row_number,
-                            }
-                            for member in members
-                            if member.display_name is not None
-                        ),
-                        key=lambda item: (
-                            str(item["value"]),
-                            str(item["source_id"]),
-                            str(item["capture_id"]),
-                            int(item["source_row_number"]),
-                        ),
-                    ),
+                    "values": [
+                        {
+                            "value": member.display_name,
+                            "source_id": member.source_id,
+                            "capture_id": member.capture_id,
+                            "source_row_number": member.source_row_number,
+                        }
+                        for member in sorted(
+                            (member for member in members if member.display_name is not None),
+                            key=lambda item: (
+                                str(item.display_name),
+                                item.source_id,
+                                item.capture_id,
+                                item.source_row_number,
+                            ),
+                        )
+                    ],
                     "source_ids": source_ids,
                     "records": [_record_ref(member) for member in members],
                 }
@@ -1465,7 +1476,7 @@ def _pagination_summary(outcomes: tuple[_SourceOutcome, ...]) -> Mapping[str, ob
         {
             "source_id": outcome.source.source_id,
             "capture_id": outcome.source.capture_id,
-            "market": outcome.source.market.value,
+            "market": _market_member(outcome.source.market).value,
             "status": outcome.pagination_status,
             "reasons": list(outcome.pagination_reasons),
             "pages": outcome.page_count,
@@ -1495,7 +1506,7 @@ def _source_outcomes(manifest: UniverseCandidateManifest) -> tuple[_SourceOutcom
     for source in sorted(
         manifest.sources,
         key=lambda item: (
-            item.market.value,
+            _market_member(item.market).value,
             item.source_id,
             item.capture_id,
             item.page.page_sequence if item.page else 0,
@@ -1522,7 +1533,7 @@ def _source_outcomes(manifest: UniverseCandidateManifest) -> tuple[_SourceOutcom
         sorted(
             outcomes,
             key=lambda item: (
-                item.source.market.value,
+                _market_member(item.source.market).value,
                 item.source.source_id,
                 item.source.capture_id,
             ),
