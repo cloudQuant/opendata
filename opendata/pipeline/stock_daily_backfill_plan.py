@@ -9,6 +9,7 @@ certifies that a candidate can be executed or that history is complete.
 from __future__ import annotations
 
 import hashlib
+import hmac
 import json
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
@@ -49,6 +50,21 @@ class _CandidateChunkBudgetError(ValueError):
 
 class _AliasPlanningBudgetError(ValueError):
     """Signal that alias evidence would exceed bounded planning resources."""
+
+
+class StockDailyBackfillPlanIntegrityError(ValueError):
+    """Report a stable code for a plan or chunk that fails independent verification.
+
+    The digest is an accidental-corruption check, not a signature. A caller
+    that can recompute it can still construct a self-consistent but unplanned
+    request; execution callers must keep the plan inside their trusted review
+    boundary.
+    """
+
+    def __init__(self, code: str) -> None:
+        """Store one bounded machine-readable refusal code."""
+        self.code = code
+        super().__init__(code)
 
 
 @dataclass(frozen=True, slots=True)
@@ -186,6 +202,177 @@ class StockDailyBackfillPlan:
         return False
 
 
+def stock_daily_task_sha256(task: TaskDefinition) -> str:
+    """Return the planner's exact digest for one validated task declaration.
+
+    The digest binds every task field, including disabled/enabled state and
+    schedule metadata, so an execution-only job cannot reuse a plan built for a
+    different task shape merely because the job identity fields match.
+    """
+    validated_task = _revalidate_task(task)
+    return _sha256(_canonical_json(validated_task.model_dump(mode="json")))
+
+
+def verify_stock_daily_backfill_plan(plan: StockDailyBackfillPlan) -> None:
+    """Recompute the plan digest and every chunk request/key binding.
+
+    Verification refuses a plan whose canonical digest changed, whose task or
+    contract claims are inconsistent with its own fields, or whose chunk
+    idempotency key/request payload no longer matches the exact planner input.
+    Chunks are also required to belong to their containing instrument result
+    with contiguous indices, so a chunk cannot be moved in from outside the
+    plan. This is an accidental-corruption and wiring check, not a signature:
+    a caller able to recompute the digest can still construct a self-consistent
+    request outside an independently reviewed plan.
+
+    Args:
+        plan: Caller-supplied immutable plan to verify.
+
+    Raises:
+        TypeError: If the value is not a stock-daily backfill plan.
+        StockDailyBackfillPlanIntegrityError: With a stable code when any
+            digest, identity, window, request, or containment check fails.
+    """
+    if not isinstance(plan, StockDailyBackfillPlan):
+        raise TypeError("plan must be a StockDailyBackfillPlan")
+    if plan.plan_version != PLAN_VERSION:
+        raise StockDailyBackfillPlanIntegrityError("plan_version_mismatch")
+    if plan.execution_authorized is not False:
+        raise StockDailyBackfillPlanIntegrityError("plan_execution_authorization_invalid")
+    if plan.universe_scope_complete is not False:
+        raise StockDailyBackfillPlanIntegrityError("plan_universe_claim_invalid")
+    if plan.source_history_limit != "unknown":
+        raise StockDailyBackfillPlanIntegrityError("plan_history_claim_invalid")
+    if type(plan.max_window_days) is not int or not 1 <= plan.max_window_days <= (
+        MAX_STOCK_DAILY_WINDOW_DAYS
+    ):
+        raise StockDailyBackfillPlanIntegrityError("plan_window_limit_invalid")
+    if not _is_sha256(plan.plan_sha256):
+        raise StockDailyBackfillPlanIntegrityError("plan_digest_invalid")
+
+    expected_plan_digest = _plan_sha256(
+        plan_version=plan.plan_version,
+        as_of=plan.as_of,
+        dataset_id=plan.dataset_id,
+        source_id=plan.source_id,
+        provider=plan.provider,
+        job_id=plan.job_id,
+        job_version=plan.job_version,
+        model=plan.model,
+        task_sha256=plan.task_sha256,
+        contract_sha256=plan.contract_sha256,
+        registry_version=plan.registry_version,
+        registry_evidence_ref=plan.registry_evidence_ref,
+        registry_sha256=plan.registry_sha256,
+        registry_lifecycle_count=plan.registry_lifecycle_count,
+        max_window_days=plan.max_window_days,
+        universe_scope_complete=plan.universe_scope_complete,
+        source_history_limit=plan.source_history_limit,
+        execution_authorized=plan.execution_authorized,
+        instruments=plan.instruments,
+        blockers=plan.blockers,
+    )
+    if not hmac.compare_digest(expected_plan_digest, plan.plan_sha256):
+        raise StockDailyBackfillPlanIntegrityError("plan_digest_mismatch")
+    if (
+        type(plan.registry_lifecycle_count) is not int
+        or plan.registry_lifecycle_count < 1
+        or len(plan.instruments) != plan.registry_lifecycle_count
+    ):
+        raise StockDailyBackfillPlanIntegrityError("plan_instrument_count_mismatch")
+
+    seen_chunks: set[tuple[str, int]] = set()
+    seen_request_keys: set[str] = set()
+    for result in plan.instruments:
+        if not isinstance(result, InstrumentBackfillResult):
+            raise StockDailyBackfillPlanIntegrityError("plan_instrument_invalid")
+        expected_chunk_index = 1
+        for chunk in result.candidate_chunks:
+            if not isinstance(chunk, StockDailyBackfillChunk):
+                raise StockDailyBackfillPlanIntegrityError("chunk_invalid")
+            if chunk.instrument_id != result.instrument_id:
+                raise StockDailyBackfillPlanIntegrityError("chunk_outside_plan")
+            if chunk.lifecycle_version != result.lifecycle_version:
+                raise StockDailyBackfillPlanIntegrityError("chunk_lifecycle_mismatch")
+            if chunk.chunk_index != expected_chunk_index:
+                raise StockDailyBackfillPlanIntegrityError("chunk_index_mismatch")
+            expected_chunk_index += 1
+            chunk_identity = (chunk.instrument_id, chunk.chunk_index)
+            if chunk_identity in seen_chunks:
+                raise StockDailyBackfillPlanIntegrityError("duplicate_chunk_identity")
+            seen_chunks.add(chunk_identity)
+            if (
+                not isinstance(chunk.window_start, date)
+                or isinstance(chunk.window_start, datetime)
+                or not isinstance(chunk.window_end, date)
+                or isinstance(chunk.window_end, datetime)
+                or chunk.window_start > chunk.window_end
+                or chunk.window_days > plan.max_window_days
+            ):
+                raise StockDailyBackfillPlanIntegrityError("chunk_window_invalid")
+            if not _is_chunk_idempotency_key(chunk.idempotency_key):
+                raise StockDailyBackfillPlanIntegrityError("chunk_idempotency_invalid")
+            if chunk.idempotency_key in seen_request_keys:
+                raise StockDailyBackfillPlanIntegrityError("duplicate_chunk_idempotency_key")
+            seen_request_keys.add(chunk.idempotency_key)
+
+            expected_idempotency_key = _chunk_idempotency_key(
+                plan_version=plan.plan_version,
+                job_id=plan.job_id,
+                job_version=plan.job_version,
+                dataset_id=plan.dataset_id,
+                provider=plan.provider,
+                model=plan.model,
+                task_sha256=plan.task_sha256,
+                contract_sha256=plan.contract_sha256,
+                registry_sha256=plan.registry_sha256,
+                instrument_id=chunk.instrument_id,
+                lifecycle_version=chunk.lifecycle_version,
+                source_symbol=chunk.source_symbol,
+                alias_version=chunk.alias_version,
+                alias_evidence_ref=chunk.alias_evidence_ref,
+                alias_valid_from=chunk.alias_valid_from,
+                alias_valid_through=chunk.alias_valid_through,
+                window_start=chunk.window_start,
+                window_end=chunk.window_end,
+                query_source=plan.provider,
+                query_symbol=chunk.provider_symbol,
+            )
+            if not hmac.compare_digest(chunk.idempotency_key, expected_idempotency_key):
+                raise StockDailyBackfillPlanIntegrityError("chunk_idempotency_mismatch")
+            try:
+                request = chunk.request
+            except Exception:
+                raise StockDailyBackfillPlanIntegrityError("chunk_request_invalid") from None
+            canonical_request = _canonical_json(request.model_dump(mode="json"))
+            if canonical_request != chunk.request_payload_json:
+                raise StockDailyBackfillPlanIntegrityError("chunk_request_not_canonical")
+            if not hmac.compare_digest(
+                _sha256(chunk.request_payload_json), chunk.request_payload_sha256
+            ):
+                raise StockDailyBackfillPlanIntegrityError("chunk_request_digest_mismatch")
+            if request.run_type != "backfill" or request.partition:
+                raise StockDailyBackfillPlanIntegrityError("chunk_request_shape_invalid")
+            if request.idempotency_key != chunk.idempotency_key:
+                raise StockDailyBackfillPlanIntegrityError("chunk_request_key_mismatch")
+            if (
+                request.backfill_start != chunk.window_start
+                or request.backfill_end != chunk.window_end
+                or request.shard != chunk.provider_symbol
+            ):
+                raise StockDailyBackfillPlanIntegrityError("chunk_request_range_mismatch")
+            expected_query = {
+                "source": plan.provider,
+                "market": "cn",
+                "symbol": chunk.source_symbol,
+                "start_date": chunk.window_start.isoformat(),
+                "end_date": chunk.window_end.isoformat(),
+                "adjust": "raw",
+            }
+            if request.query != expected_query:
+                raise StockDailyBackfillPlanIntegrityError("chunk_request_query_mismatch")
+
+
 def build_stock_daily_backfill_plan(
     registry: InstrumentReferenceRegistry,
     *,
@@ -242,7 +429,7 @@ def build_stock_daily_backfill_plan(
     if validated_task.enabled:
         raise ValueError("the existing stock_daily fixture job must remain disabled")
     _validate_stock_contract(validated_task, contract)
-    task_digest = _sha256(_canonical_json(validated_task.model_dump(mode="json")))
+    task_digest = stock_daily_task_sha256(validated_task)
     contract_digest = canonical_sha256(contract)
     source_id = contract.source.source_id
     scoped_lifecycles = tuple(
@@ -822,6 +1009,62 @@ def _candidate_chunk_budget_message(
     )
 
 
+def _chunk_idempotency_key(
+    *,
+    plan_version: str,
+    job_id: str,
+    job_version: str,
+    dataset_id: str,
+    provider: str,
+    model: str,
+    task_sha256: str,
+    contract_sha256: str,
+    registry_sha256: str,
+    instrument_id: str,
+    lifecycle_version: str,
+    source_symbol: str,
+    alias_version: str,
+    alias_evidence_ref: str,
+    alias_valid_from: date | None,
+    alias_valid_through: date | None,
+    window_start: date,
+    window_end: date,
+    query_source: str,
+    query_symbol: str,
+) -> str:
+    """Build the exact immutable request key shared by planning and verification."""
+    key_material = {
+        "plan_version": plan_version,
+        "task": {
+            "job_id": job_id,
+            "version": job_version,
+            "dataset_id": dataset_id,
+            "provider": provider,
+            "model": model,
+        },
+        "task_sha256": task_sha256,
+        "contract_sha256": contract_sha256,
+        "registry_sha256": registry_sha256,
+        "instrument_id": instrument_id,
+        "lifecycle_version": lifecycle_version,
+        "alias": {
+            "value": source_symbol,
+            "version": alias_version,
+            "evidence_ref": alias_evidence_ref,
+            "valid_from": _iso(alias_valid_from),
+            "valid_through": _iso(alias_valid_through),
+        },
+        "window": {"start": window_start.isoformat(), "end": window_end.isoformat()},
+        "query": {
+            "source": query_source,
+            "market": "cn",
+            "symbol": query_symbol,
+            "adjust": "raw",
+        },
+    }
+    return f"bf-{_sha256(_canonical_json(key_material))}"
+
+
 def _chunks_for_alias(
     lifecycle: InstrumentLifecycle,
     alias: InstrumentAlias,
@@ -859,36 +1102,28 @@ def _chunks_for_alias(
                 )
             )
         chunk_index = first_chunk_index + len(chunks)
-        key_material = {
-            "plan_version": PLAN_VERSION,
-            "task": {
-                "job_id": task.job_id,
-                "version": task.version,
-                "dataset_id": task.dataset_id,
-                "provider": task.provider,
-                "model": task.model,
-            },
-            "task_sha256": task_sha256,
-            "contract_sha256": contract_sha256,
-            "registry_sha256": registry_sha256,
-            "instrument_id": lifecycle.instrument_id,
-            "lifecycle_version": lifecycle.lifecycle_version,
-            "alias": {
-                "value": alias.alias,
-                "version": alias.alias_version,
-                "evidence_ref": alias.evidence_ref,
-                "valid_from": _iso(alias.valid_from),
-                "valid_through": _iso(alias.valid_through),
-            },
-            "window": {"start": cursor.isoformat(), "end": chunk_end.isoformat()},
-            "query": {
-                "source": query.source,
-                "market": query.market,
-                "symbol": query.symbol,
-                "adjust": query.adjust,
-            },
-        }
-        idempotency_key = f"bf-{_sha256(_canonical_json(key_material))}"
+        idempotency_key = _chunk_idempotency_key(
+            plan_version=PLAN_VERSION,
+            job_id=task.job_id,
+            job_version=task.version,
+            dataset_id=task.dataset_id,
+            provider=task.provider,
+            model=task.model,
+            task_sha256=task_sha256,
+            contract_sha256=contract_sha256,
+            registry_sha256=registry_sha256,
+            instrument_id=lifecycle.instrument_id,
+            lifecycle_version=lifecycle.lifecycle_version,
+            source_symbol=alias.alias,
+            alias_version=alias.alias_version,
+            alias_evidence_ref=alias.evidence_ref,
+            alias_valid_from=alias.valid_from,
+            alias_valid_through=alias.valid_through,
+            window_start=cursor,
+            window_end=chunk_end,
+            query_source=query.source,
+            query_symbol=query.symbol,
+        )
         request = RunRequest.model_validate(
             {
                 "run_type": "backfill",
@@ -1182,11 +1417,28 @@ def _sha256(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
+def _is_sha256(value: object) -> bool:
+    """Return whether a value is a lowercase hexadecimal SHA-256 digest."""
+    return (
+        isinstance(value, str)
+        and len(value) == 64
+        and all(character in "0123456789abcdef" for character in value)
+    )
+
+
+def _is_chunk_idempotency_key(value: object) -> bool:
+    """Return whether a value follows the planner's ``bf-`` key encoding."""
+    return isinstance(value, str) and value.startswith("bf-") and _is_sha256(value[3:])
+
+
 __all__ = [
     "BackfillBlockReason",
     "BackfillBlocker",
     "InstrumentBackfillResult",
     "StockDailyBackfillChunk",
     "StockDailyBackfillPlan",
+    "StockDailyBackfillPlanIntegrityError",
     "build_stock_daily_backfill_plan",
+    "stock_daily_task_sha256",
+    "verify_stock_daily_backfill_plan",
 ]

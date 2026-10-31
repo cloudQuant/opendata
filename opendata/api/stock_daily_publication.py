@@ -49,6 +49,10 @@ from opendata.api.published_data import (
     get_dataset_grants,
     get_publication_store,
 )
+from opendata.api.stock_daily_capacity import (
+    StockDailyCapacityAttestation,
+    get_stock_daily_capacity_gate,
+)
 from opendata.data.dataset_contract_registry import (
     DatasetContractRegistry,  # noqa: TC001 - FastAPI resolves the dependency annotation at runtime.
 )
@@ -153,11 +157,6 @@ class StockDailyPageResponse(StockDailySnapshotResponse):
 router = APIRouter(prefix="/api/v2", route_class=_ErrorEnvelopeRoute)
 
 
-def _require_stock_daily_api_disabled() -> None:
-    """Keep this route hidden until separate production capacity acceptance."""
-    raise _not_found()
-
-
 @router.get(
     "/stock-daily/records",
     tags=["Stock Daily Publication"],
@@ -168,7 +167,7 @@ def _require_stock_daily_api_disabled() -> None:
 async def get_stock_daily_records(
     request: Request,
     *,
-    availability_gate: None = Depends(_require_stock_daily_api_disabled),
+    capacity: StockDailyCapacityAttestation = Depends(get_stock_daily_capacity_gate),
     principal: CurrentPrincipal,
     grants: DatasetGrantRegistry = Depends(get_dataset_grants),
     contracts: DatasetContractRegistry = Depends(get_dataset_contracts),
@@ -191,7 +190,7 @@ async def get_stock_daily_records(
 
     Args:
         request: Incoming bounded query parameters.
-        availability_gate: Hard-disable dependency; only synthetic tests may override it.
+        capacity: Active digest-pinned capacity attestation for this deployment.
         principal: Authenticated user or API-key principal.
         grants: Current operator-reviewed dataset/source grants.
         contracts: Operator-reviewed immutable contract registry.
@@ -208,7 +207,6 @@ async def get_stock_daily_records(
     Returns:
         One snapshot-bound page, original contract units, and explicit unknown coverage.
     """
-    del availability_gate
     allowed = {
         "market",
         "symbol",
@@ -250,6 +248,15 @@ async def get_stock_daily_records(
         contract, contract_hash = _resolve_contract(contracts, read_access, publication)
         _validate_stock_daily_contract(contract, publication)
         _require_supported_record_contract(contract, start, end)
+        _require_capacity_attestation(
+            capacity,
+            publication=publication,
+            contract_hash=contract_hash,
+            requested_publication_id=publication_id,
+            start=start,
+            end=end,
+            page_size=page_size or 100,
+        )
         snapshot = await _create_snapshot(
             store,
             publication=publication,
@@ -272,6 +279,15 @@ async def get_stock_daily_records(
             internal=True,
         )
         _require_supported_record_contract(contract, snapshot.start_date, snapshot.end_date)
+        _require_capacity_attestation(
+            capacity,
+            publication=publication,
+            contract_hash=contract_hash,
+            requested_publication_id=publication_id,
+            start=snapshot.start_date,
+            end=snapshot.end_date,
+            page_size=snapshot.page_size,
+        )
         page = await _read_page(
             store,
             snapshot=snapshot,
@@ -307,6 +323,15 @@ async def get_stock_daily_records(
         _validate_stock_daily_contract(contract, publication)
         _require_snapshot_publication_match(existing, publication)
         _require_supported_record_contract(contract, existing.start_date, existing.end_date)
+        _require_capacity_attestation(
+            capacity,
+            publication=publication,
+            contract_hash=contract_hash,
+            requested_publication_id=publication_id,
+            start=existing.start_date,
+            end=existing.end_date,
+            page_size=existing.page_size,
+        )
         snapshot = existing
         page = await _read_page(
             store,
@@ -502,6 +527,49 @@ def _require_snapshot_publication_match(
         or snapshot.publication_id != publication.publication_id
     ):
         raise _service_unavailable()
+
+
+def _require_capacity_attestation(
+    attestation: StockDailyCapacityAttestation,
+    *,
+    publication: PublicationRecord,
+    contract_hash: str,
+    requested_publication_id: str,
+    start: date | None,
+    end: date | None,
+    page_size: int,
+) -> None:
+    """Bind the resolved publication and request bounds to the active attestation.
+
+    ``PublicationRecord`` has no ``contract_sha256`` attribute. The publication
+    store records the contract digest under ``provenance["contract_sha256"]``,
+    and ``_resolve_contract`` already requires that stored digest to equal the
+    resolved canonical contract hash. Binding to ``contract_hash`` here therefore
+    checks the same exact value through the reviewed resolution path.
+
+    Every mismatch is reported as the route's uniform 404 so capacity settings
+    and publication identity cannot be probed.
+    """
+    if (
+        not attestation.is_active()
+        or publication.dataset_id != attestation.dataset_id
+        or publication.source_id != attestation.source_id
+        or publication.semantic_version != attestation.semantic_version
+        or contract_hash != attestation.contract_sha256
+        or (
+            attestation.publication_id is not None
+            and (
+                attestation.publication_id != requested_publication_id
+                or publication.publication_id != requested_publication_id
+            )
+        )
+        or start is None
+        or end is None
+        or page_size < 1
+        or (end - start).days > attestation.max_window_days
+        or page_size > attestation.max_page_size
+    ):
+        raise _not_found()
 
 
 def _validate_stock_daily_contract(

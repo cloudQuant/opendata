@@ -207,6 +207,10 @@ class ReviewedJob:
     and remain compatible with batches whose payload is ``None``.
     ``one_shot_only`` jobs must be disabled and schedule-free; their only
     accepted request shape is a reviewed manual run with a one-shot ledger row.
+    ``execution_only`` jobs are an explicitly reviewed control-plane exception:
+    they stay disabled and schedule-free, are never accepted by ordinary
+    submission or scheduled dispatch, and may execute only the exact backfill
+    request enqueued through :meth:`RunService.submit_execution`.
     """
 
     task: TaskDefinition
@@ -220,6 +224,7 @@ class ReviewedJob:
     decode_commit_payload: Callable[[bytes], object] | None = None
     commit_context_type: type[object] | None = None
     one_shot_only: bool = False
+    execution_only: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -248,10 +253,20 @@ class ReviewedJobRegistry:
                 raise TypeError("reviewed must be a bool")
             if type(job.one_shot_only) is not bool:
                 raise TypeError("one_shot_only must be a bool")
+            if type(job.execution_only) is not bool:
+                raise TypeError("execution_only must be a bool")
             if job.one_shot_only and job.task.enabled:
                 raise ValueError("one-shot-only jobs must be disabled")
             if job.one_shot_only and job.task.schedule is not None:
                 raise ValueError("one-shot-only jobs must not declare a schedule")
+            if job.execution_only and job.one_shot_only:
+                raise ValueError("execution-only and one-shot-only jobs are mutually exclusive")
+            if job.execution_only and not job.reviewed:
+                raise ValueError("execution-only jobs must be reviewed")
+            if job.execution_only and job.task.enabled:
+                raise ValueError("execution-only jobs must be disabled")
+            if job.execution_only and job.task.schedule is not None:
+                raise ValueError("execution-only jobs must not declare a schedule")
             _validate_commit_payload_declaration(job)
             key = (job.task.job_id, job.task.version)
             if key in indexed:
@@ -434,6 +449,44 @@ class RunService:
             raise RuntimeError("ledger did not persist the requested one-shot run contract")
         return record
 
+    def submit_execution(self, job_id: str, version: str, request: RunRequest) -> RunRecord:
+        """Enqueue one exact backfill request for a reviewed execution-only job.
+
+        Execution-only jobs remain disabled and unscheduled, so this method is
+        the only submission path that can reach their handlers. The row uses
+        the ledger's recoverable claim policy because the persistent worker
+        claims queued work through :meth:`run_once`; callers must treat an
+        expired ``running`` row as uncertain rather than reclaiming it.
+        """
+        job = self._registry.resolve(job_id, version)
+        if job is None:
+            raise ValueError("job version is not registered")
+        if not job.reviewed:
+            raise ValueError("job version has not been reviewed")
+        if not job.execution_only:
+            raise ValueError("job version is not execution-only")
+        if job.task.enabled or job.task.schedule is not None:
+            raise ValueError("execution-only job must be disabled and unscheduled")
+        if not isinstance(request, RunRequest):
+            raise TypeError("request must be a validated RunRequest")
+        if request.run_type != "backfill":
+            raise ValueError("execution-only jobs require a backfill run request")
+        identity = build_run_identity(job.task, request)
+        ledger = _require_unmodified_run_ledger(self._ledger)
+        record = _RUN_LEDGER_ENQUEUE_METHOD(
+            ledger,
+            identity.idempotency_key,
+            identity.canonical_json,
+            claim_policy="recover_expired",
+        )
+        if (
+            getattr(record, "run_key", None) != identity.idempotency_key
+            or getattr(record, "job_snapshot_json", None) != identity.canonical_json
+            or getattr(record, "claim_policy", None) != "recover_expired"
+        ):
+            raise RuntimeError("ledger did not persist the requested execution-only run contract")
+        return record
+
     def run_once(self, worker: str, ttl: timedelta) -> RunOutcome | None:
         """Claim and execute at most one queued request."""
         claim_now = self._now()
@@ -483,7 +536,15 @@ class RunService:
             job, request, snapshot_identity = self._resolve_snapshot(record)
             if not job.reviewed:
                 raise _JobNotRunnableError("job_not_reviewed")
-            if job.one_shot_only:
+            if job.execution_only:
+                if (
+                    job.task.enabled
+                    or job.task.schedule is not None
+                    or request.run_type != "backfill"
+                    or record.claim_policy not in {"recover_expired", "one_shot"}
+                ):
+                    raise _JobNotRunnableError("execution_only_contract_invalid")
+            elif job.one_shot_only:
                 if (
                     job.task.enabled
                     or job.task.schedule is not None
@@ -565,6 +626,8 @@ class RunService:
             raise ValueError("job version is not registered")
         if not job.reviewed:
             raise ValueError("job version has not been reviewed")
+        if job.execution_only:
+            raise ValueError("job version is execution-only")
         if job.one_shot_only:
             raise ValueError("job version is one-shot-only")
         if not job.task.enabled:
