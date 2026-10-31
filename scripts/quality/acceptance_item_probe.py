@@ -5175,6 +5175,8 @@ DWD_SERVICE_NODES: Final = (
 DWD_REVISION_NODES: Final = (
     "tests/test_dwd_merge.py::TestDwdMergeService::test_revision_of_an_existing_key_changes_the_dwd_row",
     "tests/test_dwd_merge.py::TestDwdMergeService::test_affected_keys_extend_the_merge_unit",
+    "tests/test_dwd_merge.py::TestDwdMergeService::test_hook_normalizes_affected_keys_without_marking_a_difference",
+    "tests/test_dwd_merge.py::TestDwdMergeService::test_single_source_affected_key_remains_unflagged",
     "tests/test_pipeline_templates.py::TestScopedOdsReader::"
     "test_run_hook_merges_scoped_old_revision_and_excludes_other_rows",
     "tests/test_pipeline_templates.py::TestScopedOdsReader::"
@@ -5920,15 +5922,16 @@ def judge_ac9_06(facts: Facts) -> Verdict:
 
 
 def _ac9_07_call_chain_facts(source: str) -> Facts:
-    """Read affected-key arguments from the service call graph with AST nodes."""
+    """Read revision-key propagation and comparison semantics from the merge AST."""
     no_chain = {
         "run_delegates_affected_keys": "no",
         "batch_reader_gets_keys": "no",
-        "batch_merge_gets_keys": "no",
         "normal_reader_gets_keys": "no",
         "scoped_reader_gets_keys": "no",
         "reader_gets_keys": "no",
-        "keys_extend_diffs": "no",
+        "batch_merges_source_frames": "no",
+        "batch_has_no_extra_diff_inputs": "no",
+        "diff_flag_has_binary_membership_shape": "no",
         "partition_hook_resells_keys": "no",
         "context_hook_resells_keys": "no",
         "hook_resells_keys": "no",
@@ -6025,9 +6028,75 @@ def _ac9_07_call_chain_facts(source: str) -> Facts:
         and isinstance(call.func, ast.Name)
         and call.func.id == "merge_source_frames"
     ]
-    batch_merge_gets_keys = len(merge_calls) == 1 and collection_of(
-        keyword_value(merge_calls[0], "extra_diff_keys"), "frozenset", "affected_keys"
+    batch_merges_source_frames = (
+        len(merge_calls) == 1
+        and len(merge_calls[0].args) >= 2
+        and is_name(merge_calls[0].args[1], "frames")
     )
+
+    def has_extra_diff_input(call: ast.Call) -> bool:
+        for keyword in call.keywords:
+            if keyword.arg == "extra_diff_keys":
+                return True
+            if keyword.arg is not None:
+                continue
+            if not isinstance(keyword.value, ast.Dict):
+                return True
+            for key in keyword.value.keys:
+                if (
+                    key is None
+                    or not isinstance(key, ast.Constant)
+                    or not isinstance(key.value, str)
+                ):
+                    return True
+                if key.value == "extra_diff_keys":
+                    return True
+        return False
+
+    batch_has_no_extra_diff_inputs = len(merge_calls) == 1 and not has_extra_diff_input(
+        merge_calls[0]
+    )
+
+    merge_functions = [
+        node
+        for node in tree.body
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        and node.name == "merge_source_frames"
+    ]
+    diff_flag_has_binary_membership_shape = False
+    if len(merge_functions) == 1:
+        merge_function = merge_functions[0]
+        for node in ast.walk(merge_function):
+            if not isinstance(node, ast.Assign) or not isinstance(node.value, ast.IfExp):
+                continue
+            if not any(
+                isinstance(target, ast.Subscript)
+                and isinstance(target.value, ast.Name)
+                and target.value.id == "record"
+                and isinstance(target.slice, ast.Constant)
+                and target.slice.value == "_diff_flag"
+                for target in node.targets
+            ):
+                continue
+            test = node.value.test
+            if not (
+                isinstance(test, ast.Compare)
+                and len(test.ops) == 1
+                and isinstance(test.ops[0], ast.In)
+                and len(test.comparators) == 1
+            ):
+                continue
+            if not (
+                isinstance(node.value.body, ast.Constant)
+                and type(node.value.body.value) is int
+                and node.value.body.value == 1
+                and isinstance(node.value.orelse, ast.Constant)
+                and type(node.value.orelse.value) is int
+                and node.value.orelse.value == 0
+            ):
+                continue
+            diff_flag_has_binary_membership_shape = True
+            break
     source_reader_method = methods.get("_read_source")
 
     def returned_local_reader_gets_keys(name: str) -> bool:
@@ -6119,7 +6188,6 @@ def _ac9_07_call_chain_facts(source: str) -> Facts:
     return {
         "run_delegates_affected_keys": flag(run_delegates),
         "batch_reader_gets_keys": flag(batch_reader_gets_keys),
-        "batch_merge_gets_keys": flag(batch_merge_gets_keys),
         "normal_reader_gets_keys": flag(normal_reader_gets_keys),
         "scoped_reader_gets_keys": flag(scoped_reader_gets_keys),
         "reader_gets_keys": flag(
@@ -6128,7 +6196,9 @@ def _ac9_07_call_chain_facts(source: str) -> Facts:
             and normal_reader_gets_keys
             and scoped_reader_gets_keys
         ),
-        "keys_extend_diffs": flag(run_delegates and batch_merge_gets_keys),
+        "batch_merges_source_frames": flag(batch_merges_source_frames),
+        "batch_has_no_extra_diff_inputs": flag(batch_has_no_extra_diff_inputs),
+        "diff_flag_has_binary_membership_shape": flag(diff_flag_has_binary_membership_shape),
         "partition_hook_resells_keys": flag(partition_hook_resells),
         "context_hook_resells_keys": flag(context_hook_resells),
         "hook_resells_keys": flag(partition_hook_resells and context_hook_resells),
@@ -6157,11 +6227,12 @@ def judge_ac9_07(facts: Facts) -> Verdict:
     faces = (
         "run_delegates_affected_keys",
         "batch_reader_gets_keys",
-        "batch_merge_gets_keys",
         "normal_reader_gets_keys",
         "scoped_reader_gets_keys",
         "reader_gets_keys",
-        "keys_extend_diffs",
+        "batch_merges_source_frames",
+        "batch_has_no_extra_diff_inputs",
+        "diff_flag_has_binary_membership_shape",
         "partition_hook_resells_keys",
         "context_hook_resells_keys",
         "hook_resells_keys",
@@ -6177,21 +6248,25 @@ def judge_ac9_07(facts: Facts) -> Verdict:
     readings = (
         f"修订行为节点: {facts['passed']}/{facts['runs']} passed"
         + (f"; not green: {facts['bad']}" if facts["bad"] != "-" else "")
-        + " —— 覆盖窗口外改值、生产 scoped reader、None 水位、多源和无关行排除",
+        + " —— 覆盖窗口外修订传播与真实分歧=1、同值=0、单源=0、生产 scoped reader 和无关行排除",
         "传播链: runner 交键 = "
         f"{facts['runner_publishes_keys']}、run 委托 batch 并传键 = "
-        f"{facts['run_delegates_affected_keys']}、batch reader 收键 = "
-        f"{facts['batch_reader_gets_keys']}、普通/scoped reader 收键 = "
-        f"{facts['normal_reader_gets_keys']}/{facts['scoped_reader_gets_keys']}、batch diff 收键 = "
-        f"{facts['batch_merge_gets_keys']}、partition hook 重拼契约键 = "
+        f"{facts['run_delegates_affected_keys']}、batch/普通/scoped reader 收键 = "
+        f"{facts['batch_reader_gets_keys']}/{facts['normal_reader_gets_keys']}/"
+        f"{facts['scoped_reader_gets_keys']}、batch 向合并函数传源帧 = "
+        f"{facts['batch_merges_source_frames']}、batch 不传额外差异标记输入 = "
+        f"{facts['batch_has_no_extra_diff_inputs']}、_diff_flag AST 为 1/0 membership 表达式 = "
+        f"{facts['diff_flag_has_binary_membership_shape']}、partition hook 重拼契约键 = "
         f"{facts['partition_hook_resells_keys']}、context hook 重拼契约键 = "
         f"{facts['context_hook_resells_keys']}、写侧按业务键 upsert = {facts['writer_upserts']}",
     )
     reason = (
         ""
         if ok
-        else "「修订传播」是一条链：ods 改了的键要交出来、要换成契约键、要进 reader 的取数窗口、"
-        "要参与差异重算、最后按业务键 upsert 回同一行 —— 链上任一段断掉，dwd 留的就不是修订后的值"
+        else "「修订传播」是一条链：ods 改了的键要交出来、要换成契约键、"
+        "要扩展源 reader 的读取范围，"
+        "两侧读数再进入真实比较，只有实际不一致才标差异，最后按业务键 upsert 回同一行 —— "
+        "链上任一段断掉，dwd 留的就不是修订后的值或差异标记会失真"
     )
     return Verdict(PROVEN if ok else GAP, readings, reason)
 
@@ -17654,15 +17729,15 @@ PROBES: Final[tuple[Probe, ...]] = (
         item="AC-9|07",
         expects="ods 中已存在 key 被修正后，dwd 对应行同步更新（单测）",
         summary=(
-            "修订节点全绿（含生产 scoped ODS reader）+ run/batch/hook 的 affected_keys 传播链完整"
+            "修订行为节点证明 affected_keys 扩展源读取，真分歧标 1、同值和单源标 0；AST 只核对结构"
         ),
         measure=measure_ac9_07,
         judge=judge_ac9_07,
         breaks=(
             Break("修订传播节点变红（值不再同步）", (("passed", "1"), ("bad", "x=exit=1")), GAP),
-            Break("节点被改名（两条里少一条就不算链上有人看过）", (("runs", "1"),), GAP),
+            Break("节点被改名（少一条行为证据就不算链上有人看过）", (("runs", "1"),), GAP),
             Break(
-                "run 不再把 affected_keys 委托给 batch（后续 reader 与 diff 链均断开）",
+                "run 不再把 affected_keys 委托给 batch（后续源读取链断开）",
                 (("run_delegates_affected_keys", "no"),),
                 GAP,
             ),
@@ -17681,7 +17756,17 @@ PROBES: Final[tuple[Probe, ...]] = (
                 (("scoped_reader_gets_keys", "no"),),
                 GAP,
             ),
-            Break("batch 不再把修订键传入差异重算", (("batch_merge_gets_keys", "no"),), GAP),
+            Break("batch 不再把两源帧交给合并比较", (("batch_merges_source_frames", "no"),), GAP),
+            Break(
+                "batch 提供了额外差异标记输入或关键字展开无法静态确认",
+                (("batch_has_no_extra_diff_inputs", "no"),),
+                GAP,
+            ),
+            Break(
+                "_diff_flag 不再采用二值 membership 表达式结构",
+                (("diff_flag_has_binary_membership_shape", "no"),),
+                GAP,
+            ),
             Break(
                 "partition 或普通 context hook 不再把 ods 拼法重拼成契约键 "
                 "（600519.SH 对不上 600519）",
@@ -17702,11 +17787,12 @@ PROBES: Final[tuple[Probe, ...]] = (
             "bad": "-",
             "run_delegates_affected_keys": "yes",
             "batch_reader_gets_keys": "yes",
-            "batch_merge_gets_keys": "yes",
             "normal_reader_gets_keys": "yes",
             "scoped_reader_gets_keys": "yes",
             "reader_gets_keys": "yes",
-            "keys_extend_diffs": "yes",
+            "batch_merges_source_frames": "yes",
+            "batch_has_no_extra_diff_inputs": "yes",
+            "diff_flag_has_binary_membership_shape": "yes",
             "partition_hook_resells_keys": "yes",
             "context_hook_resells_keys": "yes",
             "hook_resells_keys": "yes",

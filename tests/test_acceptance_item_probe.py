@@ -1037,19 +1037,20 @@ def test_ac11_02_latest_official_run_with_hfq_errors_remains_a_gap() -> None:
     assert "10 行 ERROR" in verdict.reason
 
 
-def test_ac9_07_actual_merge_flow_passes_affected_keys_through_all_paths() -> None:
-    """The current run, batch reader/diff, and both hook branches preserve keys."""
+def test_ac9_07_probe_measures_read_scope_and_diff_flag_contract() -> None:
+    """Affected keys extend reads; behavior nodes prove diff flags follow values."""
     source = (REPO_ROOT / DWD_MERGE_REL).read_text(encoding="utf-8")
 
     chain_facts = _ac9_07_call_chain_facts(source)
     assert chain_facts == {
         "run_delegates_affected_keys": "yes",
         "batch_reader_gets_keys": "yes",
-        "batch_merge_gets_keys": "yes",
         "normal_reader_gets_keys": "yes",
         "scoped_reader_gets_keys": "yes",
         "reader_gets_keys": "yes",
-        "keys_extend_diffs": "yes",
+        "batch_merges_source_frames": "yes",
+        "batch_has_no_extra_diff_inputs": "yes",
+        "diff_flag_has_binary_membership_shape": "yes",
         "partition_hook_resells_keys": "yes",
         "context_hook_resells_keys": "yes",
         "hook_resells_keys": "yes",
@@ -1344,7 +1345,7 @@ def test_evidence_deletions_excludes_only_bytecode_from_both_sets(
         (
             "affected_keys=affected_keys,",
             "affected_keys=(),",
-            ("run_delegates_affected_keys", "reader_gets_keys", "keys_extend_diffs"),
+            ("run_delegates_affected_keys", "reader_gets_keys"),
         ),
         (
             "                set(affected_keys),",
@@ -1362,9 +1363,26 @@ def test_evidence_deletions_excludes_only_bytecode_from_both_sets(
             ("scoped_reader_gets_keys", "reader_gets_keys"),
         ),
         (
-            "extra_diff_keys=frozenset(affected_keys),",
-            "extra_diff_keys=frozenset(),",
-            ("batch_merge_gets_keys", "keys_extend_diffs"),
+            "            merged_at=merged_at,\n        )",
+            "            merged_at=merged_at,\n"
+            "            extra_diff_keys=frozenset(affected_keys),\n        )",
+            ("batch_has_no_extra_diff_inputs",),
+        ),
+        (
+            "            merged_at=merged_at,\n        )",
+            "            merged_at=merged_at,\n"
+            '            **{"extra_diff_keys": frozenset(affected_keys)},\n        )',
+            ("batch_has_no_extra_diff_inputs",),
+        ),
+        (
+            "            merged_at=merged_at,\n        )",
+            "            merged_at=merged_at,\n            **merge_options,\n        )",
+            ("batch_has_no_extra_diff_inputs",),
+        ),
+        (
+            'record["_diff_flag"] = 1 if biz_key in flagged else 0',
+            'record["_diff_flag"] = 1 if True else 0',
+            ("diff_flag_has_binary_membership_shape",),
         ),
         (
             "affected_keys=self._contract_keys(partition),",
@@ -1382,7 +1400,10 @@ def test_evidence_deletions_excludes_only_bytecode_from_both_sets(
         "batch-reader",
         "ordinary-reader",
         "scoped-reader",
-        "batch-diff",
+        "affected-key-forced-diff",
+        "expanded-extra-diff-kwargs",
+        "unknown-expanded-kwargs",
+        "diff-flag-expression-shape",
         "partition-hook",
         "context-hook",
     ),
