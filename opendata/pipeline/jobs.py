@@ -64,7 +64,8 @@ if TYPE_CHECKING:
     from sqlalchemy import Engine
     from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-    from opendata.data.protocol import Fetcher
+    from opendata.data.protocol import FetchContext, Fetcher
+    from opendata.data.request_budget import RequestBudget
     from opendata.pipeline.alerts import AlertDecision
     from opendata.pipeline.cross_check import DiffSummary
     from opendata.pipeline.runner import PipelineOutcome, Window
@@ -282,20 +283,40 @@ def make_fetch_symbol(
 
 
 def make_fetch_symbol_async(
-    domain: str, source: str, *, timeout: float = 30.0
+    domain: str,
+    source: str,
+    *,
+    timeout: float = 30.0,
+    request_budget: RequestBudget | None = None,
 ) -> Callable[[str, Window], Awaitable[pd.DataFrame]]:
     """Build the production async step-1 callback while retaining ODS raw shape.
 
     The provider's normal ``fetch_async`` entry normalizes contract values.
     Pipeline ODS writes intentionally retain source columns and units, so this
     callback uses the protocol's bounded/native ``fetch_raw_async`` seam.
+
+    A supplied budget must come from trusted application code. It is reused
+    across symbols handled by this callback so the request-wide counter stays
+    shared, while each symbol gets a fresh FetchContext for its own timeout and
+    cancellation lifetime. The default context has no request budget and
+    grants no source authority.
+
+    Explicit budgets are currently supported only for the THS ``stock_daily``
+    fetcher, whose canonical model identity is exact. They cannot be carried
+    to a fallback or secondary source that does not declare that identity.
     """
-    from opendata.data.protocol import FetchContext
+    _new_job_fetch_context(timeout=timeout, request_budget=request_budget)
+    if request_budget is not None and (domain != "stock_daily" or source != "ths"):
+        raise ValueError(
+            "request_budget is supported only for a single-source THS stock_daily job"
+        )
 
     fetcher = resolve_fetcher(domain, source)
-    ctx = FetchContext(timeout=timeout)
+    if request_budget is not None:
+        _validate_job_budget_fetcher(domain, source, fetcher)
 
     async def fetch(symbol: str, window: Window) -> pd.DataFrame:
+        ctx = _new_job_fetch_context(timeout=timeout, request_budget=request_budget)
         raw = await fetcher.fetch_raw_async(
             ctx=ctx,
             symbol=symbol,
@@ -305,6 +326,30 @@ def make_fetch_symbol_async(
         return _ods_frame_from_raw(raw, domain, source)
 
     return fetch
+
+
+def _new_job_fetch_context(
+    *, timeout: float, request_budget: RequestBudget | None
+) -> FetchContext:
+    """Build a per-symbol context and validate any caller-supplied budget."""
+    from opendata.data.protocol import FetchContext
+
+    return FetchContext(timeout=timeout, request_budget=request_budget)
+
+
+def _validate_job_budget_fetcher(domain: str, source: str, fetcher: Fetcher[Any, Any]) -> None:
+    """Require the exact canonical identity currently supported for job budgets."""
+    canonical_model = getattr(fetcher, "canonical_model", None)
+    if (
+        domain != "stock_daily"
+        or source != "ths"
+        or type(canonical_model) is not str
+        or canonical_model != domain
+    ):
+        raise ValueError(
+            "request_budget requires the THS stock_daily fetcher to declare "
+            "its exact canonical model"
+        )
 
 
 def _ods_frame_from_raw(raw: object, domain: str, source: str) -> pd.DataFrame:
@@ -586,6 +631,7 @@ async def run_incremental_job(
     session_maker: async_sessionmaker[AsyncSession] | None = None,
     resume: bool = True,
     calendar: CalendarView | None = None,
+    request_budget: RequestBudget | None = None,
 ) -> JobResult:
     """Run one incremental batch of a domain through the six steps.
 
@@ -608,6 +654,12 @@ async def run_incremental_job(
         resume: Skip shards an earlier run already completed.
         calendar: Trading calendar used to pick the window end; defaults
             to the warehouse calendar, falling back to the weekday rule.
+        request_budget: Optional trusted-code request budget for this job.
+            The same thread-safe grant set is shared by symbols in one
+            single-source THS job. Callers should create a fresh budget per
+            job; it is an in-process scope and does not coordinate other jobs
+            or worker processes. Dual-source jobs are rejected when a budget
+            is supplied. No grant or network permission is created here.
 
     Returns:
         The :class:`JobResult` of the batch.
@@ -622,6 +674,10 @@ async def run_incremental_job(
     """
     from opendata.core.database import async_session_maker
 
+    # Validate before reading the warehouse or resolving the universe. This
+    # reuses FetchContext's existing RequestBudget type and timeout checks.
+    _new_job_fetch_context(timeout=30.0, request_budget=request_budget)
+
     if domain not in SUPPORTED_DOMAINS:
         raise ValueError(
             f"no pipeline builder for domain {domain!r}; supported: {sorted(SUPPORTED_DOMAINS)}"
@@ -630,6 +686,14 @@ async def run_incremental_job(
     warehouse = engine or warehouse_engine()
     maker = session_maker or async_session_maker
     authoritative = source or default_source(domain)
+    if request_budget is not None and (
+        authoritative != "ths"
+        or (second_source is not None and second_source != authoritative)
+    ):
+        raise ValueError(
+            "request_budget is supported only for a single-source THS "
+            "stock_daily job"
+        )
     run_date = as_of or date.today()
     day_calendar = calendar if calendar is not None else resolve_calendar(warehouse)
     window = incremental_window(run_date, lookback_days=lookback_days, calendar=day_calendar)
@@ -657,10 +721,16 @@ async def run_incremental_job(
     outcomes: dict[str, PipelineOutcome] = {}
     for rank, feed in enumerate(feeds):
         is_authoritative = rank == len(feeds) - 1
+        if request_budget is None:
+            fetch_symbol = make_fetch_symbol_async(domain, feed)
+        else:
+            fetch_symbol = make_fetch_symbol_async(
+                domain, feed, request_budget=request_budget
+            )
         pipeline = build_stock_daily_pipeline(
             engine=warehouse,
             session_maker=maker,
-            fetch_symbol=make_fetch_symbol_async(domain, feed),
+            fetch_symbol=fetch_symbol,
             symbols=universe,
             source=feed,
             second_source=second_source if is_authoritative else None,
