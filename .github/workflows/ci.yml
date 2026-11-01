@@ -97,6 +97,14 @@ jobs:
         with:
           # a2-check resolves the baseline commit by SHA, so the full history is required.
           fetch-depth: 0
+          # On a pull_request run the default ref is GitHub's synthetic merge commit, and that
+          # ref arrives shallow: `git rev-list --count HEAD` reads 3 and `is-shallow-repository`
+          # reads true even with fetch-depth 0.  The acceptance probe judges full-history faces
+          # (AC-16|09, AC-19|02) and reads them proven on a push run, gap on a PR run, so no
+          # frozen ratchet baseline can hold in both shapes.  Checking out the PR head makes the
+          # PR run measure the same history the merge will land; diff-based members already name
+          # their base (A2_BASE_REF above), so they are unaffected.
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
 
       - name: Fetch PR base branch (A2 gate needs it as a diff base)
         if: github.event_name == 'pull_request'
