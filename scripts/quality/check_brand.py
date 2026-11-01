@@ -104,6 +104,21 @@ TOKEN_PATH_ALLOWLIST: dict[str, frozenset[str]] = {
             "tests/test_runtime_inventory.py",
             "docs/afi204-runtime-inventory.json",
             "docs/afi204-migration-catalog.json",
+            # The legacy warehouse/metadata database is literally named
+            # ``akshare_data``; the migration plan, its fixtures and the
+            # identity-pin documentation must name it to join or verify it, and
+            # ``user_authorized_akshare_data_use`` is the persisted rights
+            # evidence label for that upstream data.  These are factual
+            # identifiers, not pre-rename brand residue.
+            "docs/operations-afi204-migration.md",
+            "opendata/data/providers/sina/lrb_statement_process.py",
+            "opendata/migration_plan.py",
+            "scripts/ops/sina_lrb_raw_canary.py",
+            "tests/test_legacy_stock_daily_inventory.py",
+            "tests/test_legacy_stock_daily_transfer_cli.py",
+            "tests/test_migration_host_reconcile.py",
+            "tests/test_migration_plan.py",
+            "tests/test_sina_lrb_statement_process.py",
         }
     ),
     "akshare_network": frozenset({"docs/afi204-migration-catalog.json"}),
