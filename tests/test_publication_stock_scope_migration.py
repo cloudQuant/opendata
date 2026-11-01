@@ -28,6 +28,11 @@ if TYPE_CHECKING:
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 _MIGRATION_DIRECTORY = REPOSITORY_ROOT / "alembic_data" / "versions"
+# 0017/0018 的字节在 #158（9f71cf9a）被 A2 类型平面改动过：0017 只加注解
+# （Sequence[str]、Mapping[Any, Any]、object），0018 另把 publication_id["type"]
+# 取到局部变量再用它做 String/length 收窄——两者都是等价语义，SQL、执行顺序与
+# 守卫判断未变。此处重钉这两个哈希；此后任何对这两个 revision 的字节改动都要
+# 同样复核，而不是直接改期望值。
 _MIGRATIONS = {
     "0011": (
         _MIGRATION_DIRECTORY / "20261026-0011_publication_snapshots.py",
@@ -39,11 +44,11 @@ _MIGRATIONS = {
     ),
     "0017": (
         _MIGRATION_DIRECTORY / "20261028-0017_sina_capture_discovery_index.py",
-        "afac37f3e53af404577a89539fd5292b5c5d2094492179d9c307a6fc2276475f",
+        "a9946aa2e97e5d0fee62ec7d937b8245416ef03b3d2d03e09a49b5f824fe5756",
     ),
     "0018": (
         _MIGRATION_DIRECTORY / "20261028-0018_publication_outbox.py",
-        "f1aaa213125f2b56af06cd3ecd9301a67096648d7aeac32a8896f0f28ff64d7a",
+        "0677e71112fdf052cae4f6e9490b9a03180d50301dfbbe93fbac3d4366860396",
     ),
 }
 MIGRATION_PATH = _MIGRATION_DIRECTORY / "20261028-0019_publication_market_symbol_scope.py"
