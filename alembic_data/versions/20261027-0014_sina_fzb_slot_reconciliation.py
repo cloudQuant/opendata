@@ -11,6 +11,8 @@ its first missing timestamp and records only a late fanout-group reference.
 The migration does not create groups or enqueue collection work.
 """
 
+from typing import TYPE_CHECKING
+
 from sqlalchemy import (
     BigInteger,
     CheckConstraint,
@@ -25,6 +27,9 @@ from sqlalchemy import (
 from sqlalchemy.dialects.mysql import MEDIUMTEXT, VARCHAR
 
 from alembic import op
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 revision = "0014_sina_fzb_slot_reconciliation"
 down_revision = "0013_sina_fzb_fanout_groups"
@@ -159,7 +164,7 @@ def _prepare_mysql_version_table() -> None:
             "Revision 0014 requires version_num as the version table's sole primary key."
         )
 
-    version_rows = (
+    version_rows: Sequence[str] = (
         bind.execute(
             select(
                 table(

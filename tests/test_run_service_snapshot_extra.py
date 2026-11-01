@@ -47,9 +47,7 @@ def _task(
         dataset_id="cn.snapshot.data",
         provider="provider-cn",
         model="snapshot-v1",
-        schedule=(
-            ScheduleMetadata(kind="cron", expression="0 16 * * 1-5") if schedule else None
-        ),
+        schedule=(ScheduleMetadata(kind="cron", expression="0 16 * * 1-5") if schedule else None),
         enabled=enabled,
     )
 
@@ -85,9 +83,7 @@ def _snapshot(run_type: str) -> tuple[str, str, dict[str, object]]:
     )
 
 
-def _reviewed_job(
-    *, task: TaskDefinition | None = None, **declarations: object
-) -> ReviewedJob:
+def _reviewed_job(*, task: TaskDefinition | None = None, **declarations: object) -> ReviewedJob:
     """Create a reviewed job whose optional sidecar declaration can be varied."""
     task = task or _task()
     return ReviewedJob(
@@ -131,12 +127,15 @@ def test_verified_snapshot_json_revalidates_issuer_digest_and_request_key() -> N
     )
     assert context._verified_snapshot_json() == canonical_json
 
-    assert RunExecutionContext(
-        run_key=run_key,
-        worker="snapshot-test",
-        fencing_token=1,
-        _checkpoint=lambda: None,
-    )._verified_snapshot_json() is None
+    assert (
+        RunExecutionContext(
+            run_key=run_key,
+            worker="snapshot-test",
+            fencing_token=1,
+            _checkpoint=lambda: None,
+        )._verified_snapshot_json()
+        is None
+    )
 
     tampered_payload = json.loads(canonical_json)
     tampered_payload["run"]["business_request"]["partition"]["trade_date"] = "2026-10-22"
@@ -291,9 +290,7 @@ def test_snapshot_request_helpers_reject_untrusted_shapes() -> None:
     with pytest.raises(run_service_module._SnapshotInvalidError, match="snapshot_slot_invalid"):
         run_service_module._expected_scheduled_key({"job": None, "run": {}})
     with pytest.raises(run_service_module._SnapshotInvalidError, match="snapshot_slot_invalid"):
-        run_service_module._expected_scheduled_key(
-            {"job": {}, "run": {"business_request": None}}
-        )
+        run_service_module._expected_scheduled_key({"job": {}, "run": {"business_request": None}})
     with pytest.raises(run_service_module._SnapshotInvalidError, match="snapshot_slot_invalid"):
         run_service_module._expected_scheduled_key(
             {"job": {}, "run": {"business_request": {}, "occurrence": None}}
@@ -310,9 +307,7 @@ def test_snapshot_request_helpers_reject_untrusted_shapes() -> None:
         ("2026-10-26T02:00:00Z", "snapshot_occurrence_invalid"),
     ],
 )
-def test_snapshot_occurrence_must_be_exact_canonical_utc(
-    value: str, error_code: str
-) -> None:
+def test_snapshot_occurrence_must_be_exact_canonical_utc(value: str, error_code: str) -> None:
     """UTC timestamp parsing rejects missing zones, bad dates, and omitted precision."""
     with pytest.raises(run_service_module._SnapshotInvalidError, match=error_code):
         run_service_module._parse_utc_datetime(value)
@@ -340,7 +335,10 @@ def test_run_context_builder_rejects_identity_from_another_run() -> None:
 
     with pytest.raises(ValueError, match="run snapshot identity is invalid"):
         service._execution_context(
-            record, "worker", timedelta(minutes=1), identity  # type: ignore[arg-type]
+            record,
+            "worker",
+            timedelta(minutes=1),
+            identity,  # type: ignore[arg-type]
         )
 
 
@@ -477,6 +475,7 @@ def test_commit_payload_declaration_fails_closed_on_incomplete_contracts() -> No
 
 def test_commit_payload_preflight_checks_presence_type_and_byte_limit() -> None:
     """Payloads must match the registered exact-byte contract before batch copying."""
+
     def validator(_payload: bytes) -> bool:
         return True
 
@@ -518,6 +517,7 @@ def test_commit_payload_preflight_checks_presence_type_and_byte_limit() -> None:
 
 def test_commit_payload_validator_sanitizes_failure_and_requires_literal_true() -> None:
     """Validator errors and truthy non-booleans cannot authorize a transaction sidecar."""
+
     def raises(_payload: bytes) -> bool:
         raise RuntimeError("secret validator detail")
 

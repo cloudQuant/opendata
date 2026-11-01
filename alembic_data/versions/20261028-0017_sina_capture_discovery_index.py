@@ -28,7 +28,7 @@ from sqlalchemy import (
 from alembic import op
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from collections.abc import Mapping, Sequence
     from typing import Any
 
 revision = "0017_sina_capture_discovery_index"
@@ -141,7 +141,7 @@ def _require_revision_marker(expected: str, mode: str) -> None:
         column("version_num", version_type),
         schema=version_schema,
     )
-    rows = bind.execute(select(version_ref.c.version_num)).scalars().all()
+    rows: Sequence[str] = bind.execute(select(version_ref.c.version_num)).scalars().all()
     if rows != [expected]:
         raise RuntimeError(
             f"revision 0017 requires exactly one Alembic marker matching {expected}; "
@@ -181,7 +181,7 @@ def _sqlite_index_sql(name: str) -> str | None:
     return str(row[0]) if row is not None and row[0] is not None else None
 
 
-def _sqlite_index_key_parts(name: str) -> tuple[Mapping[str, object], ...]:
+def _sqlite_index_key_parts(name: str) -> tuple[Mapping[Any, Any], ...]:
     """Read effective collation and ordering for each actual SQLite index key part."""
     return tuple(
         op.get_bind()
@@ -276,7 +276,7 @@ def _require_sqlite_discovery_column_collations() -> None:
                 ) from (cleanup_error)
 
 
-def _mysql_statistics(index_name: str) -> tuple[Mapping[str, object], ...]:
+def _mysql_statistics(index_name: str) -> tuple[Mapping[Any, Any], ...]:
     """Read exact MySQL index parts, including visibility and prefix metadata."""
     rows = (
         op.get_bind()
@@ -359,7 +359,7 @@ def _mysql_index_key_bytes() -> int:
         .mappings()
         .all()
     )
-    by_name: dict[str, Mapping[str, object]] = {str(row["COLUMN_NAME"]): row for row in rows}
+    by_name: dict[str, Mapping[Any, Any]] = {str(row["COLUMN_NAME"]): row for row in rows}
     if not set(_INDEX_COLUMNS).issubset(by_name):
         raise RuntimeError("revision 0017 cannot inspect every MySQL indexed column")
 
@@ -521,7 +521,7 @@ def _mysql_index_ddl(*, drop: bool) -> str:
 def _execute_mysql_online_ddl(statement: str) -> None:
     """Bound metadata-lock wait for one online index DDL and restore session state."""
     bind = op.get_bind()
-    previous = bind.exec_driver_sql("SELECT @@SESSION.lock_wait_timeout").scalar_one()
+    previous: object = bind.exec_driver_sql("SELECT @@SESSION.lock_wait_timeout").scalar_one()
     if type(previous) is not int or previous < 1:
         raise RuntimeError("revision 0017 cannot safely inspect the current metadata-lock timeout")
     bind.exec_driver_sql(f"SET SESSION lock_wait_timeout = {_MYSQL_MDL_TIMEOUT_SECONDS}")

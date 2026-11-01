@@ -522,7 +522,7 @@ def _reference_schema(
 
 def _require_utf8_database(connection: Connection) -> None:
     """Require UTF-8 because the v2 byte bound is defined over UTF-8 bytes."""
-    encoding = connection.exec_driver_sql("PRAGMA encoding").scalar_one()
+    encoding: object = connection.exec_driver_sql("PRAGMA encoding").scalar_one()
     if encoding != "UTF-8":
         raise RuntimeError("source gate database encoding must be UTF-8")
 

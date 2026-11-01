@@ -442,8 +442,8 @@ def _build_runtime(state_directory: Path) -> _FixtureRuntime:
     app.dependency_overrides[get_dataset_grants] = lambda: grants
     app.dependency_overrides[get_dataset_contracts] = lambda: contracts
     app.dependency_overrides[get_publication_store] = lambda: store
-    app.dependency_overrides[get_dataset_coverage_evidence_registry_loader] = (
-        lambda: lambda: evidence_registry
+    app.dependency_overrides[get_dataset_coverage_evidence_registry_loader] = lambda: (
+        lambda: evidence_registry
     )
 
     audit_rows: list[dict[str, str]] = []

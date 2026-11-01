@@ -40,7 +40,7 @@ def downgrade() -> None:
     if marker != V3_REVISION:
         raise RuntimeError("source gate scope v3 downgrade requires the exact v3 revision")
     try:
-        count = connection.exec_driver_sql(
+        count: int = connection.exec_driver_sql(
             "SELECT COUNT(*) FROM od_source_attempt_scope_v3"
         ).scalar_one()
     except SQLAlchemyError as exc:

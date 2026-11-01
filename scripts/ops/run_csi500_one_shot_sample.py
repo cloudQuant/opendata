@@ -16,7 +16,7 @@ import argparse
 import json
 import os
 import stat
-import subprocess
+import subprocess  # nosec B404  # fixed interpreter/script argv only, shell never enabled
 import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -141,7 +141,7 @@ def _migrate(target_value: str) -> dict[str, object]:
         ]
         try:
             migration_environment = _migration_environment(current)
-            result = subprocess.run(  # noqa: S603 - fixed interpreter/script and enumerated args
+            result = subprocess.run(  # noqa: S603  # nosec B603  # fixed argv, no shell
                 child_command,
                 cwd=current.directory,
                 env=migration_environment,

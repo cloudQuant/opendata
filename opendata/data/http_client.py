@@ -29,7 +29,7 @@ import random
 import threading
 import time
 import uuid
-from collections.abc import Iterator, Mapping
+from collections.abc import Iterator, Mapping, MutableMapping
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
@@ -1502,7 +1502,9 @@ class GovernedHttpClient:
     ) -> requests.Response:
         """Send one request through the session with governance kwargs."""
         if form_body is not None:
-            merged = requests.structures.CaseInsensitiveDict(self._config.default_headers)
+            merged: MutableMapping[str, str] = requests.structures.CaseInsensitiveDict(
+                self._config.default_headers
+            )
             merged.update(headers or {})
             merged["Content-Type"] = "application/x-www-form-urlencoded"
             merged["Accept-Encoding"] = "identity"

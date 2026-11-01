@@ -1459,9 +1459,9 @@ def _run_fake_apply(
     monkeypatch.setattr(
         transfer,
         "_exact_row_count",
-        lambda _connection, table: len(source_rows)
-        if table == transfer.SOURCE_TABLE
-        else len(target_rows),
+        lambda _connection, table: (
+            len(source_rows) if table == transfer.SOURCE_TABLE else len(target_rows)
+        ),
     )
     monkeypatch.setattr(
         transfer,

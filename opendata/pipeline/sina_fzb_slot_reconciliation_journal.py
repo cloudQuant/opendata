@@ -1568,6 +1568,7 @@ def _begin_sqlite_write(connection: Connection) -> None:
 def _database_clock_us(connection: Connection) -> int:
     """Read database UTC time on the same transaction connection."""
     dialect_name = connection.dialect.name
+    value: object
     if dialect_name == "mysql":
         value = connection.exec_driver_sql("SELECT UTC_TIMESTAMP(6)").scalar_one()
     elif dialect_name == "postgresql":

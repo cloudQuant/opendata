@@ -310,7 +310,7 @@ def inventory_source(
     quoted_fields = ", ".join(f"`{column}`" for column in SOURCE_COLUMNS)
     # Row facts come from one SELECT; metadata is observed separately afterward.
     statement = text(
-        f"SELECT {quoted_fields} FROM `{SOURCE_TABLE}` "  # noqa: S608  # fixed module constants
+        f"SELECT {quoted_fields} FROM `{SOURCE_TABLE}` "  # noqa: S608  # nosec B608  # fixed module constants
         "ORDER BY BINARY `股票代码`, BINARY `日期`"
     )
     try:

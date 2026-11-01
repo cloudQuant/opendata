@@ -34,6 +34,8 @@ from sqlalchemy.dialects.mysql import MEDIUMTEXT, VARCHAR
 from alembic import op
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from sqlalchemy.engine.reflection import Inspector
 
 revision = "0018_publication_outbox"
@@ -114,7 +116,7 @@ def _require_marker(expected: str, mode: str) -> None:
         column("version_num", version_type),
         schema=schema,
     )
-    markers = bind.execute(select(marker_table.c.version_num)).scalars().all()
+    markers: Sequence[str] = bind.execute(select(marker_table.c.version_num)).scalars().all()
     if markers != [expected]:
         raise RuntimeError(
             f"revision 0018 requires exactly one Alembic marker matching {expected}; "
@@ -153,9 +155,10 @@ def _require_publication_parent(mode: str) -> None:
     if not expected_names.issubset(columns):
         raise RuntimeError("revision 0018 found an incomplete od_publications schema")
     publication_id = columns["publication_id"]
+    publication_id_type = publication_id["type"]
     if (
-        not isinstance(publication_id.get("type"), String)
-        or publication_id["type"].length != 32
+        not isinstance(publication_id_type, String)
+        or publication_id_type.length != 32
         or publication_id.get("nullable") is not False
         or inspector.get_pk_constraint(_PUBLICATIONS).get("constrained_columns")
         != ["publication_id"]

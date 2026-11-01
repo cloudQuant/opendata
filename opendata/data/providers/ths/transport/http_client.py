@@ -20,7 +20,7 @@ import uuid
 from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, cast
 from urllib.parse import urlsplit
 
 import httpx
@@ -1639,7 +1639,10 @@ class FuyaoHttpClient:
             ):
                 raise RequestAuthorizationError("prepared request differs from locked V4 scope")
             self._validate_v4_gate_integrity()
-            reservation = _SOURCE_ATTEMPT_GATE_RESERVE_ONE_SHOT(gate, locked_scope)
+            # _validate_v4_gate_integrity rejects a missing or replaced gate.
+            reservation = _SOURCE_ATTEMPT_GATE_RESERVE_ONE_SHOT(
+                cast("SourceAttemptGate", gate), locked_scope
+            )
             self._validate_v4_gate_integrity()
         except Exception:
             raise RequestAuthorizationError(

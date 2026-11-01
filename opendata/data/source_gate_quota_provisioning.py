@@ -49,10 +49,11 @@ from opendata.data.source_attempt_gate import (
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
     from pathlib import Path
+    from typing import Any
 
     from sqlalchemy.engine import Connection, Engine
 
-_SOURCE = "ths"
+_SOURCE: Literal["ths"] = "ths"
 _CANONICAL_MODEL = "index_daily"
 _OPERATION = "query"
 _HOST = "fuyao.aicubes.cn"
@@ -503,11 +504,13 @@ def _require_valid_schema(gate: SourceAttemptGate, connection: Connection) -> No
 def _require_fresh_gate(connection: Connection) -> None:
     """Reject mixed/old gate state and every pre-existing quota configuration."""
     try:
-        counts = {
+        counts: dict[str, object] = {
             table_name: connection.execute(count_query).scalar_one()
             for table_name, count_query in _FRESH_TABLE_QUERIES.items()
         }
-        grant_count = connection.execute(text("SELECT COUNT(*) FROM od_source_grants")).scalar_one()
+        grant_count: object = connection.execute(
+            text("SELECT COUNT(*) FROM od_source_grants")
+        ).scalar_one()
         if type(grant_count) is not int or grant_count != 1:
             raise Csi500SampleQuotaConflictError(
                 "sample gate must contain exactly its one pre-provisioned grant"
@@ -609,7 +612,7 @@ def _require_exact_grant(
         raise Csi500SampleQuotaUnavailableError("source grant state is unavailable") from None
 
 
-def _require_exact_sample_host_set(host_rows: Sequence[Mapping[str, object]]) -> None:
+def _require_exact_sample_host_set(host_rows: Sequence[Mapping[Any, Any]]) -> None:
     """Reject a sealed sample grant unless Fuyao is its sole exact DNS host."""
     if len(host_rows) != 1 or host_rows[0].get("host") != _HOST:
         raise Csi500SampleQuotaGrantError(

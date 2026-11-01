@@ -46,7 +46,7 @@ from sqlalchemy.dialects.mysql import MEDIUMTEXT, VARCHAR
 from alembic import op
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from collections.abc import Mapping, Sequence
 
     from sqlalchemy.engine import RowMapping
     from sqlalchemy.engine.reflection import Inspector
@@ -256,7 +256,7 @@ def _require_revision_marker(expected: str, mode: str) -> None:
         column("version_num", version_type),
         schema=schema,
     )
-    markers = bind.execute(select(marker_table.c.version_num)).scalars().all()
+    markers: Sequence[str] = bind.execute(select(marker_table.c.version_num)).scalars().all()
     if markers != [expected]:
         raise RuntimeError(
             f"revision 0019 requires exactly one Alembic marker matching {expected}; "
@@ -682,7 +682,9 @@ def _require_mysql_fact_index_budget() -> None:
         raise RuntimeError("revision 0019 requires the publication fact table to use InnoDB")
     if str(row.get("ROW_FORMAT", "")).casefold() not in {"dynamic", "compressed"}:
         raise RuntimeError("revision 0019 requires a DYNAMIC or COMPRESSED fact table")
-    page_size = op.get_bind().exec_driver_sql("SELECT @@GLOBAL.innodb_page_size").scalar_one()
+    page_size: object = (
+        op.get_bind().exec_driver_sql("SELECT @@GLOBAL.innodb_page_size").scalar_one()
+    )
     if type(page_size) is not int or page_size not in {4_096, 8_192, 16_384, 32_768, 65_536}:
         raise RuntimeError("revision 0019 cannot validate the InnoDB page-size index limit")
     maximum = min(_MYSQL_MAX_INDEX_BYTES, page_size // 2)
@@ -795,7 +797,7 @@ def _require_sqlite_rebuild_safety() -> None:
     """Reject SQLite objects batch table recreation could silently remove."""
     bind = op.get_bind()
     table_names = (_FACT_TABLE, _SNAPSHOT_TABLE)
-    triggers = (
+    triggers: Sequence[str] = (
         bind.execute(
             text(
                 "SELECT name FROM sqlite_master WHERE type = 'trigger' "

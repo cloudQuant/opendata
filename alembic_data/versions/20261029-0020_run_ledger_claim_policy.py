@@ -24,6 +24,8 @@ from sqlalchemy.dialects.mysql import MEDIUMTEXT
 from alembic import op
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from sqlalchemy.engine.reflection import Inspector
 
 revision = "0020_run_ledger_claim_policy"
@@ -240,7 +242,7 @@ def _require_revision_marker(mode: str) -> None:
         column("version_num", version_type),
         schema=schema,
     )
-    markers = bind.execute(select(marker_table.c.version_num)).scalars().all()
+    markers: Sequence[str] = bind.execute(select(marker_table.c.version_num)).scalars().all()
     if markers != [down_revision]:
         raise RuntimeError(
             "revision 0020 requires exactly one 0019 marker; unexpected or partial state "

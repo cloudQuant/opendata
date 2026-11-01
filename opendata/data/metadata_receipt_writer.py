@@ -434,7 +434,7 @@ def _is_identity_duplicate_error(dialect_name: str, error: IntegrityError) -> bo
             return True
         # Python 3.10 sqlite3 errors may not expose sqlite_errorcode/name.
         # Accept only the exact column lists for the two 0008 unique keys.
-        arguments = getattr(original, "args", ())
+        arguments: tuple[Any, ...] = getattr(original, "args", ())
         message = arguments[0] if arguments and isinstance(arguments[0], str) else None
         return message in {
             "UNIQUE constraint failed: "

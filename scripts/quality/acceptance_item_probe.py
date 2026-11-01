@@ -6066,8 +6066,8 @@ def _ac9_07_call_chain_facts(source: str) -> Facts:
     diff_flag_has_binary_membership_shape = False
     if len(merge_functions) == 1:
         merge_function = merge_functions[0]
-        for node in ast.walk(merge_function):
-            if not isinstance(node, ast.Assign) or not isinstance(node.value, ast.IfExp):
+        for child in ast.walk(merge_function):
+            if not isinstance(child, ast.Assign) or not isinstance(child.value, ast.IfExp):
                 continue
             if not any(
                 isinstance(target, ast.Subscript)
@@ -6075,10 +6075,10 @@ def _ac9_07_call_chain_facts(source: str) -> Facts:
                 and target.value.id == "record"
                 and isinstance(target.slice, ast.Constant)
                 and target.slice.value == "_diff_flag"
-                for target in node.targets
+                for target in child.targets
             ):
                 continue
-            test = node.value.test
+            test = child.value.test
             if not (
                 isinstance(test, ast.Compare)
                 and len(test.ops) == 1
@@ -6087,12 +6087,12 @@ def _ac9_07_call_chain_facts(source: str) -> Facts:
             ):
                 continue
             if not (
-                isinstance(node.value.body, ast.Constant)
-                and type(node.value.body.value) is int
-                and node.value.body.value == 1
-                and isinstance(node.value.orelse, ast.Constant)
-                and type(node.value.orelse.value) is int
-                and node.value.orelse.value == 0
+                isinstance(child.value.body, ast.Constant)
+                and type(child.value.body.value) is int
+                and child.value.body.value == 1
+                and isinstance(child.value.orelse, ast.Constant)
+                and type(child.value.orelse.value) is int
+                and child.value.orelse.value == 0
             ):
                 continue
             diff_flag_has_binary_membership_shape = True

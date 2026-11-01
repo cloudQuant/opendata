@@ -461,7 +461,7 @@ def _capture_selector(
             persistence_state="unknown_after_writer_failure",
         )
 
-    base = {
+    base: dict[str, object] = {
         "sequence": sequence,
         "dataset_class": selector.dataset_class,
         "request_invoked": True,

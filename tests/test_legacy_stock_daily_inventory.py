@@ -164,9 +164,11 @@ class _Connection:
             close_error=self.scan_close_error and "FROM `STOCK_ZH_A_HIST`" in sql,
             oversized_page=self.scan_oversized_page and "FROM `STOCK_ZH_A_HIST`" in sql,
             on_close=(
-                lambda: setattr(self, "active", self.active_after_scan_close)
-                if "FROM `STOCK_ZH_A_HIST`" in sql
-                else None
+                lambda: (
+                    setattr(self, "active", self.active_after_scan_close)
+                    if "FROM `STOCK_ZH_A_HIST`" in sql
+                    else None
+                )
             ),
         )
         self.results.append(result)

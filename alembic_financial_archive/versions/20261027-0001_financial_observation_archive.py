@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import tempfile
 from pathlib import Path
+from typing import cast
 
 from sqlalchemy import (
     BigInteger,
@@ -120,7 +121,8 @@ def _require_supported_database() -> None:
         return
     _require_supported_dialect(
         dialect.name,
-        dialect.server_version_info,
+        # MySQL version components are ints; SQLAlchemy types the tuple as int-or-str.
+        cast("tuple[int, ...] | None", dialect.server_version_info),
         is_mariadb=bool(getattr(dialect, "is_mariadb", False)),
     )
 

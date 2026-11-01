@@ -21,7 +21,7 @@ from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field, replace
 from datetime import date, datetime, timedelta, timezone
 from types import FunctionType, MappingProxyType
-from typing import TYPE_CHECKING, Protocol, TypeAlias, TypeGuard, cast
+from typing import TYPE_CHECKING, Protocol, TypeAlias, TypeGuard
 
 from pydantic import JsonValue
 
@@ -32,6 +32,7 @@ from opendata.utils.cooperative_checkpoint import _CooperativeCheckpoint
 if TYPE_CHECKING:  # pragma: no cover
     from sqlalchemy.engine import Connection
 
+    from opendata.pipeline.financial_observation_store import PreparedCapture
     from opendata.pipeline.run_ledger import RunRecord
 
 MAX_RESULT_RECORDS = 50_000
@@ -818,7 +819,7 @@ class RunService:
             quality=safe_quality,
             provenance=safe_provenance,
             watermark=safe_watermark,
-            commit_payload=cast("bytes | None", sidecar),
+            commit_payload=sidecar,
         )
 
     @staticmethod
@@ -947,7 +948,9 @@ def _validate_commit_payload_declaration(job: ReviewedJob) -> _CommitPayloadCont
     return _CommitPayloadContract(decoder=decoder, context_type=context_type)
 
 
-def _prepared_capture_decoder_contract() -> tuple[FunctionType, type[object]]:
+def _prepared_capture_decoder_contract() -> tuple[
+    Callable[[object], PreparedCapture], type[PreparedCapture]
+]:
     """Lazily load the sole decoder/output pair allowed for transaction context.
 
     The imports stay inside this helper so importing the generic runner does
