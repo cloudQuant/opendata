@@ -265,12 +265,23 @@ def test_mysql_ddl_compiles_with_binary_keys_innodb_and_mediumtext() -> None:
 
 
 def test_revision_graph_has_one_head_at_0007_without_loading_default_env() -> None:
-    """The new revision is the sole head and directly follows 0006."""
+    """The graph stays single-headed and 0007 keeps its own place in it.
+
+    0007 was the head when this guard was written; 0008/0009 later
+    extended the same linear chain, so pinning the head's literal id
+    re-staled the test on every landed revision. The durable invariant is
+    one head plus 0007's edge to 0006 and its presence on the walked
+    path, which is what a split chain or a re-parented revision breaks.
+    """
     config = Config(str(REPOSITORY_ROOT / "alembic.ini"))
     config.set_main_option("script_location", str(REPOSITORY_ROOT / "alembic"))
     script = ScriptDirectory.from_config(config)
 
-    assert script.get_heads() == ["0007"]
+    heads = script.get_heads()
+    assert len(heads) == 1, f"the chain must have exactly one head, found {heads}"
     revision = script.get_revision("0007")
     assert revision is not None
     assert revision.down_revision == "0006"
+    walked = [traversed.revision for traversed in script.walk_revisions()]
+    assert walked[0] == heads[0]
+    assert "0007" in walked
