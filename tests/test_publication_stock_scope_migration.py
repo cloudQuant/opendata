@@ -33,6 +33,11 @@ _MIGRATION_DIRECTORY = REPOSITORY_ROOT / "alembic_data" / "versions"
 # 取到局部变量再用它做 String/length 收窄——两者都是等价语义，SQL、执行顺序与
 # 守卫判断未变。此处重钉这两个哈希；此后任何对这两个 revision 的字节改动都要
 # 同样复核，而不是直接改期望值。
+# 0012 的字节在本次改动中再次变化：升级守卫只在离线 ``--sql`` 渲染 upgrade() 时
+# 跳过 server_version_info 断言（离线渲染没有服务端握手，该属性恒为 None），
+# MariaDB／5.7／8.0.15／9.x／版本未知的在线拒绝、downgrade() 的守卫判断以及
+# 渲染出的 ALTER/CREATE 文本都与原文件逐字节一致（与把方言版本伪造为 8.0.16 的
+# 改前渲染对比验证）。改动是惰性的，因此在此重钉 0012 的哈希。
 _MIGRATIONS = {
     "0011": (
         _MIGRATION_DIRECTORY / "20261026-0011_publication_snapshots.py",
@@ -40,7 +45,7 @@ _MIGRATIONS = {
     ),
     "0012": (
         _MIGRATION_DIRECTORY / "20261027-0012_instrument_capture_scope.py",
-        "24c55bce92d97aa65ae2afb7b7b516ade21704d1956aa85c50827177aca2b9f2",
+        "e7d627e7044072259b1d81e9045e4a935899c85e55fe189bc303037fdfeef4a3",
     ),
     "0017": (
         _MIGRATION_DIRECTORY / "20261028-0017_sina_capture_discovery_index.py",

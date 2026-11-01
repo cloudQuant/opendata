@@ -36,6 +36,91 @@ P0_DWD_TABLES = (
 )
 P0_ODS_TABLES = ("ods_stock_daily_akshare",)
 
+#: Highest warehouse revision reachable by a no-server ``--sql`` render that
+#: walks the chain from base.
+#:
+#: Revisions above it are listed in ``_ONLINE_ONLY_REFUSALS`` with the reason
+#: each one refuses offline: their ``upgrade()`` reads live server state (the
+#: Alembic version table's width and marker rows, the existing table or index
+#: shape, protected row counts) and the DDL they emit is *chosen* from that
+#: read. Rendering them offline would fabricate an inspection result, so the
+#: refusal is the correct behaviour and each revision's own test module pins
+#: it. ``0015_source_attempt_gate`` renders on its own (its MySQL step is a
+#: documented no-op) but sits behind 0014, so it is not in this prefix.
+#: ``test_offline_boundary_is_exactly_the_declared_set`` fails if a revision
+#: outside the prefix ever renders offline (the prefix must widen) or if a
+#: revision stops rendering offline without declaring itself, so the fence can
+#: only grow and can never narrow silently.
+OFFLINE_HEAD = "0013_sina_fzb_fanout_groups"
+
+#: revision -> the message its offline refusal must carry.
+_ONLINE_ONLY_REFUSALS = {
+    "0014_sina_fzb_slot_reconciliation": "MySQL offline SQL generation is unsupported",
+    "0016_legacy_turnover_nullable": "revision 0016 requires an online connection",
+    "0017_sina_capture_discovery_index": "revision 0017 requires a live connection",
+    "0018_publication_outbox": "revision 0018 requires a live connection",
+    "0019_publication_market_symbol_scope": "revision 0019 requires a live connection",
+    "0020_run_ledger_claim_policy": "revision 0020 requires an online warehouse connection",
+    "0021_temporal_identity_snapshot": "revision 0021 requires an online warehouse connection",
+}
+
+
+def _chain() -> list[tuple[str, str | None]]:
+    """Return ``[(revision, down_revision), ...]`` in file order.
+
+    The chain is walked by ``down_revision`` from base so the order is the
+    render order, independent of file naming.
+    """
+    migrations = _load_migrations()
+    by_down = {down: revision for revision, down in migrations.values() if down is not None}
+    start = next(
+        revision for revision, down in migrations.values() if down is None
+    )  # base revision has no parent
+    walk, current = [start], by_down.get(start)
+    while current is not None:
+        walk.append(current)
+        current = by_down.get(current)
+    assert len(walk) == len(migrations), "the chain must walk every revision exactly once"
+    return [(revision, None) for revision in walk]
+
+
+def _render_upgrade_in_process(revision: str) -> tuple[str | None, str]:
+    """Run one revision's ``upgrade()`` under a real offline Alembic context.
+
+    Args:
+        revision: The revision id to render.
+
+    Returns:
+        ``(None, rendered_sql)`` when the revision renders offline, or
+        ``(error_text, None)`` when it refuses.
+    """
+    from io import StringIO
+
+    from alembic.migration import MigrationContext
+    from alembic.operations import Operations
+
+    from opendata.core.config import settings
+
+    filename = next(name for name, (rev, _) in _load_migrations().items() if rev == revision)
+    migration = _load_migration_modules()[filename]
+    buffer = StringIO()
+    context = MigrationContext.configure(
+        url=settings.data_database_url,
+        opts={
+            "as_sql": True,
+            "output_buffer": buffer,
+            "version_table": "alembic_version_data",
+            "literal_binds": True,
+            "dialect_opts": {"paramstyle": "named"},
+        },
+    )
+    try:
+        with Operations.context(context):
+            migration.upgrade()
+    except RuntimeError as exc:
+        return str(exc), None
+    return None, buffer.getvalue()
+
 
 def _load_migration_modules() -> dict[str, object]:
     """Import every migration module (keyed by filename)."""
@@ -100,7 +185,7 @@ def _render_with(ini: Path, args: list[str]) -> str:
 
 class TestOfflineReplay:
     def test_upgrade_renders_every_p0_table(self):
-        sql = _render(["upgrade", "head", "--sql"])
+        sql = _render(["upgrade", OFFLINE_HEAD, "--sql"])
 
         for table in (*P0_DWD_TABLES, "dwd_stock_adjust", *P0_ODS_TABLES):
             assert f"CREATE TABLE IF NOT EXISTS `{table}`" in sql
@@ -108,7 +193,7 @@ class TestOfflineReplay:
         assert "alembic_version_data" in sql
 
     def test_offline_render_matches_the_generator(self):
-        sql = _render(["upgrade", "head", "--sql"])
+        sql = _render(["upgrade", OFFLINE_HEAD, "--sql"])
         migration = next(iter(_load_migration_modules().values()))
 
         # The generator is the single source of truth: the shipped DDL
@@ -137,7 +222,7 @@ class TestOfflineReplay:
         )
 
     def test_adjustment_migration_keeps_0005_legacy_shape_and_adds_affine_fields(self):
-        sql = _render(["upgrade", "head", "--sql"])
+        sql = _render(["upgrade", OFFLINE_HEAD, "--sql"])
         create_start = sql.index("CREATE TABLE IF NOT EXISTS `dwd_stock_adjust`")
         create_end = sql.index(";", create_start)
         original_table = sql[create_start:create_end]
@@ -186,6 +271,62 @@ class TestOfflineReplay:
 
         for table in (*P0_DWD_TABLES, *P0_ODS_TABLES):
             assert f"DROP TABLE IF EXISTS `{table}`" in sql
+
+    def test_offline_boundary_is_exactly_the_declared_set(self):
+        """Every revision renders offline or declares the reason it cannot.
+
+        This is what keeps ``OFFLINE_HEAD`` honest. Without it, a bounded
+        prefix would silently stop covering revisions, and a revision that
+        gained a live-inspection guard would drop out of coverage unnoticed.
+        """
+        chain = [revision for revision, _ in _chain()]
+        renderable, refused = [], {}
+        for revision in chain:
+            error, _sql = _render_upgrade_in_process(revision)
+            if error is None:
+                renderable.append(revision)
+            else:
+                refused[revision] = error
+
+        assert set(refused) == set(_ONLINE_ONLY_REFUSALS), (
+            f"offline renderability drifted from the declared set: "
+            f"undeclared refusals={sorted(set(refused) - set(_ONLINE_ONLY_REFUSALS))}, "
+            f"newly renderable={sorted(set(_ONLINE_ONLY_REFUSALS) - set(refused))}"
+        )
+        for revision, message in refused.items():
+            assert _ONLINE_ONLY_REFUSALS[revision] in message, (
+                f"{revision} refused offline with an unexpected message: {message}"
+            )
+
+        leading_run = []
+        for revision in chain:
+            if revision in refused:
+                break
+            leading_run.append(revision)
+        assert leading_run[-1] == OFFLINE_HEAD, (
+            f"the chain-from-base offline render must stop at {OFFLINE_HEAD}, got {leading_run[-1]}"
+        )
+        # 0015 is renderable in isolation; only 0014 keeps it out of the run.
+        assert "0015_source_attempt_gate" in renderable
+        assert chain[chain.index(OFFLINE_HEAD) + 1] == "0014_sina_fzb_slot_reconciliation"
+
+    def test_head_is_beyond_the_offline_prefix(self):
+        """``upgrade head --sql`` must still stop at the first live-only revision.
+
+        Pins the refusal rather than the render: if someone relaxes that
+        fail-closed guard to make ``head`` render, this test fails and points
+        at the inspection the revision actually needs.
+        """
+        completed = subprocess.run(  # noqa: S603  # literal argv, no shell
+            [sys.executable, "-m", "alembic", "-c", str(INI), "upgrade", "head", "--sql"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+        )
+        assert completed.returncode != 0
+        assert "MySQL offline SQL generation is unsupported" in completed.stderr
+        chain = [revision for revision, _ in _chain()]
+        assert chain[chain.index(OFFLINE_HEAD) + 1] == "0014_sina_fzb_slot_reconciliation"
 
 
 @pytest.mark.e2e
