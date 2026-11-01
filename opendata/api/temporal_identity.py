@@ -10,7 +10,7 @@ from __future__ import annotations
 import asyncio
 import json
 from datetime import date
-from typing import TYPE_CHECKING, Annotated, Any, Protocol, TypeGuard
+from typing import TYPE_CHECKING, Annotated, Any, Protocol, TypeGuard, cast
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Coroutine, Mapping
@@ -98,6 +98,46 @@ class _ResolveRequest(BaseModel):
         return self
 
 
+def _inlined_request_schema() -> dict[str, Any]:
+    """Return the request schema with Pydantic's local ``$defs`` dereferenced.
+
+    ``model_json_schema()`` hoists nested models into a ``$defs`` block and refers to them
+    relatively (``#/$defs/Exchange``). An OpenAPI 3.1 ``$ref`` resolves against the document
+    root, where no ``$defs`` exists, so embedding that block in ``openapi_extra`` publishes a
+    dangling reference and the reviewed-contract gate rejects the document. The request model
+    is small; inlining keeps the documented shape identical without registering components
+    FastAPI would not otherwise emit.
+    """
+    schema = _ResolveRequest.model_json_schema()
+    definitions = schema.pop("$defs", {})
+    return cast("dict[str, Any]", _inline_local_refs(schema, definitions))
+
+
+def _inline_local_refs(node: object, definitions: object) -> object:
+    """Replace ``#/$defs/<name>`` references in one JSON-schema tree with their definitions."""
+    if isinstance(node, dict):
+        reference = node.get("$ref")
+        if isinstance(reference, str) and reference.startswith("#/$defs/"):
+            name = reference.removeprefix("#/$defs/")
+            target = _inline_local_refs(
+                definitions[name] if isinstance(definitions, dict) else {}, definitions
+            )
+            siblings = {
+                key: _inline_local_refs(value, definitions)
+                for key, value in node.items()
+                if key != "$ref"
+            }
+            if not siblings:
+                return target
+            merged: dict[object, object] = dict(target) if isinstance(target, dict) else {}
+            merged.update(siblings)
+            return merged
+        return {key: _inline_local_refs(value, definitions) for key, value in node.items()}
+    if isinstance(node, list):
+        return [_inline_local_refs(item, definitions) for item in node]
+    return node
+
+
 class _SnapshotStore(Protocol):
     """Accept only the read interface used by the temporal identity route."""
 
@@ -152,7 +192,7 @@ router = APIRouter(prefix="/api/v2", route_class=_TemporalIdentityRoute)
                 "A bounded JSON request. Supply either exchange and symbol together, "
                 "or instrument_id, with exact operator-pinned snapshot fields."
             ),
-            "content": {"application/json": {"schema": _ResolveRequest.model_json_schema()}},
+            "content": {"application/json": {"schema": _inlined_request_schema()}},
         }
     },
 )
