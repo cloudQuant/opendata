@@ -252,10 +252,14 @@ class TestWarehouseDdlOwnership:
         import opendata.main as main_module
 
         tree = ast.parse(Path(main_module.__file__).read_text(encoding="utf-8"))
+        # ``main.lifespan`` delegates the bootstrap to ``_existing_lifespan``;
+        # the guard has to scan the function that actually owns the call site.
         lifespan = next(
             node
             for node in tree.body
-            if isinstance(node, ast.AsyncFunctionDef) and node.name == "lifespan"
+            if isinstance(node, ast.AsyncFunctionDef)
+            and node.name in {"lifespan", "_existing_lifespan"}
+            and any(_is_create_tables_call(item) for item in ast.walk(node))
         )
         calls = [node for node in ast.walk(lifespan) if _is_create_tables_call(node)]
         assert len(calls) == 1, "启动建表的调用点数必须唯一，否则「生产不建表」无保障"

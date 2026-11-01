@@ -5,6 +5,16 @@ on:
     branches: [dev, master, "feature/**", "fix/**", "docs/**", "refactor/**", "test/**"]
   pull_request:
     branches: [dev, master]
+  workflow_dispatch:
+    inputs:
+      sync_acceptance_ratchet:
+        type: boolean
+        default: false
+        description: >-
+          Measure the acceptance probe in this job's environment and rewrite
+          docs/quality/acceptance-gate-ratchet.json for review as an artifact,
+          instead of running the gate. Use only after the owner adjudicated a
+          ratchet entry; the file is never committed by CI.
 
 permissions:
   contents: read
@@ -58,6 +68,9 @@ jobs:
           --health-timeout=5s
           --health-retries=12
     env:
+      # A manual `sync_acceptance_ratchet` dispatch measures and uploads the ratchet
+      # baseline instead of running the gate; the two conditions below read one flag.
+      SYNC_ACCEPTANCE_RATCHET: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.sync_acceptance_ratchet == 'true' }}
       # Metadata database (main)
       MYSQL_HOST: 127.0.0.1
       MYSQL_PORT: "3306"
@@ -84,12 +97,29 @@ jobs:
         with:
           # a2-check resolves the baseline commit by SHA, so the full history is required.
           fetch-depth: 0
+          # On a pull_request run the default ref is GitHub's synthetic merge commit, so the gate
+          # would judge a tree nobody ships. Measuring the head branch gives the run the tree the
+          # merge will land (same-repo PRs always have that branch in origin, and the diff-based
+          # members name their own base through A2_BASE_REF). This is about the *tree*, not the
+          # history: run 41335236551 measured this repo complete at gate start
+          # (`shallow=false head_commits=976`) and truncated at gate end (`shallow=true head=5`),
+          # while run 41335493770 read AC-16|09 proven on the default merge ref. Neither the
+          # checkout ref nor a pre-gate unshallow moves those cells - the gate run itself changes
+          # the repository under them, which is what the two shape prints are for.
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
 
       - name: Fetch PR base branch (A2 gate needs it as a diff base)
         if: github.event_name == 'pull_request'
         run: |
           git fetch --no-tags origin \
             "+refs/heads/${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}"
+
+      - name: Report the history shape after checkout
+        run: |
+          printf 'after-checkout shallow=%s head_commits=%s all_commits=%s\n' \
+            "$(git rev-parse --is-shallow-repository)" \
+            "$(git rev-list --count HEAD)" \
+            "$(git rev-list --count --all)"
 
       - uses: actions/setup-python@v5
         with:
@@ -203,7 +233,27 @@ jobs:
           PY
           echo "PREFLIGHT step is advisory; the gate still owns the verdict."
 
+      # `--sync-ratchet` freezes what *this* measurement saw, so a baseline can only
+      # be produced where the environment is CI's (pinned gitleaks, MySQL service,
+      # clean tree). Locally the same command yields a different cell set - here it
+      # measured 13 cells including AC-13|06/AC-18|03/§6|03 and missed CI's
+      # AC-16|09/AC-17|03/AC-17|05/AC-19|02 - which is exactly why an adjudicated
+      # sync belongs in CI. The artifact still has to arrive as a reviewed commit.
+      - name: Sync the acceptance gate ratchet (manual dispatch only)
+        if: env.SYNC_ACCEPTANCE_RATCHET == 'true'
+        run: |
+          python scripts/quality/acceptance_item_probe.py --sync-ratchet
+          git --no-pager diff -- docs/quality/acceptance-gate-ratchet.json
+      - name: Upload the synced acceptance ratchet
+        if: env.SYNC_ACCEPTANCE_RATCHET == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: acceptance-gate-ratchet
+          path: docs/quality/acceptance-gate-ratchet.json
+          retention-days: 7
+
       - name: Run fail-closed quality gate
+        if: env.SYNC_ACCEPTANCE_RATCHET != 'true'
         timeout-minutes: 100
         run: |
           # The gate's own output goes to a file that is uploaded afterwards; the Actions
@@ -282,5 +332,11 @@ jobs:
           set +e +o pipefail
           free -m
           df -h /
+          # Run 41335236551 measured `shallow=false head_commits=976` at gate start and
+          # `shallow=true head_commits=5` here, so this names the shape the probe actually judged.
+          printf 'after-gate shallow=%s head_commits=%s all_commits=%s\n' \
+            "$(git rev-parse --is-shallow-repository)" \
+            "$(git rev-list --count HEAD)" \
+            "$(git rev-list --count --all)"
           sudo dmesg -T | grep -iE 'out of memory|oom-kill|killed process' | tail -n 20
           ps -eo pid=,ppid=,nlwp=,rss=,etimes=,comm= --sort=-rss | sed -n '1,15p'
