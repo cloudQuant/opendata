@@ -90,7 +90,7 @@ def _bandit_identity(root: Path, target_rel: str) -> tuple[int, list[dict[str, A
                 f"{tail[-1] if tail else '(no stderr)'}"
             )
         payload = json.loads(raw_path.read_text(encoding="utf-8"))
-    version = subprocess.run(  # noqa: S603  # nosec B603  # same fixed argv family
+    version = subprocess.run(  # nosec B603  # same fixed argv family
         [sys.executable, "-m", "bandit", "--version"],
         cwd=str(root),
         shell=False,

@@ -67,7 +67,7 @@ class TestFactorBuilder:
                 connection.execute(text("SELECT 1"))
         except Exception as exc:
             pytest.skip(f"warehouse database unreachable: {type(exc).__name__}")
-        subprocess.run(  # noqa: S603  # nosec B603  # literal argv, no shell
+        subprocess.run(  # nosec B603  # literal argv, no shell
             [sys.executable, "-m", "alembic", "-c", "alembic_data.ini", "upgrade", "head"],
             cwd=Path(__file__).resolve().parents[1],
             check=True,
@@ -268,7 +268,7 @@ def _upgrade(repo_root) -> None:
     import subprocess
     import sys
 
-    subprocess.run(  # noqa: S603  # nosec B603  # literal argv, no shell
+    subprocess.run(  # nosec B603  # literal argv, no shell
         [sys.executable, "-m", "alembic", "-c", "alembic_data.ini", "upgrade", "head"],
         cwd=repo_root,
         check=True,

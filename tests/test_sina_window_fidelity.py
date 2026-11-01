@@ -216,7 +216,7 @@ def test_outbound_tripwire_rejects_transport_paths_before_sending(
         session.send(request)
 
     with pytest.raises(_OutboundBlockedError, match="subprocess.run"):
-        subprocess.run([sys.executable, "-c", "pass"], check=False)  # noqa: S603  # nosec B603  # literal argv via sys.executable, no shell
+        subprocess.run([sys.executable, "-c", "pass"], check=False)  # nosec B603  # literal argv via sys.executable, no shell
 
     assert len(tripwire.attempts) == 3
 
