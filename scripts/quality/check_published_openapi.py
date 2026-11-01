@@ -19,7 +19,7 @@ BASELINE_PATHS = {
 # Updating either artifact requires an explicit, reviewed digest change here. The checker
 # intentionally has no mode that generates or replaces a baseline from the candidate.
 BASELINE_SHA256 = {
-    "v1": "2b738ff5ab2d2aa8a2603c908a05256a1b8b7522f72aa5a699ba963d4271bf74",
+    "v1": "05fe930786aab3db39c955392c71fd770ba1a1cc2b34799729cd4f6409dedfb4",
     "v2": "1e9fdac5cc1d1c5cd38886713105efaafb925e3305aaaf623e8d5530832776d2",
 }
 _HTTP_METHODS = frozenset({"get", "post", "put", "patch", "delete", "options", "head"})

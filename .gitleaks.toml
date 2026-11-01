@@ -154,7 +154,7 @@ regexes = [
   # these eight is a test fixture label the ledger keys its own rows by, and the paired value is
   # constructed in the same file, never read from an environment or a config. Enumeration, not a
   # value class: `quota-*`/`fixture-*` prefixes would also exempt a real key typed into the same
-  # slot, which is the widening this file's header refuses. docs/evidence/C150/gitleaks-counterfactual.log
+  # slot, which is the widening this file's header refuses. docs/evidence/C150/gitleaks-counterfactual.txt
   # measures the arms: dropping this one regex returns all 10 findings, one extra character on any
   # of the eight literals is reported again, and a fabricated `ghp_` token written into the very
   # same `budget_quota_key=` / `PRINCIPAL =` slot is still reported (by `github-pat`; as C75
