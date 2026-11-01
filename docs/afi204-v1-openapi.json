@@ -1353,6 +1353,13 @@
       },
       "ValidationError": {
         "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
           "loc": {
             "items": {
               "anyOf": [
@@ -1565,9 +1572,6 @@
           }
         },
         "security": [
-          {
-            "HTTPBearer": []
-          },
           {
             "HTTPBearer": []
           }
@@ -4360,7 +4364,7 @@
             }
           },
           {
-            "description": "Explicit universe (repeatable)",
+            "description": "Explicit universe (repeatable; up to 10,000 symbols)",
             "in": "query",
             "name": "symbols",
             "required": false,
@@ -4370,13 +4374,14 @@
                   "items": {
                     "type": "string"
                   },
+                  "maxItems": 10000,
                   "type": "array"
                 },
                 {
                   "type": "null"
                 }
               ],
-              "description": "Explicit universe (repeatable)",
+              "description": "Explicit universe (repeatable; up to 10,000 symbols)",
               "title": "Symbols"
             }
           },
@@ -4388,7 +4393,7 @@
             "schema": {
               "default": 200,
               "description": "Cap of the derived universe",
-              "maximum": 5000,
+              "maximum": 10000,
               "minimum": 1,
               "title": "Limit",
               "type": "integer"
@@ -7062,9 +7067,6 @@
           }
         },
         "security": [
-          {
-            "HTTPBearer": []
-          },
           {
             "HTTPBearer": []
           }
@@ -9857,7 +9859,7 @@
             }
           },
           {
-            "description": "Explicit universe (repeatable)",
+            "description": "Explicit universe (repeatable; up to 10,000 symbols)",
             "in": "query",
             "name": "symbols",
             "required": false,
@@ -9867,13 +9869,14 @@
                   "items": {
                     "type": "string"
                   },
+                  "maxItems": 10000,
                   "type": "array"
                 },
                 {
                   "type": "null"
                 }
               ],
-              "description": "Explicit universe (repeatable)",
+              "description": "Explicit universe (repeatable; up to 10,000 symbols)",
               "title": "Symbols"
             }
           },
@@ -9885,7 +9888,7 @@
             "schema": {
               "default": 200,
               "description": "Cap of the derived universe",
-              "maximum": 5000,
+              "maximum": 10000,
               "minimum": 1,
               "title": "Limit",
               "type": "integer"
