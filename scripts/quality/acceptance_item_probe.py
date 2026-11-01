@@ -3559,7 +3559,18 @@ def measure_ac17_07(ctx: Context) -> Facts:
     a2 = script_module(A2_CHECK_TOOL)
     code, out = run_argv([sys.executable, PUBLIC_API_TOOL])
     scope = tuple(str(entry) for entry in pub.A2_SCOPE)
-    a2_files = sorted(a2.resolve_files(None) or [])
+    # The denominator has to be the same in every run. `A2_BASE_REF` is set only on
+    # pull_request CI runs, where it narrows this population to the PR's own changed files:
+    # an unrelated PR then measures zero new public callables and the item refuses to trust
+    # an empty population, so the same tree reads proven on a push run and gap on a PR run.
+    # Resolving against the recorded baseline gives the repo-wide view, which is the wider of
+    # the two bases the A2 gate itself uses, so no file can pass here that a push run fails.
+    env_base = os.environ.pop("A2_BASE_REF", "")
+    try:
+        a2_files = sorted(a2.resolve_files(None) or [])
+    finally:
+        if env_base:
+            os.environ["A2_BASE_REF"] = env_base
     a2_set = set(a2_files)
     ported = tuple(f"{name}/" for name in sorted(a2.EXCLUDED_ROOT_DIRS))
     outside = [name for name in a2_files if not under_any(name, scope)]
