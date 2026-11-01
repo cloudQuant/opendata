@@ -30,6 +30,29 @@ config.set_main_option("sqlalchemy.url", settings.database_url_sync)
 # Add your model's MetaData object here for 'autogenerate' support
 target_metadata = Base.metadata
 
+# Tables created by migrations but read and written through raw SQL
+# (opendata/job_definition_store.py, opendata/data/metadata_receipt_writer.py).
+# They are deliberately absent from Base.metadata, so autogenerate would otherwise
+# report them as removed on every `alembic check`.
+SQL_ONLY_TABLES = frozenset({"od_job_definitions", "od_metadata_publication_receipts"})
+
+
+def include_object(
+    object_: object,
+    name: str | None,
+    type_: str,
+    reflected: bool,
+    compare_to: object,
+) -> bool:
+    """Keep the raw-SQL tables and their indexes out of autogenerate comparisons."""
+    del reflected, compare_to
+    if type_ == "table":
+        return name not in SQL_ONLY_TABLES
+    if type_ == "index":
+        table = getattr(object_, "table", None)
+        return getattr(table, "name", None) not in SQL_ONLY_TABLES
+    return True
+
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
@@ -49,6 +72,7 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
         compare_type=True,
+        include_object=include_object,
     )
 
     with context.begin_transaction():
@@ -61,6 +85,7 @@ def do_run_migrations(connection: Connection) -> None:
         connection=connection,
         target_metadata=target_metadata,
         compare_type=True,
+        include_object=include_object,
     )
 
     with context.begin_transaction():
