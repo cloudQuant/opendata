@@ -6,9 +6,9 @@
       "path": ".env.example",
       "purpose": "无凭证配置模板中的来源选择、适配器和上游说明；实际凭证仍由 gitleaks 扫描。",
       "category": "build-declaration",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "19357b3a5c29eb11eff0d12bb04b283f5fd8b4bf21d2e28e3e8e8bb6caa8a146",
+      "reviewed_date": "2026-11-01",
+      "reviewer": "本轮复核 sha 漂移：pin 字节属 rev 3f05f63，该路径此后 2 个 revision，HEAD 与工作树字节一致；改动为 FUYAO_BASE_URL 更名为 FUYAO_API_BASE_URL，并新增股票日线发布容量门禁的注释与 STOCK_DAILY_PUBLICATION_API_ENABLED/CAPACITY_FILE/CAPACITY_SHA256 配置项；akshare 出现行 pinned=4==live=4、出现次数 4==4，逐行同为 formerly akshare 注释与 AKSHARE_* 超时/重试配置键，带品牌的加载形态行 0==0，没有任何一处用品牌名加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "33f0dfaf997482bdd71c4c484d8beb410ab13ddd177850018e4f39df47e2d233",
       "ast_exceptions": []
     },
     {
@@ -150,9 +150,18 @@
       "path": "opendata/api/schemas.py",
       "purpose": "首方集成中的来源标识、接口兼容、配置或搬运沿革说明；外部包依赖仍受零依赖AST断言。",
       "category": "runtime-integration",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "0b051a3c865198c1f1eba1ae54c18292029fa20496035e9d304cfe17d3db5b10",
+      "reviewed_date": "2026-11-01",
+      "reviewer": "本轮复核 sha 漂移：pin 字节属 rev 3f05f63，此后 1 个 revision，HEAD 与工作树字节一致；改动为增量运行参数 limit 默认值 5000→10000 并补充 1..50000 校验与说明文档串，同时删掉一条重复的 docstring；akshare 出现行 pinned=1==live=1、出现次数 1==1，唯一命中仍是 for akshare integration 注释（行号随新增文档串后移），带品牌的加载形态行 0==0，没有任何一处用品牌名加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "cb949eaf4a12d36cca059f7cc006a2d3bd5844af556dba45d0241c411fb990c6",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/api/stock_daily_capacity.py",
+      "purpose": "股票日线发布容量门禁的响应模型；source_id 的字面量是来源身份，不加载外部包。",
+      "category": "runtime-integration",
+      "reviewed_date": "2026-11-01",
+      "reviewer": "本轮新增注册：该文件在 pin 之后新进入扫描面，独立复核当前字节；唯一命中是 Literal[\"akshare.daily\"] 的 source_id 契约身份串，导入只有标准库、pydantic 与仓内 opendata.api.published_data，无 import/动态加载形态，没有任何一处用品牌名加载外部包。",
+      "sha256": "f4e28d6ff79872fe177bae28dbb3601eb194941c6cc22f0692f3760514929904",
       "ast_exceptions": []
     },
     {
@@ -168,9 +177,9 @@
       "path": "opendata/core/config.py",
       "purpose": "首方集成中的来源标识、接口兼容、配置或搬运沿革说明；外部包依赖仍受零依赖AST断言。",
       "category": "runtime-integration",
-      "reviewed_date": "2026-10-10",
-      "reviewer": "Codex primary; authorized C65 criterion migration；C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=5==live=5、出现次数 pinned=8==live=8；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增1 删1，其中 0/1 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=0 live=0、策略过滤后 pinned=0 live=0，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
-      "sha256": "daad07d8ebef03abbfa8ad9048e165b9ab896bafe6e5284448b41c340cf6a2e7",
+      "reviewed_date": "2026-11-01",
+      "reviewer": "本轮复核 sha 漂移：pin 字节属 rev 80da631，此后 3 个 revision，HEAD 与工作树字节一致；改动为新增 financial_archive_database_url（SecretStr，只读归档库）及 AliasChoices/SecretStr 导入，其余为行位移；akshare 出现行 pinned=5==live=5、出现次数 8==8，逐行同为 akshare Settings 注释、三个 akshare_* 超时/重试配置字段与 for akshare scripts 文档串，带品牌的加载形态行 0==0（新增的 pydantic 导入与品牌无关），没有任何一处用品牌名加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "60bf486730aabd43ea3fe5dcd5846ecde13eb2a60e8e9ad6a74086dacd7397bb",
       "ast_exceptions": []
     },
     {
@@ -204,9 +213,9 @@
       "path": "opendata/data/http_client.py",
       "purpose": "请求日志/治理中的数据源标识及首方搬运HTTP通道说明。",
       "category": "runtime-integration",
-      "reviewed_date": "2026-10-10",
-      "reviewer": "Codex primary; authorized C65 criterion migration；C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=1==live=1、出现次数 pinned=1==live=1；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增1 删1，其中 0/1 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=0 live=0、策略过滤后 pinned=0 live=0，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
-      "sha256": "7485d33001a3853c66ae44343e0506608231f58fce0c9bd7145157a628de8a4f",
+      "reviewed_date": "2026-11-01",
+      "reviewer": "本轮复核 sha 漂移：pin 字节属 rev d51b645，此后 4 个 revision，HEAD 与工作树字节一致；改动较大（+537/-13），为接入 source attempt gate、有界表单/响应体与重试策略并调整会话构造；akshare 出现行 pinned=1==live=1、出现次数 1==1，唯一命中仍是模块文档串 ported akshare direct calls stay as registered ratchet debt，带品牌的加载形态行 0==0，没有任何一处用品牌名加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "86a9d5f4bdd31a7f0dced75bee88ac53b32e0994a60c923a8847acec7c58dc42",
       "ast_exceptions": []
     },
     {
@@ -284,9 +293,9 @@
       "path": "opendata/data/providers/akshare/models/_normalize.py",
       "purpose": "首方akshare来源适配器、契约模型、归一化或注册说明；调用opendata_http搬运实现并保留来源身份。",
       "category": "source-adapter",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "ac90f5a7b1386f5477ab1394b18cb294621cd3ab28d2dacefbb234aa5859e420",
+      "reviewed_date": "2026-11-01",
+      "reviewer": "本轮复核 sha 漂移：pin 字节属 rev 3f05f63，此后 1 个 revision，HEAD 与工作树字节一致；改动为 sina 代码拼写从简单前缀改为按沪/深/北交所代码族校验并拒绝不支持的代码（新增 *_PREFIXES 常量与文档串）；akshare 出现行 pinned=1==live=1、出现次数 1==1，唯一命中仍是首行模块文档串 akshare-source fetchers，带品牌的加载形态行 0==0，没有任何一处用品牌名加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "518d421cdc7e244264c7890b739fe54828da37dfaef3063b47d973c979b1a6c5",
       "ast_exceptions": []
     },
     {
@@ -374,9 +383,9 @@
       "path": "opendata/data/providers/akshare/models/stock_daily.py",
       "purpose": "库存档案查询语义已收紧（拒绝qfq/hfq、严格校验并使用不复权输入）；依赖边界仍为仓内vendor，不新增外部SDK加载。 复核范围：opendata/data/providers/akshare/models/stock_daily.py 的当前字节与引用面。",
       "category": "source-adapter",
-      "reviewed_date": "2026-10-26",
-      "reviewer": "Codex primary wave3 review: Makefile adds named OpenAPI gate; stock adapter replaces vendor relabeling with fixed governed HTTP and original JSON identity checks. No external SDK loads or new AST exception.",
-      "sha256": "fc83a9bbf83d13b1f5829bc81202c069356ec60488504631c263a1aeab6b739f",
+      "reviewed_date": "2026-11-01",
+      "reviewer": "本轮复核 sha 漂移：pin 字节属 rev 5421212，此后 1 个 revision，HEAD 与工作树字节一致；改动为北交所（BJ）路由改为显式拒绝（新增 _BSE_ROUTE_UNVERIFIED），并把 sorted(bars) 改为先赋局部变量再返回；akshare 出现行 pinned=5==live=5、出现次数 5==5，其中 2 条带品牌的 import 均指向仓内 opendata.data.providers.akshare.*，其余为来源身份校验串、provider 身份文档串与类名，带品牌的加载形态行 2==2 且无新增，没有任何一处用品牌名加载上游 SDK，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "47f05f45c37b44f1c9d3d89378f330e2651995181242d078815c02ff2e3700f3",
       "ast_exceptions": []
     },
     {
@@ -421,12 +430,30 @@
       ]
     },
     {
+      "path": "opendata/data/providers/akshare/stock_daily_mapper.py",
+      "purpose": "首方股票日线映射器：adapter_id 的 akshare 字面量和对 stock_daily_native 的仓内导入是来源身份，不加载外部 SDK。",
+      "category": "source-adapter",
+      "reviewed_date": "2026-11-01",
+      "reviewer": "本轮新增注册：该文件在 pin 之后新进入扫描面，独立复核当前字节；2 处命中为 Literal[\"akshare\"] 常量 ADAPTER_ID 与 adapter_id 字段默认值，另一条带品牌行是从仓内 opendata.data.providers.akshare.stock_daily_native 导入，依赖只有标准库、pydantic 与仓内模块，无上游 akshare 导入或动态加载。",
+      "sha256": "ef14a9d23ee38841a958ae354336318b1ea9b28b7fc18c227cc496882338db59",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/data/providers/akshare/stock_daily_native.py",
+      "purpose": "首方股票日线原生适配器契约：ADAPTER_ID/request_source/adapter_id 等 akshare 字面量是来源身份与路由校验，不加载外部 SDK。",
+      "category": "source-adapter",
+      "reviewed_date": "2026-11-01",
+      "reviewer": "本轮新增注册：该文件在 pin 之后新进入扫描面，独立复核当前字节；命中均为 Literal/常量形式的来源身份（ADAPTER_ID、adapter_id、request_source 字段）与来源校验报错串，导入只有标准库、pydantic 与仓内 request_summary/raw_evidence/stock_daily_job，无上游 akshare 导入或动态加载。",
+      "sha256": "0680c0c84a879f34f803585fb9203ffba10ecbabb408350efc7f6a8a14d6af46",
+      "ast_exceptions": []
+    },
+    {
       "path": "opendata/data/providers/akshare/stock_daily_wire.py",
       "category": "source-adapter",
       "purpose": "首方固定Eastmoney端点、原始JSON证券身份校验；akshare仅在首方包路径出现，不加载外部SDK。",
-      "reviewed_date": "2026-10-26",
-      "reviewer": "Codex primary reviewed exact metadata/import sites; no external SDK loading. Removed redundant docs registrations only because existing AC1 docs bucket already excludes those paths; no bucket/scope expansion.",
-      "sha256": "f190b1899d8d43acd9d7288996877bdf98cd1afeba6a106493fffef8f2f5fbb9",
+      "reviewed_date": "2026-11-01",
+      "reviewer": "本轮复核 sha 漂移：pin 字节属 rev a5078a9，此后 1 个 revision，HEAD 与工作树字节一致；改动为新增 BSE 未验证路由拒绝、东财 secid 市场与代码路由一致性校验以及更严格的代码正则；akshare 出现行 pinned=2==live=2、出现次数 2==2，两条带品牌 import 均为仓内 opendata.data.providers.akshare.*，带品牌的加载形态行 2==2 且无新增，没有任何一处用品牌名加载上游 SDK，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "bc86e58068ee842595a31319bc57d30869518338a3991cfa11b3b3aad686b292",
       "ast_exceptions": []
     },
     {
@@ -460,9 +487,9 @@
       "path": "opendata/data/providers/ths/models/index_daily.py",
       "purpose": "THS首方适配器中保留与akshare来源的口径/路由对照说明。",
       "category": "source-adapter",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "76814521861b37ad429c2a063347d8e4a39de50af644ba35c8ebbc6339c78ff1",
+      "reviewed_date": "2026-11-01",
+      "reviewer": "本轮复核 sha 漂移：pin 字节属 rev 360c61d，此后 1 个 revision，HEAD 与工作树字节一致；改动为新增 _ClientCallOptions TypedDict 与 SourceAttemptGate/max_attempts 透传，client 调用改为带 source_attempt_gate；akshare 出现行 pinned=1==live=1、出现次数 2==2，唯一命中仍是模块文档里对仓内 akshare fetcher 类的交叉引用，带品牌的加载形态行 0==0，没有任何一处用品牌名加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "78636037f822a9e54e96480827669efa2f25748175f5345f99fe3adf192c139e",
       "ast_exceptions": []
     },
     {
@@ -505,9 +532,9 @@
       "path": "opendata/main.py",
       "purpose": "增加仓内api_v2_router挂载；所有akshare/openbb残留均为旧任务关闭/文案，不新增外部SDK导入或动态加载。 复核范围：opendata/main.py 的当前字节与引用面。",
       "category": "runtime-integration",
-      "reviewed_date": "2026-10-26",
-      "reviewer": "Codex primary; independent wave2 zero-dependency review; receipt /tmp/od204-receipts/wave2-zero-dep-review.json sha256=c540bfc824f243ed5466b3b37004c18d3894be81143af51d1046dee065075d8f",
-      "sha256": "ba87561e3a0422979e1ee4a9330ad05119445bf7ca8c64ce2c23b878f6bb6a1e",
+      "reviewed_date": "2026-11-01",
+      "reviewer": "本轮复核 sha 漂移：pin 字节属 rev 84029bc，此后 1 个 revision，HEAD 与工作树字节一致；改动为 lifespan 拆成 _existing_lifespan 并接入 temporal identity runtime 的创建/清理；akshare 出现行 pinned=5==live=5、出现次数 5==5，逐行同为线程池关闭注释/属性与应用描述文案，带品牌的加载形态行 0==0，没有任何一处用品牌名加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "565e1ee3dc99a16ec8f633e37ef46d64a3bfa966a6a5eac90b1c91de450f4a02",
       "ast_exceptions": []
     },
     {
@@ -620,9 +647,9 @@
       "path": "opendata/pipeline/jobs.py",
       "purpose": "根据注册来源身份解析首方fetcher及调度任务，不导入外部来源包。",
       "category": "runtime-integration",
-      "reviewed_date": "2026-10-10",
-      "reviewer": "Codex primary; authorized C65 criterion migration；C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=1==live=1、出现次数 pinned=1==live=1；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增3 删3，其中 0/3 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=0 live=0、策略过滤后 pinned=0 live=0，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
-      "sha256": "8e6bb28e75b3106a06050200f2b19aec73d341ea46ab5ad3fcb3d81ecd2abb8e",
+      "reviewed_date": "2026-11-01",
+      "reviewer": "本轮复核 sha 漂移：pin 字节属 rev 80da631，此后 5 个 revision，HEAD 与工作树字节一致；改动为引入 import_module/sqlite3、universe 错误类型与 RequestBudget，重构符号全集派生与默认上限；akshare 出现行 pinned=1==live=1、出现次数 1==1，唯一命中仍是说明 ported akshare chains 的注释，带品牌的加载形态行 0==0，没有任何一处用品牌名加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "f92f7d6ee51f6f5ed4a439746c96474f8709ac0b0232d1de073fb01aa1a2aca1",
       "ast_exceptions": []
     },
     {
@@ -652,12 +679,21 @@
       "ast_exceptions": []
     },
     {
+      "path": "opendata/pipeline/stock_daily_backfill_executor.py",
+      "purpose": "股票日线回填执行器：执行目标与来源 id 的 akshare 字面量和仓内 _source 导入是来源身份，不加载外部 SDK。",
+      "category": "runtime-integration",
+      "reviewed_date": "2026-11-01",
+      "reviewer": "本轮新增注册：该文件在 pin 之后新进入扫描面，独立复核当前字节；唯一字符串命中是 STOCK_DAILY_EXECUTION_SOURCE_ID = \"akshare.daily\"，另一条带品牌行是从仓内 opendata.data.providers.akshare._source 导入 SOURCE，依赖均为标准库与仓内模块，无上游 akshare 导入或动态加载。",
+      "sha256": "78d8aa131908b55f0e784e5fa8fd444d966905c6a8c394d644a58c28dc67c86e",
+      "ast_exceptions": []
+    },
+    {
       "path": "opendata/pipeline/stock_daily_job.py",
       "purpose": "离线股票日线来源适配器以 akshare 来源身份封装固定原始响应解析；不加载外部 SDK，由调用方注入受审查的响应来源与发布边界。",
       "category": "source-adapter",
-      "reviewed_date": "2026-10-26",
-      "reviewer": "Codex primary wave4 review: exact-path bare-token reference for the offline stock daily job; reviewed import is the in-repo akshare provider and no external SDK is loaded.",
-      "sha256": "e68a36f5928b3bb00298b9c34464980f918e13994ac8b05d0856be8185dad582",
+      "reviewed_date": "2026-11-01",
+      "reviewer": "本轮复核 sha 漂移：pin 字节属 rev 81549ae，此后 2 个 revision，HEAD 与工作树字节一致；改动为新增归一化证据版本/规则集与 5 条检查名（其中一条是字符串标识 akshare_stock_daily_transform_validates_every_row），FetchHandler 类型替换 Callable，并改用共享的 _market_for_symbol 路由；akshare 出现行 10→11、出现次数 10→11（新增仅该检查名字符串），4 条带品牌 import 均指向仓内 opendata.data.providers.akshare.*，带品牌的加载形态行 4==4 且无新增，没有任何一处用品牌名加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "df9935562f479e1553db8f6e42c02c86f32210be972bc56d6bee399b3ae906e5",
       "ast_exceptions": []
     },
     {
@@ -736,9 +772,9 @@
       "path": "scripts/ops/migrate_legacy_stock_daily.py",
       "purpose": "用户授权旧库逐表审查及隔离迁移中的实际旧库名称；仅作为被审数据库标识，不加载外部包。",
       "category": "operations-tool",
-      "reviewed_date": "2026-10-10",
-      "reviewer": "Codex primary; authorized C65 criterion migration；C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=5==live=5、出现次数 pinned=5==live=5；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增4 删4，其中 4/4 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=1 live=1、策略过滤后 pinned=1 live=1，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
-      "sha256": "53587edf27d49373068ed8cba072b7f353ef69c68839399289ccfe535e475a3b",
+      "reviewed_date": "2026-11-01",
+      "reviewer": "本轮复核 sha 漂移：pin 字节属 rev 80da631，此后 2 个 revision，HEAD 与工作树字节一致；改动为把 成交额 改为可空 double 字段并新增固定两张迁移表的 NULL 计数校验；akshare 出现行 5→6、出现次数 5→6（新增仅 SQL 里的表名 ods_stock_daily_akshare），其余仍是旧库 schema/表名/SOURCE 与映射路径身份串，带品牌的加载形态行 0==0，没有任何一处用品牌名加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "f494b3d91dd1560c00375e036f30bb524b56db43f386ce89d977ce29d975a09b",
       "ast_exceptions": []
     },
     {
@@ -862,9 +898,9 @@
       "path": "scripts/quality/acceptance_item_probe.py",
       "purpose": "品牌、分层质量、来源依赖或验收判据的测量工具；被测来源名不用于加载外部包。本轮把三条 AC 面改成子解释器里的 import hook 见证：包名只作为字符串常量出现在被交给子进程的字面 argv 与被拒计数里，没有任何一处用它去加载外部包。",
       "category": "operations-tool",
-      "reviewed_date": "2026-10-11",
-      "reviewer": "C74 primary; AC-5|07 的档案轮次标签改成从 bundle 实测（archive_round/carried_from_round）并修正 exclude_dirs 尾斜杠成员判定，未新增任何品牌名加载；C75 primary 复核 sha 漂移：pin 命中 HEAD 8a35e9a，akshare 出现行 pinned=124 live=124 且逐行多重集完全相同，相对 pin 只多 3 行（2 行注释 + 1 行字面正则 ^rows_pointer=refRates$，把 .gitleaks.toml 的允许面逐字镜像到判定探针里），没有任何一处用它去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准；C75 secondary 复核第二次 sha 漂移：pin == INDEX(staged)（上一次重钉的字节还没提交，所以它不在任何 revision 里，审计为此新增了 index 载体臂），akshare 出现行 pinned=124 live=124 identical=True，相对 pin 只多 4 行（注释 3 行 + 字面正则 ^RIFLGFC(M01|M03|M06|Y01|Y02|Y03|Y05|Y07|Y10|Y20|Y30)_N\\.B$ 一行），仍无品牌名加载，所以仍是同一批准内容下的摘要重钉；C78 primary 复核第三次 sha 漂移：pin 字节属 rev 60148ce，字节被 5e335ab 改动（AC-10|03 判据去字面量：删掉 3 行 \"akshare, ecb, fred, imf, oecd, ths, yfinance\" 字面包名串，改成从注册表实测的两个人普查面对齐），akshare 出现行 pinned=124 live=124、出现次数 pinned=147 live=147、净变动 0（增 3 行删 3 行，删的正是上述 3 条字面量），扫描器 (module, kind) 命中多重集 pinned=live=13 完全相同，加载形态行 pinned=4 live=4 且新增 0 条，所以仍是同一批准内容下的摘要重钉，不是新的批准；C85 primary 复核 sha 漂移：pin 字节属 rev 5e335ab，字节被 4b8df39 改动（pin 之后该路径共 3 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=124==live=124、出现次数 pinned=147==live=147；openbb 出现行 pinned=94==live=94、出现次数 pinned=116==live=116；加载形态行 pinned=4==live=4；变动行 增1595 删11，其中 0/1595 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=13 live=13、策略过滤后 pinned=13 live=13，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准；C85 primary 复核 sha 漂移（被 af4c90f 改动）：pin 字节属 rev 4b8df39，pin 之后该路径共 1 个 revision；akshare 出现行 124->126、出现次数 147->149（移动）；openbb 出现行 94->95、出现次数 116->117（移动）；加载形态行 pinned=4==live=4；变动行 diff 口径（difflib autojunk=False，本轮与 git numstat 同形）增401 删0，按文本去重口径 增260 删0，两口径差 141 条（新增行与 pin 里的既有行同文，去重口径不计）；去重口径新增行里没有一条是被删行的同文加 # nosec 尾注释（0/260）；带品牌新增 3 条 / 删 0 条，逐行按加载形态正则分类后命中 0 条；原文：from scripts.quality.openbb_inventory_plane import ( | \"akshare,bls,cboe,ecb,federal_reserve,fmp,fred\", | \"enabled_source_names\": \"akshare,bls,cboe,ecb,federal_reserve\",；扫描器 (module, kind) 命中多重集 pinned=13 live=13、策略过滤后 pinned=13 live=13，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准；C85 primary 复核 sha 漂移（被 0ee5839 改动）：pin 字节属 rev af4c90f，pin 之后该路径共 1 个 revision；akshare 出现行 126->126、出现次数 149->149（未移动）；openbb 出现行 95->95、出现次数 117->117（未移动）；加载形态行 pinned=4==live=4；变动行 diff 口径（difflib autojunk=False，本轮与 git numstat 同形）增4 删2，按文本去重口径 增4 删2，两口径差 0 条（新增行与 pin 里的既有行同文，去重口径不计）；去重口径新增行里没有一条是被删行的同文加 # nosec 尾注释（0/4）；带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=13 live=13、策略过滤后 pinned=13 live=13，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准；C86 primary 复核 sha 漂移（被 fb904f2 改动）：pin 字节属 rev 0ee5839，pin 之后该路径共 1 个 revision；akshare 出现行 126->144、出现次数 149->172（移动）；openbb 出现行 95->95、出现次数 117->117（未移动）；加载形态行 pinned=4==live=4；变动行 diff 口径（difflib autojunk=False）增1064 删9，按文本去重口径 增818 删7，两口径差 246 条，de-dupe 命中 246 条（新增行的文本在 pin 字节里已出现），余 0 条未被该机制解释；去重口径新增行里没有一条是被删行的同文加 # nosec 尾注释（0/818）；带品牌新增 18 条 / 删 0 条，逐行按加载形态正则分类后命中 0 条；原文：C86_B1_SCALE_LINE = re.compile(r\"ods_(\\w+)_(ths|akshare): (\\S+)\\.\\.(\\S+) rows=(\\d+) symbols=(\\d+)\") | C86_SOURCE_TABLE_SUFFIXES: Final = (\"_ths\", \"_akshare\") | ak_rows = listed.get(\"ods_stock_daily_akshare\", 0) | b1_ak_rows = int(scale.get(\"stock_daily_akshare_rows\", \"-1\")) | \"daily_akshare_rows\": count(ak_rows), | \"akshare_rows_across_carriers\": rows_faces, | \"akshare_rows_delta\": rows_delta, | \"akshare_window_b1\": scale.get(\"stock_daily_akshare_window\", \"(absent)\"), | \"akshare_origin\": \"legacy_migration\" if \"旧库迁移\" in b1 else \"vendor_fetch\", | (\"两源行数一致\", f[\"akshare_rows_delta\"] == \"0\"), | (\"两源窗口同跨十年\", f[\"ths_window_b1\"] == f[\"akshare_window_b1\"]), | (\"akshare 侧来自本轮取数\", f[\"akshare_origin\"] == \"vendor_fetch\"), | \"akshare_rows_delta\": \"0\", | \"akshare_window_b1\": \"*ths_window_b1\", | \"akshare_origin\": \"vendor_fetch\", | Break(\"两份载体的 akshare 行数不一致\", ((\"akshare_rows_delta\", \"1\"),), GAP), | Break(\"akshare 窗口短于 ths\", ((\"akshare_window_b1\", \"2026-01-05..2026-07-21\"),), GAP), | Break(\"akshare 侧仍是旧库迁移数据\", ((\"akshare_origin\", \"legacy_migration\"),), GAP),；扫描器 (module, kind) 命中多重集 pinned=13 live=13、策略过滤后 pinned=13 live=13，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准；C86 primary 复核 sha 漂移（被 8b6b555 改动）：pin 字节属 rev fb904f2，pin 之后该路径共 1 个 revision；akshare 出现行 144->144、出现次数 172->172（未移动）；openbb 出现行 95->95、出现次数 117->117（未移动）；加载形态行 pinned=4==live=4；变动行 diff 口径（difflib autojunk=False）增10 删6，按文本去重口径 增10 删6，两口径相同（差 0 条，de-dupe 命中 0 条）；去重口径新增行里没有一条是被删行的同文加 # nosec 尾注释（0/10）；带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=13 live=13、策略过滤后 pinned=13 live=13，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准；C86 primary 复核 sha 漂移（被 dc9e764 改动）：pin 字节属 rev 8b6b555，pin 之后该路径共 1 个 revision；akshare 出现行 144->144、出现次数 172->172（未移动）；openbb 出现行 95->95、出现次数 117->117（未移动）；加载形态行 pinned=4==live=4；变动行 diff 口径（difflib autojunk=False）增45 删6，按文本去重口径 增39 删6，两口径差 6 条，de-dupe 命中 6 条（新增行的文本在 pin 字节里已出现），余 0 条未被该机制解释；去重口径新增行里没有一条是被删行的同文加 # nosec 尾注释（0/39）；带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=13 live=13、策略过滤后 pinned=13 live=13，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准；C89 primary 复核 sha 漂移（改动在未提交的工作树里）：pin 字节属 rev dc9e764，该路径在此之后 0 个 revision，工作树字节 == HEAD 读 False，所以本次移动的是尚未提交的工作树字节；akshare 出现行 144->144、出现次数 172->172（口径=大小写不敏感，与前述各条同口径；大小写敏感口径同一份字节读 138/163，两个口径由 docs/evidence/C89/reference-policy-repin.py 打在同一行，下一轮据此把口径改名与数字漂移分开）；openbb 出现行 95->95、出现次数 117->117（未移动）；加载形态计数本轮同时打两个口径并注明口径，以免下一轮把口径改名读成数字漂移：宽口径=任何 import/from/importlib/__import__ 行，pinned=44==live=44；窄口径=既是加载形态又含品牌名的行，pinned=1==live=1，其唯一载体逐字是 `from scripts.quality.openbb_inventory_plane import (`（本仓模块名里带 openbb_，不是外部品牌包）；注意前述 C75/C78/C85/C86 各条写的「加载形态行 4」既不是宽口径也不是窄口径，本轮没有复现该口径，故本条不引用它的数字，可比对面是 akshare/openbb 出现行与出现次数（同口径复现）和扫描器多重集；变动行 diff 口径 +8/-0，文本去重口径同样 +8，两口径差 0 条（de-dupe 命中 0）；去重口径新增行里没有一条是被删行的同文加 # nosec 尾注释（0/8）；带品牌的增删行为 0/0，新增行里同时是加载形态且带品牌名的为 0 条；扫描器 (module, kind) 命中多重集 pinned=13 live=13（8 条 akshare|string + 5 条 openbb|string），identical=True；反例臂：给 live 字节注入一行 import akshare as aks 后同一组计数器读 akshare_lines 138->139、ci 144->145、load_shape 44->45、scanner 13->14 且新成员是 akshare|import，所以上面那些不动的读数是被能动的计数器量出来的；本轮对该文件的实际改动只有两条：把 .gitleaks.toml 的第 5 条允许正则逐字镜像进 GENERIC_API_KEY_ALLOWED_REGEXES，以及把其中一行注释重新折行以满足 100 列；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
-      "sha256": "71c428663b694d017c64d787136cc73a0c95c75968bf95ef2318c8818ea3ac5b",
+      "reviewed_date": "2026-11-01",
+      "reviewer": "本轮复核 sha 漂移：pin 字节属 rev ec65863，此后 2 个 revision，HEAD 与工作树字节一致；改动为 DWD merge 判据改为读取 merge AST 的 revision-key 传播/比较语义并调整对应用例名；akshare 出现行 234==234、出现次数 289==289，带品牌行的增删为 0/0（akshare/openbb 合计行数与出现次数均未变），扫描器命中多重集与 pin 一致、无新增加载形态，没有任何一处用品牌名加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "76d622fea0e492f42319a6e9291303d9e74a2534dde5a55476a0a1dd761ac998",
       "ast_exceptions": []
     },
     {
