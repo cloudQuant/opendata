@@ -37,8 +37,11 @@ dependencies = [
     # were missing; CI failed on `ModuleNotFoundError: curl_cffi` for five pushes.
     # Guard: tests/test_ported_import_closure.py.
     # The ported code only uses the `requests.Session()` compatibility layer (no
-    # `impersonate=`), and this round exercised curl_cffi 0.13.0.
-    "curl_cffi>=0.7.0",
+    # `impersonate=`). The yfinance provider refuses any curl_cffi outside its
+    # governed exact set {0.13.0, 0.16.3} (_GOVERNED_CURL_CFFI_VERSIONS), so an open
+    # range here resolved 0.17.0 and 27 provider tests failed closed. Pin the reviewed
+    # generation instead of letting the resolver pick one the code rejects.
+    "curl_cffi==0.16.3",
     # Imported directly by modules under the nested vendor package.
     "urllib3>=2.0.7",
     "aiohttp>=3.9.0",
@@ -109,6 +112,10 @@ dev = [
     "pytest-asyncio>=0.24.0",
     "pytest-cov>=6.0.0",
     "pytest-xdist>=3.6.0",
+    # tests/test_host_inventory.py uses @pytest.mark.timeout; under
+    # --strict-markers an unregistered marker errors at collection, and the
+    # gate's install argv (``.[web,dev,providers]``) did not provide the plugin.
+    "pytest-timeout>=2.4.0",
     # The ratchet gate (make quality-ratchet) pins these exact versions in
     # docs/quality/ratchet.json; a version drift fails the gate by design.
     # Upgrade deliberately: bump the pin, then `python scripts/quality/ratchet.py

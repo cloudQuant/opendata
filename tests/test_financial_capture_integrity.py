@@ -62,6 +62,10 @@ def _engine(tmp_path: Path) -> Engine:
     return sa.create_engine(f"sqlite:///{tmp_path / 'test_financial_archive_integrity.db'}")
 
 
+# Sentinel for a ``captured_at_utc`` override that must resolve at run time.
+_LIVE_CAPTURED_AT = object()
+
+
 def _capture_row(
     tmp_path: Path,
     *,
@@ -263,7 +267,10 @@ def test_changed_body_is_reported_as_integrity_failure(tmp_path: Path) -> None:
             "invalid_sql_capture",
         ),
         (
-            {"captured_at_utc": datetime.now(timezone.utc).replace(tzinfo=None)},
+            # Resolved at run time: the row's own timestamps are produced by the
+            # writer inside the test, so a parametrize-time clock would already be
+            # older than ``observed_at_utc`` and fail the ordering check first.
+            {"captured_at_utc": _LIVE_CAPTURED_AT},
             "capture_manifest_mismatch",
         ),
         ({"request_summary_sha256": "e" * 64}, "evidence_context_mismatch"),
@@ -276,7 +283,10 @@ def test_sql_digest_key_time_and_request_mismatches_fail_closed(
 ) -> None:
     """SQL body digests, keys, timestamps, and request hashes stay bound."""
     engine = _engine(tmp_path)
-    row, _, reader = _capture_row(tmp_path, row_overrides=row_overrides)
+    overrides = dict(row_overrides)
+    if overrides.get("captured_at_utc") is _LIVE_CAPTURED_AT:
+        overrides["captured_at_utc"] = datetime.now(timezone.utc).replace(tzinfo=None)
+    row, _, reader = _capture_row(tmp_path, row_overrides=overrides)
     _insert_rows(engine, [row])
     try:
         report = _audit(engine, reader)

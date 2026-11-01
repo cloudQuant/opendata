@@ -546,7 +546,7 @@ def test_evidence_file_permissions_are_checked_after_exclusive_create(
     monkeypatch.setattr(
         pilot.os,
         "fstat",
-        lambda _fd: SimpleNamespace(st_uid=os.getuid(), st_mode=stat.S_IFIFO | 0o600),
+        lambda _fd: SimpleNamespace(st_uid=os.getuid(), st_mode=stat.S_IFIFO | 0o600, st_size=0),
     )
     try:
         with pytest.raises(pilot.PilotError, match="evidence_file_permissions_invalid"):

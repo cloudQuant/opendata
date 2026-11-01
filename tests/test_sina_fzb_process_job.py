@@ -1086,11 +1086,13 @@ def test_real_popen_fixture_worker_publishes_two_isolated_captures_and_scoped_pa
 )
 def test_invalid_child_results_leave_publication_state_unchanged(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
     operation_id: str,
     handler: object,
     timeout: float,
     expected_error: str,
 ) -> None:
+    monkeypatch.chdir(tmp_path)
     marker = (
         _private_marker_path("wave12-sina-child.malformed.started")
         if operation_id == MALFORMED_RESULT_OPERATION_ID
@@ -1129,7 +1131,10 @@ def test_invalid_child_results_leave_publication_state_unchanged(
         worker_engine.dispose()
 
 
-def test_parent_timeout_kills_reaps_child_and_does_not_publish(tmp_path: Path) -> None:
+def test_parent_timeout_kills_reaps_child_and_does_not_publish(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(tmp_path)
     marker = _private_marker_path("wave12-sina-child.started")
     marker.unlink(missing_ok=True)
     database_path = tmp_path / "sina-process-timeout.sqlite"
@@ -1166,7 +1171,9 @@ def test_parent_timeout_kills_reaps_child_and_does_not_publish(tmp_path: Path) -
 
 def test_run_ledger_cancel_cancels_and_reaps_active_child_without_publication(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    monkeypatch.chdir(tmp_path)
     marker = _private_marker_path("wave12-sina-child.started")
     marker.unlink(missing_ok=True)
     database_path = tmp_path / "sina-process-ledger-cancel.sqlite"
