@@ -5,7 +5,7 @@ from __future__ import annotations
 import io
 import json
 from datetime import date, timedelta
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import pytest
 from fastapi.routing import APIRoute
@@ -214,12 +214,31 @@ def _publish_synthetic(
     )
 
 
+def _effective_api_routes(routes: list[Any]) -> list[Any]:
+    """Every APIRoute a route table answers, crossing FastAPI's include nesting.
+
+    FastAPI >=0.162 keeps an included router as one nested branch instead of
+    copying its routes into the parent, so ``app.routes`` no longer holds
+    ``APIRoute`` objects directly; each branch exposes its prefix-applied routes
+    through ``effective_candidates()``, which wrap the original route. Older
+    FastAPI holds the ``APIRoute`` objects flat and has no such branch, so the
+    same walk returns the same reviewed set either way.
+    """
+    found: list[Any] = []
+    for route in routes:
+        candidates = getattr(route, "effective_candidates", None)
+        if callable(candidates):
+            found.extend(_effective_api_routes(list(candidates())))
+            continue
+        if isinstance(getattr(route, "original_route", route), APIRoute):
+            found.append(route)
+    return found
+
+
 def _route_allowlist(app: FastAPI) -> set[tuple[str, frozenset[str]]]:
     """Return method/path pairs for the actual Starlette route table."""
     return {
-        (route.path, frozenset(route.methods or ()))
-        for route in app.routes
-        if isinstance(route, APIRoute)
+        (route.path, frozenset(route.methods or ())) for route in _effective_api_routes(app.routes)
     }
 
 
