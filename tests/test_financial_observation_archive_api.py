@@ -705,12 +705,33 @@ def test_sync_read_rejects_has_more_page_and_exits_transaction(
     assert events[-1] == "engine_dispose"
 
 
+def _registered_paths(routes: list[Any]) -> set[str]:
+    """Every path template a router answers, crossing FastAPI's include nesting.
+
+    FastAPI >=0.162 keeps an included router as one nested branch instead of
+    copying its routes into the parent, so a branch carries no ``path`` of its
+    own; its effective (prefix-applied) routes are read from
+    ``effective_candidates()``. Older FastAPI yields plain routes with ``path``
+    already set, so the same walk returns the same path set either way.
+    """
+    paths: set[str] = set()
+    for route in routes:
+        candidates = getattr(route, "effective_candidates", None)
+        if callable(candidates):
+            paths |= _registered_paths(list(candidates()))
+            continue
+        path = getattr(route, "path", None)
+        if path is not None:
+            paths.add(path)
+    return paths
+
+
 def test_route_is_registered_only_on_the_v2_router() -> None:
     """The archive URL is versioned and is absent from legacy compatibility routers."""
     expected = "/api/v2/data/financial-statements/archive"
 
-    assert any(route.path == expected for route in api_v2_router.routes)
-    assert all(route.path != expected for route in api_router.routes)
+    assert expected in _registered_paths(api_v2_router.routes)
+    assert expected not in _registered_paths(api_router.routes)
 
 
 @pytest.mark.parametrize("instrument_id", ["600519.SH", "000001.SZ", "430047.BJ"])
