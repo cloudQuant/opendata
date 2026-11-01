@@ -1,0 +1,95 @@
+C150 — generic-api-key allowlist for eight scheduler-ledger / stock-daily test fixtures
+=======================================================================================
+
+Device
+------
+gitleaks 8.30.1 (the release pinned in docs/quality/secret-scan.json), Linux x64.
+Command under test: `make secret-check` ->
+`gitleaks detect --source . --config .gitleaks.toml --redact`.
+
+Full-history reading, before the C150 regex (dev @ 7210a1fd8e42bd43bcd75da82b855cb36134f9fd)
+--------------------------------------------------------------------------------------------
+    INF 949 commits scanned.
+    INF scanned ~538100496 bytes (538.10 MB) in 1m35.7s
+    WRN leaks found: 10
+    FAIL: the history scan reports credentials (exit 1).
+    make: *** [Makefile:135: secret-check] Error 1
+
+The ten findings, each read at its own line before triage — all rule `generic-api-key`:
+
+    tests/test_request_budget_v3_extra.py:53                            quota-v3-boundary                  entropy 3.6168747
+    tests/test_ths_transport_source_attempt_scope_v3_integration.py:60  fixture-csi500-v3-integration-run  entropy 3.9454648
+    tests/test_ths_transport_source_attempt_scope_v3_integration.py:63  fixture-csi500-v3-quota            entropy 3.9690015
+    tests/test_stock_daily_publication_api.py:83                        stock-daily-v2-api-fixture         entropy 4.0560207
+    tests/test_ths_csi500_v3_sample_job.py:67                           fixture-csi500-v3-quota            entropy 3.9690015
+    tests/test_ths_csi500_v3_sample_job.py:89                           fixture-csi500-v3-run              entropy 3.7849420
+    tests/test_ths_csi500_v3_sample_job.py:304                          fixture-csi500-v3-quota            entropy 3.9690015
+    tests/test_ths_financial_observation_fetcher.py:85                  fixture-observation-quota-v1       entropy 3.8693314
+    tests/test_http_client_source_attempt_gate.py:76                    fixture-quota-v1                   entropy 3.6250000
+    tests/test_ths_source_attempt_gate.py:69                            fixture-ths-quota-v1               entropy 3.7464395
+
+Every one is a label the test gives to its own synthetic run/quota row (`RUN_KEY =`,
+`QUOTA_KEY =`, `budget_quota_key=`, `run_key=`, `PRINCIPAL =`, `"source_verification":`).
+The value is constructed in the same file and never read from an environment or a config;
+none is a credential. `generic-api-key` fires because it reads the *field name*
+(`..._quota_key`, `run_key`, `PRINCIPAL`) as a key name and the quoted value as its value —
+the same mechanism C75 and C89 recorded for `source_key=` and `environment_variable=`.
+
+Full-history reading, after the C150 regex (same tree, same scanner, one line added)
+------------------------------------------------------------------------------------
+    INF 949 commits scanned.
+    INF scanned ~538100496 bytes (538.10 MB) in 1m37.4s
+    INF no leaks found
+    (exit 0)
+
+Arms — docs/evidence/C150/gitleaks-counterfactual.py
+-----------------------------------------------------
+A throwaway git history is built from the nine real declarations plus three planted
+variants; each config is read over that history. `[]` means nothing reported.
+
+    arm              real_lines  one_char_longer  token_in_same_slot  generic_secret_in_same_slot
+    shipped          []          generic-api-key  github-pat          generic-api-key
+    without_c150     generic-api-key  generic-api-key  github-pat      generic-api-key
+    default_rules    generic-api-key  generic-api-key  github-pat      generic-api-key
+
+What each arm proves:
+
+* `shipped` vs `without_c150` — the C150 regex is precisely what silences those nine
+  declaration lines; remove that one line and all ten findings return. Nothing else in the
+  allowlist is load-bearing for them (`default_rules` matches `without_c150` here).
+* `one_char_longer` — appending a single character to three of the eight literals is
+  reported again under the shipped config. The exemption is the literal list, not a
+  `fixture-*` / `quota-*` value class, so a different value typed into the same slot does
+  not inherit it.
+* `token_in_same_slot` / `generic_secret_in_same_slot` — a planted credential in the very
+  same `budget_quota_key=` / `PRINCIPAL =` / `run_key=` slot is still reported under the
+  shipped config. As C75 measured, the prefixed `ghp_` form is reported by `github-pat`
+  and never by `generic-api-key` even with every allowlist removed, so the honest reading
+  of that arm is "still reported, by `github-pat`"; the unprefixed mixed-case secret in
+  the same slot is reported by `generic-api-key` itself in all three arms.
+
+Blast radius, counted in the tree rather than asserted
+-----------------------------------------------------
+`grep -F` over `**/*.py` and `**/*.json` (this evidence directory excluded) — files whose
+contents carry each literal / lines read:
+
+    fixture-csi500-v3-integration-run   5 files, 4 lines
+    fixture-csi500-v3-quota            10 files, 14 lines
+    fixture-csi500-v3-run               6 files,  5 lines
+    fixture-ths-quota-v1                1 file
+    fixture-observation-quota-v1       12 files, 11 lines
+    fixture-quota-v1                   12 files, 13 lines
+    quota-v3-boundary                   2 files,  1 line
+    stock-daily-v2-api-fixture          2 files,  1 line
+
+Every hit is a scheduler-ledger or stock-daily test declaration or a reference to one; the
+file counts above 1 are the same fixture string reused by companion tests of the same
+feature, not independent meanings. The regex is anchored (`^(?:...)$`) over an explicit
+alternation of these eight strings, so its reach is exactly these literals.
+
+Reviewer boundary
+-----------------
+This is a per-literal exemption for values that are already in history, not a value class
+and not a path scoping. A real credential that happens to be *named* one of these eight
+strings would be exempt from `generic-api-key` only — the specific rules (`github-pat`,
+`aws-access-key-id`, ...) are untouched, as the `token_in_same_slot` arm shows.
