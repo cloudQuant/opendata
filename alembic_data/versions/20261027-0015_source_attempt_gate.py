@@ -26,6 +26,7 @@ from sqlalchemy import (
     select,
     table,
 )
+from sqlalchemy.engine.mock import MockConnection
 
 from alembic import op
 
@@ -46,12 +47,29 @@ _GRANT_EVENTS = "od_source_grant_events"
 _ATTEMPTS = "od_source_attempt_reservations"
 
 
-def _target_mode() -> str:
-    """Return the supported migration mode or reject an unverified target."""
-    dialect = op.get_bind().dialect
+def _target_mode(*, render_upgrade: bool = False) -> str:
+    """Return the supported migration mode or reject an unverified target.
+
+    Args:
+        render_upgrade: Allow an offline ``--sql`` render of ``upgrade()`` to
+            skip only the server-version assertion. A render opens no server
+            connection, so the dialect's ``server_version_info`` is always
+            ``None``; the MySQL mode renders no DDL in either direction, so the
+            rendered script cannot differ from a version-verified one. Every
+            online call, and ``downgrade()`` in both modes, keeps the original
+            refusal because the SQLite rollback reads live evidence rows.
+
+    Raises:
+        RuntimeError: If the target is MariaDB, an unsupported dialect, or a
+            MySQL server older than 8.0.16 or outside major version 8.
+    """
+    bind = op.get_bind()
+    dialect = bind.dialect
     if dialect.name == "sqlite":
         return "sqlite"
     if dialect.name == "mysql" and not getattr(dialect, "is_mariadb", False):
+        if render_upgrade and isinstance(bind, MockConnection):
+            return "mysql-noop"
         version = dialect.server_version_info
         if (
             not isinstance(version, tuple)
@@ -67,7 +85,7 @@ def _target_mode() -> str:
 
 def upgrade() -> None:
     """Create SQLite gate tables; explicitly leave supported MySQL unchanged."""
-    if _target_mode() == "mysql-noop":
+    if _target_mode(render_upgrade=True) == "mysql-noop":
         return
     op.create_table(
         _CLOCK,

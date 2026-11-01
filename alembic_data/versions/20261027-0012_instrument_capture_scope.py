@@ -13,6 +13,7 @@ CHECK constraints and the exact NO PAD collation; MariaDB is not covered.
 
 from sqlalchemy import Column, String, column, or_, select, table
 from sqlalchemy.dialects.mysql import VARCHAR
+from sqlalchemy.engine.mock import MockConnection
 
 from alembic import op
 
@@ -34,12 +35,28 @@ def _key_type(length: int) -> String:
     return String(length).with_variant(VARCHAR(length, collation="utf8mb4_0900_bin"), "mysql")
 
 
-def _require_supported_database() -> None:
-    """Reject MySQL versions that cannot enforce the paired-selector checks."""
-    dialect = op.get_bind().dialect
+def _require_supported_database(*, render_upgrade: bool = False) -> None:
+    """Reject MySQL versions that cannot enforce the paired-selector checks.
+
+    Args:
+        render_upgrade: Allow an offline ``--sql`` render of ``upgrade()`` to
+            skip only the server-version assertion. A render opens no server
+            connection, so the dialect's ``server_version_info`` is always
+            ``None``; the selector DDL below is version-independent. Every
+            online call, and ``downgrade()`` in both modes, keeps the original
+            refusal because the rollback reads the live selector columns first.
+
+    Raises:
+        RuntimeError: If the target is MariaDB, or a MySQL server older than
+            8.0.16 or outside major version 8.
+    """
+    bind = op.get_bind()
+    dialect = bind.dialect
     if dialect.name == "mariadb" or getattr(dialect, "is_mariadb", False):
         raise RuntimeError("This migration requires MySQL 8.0.16 or later within MySQL 8.")
     if dialect.name != "mysql":
+        return
+    if render_upgrade and isinstance(bind, MockConnection):
         return
     version = dialect.server_version_info
     if version is None or len(version) < 3 or version[0] != 8 or version[:3] < (8, 0, 16):
@@ -48,7 +65,7 @@ def _require_supported_database() -> None:
 
 def upgrade() -> None:
     """Add nullable paired selectors and the bounded capture-read index."""
-    _require_supported_database()
+    _require_supported_database(render_upgrade=True)
     with op.batch_alter_table(_FACT_TABLE) as batch:
         batch.add_column(Column("instrument_id", _key_type(128), nullable=True))
         batch.add_column(Column("capture_id", _key_type(64), nullable=True))
