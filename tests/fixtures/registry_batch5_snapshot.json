@@ -8505,8 +8505,8 @@
     "opendata/data/providers/fred/models/sloos.py": "639a81178ecb23bb7e2876096c7d2c74c03321bb25b3bf2c980a6f2e9466f741",
     "opendata/data/providers/fred/provider.py": "fe76cc1a1f4d4b65e9a2997023a91df132d1aa1a8b614f54550334ca0493daea",
     "opendata/data/providers/fred/sloos_series.py": "2b45fe84a37ffb2596f1e22c6b50fc4b028ccf24c924d410041eed550d2fe228",
-    "opendata/data/providers/yfinance/models/iter2.py": "c5b083cb1547bea764cb10387665550ed21ae96a687c41206dc9f8c7c7d1154e",
-    "opendata/data/providers/yfinance/models/market_iter2.py": "e6ee42847ca72619e7faeca1750b6ba8e23e698f845a71a13c9c8bb7a5d23ed4",
+    "opendata/data/providers/yfinance/models/iter2.py": "fc0d69e499a06d6074de9a38f0934cb3136d3d12a08bd903132ca9a40c7cede9",
+    "opendata/data/providers/yfinance/models/market_iter2.py": "012a87d5bcbb33d665b2c13bcdd81a9914cdd49913d55dea58f0d727b6211c34",
     "tests/fixtures/registry_batch3_snapshot.json": "7cb85126743f7fa77e60139f61ebc3c23da2cd4f9ace189bb6e798e2d93d1153",
     "tests/fixtures/registry_batch4_snapshot.json": "a7e184a61fb3d533fdb7e5ad102954e01bbfcd78797625bcf3060b43378f0376"
   },
@@ -9671,5 +9671,33 @@
     },
     "test_sites": "the test-side literals moved by this re-base are listed in the probe's carrier, not here: tests/test_provider_domains.py and tests/test_pipeline_jobs.py byte-pin this fixture's digest, so recording the list inside the fixture would invalidate the very digest it would have to name",
     "why_late": "wave 37 landed cboe_index_snapshots without re-basing this fence and wave 38 adds a second domain on top of the same drift; re-basing a pin a wave moved is the house rule (waves 33 and 34 each carry a waveNN_census_rebase block, over 15 and 3 domains)"
+  },
+  "yfinance_cast_comment_rebase": {
+    "scope": "the 2 drifted source pins only; the 29 other pins, the counts, the domain lists, the candidate digest and both C100 adjudication references are byte-frozen",
+    "measured_by": "live hashlib.sha256 over the tracked files, from the tree at 968cd6a0; drift proven with git diff --numstat 1ad2aee0 HEAD -- <path>",
+    "expiring_baseline": "1ad2aee0 (last fixture re-pin, 2026-10-22)",
+    "movers": [
+      "10c9d012 (2026-10-26: dropped cast(\"date\"/\"datetime\") and its import while the pandas stubs were being settled)",
+      "9f71cf9a (OpenData #158, 2026-11-01: restored both casts)"
+    ],
+    "net_drift": "+1 line in each file, both comments (\"# pandas stubs type Period.to_timestamp() as Any.\" at iter2.py:174 and \"# pandas stubs type Timestamp.to_pydatetime() as Any.\" at market_iter2.py:218); 0 deletions. typing.cast returns its second argument, so no runtime behaviour, binding, decorator, domain id or __all__ entry moved - nothing this fixture enumerates changed.",
+    "reviews_left_bound_to_the_old_digests": "175 files under docs/evidence still name c5b083cb... or e6ee4284... (100 occurrences in C101/claims.merged.json alone). They are round attestations written by scripts/quality/iter2_claims_merge.py and iter2_primary_review_recorder.py - a record of what was reviewed at the time, not a live fence, and no `make gate` member reads them. Rewriting them would restate history; leaving them is deliberate.",
+    "entries_pinned": 31,
+    "entries_changed": 2,
+    "entries_untouched": 29,
+    "changed": [
+      {
+        "path": "opendata/data/providers/yfinance/models/iter2.py",
+        "from": "c5b083cb1547bea764cb10387665550ed21ae96a687c41206dc9f8c7c7d1154e",
+        "to": "fc0d69e499a06d6074de9a38f0934cb3136d3d12a08bd903132ca9a40c7cede9",
+        "git_diff_numstat_1ad2aee0_HEAD": "1 0"
+      },
+      {
+        "path": "opendata/data/providers/yfinance/models/market_iter2.py",
+        "from": "e6ee42847ca72619e7faeca1750b6ba8e23e698f845a71a13c9c8bb7a5d23ed4",
+        "to": "012a87d5bcbb33d665b2c13bcdd81a9914cdd49913d55dea58f0d727b6211c34",
+        "git_diff_numstat_1ad2aee0_HEAD": "1 0"
+      }
+    ]
   }
 }
