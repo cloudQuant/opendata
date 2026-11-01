@@ -907,9 +907,9 @@
       "path": "scripts/quality/check_brand.py",
       "purpose": "token路径allowlist调整后原有scan_token(\"akshare\")提示字面量仍仅用于扫描输出；不新增外部SDK导入或动态加载。 复核范围：scripts/quality/check_brand.py 的当前字节与引用面。",
       "category": "operations-tool",
-      "reviewed_date": "2026-10-26",
-      "reviewer": "Codex primary; independent wave2 zero-dependency review; receipt /tmp/od204-receipts/wave2-zero-dep-review.json sha256=c540bfc824f243ed5466b3b37004c18d3894be81143af51d1046dee065075d8f",
-      "sha256": "7cbf155f06b7e75d49a151c60c80b9bbb1db0d10d112de3182924af8df67a8dd",
+      "reviewed_date": "2026-11-01",
+      "reviewer": "本轮复核 sha 漂移：仅扩展 TOKEN_PATH_ALLOWLIST['akshare_data'] 的路径集合，把迁移计划与仓库盘点夹具中真实存在的旧库名 `akshare_data`（以及 user_authorized_akshare_data_use 取证标签）按既有 runtime_inventory 同类理由纳入；文件本身是品牌扫描器，品牌词只用于定义被检查的 token，没有任何一处用品牌名加载外部包，策略过滤后的 AST 面无新增加载形态。",
+      "sha256": "6583d92d2c8770f1020f9cdf8b3a4e624be9fcd3cfa8f4c9d7ee2d89024aded7",
       "ast_exceptions": []
     },
     {
