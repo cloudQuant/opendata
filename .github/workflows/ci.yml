@@ -97,31 +97,25 @@ jobs:
         with:
           # a2-check resolves the baseline commit by SHA, so the full history is required.
           fetch-depth: 0
-          # On a pull_request run the default ref is GitHub's synthetic merge commit, and checking
-          # out the PR head *sha* does not help either: both arrive with
-          # `git rev-list --count HEAD` = 3 and `is-shallow-repository` = true even at
-          # fetch-depth: 0, while a branch checkout of the same commit reads the full history
-          # (run 41323810828 read AC-16|09 `HEAD/all=3/992, shallow=true`; the dispatch run of the
-          # same tree pinned no finding for it, and a local branch-head worktree reads it proven).
-          # The acceptance probe judges full-history faces (AC-16|09, AC-19|02) and history-bound
-          # ceilings (AC-17|03/05), so no frozen ratchet can hold across both shapes.  Checking out
-          # the head branch reproduces the push-run shape; diff-based members already name their
-          # base (A2_BASE_REF above), and same-repo PRs always have that branch in origin.
+          # On a pull_request run the default ref is GitHub's synthetic merge commit, whose chain
+          # is truncated.  Measuring the head branch instead gives the gate the tree the merge will
+          # land (same-repo PRs always have that branch in origin, and the diff-based members name
+          # their own base through A2_BASE_REF).  This does not by itself give full history - see
+          # the un-shallow step below, which is what the probe's history faces actually need.
           ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
-
-      - name: Report the history shape the gate will measure
-        run: |
-          printf 'checked_out=%s shallow=%s head_commits=%s all_commits=%s\n' \
-            "$(git rev-parse --abbrev-ref HEAD)" \
-            "$(git rev-parse --is-shallow-repository)" \
-            "$(git rev-list --count HEAD)" \
-            "$(git rev-list --count --all)"
 
       - name: Fetch PR base branch (A2 gate needs it as a diff base)
         if: github.event_name == 'pull_request'
         run: |
           git fetch --no-tags origin \
             "+refs/heads/${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}"
+
+      - name: Report the history shape after checkout
+        run: |
+          printf 'after-checkout shallow=%s head_commits=%s all_commits=%s\n' \
+            "$(git rev-parse --is-shallow-repository)" \
+            "$(git rev-list --count HEAD)" \
+            "$(git rev-list --count --all)"
 
       - uses: actions/setup-python@v5
         with:
@@ -291,6 +285,25 @@ jobs:
             >> "$LOG" 2>&1 &
           earlyoom_pid=$!
           trap 'kill "$heartbeat_pid" 2>/dev/null; sudo kill "$earlyoom_pid" 2>/dev/null; true' EXIT
+          # A branch checkout does not fix the measured shape either: run 41332032552 read
+          # `shallow=false head_commits=975 all_commits=993` right after actions/checkout, and the
+          # probe read `HEAD/all=4/993, shallow=true` inside `make gate` - the runner truncates
+          # HEAD's chain during setup. That is not only a flag: AC-19|02 dates an archive's first
+          # landing from HEAD's chain and reads the shallow boundary as "landed today", and
+          # AC-16|09 refuses to call a shallow repository a full-history scan. Those cells would
+          # measure one population on push runs and another on PR runs, and no frozen ratchet can
+          # hold across both, so complete the history as late as possible before judging it.
+          if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then
+            if ! git fetch --unshallow --prune origin "+refs/heads/*:refs/remotes/origin/*" \
+              && ! git fetch --refetch --prune origin "+refs/heads/*:refs/remotes/origin/*"; then
+              echo "::error::the checkout is shallow and neither unshallow nor refetch repaired it; the probe's history faces would be judged on a truncated chain"
+              exit 1
+            fi
+          fi
+          printf 'before-gate shallow=%s head_commits=%s all_commits=%s\n' \
+            "$(git rev-parse --is-shallow-repository)" \
+            "$(git rev-list --count HEAD)" \
+            "$(git rev-list --count --all)"
           status=0
           make gate > "$LOG" 2>&1 || status=$?
           set +e +o pipefail
@@ -334,5 +347,11 @@ jobs:
           set +e +o pipefail
           free -m
           df -h /
+          # If the probe read a truncated chain, this says whether it was still truncated after
+          # the gate - i.e. whether the repair above held or something inside the gate re-cut it.
+          printf 'after-gate shallow=%s head_commits=%s all_commits=%s\n' \
+            "$(git rev-parse --is-shallow-repository)" \
+            "$(git rev-list --count HEAD)" \
+            "$(git rev-list --count --all)"
           sudo dmesg -T | grep -iE 'out of memory|oom-kill|killed process' | tail -n 20
           ps -eo pid=,ppid=,nlwp=,rss=,etimes=,comm= --sort=-rss | sed -n '1,15p'
