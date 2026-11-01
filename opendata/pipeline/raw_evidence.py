@@ -98,7 +98,7 @@ class RawResponseManifest(BaseModel):
     )
     source: RawResponseSource
     # Same identifier as the helper re-export; this is a distinct manifest field.
-    request_summary_sha256: StrictStr = Field(pattern=_SHA256_PATTERN)  # noqa: F811
+    request_summary_sha256: StrictStr = Field(pattern=_SHA256_PATTERN)
     captured_at_utc: datetime
     http_status: StrictInt = Field(ge=100, le=599)
     response_sha256: StrictStr = Field(pattern=_SHA256_PATTERN)
@@ -155,7 +155,7 @@ class RawResponseArtifactWriter:
         *,
         source: RawResponseSource,
         # Preserve the established capture argument name alongside the helper export.
-        request_summary_sha256: str,  # noqa: F811
+        request_summary_sha256: str,
         http_status: int,
         retention_class: RetentionClass,
         source_history_limit: HistoryLimit,
