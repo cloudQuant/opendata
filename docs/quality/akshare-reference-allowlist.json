@@ -644,6 +644,15 @@
       "ast_exceptions": []
     },
     {
+      "path": "opendata/pipeline/identity_bound_stock_candidate_v2.py",
+      "purpose": "身份绑定股票日线 v2 候选准备器：唯一 akshare 命中是仓内首方 stock_daily_native 的导入路径（ADAPTER_ID/OPERATION_ID/parse_eastmoney_stock_daily_response 等来源适配器契约符号），不加载外部 SDK，函数体内无网络与数据库操作。",
+      "category": "source-adapter",
+      "reviewed_date": "2026-11-02",
+      "reviewer": "Qoder acceptance-cell agent (AC-1|03) 2026-11-02 review；逐行核查该文件当前字节的 1 处 akshare 命中（line 35 from opendata.data.providers.akshare.stock_daily_native import），确认是仓内首方适配器路径而非外部包；grep 验证无 `import akshare`/`from akshare`；sha256 由 hashlib 对该文件当前字节计算。",
+      "sha256": "b97cbe112c8a27c082f4a40405268dc9fdd79d5bd281d654100376867a5529f6",
+      "ast_exceptions": []
+    },
+    {
       "path": "opendata/pipeline/jobs.py",
       "purpose": "根据注册来源身份解析首方fetcher及调度任务，不导入外部来源包。",
       "category": "runtime-integration",
@@ -688,12 +697,30 @@
       "ast_exceptions": []
     },
     {
+      "path": "opendata/pipeline/stock_daily_backfill_plan.py",
+      "purpose": "股票日线回填离线计划器：仓内 akshare 包路径导入 _source.SOURCE、AkshareStockDailyFetcher 与 wire 窗口上限，另有一处校验既有 stock_daily 任务身份的错误文案字面量；计划器不加载universe、不接触 provider、不派发工作，不加载外部 SDK。",
+      "category": "runtime-integration",
+      "reviewed_date": "2026-11-02",
+      "reviewer": "Qoder acceptance-cell agent (AC-1|03) 2026-11-02 review；逐行核查该文件当前字节的 4 处 akshare 命中（lines 29/30/31 为仓内首方 _source、models.stock_daily、stock_daily_wire 导入，line 428 为 \"task must identify the existing akshare stock_daily job\" 任务身份校验文案）；grep 验证无 `import akshare`/`from akshare` 外部包加载；sha256 由 hashlib 对当前字节计算。",
+      "sha256": "23a218a09c61ecd36acff09904e179dfb7e311ade675c8b8f174a3d839042be1",
+      "ast_exceptions": []
+    },
+    {
       "path": "opendata/pipeline/stock_daily_job.py",
       "purpose": "离线股票日线来源适配器以 akshare 来源身份封装固定原始响应解析；不加载外部 SDK，由调用方注入受审查的响应来源与发布边界。",
       "category": "source-adapter",
       "reviewed_date": "2026-11-01",
       "reviewer": "本轮复核 sha 漂移：pin 字节属 rev 81549ae，此后 2 个 revision，HEAD 与工作树字节一致；改动为新增归一化证据版本/规则集与 5 条检查名（其中一条是字符串标识 akshare_stock_daily_transform_validates_every_row），FetchHandler 类型替换 Callable，并改用共享的 _market_for_symbol 路由；akshare 出现行 10→11、出现次数 10→11（新增仅该检查名字符串），4 条带品牌 import 均指向仓内 opendata.data.providers.akshare.*，带品牌的加载形态行 4==4 且无新增，没有任何一处用品牌名加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
       "sha256": "df9935562f479e1553db8f6e42c02c86f32210be972bc56d6bee399b3ae906e5",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/pipeline/stock_daily_native_mapping.py",
+      "purpose": "离线股票日线 identity mapping 候选编排器：把映射与原始响应解析委托给仓内首方 akshare stock_daily_mapper/stock_daily_native，akshare 只是被委托适配器的包路径；不导入 API 层、不连 provider、不写库、不发布，不加载外部 SDK。",
+      "category": "mapping",
+      "reviewed_date": "2026-11-02",
+      "reviewer": "Qoder acceptance-cell agent (AC-1|03) 2026-11-02 review；逐行核查该文件当前字节的 2 处 akshare 命中（line 29 stock_daily_mapper 与 line 33 stock_daily_native 的仓内首方导入路径）；grep 验证无 `import akshare`/`from akshare` 外部包加载；sha256 由 hashlib 对当前字节计算。",
+      "sha256": "66931667f84e1a2265f7b12607c13223a47385cf33fb32f32e2a2e577c4b8abc",
       "ast_exceptions": []
     },
     {
@@ -751,6 +778,15 @@
       "ast_exceptions": []
     },
     {
+      "path": "scripts/ops/akshare_stock_daily_pilot.py",
+      "purpose": "手工授权证据录制器（一个显式授权的本地 AkShare/Eastmoney 样本）：akshare 出现在用法示例命令、证据文件名与仓内首方 _source/stock_daily_wire 导入及 PILOT_PURPOSE 标识上；不是 provider 注册、调度、API 路由或生产写入，导入时不做 I/O，不加载外部 SDK。",
+      "category": "operations-tool",
+      "reviewed_date": "2026-11-02",
+      "reviewer": "Qoder acceptance-cell agent (AC-1|03) 2026-11-02 review；逐行核查该文件当前字节的 5 处 akshare 命中（lines 9/19 为 docstring 用法示例与证据文件名，lines 66/67 为仓内首方 _source 与 stock_daily_wire 导入，line 99 为 PILOT_PURPOSE = \"akshare_stock_daily_pilot\" 本地标识）；grep 验证无 `import akshare`/`from akshare` 外部包加载；sha256 由 hashlib 对当前字节计算。",
+      "sha256": "46503f341be553dccc8f92aeedb35069afab489f302efc668222fc099f79cee1",
+      "ast_exceptions": []
+    },
+    {
       "path": "scripts/ops/benchmark_ods_write.py",
       "purpose": "明确的来源取数、全量ODS基准或官方跨源对照工具，引用首方akshare来源标签/搬运接口。",
       "category": "cross-check",
@@ -766,6 +802,15 @@
       "reviewed_date": "2026-10-26",
       "reviewer": "Codex primary reviewed exact metadata/import sites; no external SDK loading. Removed redundant docs registrations only because existing AC1 docs bucket already excludes those paths; no bucket/scope expansion.",
       "sha256": "a54a8d69828d38069768a9870945b8dc70b497d20e4016b1a7479bb183616c79",
+      "ast_exceptions": []
+    },
+    {
+      "path": "scripts/ops/execute_stock_daily_backfill.py",
+      "purpose": "离线控制面 CLI（单个 digest 钉定的股票日线回填计划）：akshare 只在仓内首方 stock_daily_wire/models.stock_daily 包路径与固定 stock-daily-akshare 执行目标文案上；默认 dry-run，不联网、不注册调度、不启用既有禁用任务、不选远程库，不加载外部 SDK。",
+      "category": "operations-tool",
+      "reviewed_date": "2026-11-02",
+      "reviewer": "Qoder acceptance-cell agent (AC-1|03) 2026-11-02 review；逐行核查该文件当前字节的 4 处 akshare 命中（line 9 docstring 与 line 139 --help 文案声明固定 stock-daily-akshare 执行目标，lines 37/76 为仓内首方 stock_daily_wire 与 models.stock_daily 导入）；grep 验证无 `import akshare`/`from akshare` 外部包加载；sha256 由 hashlib 对当前字节计算。",
+      "sha256": "477fe46c0a3802db2140eaaf233afa88839f3d3bcc025245280a6bd415324746",
       "ast_exceptions": []
     },
     {
