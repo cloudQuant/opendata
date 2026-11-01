@@ -32,6 +32,22 @@ from opendata.pipeline.process_executor import (
     ReviewedProcessRegistry,
 )
 
+#: Budget for one call whose child has to *finish*, as opposed to the calls below
+#: that set a sub-second deadline to prove the deadline itself fires. A real
+#: child is a fresh interpreter launch plus the import of this module, so this
+#: number measures scheduling luck rather than any behaviour under test.
+#: Measured on this repository's 18-core runner with ``pytest -n auto`` - 18
+#: xdist workers each spawning their own child, plus 18 co-tenant CPU hogs to
+#: model a CI box shared with the other suites: a trivial child round trip is
+#: 0.91 s p50 unloaded, and 4.6-5.1 s p50 / 6.4-12.3 s p95 / 18.1 s worst under
+#: that load; the 4 MiB result-cap child is 5.2-6.2 s p95 / 15.2 s worst. The
+#: 5 s and 10 s budgets these calls carried sit inside that spread, which is why
+#: they failed only in the parallel run. 60 s is over three times the worst
+#: observation, and a child that completes returns immediately, so the wider
+#: bound costs nothing while still failing a genuinely stuck child long before
+#: CI's 1200 s ``faulthandler_timeout``.
+_CHILD_COMPLETION_TIMEOUT_SECONDS = 60.0
+
 
 def _echo(parameters: dict[str, object]) -> dict[str, object]:
     return parameters
@@ -453,7 +469,9 @@ def test_registered_spawned_handler_round_trips_only_bounded_json() -> None:
     executor = ReviewedProcessExecutor(_registry(echo=_echo))
 
     result = executor.run(
-        "echo", {"symbol": "600000.SH", "dates": ["2025-01-01"]}, timeout_seconds=5
+        "echo",
+        {"symbol": "600000.SH", "dates": ["2025-01-01"]},
+        timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS,
     )
 
     assert result.value == {"dates": ["2025-01-01"], "symbol": "600000.SH"}
@@ -564,7 +582,7 @@ def test_handler_import_output_and_exception_text_stay_in_child(
 
     with pytest.raises(ProcessExecutionHandlerError, match="process_handler_failed"):
         ReviewedProcessExecutor(_registry(probe=handler)).run(
-            "probe", {"value": "x"}, timeout_seconds=5
+            "probe", {"value": "x"}, timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS
         )
 
     assert marker_path.read_text(encoding="utf-8") == "imported"
@@ -577,7 +595,7 @@ def test_large_python_stdout_and_stderr_are_discarded_and_counted_as_truncated()
         _registry(printer=_print_large_output), stdout_limit_bytes=20, stderr_limit_bytes=24
     )
 
-    result = executor.run("printer", {}, timeout_seconds=5)
+    result = executor.run("printer", {}, timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS)
 
     assert result.value == {"ok": True}
     assert result.stdout_discarded_bytes == 21
@@ -612,7 +630,7 @@ def test_cancel_callback_stops_worker_and_reaps_it(tmp_path: Path) -> None:
         executor.run(
             "waiter",
             {"marker": str(marker)},
-            timeout_seconds=5,
+            timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS,
             cancelled=lambda: marker.exists(),
         )
 
@@ -691,7 +709,12 @@ def test_cancellation_before_ready_remains_responsive(tmp_path: Path, monkeypatc
         return marker.exists()
 
     with pytest.raises(ProcessExecutionCancelledError, match="process_execution_cancelled"):
-        executor.run("echo", {"marker": str(marker)}, timeout_seconds=5, cancelled=cancelled)
+        executor.run(
+            "echo",
+            {"marker": str(marker)},
+            timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS,
+            cancelled=cancelled,
+        )
 
     assert calls > 1
     assert _wait_until_stopped(int(marker.read_text(encoding="utf-8")))
@@ -741,7 +764,12 @@ def test_cancellation_after_result_during_process_join_is_responsive(
         return marker.exists()
 
     with pytest.raises(ProcessExecutionCancelledError, match="process_execution_cancelled"):
-        executor.run("echo", {"marker": str(marker)}, timeout_seconds=5, cancelled=cancelled)
+        executor.run(
+            "echo",
+            {"marker": str(marker)},
+            timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS,
+            cancelled=cancelled,
+        )
 
     assert calls > 1
     assert _wait_until_stopped(int(marker.read_text(encoding="utf-8")))
@@ -762,7 +790,10 @@ def test_checkpoint_exception_stops_worker_before_propagating(tmp_path: Path) ->
 
     with pytest.raises(RuntimeError, match="lease-lost"):
         executor.run(
-            "waiter", {"marker": str(marker)}, timeout_seconds=5, checkpoint=fail_checkpoint
+            "waiter",
+            {"marker": str(marker)},
+            timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS,
+            checkpoint=fail_checkpoint,
         )
 
     worker_pid = int(marker.read_text(encoding="utf-8"))
@@ -773,21 +804,21 @@ def test_worker_crash_is_reported_without_child_text_and_pipe_leak() -> None:
     executor = ReviewedProcessExecutor(_registry(crash=_crash_without_response))
 
     with pytest.raises(ProcessExecutionCrashedError, match="process_exited_without_result"):
-        executor.run("crash", {}, timeout_seconds=5)
+        executor.run("crash", {}, timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS)
 
 
 def test_oversized_result_fails_closed_without_partial_value() -> None:
     executor = ReviewedProcessExecutor(_registry(large=_return_large_value), max_result_bytes=1_024)
 
     with pytest.raises(ProcessExecutionHandlerError, match="process_result_limit_exceeded"):
-        executor.run("large", {}, timeout_seconds=5)
+        executor.run("large", {}, timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS)
 
 
 def test_default_result_text_cap_remains_four_mib() -> None:
     executor = ReviewedProcessExecutor(_registry(large=_return_default_text_cap_plus_one))
 
     with pytest.raises(ProcessExecutionHandlerError, match="process_result_limit_exceeded"):
-        executor.run("large", {}, timeout_seconds=10)
+        executor.run("large", {}, timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS)
 
 
 def test_eight_mib_result_text_cap_accepts_four_mib_raw_base64_payload() -> None:
@@ -796,7 +827,7 @@ def test_eight_mib_result_text_cap_accepts_four_mib_raw_base64_payload() -> None
         max_result_text_bytes=process_executor_module.MAX_RESULT_TEXT_BYTES,
     )
 
-    result = executor.run("synthetic_base64", {}, timeout_seconds=20)
+    result = executor.run("synthetic_base64", {}, timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS)
 
     assert isinstance(result.value, dict)
     body_b64 = result.value["body_b64"]
@@ -813,7 +844,7 @@ def test_eight_mib_result_text_cap_rejects_cap_plus_one_without_partial_value() 
     )
 
     with pytest.raises(ProcessExecutionHandlerError, match="process_result_limit_exceeded"):
-        executor.run("large", {}, timeout_seconds=20)
+        executor.run("large", {}, timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS)
 
 
 def test_eight_mib_text_cap_does_not_widen_result_value_byte_cap() -> None:
@@ -824,7 +855,7 @@ def test_eight_mib_text_cap_does_not_widen_result_value_byte_cap() -> None:
     )
 
     with pytest.raises(ProcessExecutionHandlerError, match="process_result_limit_exceeded"):
-        executor.run("large", {}, timeout_seconds=10)
+        executor.run("large", {}, timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS)
 
 
 def test_larger_result_text_cap_does_not_widen_input_text_limit() -> None:
@@ -838,7 +869,7 @@ def test_larger_result_text_cap_does_not_widen_input_text_limit() -> None:
         executor.run(
             "echo",
             {"text": "x" * (process_executor_module.MAX_JSON_TEXT_BYTES + 1)},
-            timeout_seconds=5,
+            timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS,
         )
 
 
@@ -846,7 +877,7 @@ def test_secret_like_return_is_rejected_without_disclosing_the_value() -> None:
     executor = ReviewedProcessExecutor(_registry(secret=_return_secret_like_value))
 
     with pytest.raises(ProcessExecutionHandlerError, match="process_result_rejected") as raised:
-        executor.run("secret", {}, timeout_seconds=5)
+        executor.run("secret", {}, timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS)
 
     assert "secret-value-should-not-cross-ipc" not in str(raised.value)
 
@@ -855,7 +886,7 @@ def test_handler_exception_text_and_secret_never_cross_the_protocol(capsys) -> N
     executor = ReviewedProcessExecutor(_registry(failure=_raise_with_secret))
 
     with pytest.raises(ProcessExecutionHandlerError, match="process_handler_failed") as raised:
-        executor.run("failure", {}, timeout_seconds=5)
+        executor.run("failure", {}, timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS)
 
     output = capsys.readouterr()
     assert "secret-value-should-not-escape" not in str(raised.value)
@@ -885,7 +916,9 @@ def test_successful_worker_does_not_leave_a_background_descendant(tmp_path: Path
         _registry(descendant=_spawn_descendant_then_return), shutdown_grace_seconds=0.05
     )
 
-    result = executor.run("descendant", {"marker": str(marker)}, timeout_seconds=5)
+    result = executor.run(
+        "descendant", {"marker": str(marker)}, timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS
+    )
 
     assert result.value == {"done": True}
     descendant_pid = int(marker.read_text(encoding="utf-8"))
@@ -926,9 +959,19 @@ def test_executor_rejects_non_registry_and_non_callable_parent_hooks() -> None:
     with pytest.raises(ValueError, match="timeout_seconds"):
         executor.run("echo", {}, timeout_seconds=float("inf"))
     with pytest.raises(TypeError, match="checkpoint"):
-        executor.run("echo", {}, timeout_seconds=5, checkpoint=cast("object", 1))
+        executor.run(
+            "echo",
+            {},
+            timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS,
+            checkpoint=cast("object", 1),
+        )
     with pytest.raises(TypeError, match="cancelled"):
-        executor.run("echo", {}, timeout_seconds=5, cancelled=cast("object", 1))
+        executor.run(
+            "echo",
+            {},
+            timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS,
+            cancelled=cast("object", 1),
+        )
 
 
 def test_executor_rejects_integer_subclass_for_result_text_limit() -> None:
@@ -1597,7 +1640,7 @@ def test_registry_captures_immutable_handler_reference(monkeypatch) -> None:
     executor = ReviewedProcessExecutor(_registry(echo=_echo))
     monkeypatch.setattr(_echo, "__module__", "missing_reviewed_module")
 
-    assert executor.run("echo", {}, timeout_seconds=5).value == {}
+    assert executor.run("echo", {}, timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS).value == {}
 
     with pytest.raises(TypeError, match="exported"):
         ReviewedProcessRegistry({"echo": _echo})
@@ -1664,7 +1707,7 @@ def test_generic_process_path_keeps_legacy_inherited_environment_and_working_dir
     expected_cwd = str(Path.cwd())
     executor = ReviewedProcessExecutor(_registry(report=_report_child_environment))
 
-    result = executor.run("report", {}, timeout_seconds=5)
+    result = executor.run("report", {}, timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS)
 
     assert result.value == {"marker": marker, "cwd": expected_cwd}
 
@@ -1672,7 +1715,9 @@ def test_generic_process_path_keeps_legacy_inherited_environment_and_working_dir
 def test_generic_process_protocol_still_round_trips_json() -> None:
     payload = {"nested": ["safe", 3, None], "enabled": True}
 
-    result = ReviewedProcessExecutor(_registry(echo=_echo)).run("echo", payload, timeout_seconds=5)
+    result = ReviewedProcessExecutor(_registry(echo=_echo)).run(
+        "echo", payload, timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS
+    )
 
     assert result.value == payload
 
@@ -1697,7 +1742,7 @@ def test_private_launch_uses_only_explicit_environment_and_working_directory(
     result = executor._run_registered(
         "report",
         {},
-        timeout_seconds=5,
+        timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS,
         _child_environment=child_environment,
         _child_cwd=str(private_cwd),
     )
@@ -1719,7 +1764,7 @@ def test_private_launch_rejects_exact_secret_in_result(tmp_path: Path) -> None:
         executor._run_registered(
             "secret",
             {},
-            timeout_seconds=5,
+            timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS,
             _child_environment={
                 "OPENDATA_TEST_FUYAO_CHILD_KEY": secret,
                 "HOME": str(tmp_path),
@@ -1896,7 +1941,11 @@ def test_fuyao_child_binding_loader_rejects_missing_oversized_and_invalid_config
 def test_fuyao_executor_requires_fixed_operation_before_starting_child(tmp_path: Path) -> None:
     executor = ReviewedProcessExecutor(_registry(echo=_echo))
     with pytest.raises(ValueError, match="fixed Fuyao operation"):
-        executor.run_fuyao(_fuyao_binding(tmp_path), _fuyao_parameters(), timeout_seconds=5)
+        executor.run_fuyao(
+            _fuyao_binding(tmp_path),
+            _fuyao_parameters(),
+            timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS,
+        )
 
 
 def test_fuyao_executor_rejects_untrusted_binding_type_and_registry(tmp_path: Path) -> None:
@@ -1904,7 +1953,7 @@ def test_fuyao_executor_rejects_untrusted_binding_type_and_registry(tmp_path: Pa
         ReviewedProcessExecutor(_fuyao_registry()).run_fuyao(
             cast("process_executor_module.FuyaoProcessDeploymentBinding", object()),
             _fuyao_parameters(),
-            timeout_seconds=5,
+            timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS,
         )
 
     from opendata.pipeline.fuyao_financial_process import execute_fuyao_financial_request
@@ -1916,13 +1965,19 @@ def test_fuyao_executor_rejects_untrusted_binding_type_and_registry(tmp_path: Pa
     fixed_operations = {operation_id: execute_fuyao_financial_request}
     with pytest.raises(ValueError, match="not registered"):
         ReviewedProcessExecutor(DerivedRegistry(fixed_operations)).run_fuyao(
-            _fuyao_binding(tmp_path), _fuyao_parameters(), timeout_seconds=5
+            _fuyao_binding(tmp_path),
+            _fuyao_parameters(),
+            timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS,
         )
 
     with pytest.raises(ValueError, match="not registered"):
         ReviewedProcessExecutor(
             _registry(**{process_executor_module.FUYAO_PROCESS_OPERATION_ID: _echo})
-        ).run_fuyao(_fuyao_binding(tmp_path), _fuyao_parameters(), timeout_seconds=5)
+        ).run_fuyao(
+            _fuyao_binding(tmp_path),
+            _fuyao_parameters(),
+            timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS,
+        )
 
 
 def test_fixed_fuyao_handler_cannot_use_generic_inherited_environment_path() -> None:
@@ -1932,11 +1987,11 @@ def test_fixed_fuyao_handler_cannot_use_generic_inherited_environment_path() -> 
     with pytest.raises(ValueError, match="run_fuyao"):
         ReviewedProcessExecutor(
             ReviewedProcessRegistry({operation_id: execute_fuyao_financial_request})
-        ).run(operation_id, _fuyao_parameters(), timeout_seconds=5)
+        ).run(operation_id, _fuyao_parameters(), timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS)
     with pytest.raises(ValueError, match="reviewed launch path"):
         ReviewedProcessExecutor(
             ReviewedProcessRegistry({"fuyao-alias": execute_fuyao_financial_request})
-        ).run("fuyao-alias", _fuyao_parameters(), timeout_seconds=5)
+        ).run("fuyao-alias", _fuyao_parameters(), timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS)
 
 
 def test_fuyao_worker_bootstrap_sanitizes_malformed_fixed_command(monkeypatch) -> None:
@@ -2126,7 +2181,7 @@ def test_fuyao_executor_passes_only_allowlisted_environment_and_fixed_query(
     result = executor.run_fuyao(
         binding,
         _fuyao_parameters(),
-        timeout_seconds=7,
+        timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS,
     )
 
     child_environment = captured["_child_environment"]
@@ -2169,7 +2224,7 @@ def test_fuyao_executor_never_places_exact_api_key_in_business_ipc(
     parameters["run_key"] = secret
 
     with pytest.raises(ValueError, match="Fuyao process inputs are invalid"):
-        executor.run_fuyao(binding, parameters, timeout_seconds=5)
+        executor.run_fuyao(binding, parameters, timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS)
 
 
 def test_fixed_executor_command_guard_stops_secret_before_socket_send(
@@ -2211,7 +2266,7 @@ def test_fixed_executor_command_guard_stops_secret_before_socket_send(
         executor._run_registered(
             process_executor_module.FUYAO_PROCESS_OPERATION_ID,
             parameters,
-            timeout_seconds=5,
+            timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS,
             _child_environment=child_environment,
             _child_cwd=str(tmp_path),
             _reject_secret=secret.encode("utf-8"),
@@ -2252,7 +2307,9 @@ def test_fuyao_registry_keeps_the_exact_fixed_handler_callable(tmp_path: Path, m
         )
 
     monkeypatch.setattr(executor, "_run_registered", capture_run)
-    result = executor.run_fuyao(binding, _fuyao_parameters(), timeout_seconds=5)
+    result = executor.run_fuyao(
+        binding, _fuyao_parameters(), timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS
+    )
 
     assert captured["operation_id"] == process_executor_module.FUYAO_PROCESS_OPERATION_ID
     assert result.value["instrument_id"] == "600000.SH"
@@ -2275,7 +2332,9 @@ def test_fuyao_parent_rejects_non_allowlisted_child_result(tmp_path: Path, monke
     )
 
     with pytest.raises(ProcessExecutionHandlerError, match="process_result_rejected") as error:
-        executor.run_fuyao(binding, _fuyao_parameters(), timeout_seconds=5)
+        executor.run_fuyao(
+            binding, _fuyao_parameters(), timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS
+        )
 
     assert sentinel not in str(error.value)
 
@@ -2571,7 +2630,9 @@ def test_fixed_fuyao_worker_uses_real_handler_and_fails_closed_before_network(
     executor = ReviewedProcessExecutor(_fuyao_registry())
 
     with pytest.raises(ProcessExecutionHandlerError, match="process_handler_failed") as error:
-        executor.run_fuyao(binding, _fuyao_parameters(), timeout_seconds=5)
+        executor.run_fuyao(
+            binding, _fuyao_parameters(), timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS
+        )
 
     assert binding.api_key not in str(error.value)
     assert not (tmp_path / "raw-artifacts").exists()
@@ -2597,7 +2658,9 @@ def test_fuyao_executor_rejects_untrusted_or_unbounded_query_fields(
     parameters.update(overrides)
 
     with pytest.raises(ValueError):
-        executor.run_fuyao(_fuyao_binding(tmp_path), parameters, timeout_seconds=5)
+        executor.run_fuyao(
+            _fuyao_binding(tmp_path), parameters, timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS
+        )
 
 
 @pytest.mark.parametrize(

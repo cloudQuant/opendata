@@ -49,6 +49,21 @@ if TYPE_CHECKING:
 
 UTC = timezone.utc
 DATASET = "fixture_worker_daily"
+#: Budget for a fetch whose child process has to finish. Kept in step with the
+#: measurement documented in tests/test_process_executor.py: on this 18-core
+#: runner, with 18 xdist workers each spawning a child plus 18 co-tenant CPU
+#: hogs, one child round trip measured 4.6-5.1 s p50, 6.4-12.3 s p95 and 18.1 s
+#: worst, against the 15 s this file used to hard-code - which is why the
+#: adapter test failed only under ``-n auto``.
+_CHILD_COMPLETION_TIMEOUT_SECONDS = 60.0
+#: Bounds for the two tests that drive a worker from a *separate process*. The
+#: child budget above is only useful if the join and drain windows stay above
+#: it: the competing-worker test asserts mutual exclusion (exactly one
+#: "succeeded") and the cancellation test asserts the cancel lands before the
+#: child deadline, so a 20 s join or a 2 s queue drain can fail those claims on
+#: scheduling alone rather than on the property being checked.
+_CHILD_PROCESS_TIMEOUT_SECONDS = 150.0
+_QUEUE_DRAIN_TIMEOUT_SECONDS = 15.0
 FACT_METADATA = MetaData()
 WORKER_FACTS = Table(
     "fixture_worker_facts",
@@ -125,7 +140,7 @@ def _make_worker(
     database_path: str | Path,
     worker_id: str,
     *,
-    timeout_seconds: float = 15.0,
+    timeout_seconds: float = _CHILD_COMPLETION_TIMEOUT_SECONDS,
     checkpoint_interval_seconds: float = 0.05,
     database_io_timeout_seconds: float = 0.05,
 ) -> PersistentRunWorker:
@@ -243,7 +258,7 @@ def _run_worker_process(
     start_event: multiprocessing.synchronize.Event,
     result_queue: multiprocessing.queues.Queue,
     *,
-    timeout_seconds: float = 5.0,
+    timeout_seconds: float = _CHILD_COMPLETION_TIMEOUT_SECONDS,
 ) -> None:
     """Run one worker in its own process and return only its durable status."""
     worker = _make_worker(
@@ -320,7 +335,9 @@ def test_process_fetch_adapter_builds_and_decodes_only_parent_json(tmp_path: Pat
     request = _request({"instrument": "FIXTURE:ONE", "mode": "normal"})
     context = RunExecutionContext("run-key", "adapter-worker", 1, lambda: None)
 
-    raw = _make_process_fetch_handler(timeout_seconds=15)(request, context)
+    raw = _make_process_fetch_handler(timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS)(
+        request, context
+    )
 
     assert raw == {"instrument": "FIXTURE:ONE", "trade_date": "2026-10-26", "close": 12}
 
@@ -387,10 +404,13 @@ def test_two_independent_workers_compete_for_one_persistent_run(tmp_path: Path) 
         process.start()
     start_event.set()
     for process in workers:
-        process.join(20)
+        process.join(_CHILD_PROCESS_TIMEOUT_SECONDS)
     try:
         assert [process.exitcode for process in workers] == [0, 0]
-        outcomes = [result_queue.get(timeout=2), result_queue.get(timeout=2)]
+        outcomes = [
+            result_queue.get(timeout=_QUEUE_DRAIN_TIMEOUT_SECONDS),
+            result_queue.get(timeout=_QUEUE_DRAIN_TIMEOUT_SECONDS),
+        ]
         assert outcomes.count("succeeded") == 1
         assert outcomes.count(None) == 1
         assert _count_facts(database_path) == 1
@@ -955,7 +975,7 @@ def test_cancelled_lease_stops_running_child_without_publication(tmp_path: Path)
     )
     process.start()
     try:
-        deadline = time.monotonic() + 15
+        deadline = time.monotonic() + _CHILD_PROCESS_TIMEOUT_SECONDS
         while not marker.exists() and time.monotonic() < deadline:
             time.sleep(0.02)
         assert marker.exists(), "fixture child did not start"
@@ -964,9 +984,9 @@ def test_cancelled_lease_stops_running_child_without_publication(tmp_path: Path)
         cancel_ledger = RunLedger(cancel_engine, clock_policy="database")
         cancelled = cancel_ledger.cancel(queued.run_key, datetime.now(UTC))
         assert cancelled is not None and cancelled.status == "cancelled"
-        process.join(10)
+        process.join(_CHILD_PROCESS_TIMEOUT_SECONDS)
         assert process.exitcode == 0
-        assert result_queue.get(timeout=2) == "cancelled"
+        assert result_queue.get(timeout=_QUEUE_DRAIN_TIMEOUT_SECONDS) == "cancelled"
         with pytest.raises(ProcessLookupError):
             os.kill(child_pid, 0)
         assert _count_facts(database_path) == 0

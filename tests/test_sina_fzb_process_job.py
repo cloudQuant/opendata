@@ -118,6 +118,16 @@ if TYPE_CHECKING:
 UTC = timezone.utc
 DATASET_ID = "sina_fzb_report_observations"
 SYMBOL = "600519.SH"
+#: Budget for a child that has to *finish*, including the children that finish by
+#: raising. In step with the measurement documented in tests/test_process_executor.py:
+#: under 18 xdist workers each spawning a child plus 18 co-tenant CPU hogs, one
+#: child round trip measured 4.6-5.1 s p50, 6.4-12.3 s p95 and 18.1 s worst. The
+#: 8.0 s these cases used to carry is inside that spread, so the parametrised
+#: result-shape cases reported execution_failed:ProcessExecutionTimeoutError
+#: instead of the child error they name. The deliberate deadline cases below keep
+#: their own small budgets (``process_timeout_seconds=3.0``), and the product's
+#: own wired budget for this operation is 30 s.
+_CHILD_COMPLETION_TIMEOUT_SECONDS = 60.0
 RETRIEVED_AT = datetime(2026, 10, 27, 2, 0, 0, 123456, tzinfo=UTC)
 SIGNING_KEY = b"w12-process-test-snapshot-signing-key"
 MODEL_COPY_SENTINEL = "w12-model-copy-sentinel-do-not-leak"
@@ -204,7 +214,7 @@ def _make_worker(
     *,
     operation_id: str = FIXTURE_OPERATION_ID,
     process_handler: object = fixture_sina_fzb_capture,
-    process_timeout_seconds: float = 15.0,
+    process_timeout_seconds: float = _CHILD_COMPLETION_TIMEOUT_SECONDS,
     lease_ttl: timedelta = timedelta(seconds=2),
 ) -> tuple[PersistentRunWorker, Engine]:
     """Build a real worker and source-specific fenced writer on owned SQLite."""
@@ -507,7 +517,7 @@ def test_real_popen_accepts_the_exact_four_mib_body_under_eight_mib_result_text_
     result = executor.run(
         MAX_BODY_OPERATION_ID,
         {"protocol": SINA_FZB_PROCESS_PROTOCOL, "symbol": SYMBOL},
-        timeout_seconds=15.0,
+        timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS,
     )
     decoded = _decode_sina_fzb_process_result(result.value)
 
@@ -1067,19 +1077,19 @@ def test_real_popen_fixture_worker_publishes_two_isolated_captures_and_scoped_pa
         (
             WRONG_SYMBOL_OPERATION_ID,
             fixture_sina_fzb_wrong_symbol,
-            8.0,
+            _CHILD_COMPLETION_TIMEOUT_SECONDS,
             "execution_failed:ValueError",
         ),
         (
             CHILD_ERROR_OPERATION_ID,
             fixture_sina_fzb_child_error,
-            8.0,
+            _CHILD_COMPLETION_TIMEOUT_SECONDS,
             "execution_failed:ProcessExecutionHandlerError",
         ),
         (
             MALFORMED_RESULT_OPERATION_ID,
             fixture_sina_fzb_malformed_result,
-            8.0,
+            _CHILD_COMPLETION_TIMEOUT_SECONDS,
             "execution_failed:ValueError",
         ),
     ],

@@ -50,6 +50,14 @@ TRADE_DATE = date(2026, 10, 28)
 LEASE_TTL = timedelta(seconds=15)
 HEARTBEAT_INTERVAL_SECONDS = 0.05
 DATABASE_IO_TIMEOUT_SECONDS = 0.1
+#: Budget for a fetch whose child process has to finish, in step with the
+#: measurement documented in tests/test_process_executor.py: under 18 xdist
+#: workers each spawning a child plus 18 co-tenant CPU hogs, one child round
+#: trip measured 4.6-5.1 s p50, 6.4-12.3 s p95 and 18.1 s worst. The dry-run
+#: executor leg asserts a *successful* one-shot run, so it is scheduling luck
+#: that let the old 5 s budget pass at all; no test here expects this deadline
+#: to fire.
+_CHILD_COMPLETION_TIMEOUT_SECONDS = 60.0
 PUBLICATION_METADATA = MetaData()
 SYNTHETIC_PUBLICATIONS = Table(
     "fixture_one_shot_cli_publications",
@@ -99,7 +107,7 @@ def _make_job(calls: _HandlerCalls) -> ReviewedJob:
         "synthetic-one-shot",
         lambda request: dict(request.query),
         lambda value: value,
-        timeout_seconds=5.0,
+        timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS,
     )
 
     def normalize(

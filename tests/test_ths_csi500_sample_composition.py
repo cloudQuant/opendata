@@ -396,9 +396,19 @@ def test_sample_identity_digest_matches_fixed_golden_vector() -> None:
 
 def test_target_loader_rejects_identity_swap(isolated_target: sample.SampleTarget) -> None:
     """Replacing the database inode does not inherit the prior target state."""
-    isolated_target.database_path.unlink()
+    # The swap has to change the inode, and unlink-then-recreate does not
+    # guarantee that: this filesystem hands the just-freed inode straight back
+    # (200/200 trials recreating a same-path file), so the loader saw the very
+    # identity it was meant to reject and raised nothing. Renaming the original
+    # aside first keeps its inode allocated, and two live files on one device
+    # cannot share an inode, so the replacement differs by construction. The
+    # copy stays on the same device and outside the target directory, whose
+    # exact contents the loader also pins.
+    preserved_path = isolated_target.directory.parent / "identity-swap-original.sqlite"
+    os.replace(isolated_target.database_path, preserved_path)
     isolated_target.database_path.write_bytes(b"")
     isolated_target.database_path.chmod(0o600)
+    assert preserved_path.lstat().st_ino != isolated_target.database_path.lstat().st_ino
 
     with pytest.raises(sample.Csi500SampleCompositionError) as error:
         sample.load_sample_target(isolated_target.directory)
