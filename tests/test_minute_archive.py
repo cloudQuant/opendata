@@ -639,7 +639,7 @@ def test_csv_importer_streams_symbol_day_batches_and_help_needs_no_database(
     )
     environment = dict(os.environ)
     environment.pop("PYTHONPATH", None)
-    help_result = subprocess.run(
+    help_result = subprocess.run(  # noqa: S603  # nosec B603  # literal argv via sys.executable, no shell
         [sys.executable, "scripts/ops/import_minute_archive.py", "--help"],
         cwd=Path(__file__).resolve().parents[1],
         env=environment,
@@ -1004,7 +1004,7 @@ def test_a_dead_worker_is_reported_dead_not_as_a_lock_miss(tmp_path: Path) -> No
     carries the exit status, so a crash is never again reported as a lock-protocol finding.
     """
     started = time.monotonic()
-    worker = subprocess.Popen(  # nosec B603
+    worker = subprocess.Popen(  # noqa: S603  # nosec B603
         [sys.executable, "-c", "import sys; sys.stderr.write('boom\\n'); raise SystemExit(3)"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,

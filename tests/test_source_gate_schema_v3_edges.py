@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
 from sqlalchemy import create_engine
-from sqlalchemy.engine import Connection
 
 from alembic_source_gate import schema_contract
+
+if TYPE_CHECKING:
+    from sqlalchemy.engine import Connection
 
 
 def _create_v3_schema(connection: Connection) -> None:
@@ -15,8 +19,7 @@ def _create_v3_schema(connection: Connection) -> None:
     for statement in schema_contract.V2_OBJECT_SQL + schema_contract.V3_OBJECT_SQL:
         connection.exec_driver_sql(statement)
     connection.exec_driver_sql(
-        "CREATE TABLE alembic_version_source_gate "
-        "(version_num VARCHAR(32) NOT NULL PRIMARY KEY)"
+        "CREATE TABLE alembic_version_source_gate (version_num VARCHAR(32) NOT NULL PRIMARY KEY)"
     )
     connection.exec_driver_sql(
         "INSERT INTO alembic_version_source_gate (version_num) VALUES (?)",

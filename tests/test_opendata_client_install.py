@@ -313,7 +313,7 @@ def test_wheel_installs_without_checkout_or_system_site(tmp_path: Path) -> None:
         shutil.copytree(pip_dist_info, target / pip_dist_info.name)
         env = base_env.copy()
         env["PYTHONPATH"] = str(target)
-        result = subprocess.run(
+        result = subprocess.run(  # noqa: S603  # nosec B603  # literal argv via sys.executable, no shell
             [sys.executable, "-S", "-m", "pip", "check"],
             cwd=outside_cwd,
             env=env,

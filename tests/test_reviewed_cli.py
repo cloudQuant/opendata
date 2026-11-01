@@ -869,7 +869,7 @@ def test_module_entrypoint_fails_closed_without_loading_a_request() -> None:
     environment["PYTHONPATH"] = os.pathsep.join(
         (str(project_root), str(project_root / "opendata_client"))
     )
-    result = subprocess.run(
+    result = subprocess.run(  # noqa: S603  # nosec B603  # literal argv via sys.executable, no shell
         [sys.executable, "-m", "opendata.reviewed_cli", "--request", "-"],
         cwd=project_root,
         env=environment,

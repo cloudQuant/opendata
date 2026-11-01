@@ -35,7 +35,7 @@ class TestThsSingleSourceDwdPassthrough:
                 connection.execute(text("SELECT 1"))
         except Exception as exc:  # any connection failure means skip
             pytest.skip(f"warehouse database unreachable: {type(exc).__name__}")
-        subprocess.run(  # literal argv, no shell
+        subprocess.run(  # noqa: S603  # nosec B603  # literal argv, no shell
             [sys.executable, "-m", "alembic", "-c", "alembic_data.ini", "upgrade", "head"],
             check=True,
             capture_output=True,
