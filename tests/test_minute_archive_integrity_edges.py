@@ -289,6 +289,10 @@ def test_snapshot_lock_applies_archive_owner_to_new_lock(
             st_mode=result.st_mode,
             st_uid=result.st_uid + 1,
             st_gid=result.st_gid + 1,
+            # ``os.fstat`` is patched process-wide, so consumers outside the code
+            # under test (pytest's own capture teardown) still see a complete
+            # ``os.stat_result``-shaped object.
+            st_size=result.st_size,
         )
 
     def record_chown(descriptor: int, uid: int, gid: int) -> None:
