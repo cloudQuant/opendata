@@ -5,15 +5,18 @@ from __future__ import annotations
 import hashlib
 import json
 import subprocess
-from collections.abc import Callable
 from datetime import date, timedelta
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 
 from opendata.data.providers.ths.transport import credentials
 from opendata.pipeline import ths_csi500_sample_composition as sample
 from scripts.ops import run_csi500_one_shot_sample as sample_cli
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 def _write_calendar_manifest(directory: Path, business_date: date) -> Path:
@@ -231,6 +234,7 @@ def test_cli_outer_error_boundary_emits_only_stable_codes(
     expected_payload: dict[str, str],
 ) -> None:
     """Expected, interrupted, and unexpected failures never print exception text."""
+
     def raise_configured_error(_args: object) -> int:
         raise error_factory()
 

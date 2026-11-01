@@ -680,7 +680,7 @@ def _upgrade_warehouse(repo_root) -> None:
     import subprocess
     import sys
 
-    subprocess.run(  # literal argv, no shell
+    subprocess.run(  # noqa: S603  # nosec B603  # literal argv, no shell
         [sys.executable, "-m", "alembic", "-c", "alembic_data.ini", "upgrade", "head"],
         cwd=repo_root,
         check=True,

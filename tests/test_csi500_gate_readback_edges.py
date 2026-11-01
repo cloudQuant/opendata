@@ -6,20 +6,22 @@ import hashlib
 import json
 import shutil
 import sqlite3
-from collections.abc import Iterator
 from contextlib import closing
 from dataclasses import replace
 from datetime import date
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 from sqlalchemy import URL, create_engine
 from sqlalchemy.pool import NullPool
 
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+
 from opendata.data.source_attempt_gate import ReservationStatus, SourceAttemptGate
 from opendata.pipeline import ths_csi500_sample_composition as sample
 from scripts.ops import run_csi500_one_shot_sample as sample_cli
-
 
 _BUSINESS_DATE = date(2026, 10, 30)
 
@@ -56,7 +58,7 @@ def _write_calendar_evidence(directory: Path) -> Path:
 def _remove_owned_target(target: sample.SampleTarget) -> None:
     """Remove only the exact private target created by this fixture."""
     if (
-        sample.SAMPLE_TEMP_ROOT != Path("/tmp")
+        Path("/tmp") != sample.SAMPLE_TEMP_ROOT
         or target.directory.parent != Path("/tmp")
         or not target.directory.name.startswith(sample.SAMPLE_TARGET_PREFIX)
     ):
@@ -302,7 +304,7 @@ def test_readback_rejects_an_unknown_source_gate_migration_marker(
     target, evidence = authorized_sample_target
     with closing(sqlite3.connect(target.database_path)) as connection, connection:
         connection.execute(
-            f"UPDATE {sample.SAMPLE_SOURCE_GATE_VERSION_TABLE} SET version_num = ?",
+            f"UPDATE {sample.SAMPLE_SOURCE_GATE_VERSION_TABLE} SET version_num = ?",  # noqa: S608  # nosec B608  # table name is a module constant; the value is bound
             ("unreviewed-source-gate-revision",),
         )
 
@@ -341,9 +343,7 @@ def test_repeated_intent_preparation_is_stable_and_manifest_tampering_blocks_rep
 
     tampered_state = dict(prepared.state)
     original_digest = str(tampered_state["one_shot_intent_sha256"])
-    tampered_state["one_shot_intent_sha256"] = (
-        "0" * 64 if original_digest != "0" * 64 else "1" * 64
-    )
+    tampered_state["one_shot_intent_sha256"] = "0" * 64 if original_digest != "0" * 64 else "1" * 64
     manifest_path = prepared.directory / sample.SAMPLE_MANIFEST_FILENAME
     manifest_path.write_text(
         json.dumps(tampered_state, sort_keys=True, separators=(",", ":")),

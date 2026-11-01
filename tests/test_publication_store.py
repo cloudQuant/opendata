@@ -638,7 +638,7 @@ def test_coverage_record_set_rejects_dialects_without_snapshot_guarantees() -> N
         dialect = UnsupportedDialect()
 
     with pytest.raises(CoverageSnapshotConsistencyError, match="does not support"):
-        getattr(publication_store, "_begin_coverage_read_transaction")(UnsupportedConnection())
+        publication_store._begin_coverage_read_transaction(UnsupportedConnection())
 
 
 def test_coverage_record_set_reads_metadata_and_rows_from_one_sqlite_snapshot(

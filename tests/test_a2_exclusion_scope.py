@@ -252,7 +252,7 @@ class TestMypyExcludesOnlyWhatItSays:
         directory", which reads as an invocation error from the outside and as
         "nothing to complain about" to anything that only greps for ``error:``.
         """
-        result = subprocess.run(
+        result = subprocess.run(  # noqa: S603  # nosec B603  # literal argv via sys.executable, no shell
             [sys.executable, "-m", "mypy", "--no-color-output", "alembic", "alembic_data"],
             cwd=REPO_ROOT,
             capture_output=True,

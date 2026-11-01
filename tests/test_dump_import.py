@@ -258,7 +258,7 @@ class TestImportAgainstMysql:
         import subprocess
         import sys
 
-        subprocess.run(  # literal argv, no shell
+        subprocess.run(  # noqa: S603  # nosec B603  # literal argv, no shell
             [sys.executable, "-m", "alembic", "-c", "alembic_data.ini", "upgrade", "head"],
             check=True,
             capture_output=True,

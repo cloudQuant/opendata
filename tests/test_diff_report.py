@@ -101,7 +101,7 @@ class TestReportAgainstMysql:
             pytest.skip(f"warehouse database unreachable: {type(exc).__name__}")
         # Self-sufficient: ensure the warehouse schema is at head (the
         # migration suite may have left it elsewhere while testing).
-        subprocess.run(  # literal argv, no shell
+        subprocess.run(  # noqa: S603  # nosec B603  # literal argv, no shell
             [
                 sys.executable,
                 "-m",

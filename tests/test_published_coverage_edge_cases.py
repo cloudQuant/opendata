@@ -108,9 +108,9 @@ async def test_coverage_denial_happens_before_evidence_or_publication_reads(
         principal=principal,
     )
     app.dependency_overrides[get_dataset_coverage_evidence_registry_loader] = lambda: fail_if_called
-    setattr(store, "get_publication", fail_if_called)
-    setattr(store, "list_datasets", fail_if_called)
-    setattr(store, "read_coverage_record_set", fail_if_called)
+    store.get_publication = fail_if_called
+    store.list_datasets = fail_if_called
+    store.read_coverage_record_set = fail_if_called
 
     response = await _request(
         app,
@@ -157,7 +157,7 @@ async def test_coverage_pin_mismatch_returns_unknown_without_scanning_facts(
         contract,
         DatasetCoverageEvidenceRegistry((evidence,)),
     )
-    setattr(store, "read_coverage_record_set", fail_if_scanned)
+    store.read_coverage_record_set = fail_if_scanned
 
     response = await _request(
         app,
@@ -206,7 +206,7 @@ async def test_schema1_coverage_evidence_stays_unknown_without_scanning(
         contract,
         DatasetCoverageEvidenceRegistry((evidence,)),
     )
-    setattr(store, "read_coverage_record_set", fail_if_scanned)
+    store.read_coverage_record_set = fail_if_scanned
     response = await _request(
         app,
         "GET",
@@ -324,7 +324,7 @@ async def test_future_history_claims_stay_unknown_without_scanning(
         contract,
         DatasetCoverageEvidenceRegistry((evidence,)),
     )
-    setattr(store, "read_coverage_record_set", fail_if_scanned)
+    store.read_coverage_record_set = fail_if_scanned
     response = await _request(
         app,
         "GET",
@@ -433,7 +433,7 @@ async def test_noncanonical_index_contract_cannot_use_matching_evidence(
         DatasetContractRegistry((contract,)),
         coverage_evidence=DatasetCoverageEvidenceRegistry((evidence,)),
     )
-    setattr(store, "read_coverage_record_set", fail_if_scanned)
+    store.read_coverage_record_set = fail_if_scanned
 
     response = await _request(
         app,
@@ -492,7 +492,7 @@ async def test_coverage_read_missing_pinned_publication_is_sanitized_unavailable
         assert limit == MAX_COVERAGE_RECORDS
         return None
 
-    setattr(store, "read_coverage_record_set", missing_pin)
+    store.read_coverage_record_set = missing_pin
 
     response = await _request(
         app,
@@ -558,7 +558,7 @@ async def test_malformed_coverage_fact_is_reported_unknown_not_complete(
             records=(replace(record_set.records[0], payload=malformed_payload),),
         )
 
-    setattr(store, "read_coverage_record_set", malformed_records)
+    store.read_coverage_record_set = malformed_records
 
     response = await _request(
         app,
