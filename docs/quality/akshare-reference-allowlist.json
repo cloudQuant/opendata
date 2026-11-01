@@ -943,9 +943,9 @@
       "path": "scripts/quality/acceptance_item_probe.py",
       "purpose": "品牌、分层质量、来源依赖或验收判据的测量工具；被测来源名不用于加载外部包。本轮把三条 AC 面改成子解释器里的 import hook 见证：包名只作为字符串常量出现在被交给子进程的字面 argv 与被拒计数里，没有任何一处用它去加载外部包。",
       "category": "operations-tool",
-      "reviewed_date": "2026-11-01",
-      "reviewer": "本轮复核 sha 漂移：pin 字节属 rev ec65863，此后 2 个 revision，HEAD 与工作树字节一致；改动为 DWD merge 判据改为读取 merge AST 的 revision-key 传播/比较语义并调整对应用例名；akshare 出现行 234==234、出现次数 289==289，带品牌行的增删为 0/0（akshare/openbb 合计行数与出现次数均未变），扫描器命中多重集与 pin 一致、无新增加载形态，没有任何一处用品牌名加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
-      "sha256": "76d622fea0e492f42319a6e9291303d9e74a2534dde5a55476a0a1dd761ac998",
+      "reviewed_date": "2026-11-02",
+      "reviewer": "本轮复核 sha 漂移：pin 字节属 rev 02df8948，此后 0 个 revision；HEAD 与工作树字节一致。改动只在九个读历史面的紧前调用 ensure_history_complete() 与各 reading 追加 history_repair 说明，判据 AST（排除 readings 赋值后九个 judge 逐字节相同）、breaks 与 moment 面集合均未变。带品牌行的增删为 0/0（含品牌行 212==212，akshare 出现 163==163，openbb 出现 96==96），扫描器命中多重集与 pin 一致、无新增加载形态，没有任何一处用品牌名加载外部包。",
+      "sha256": "0b989016bd6bf7f7dc86e4f4462180f2eb4722683f92ddb944caddd9c387ed59",
       "ast_exceptions": []
     },
     {

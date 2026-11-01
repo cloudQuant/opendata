@@ -1238,25 +1238,46 @@ def test_history_self_test_still_reaches_proven_and_checks_all_breaks(
 
 
 @pytest.mark.parametrize(
-    ("shallow", "scope"), [(False, ""), (True, ""), (False, "--log-opts=HEAD")]
+    ("case", "scope"),
+    [
+        ("complete", ""),
+        ("repaired", ""),
+        ("no-origin", ""),
+        ("origin-gone", ""),
+        ("scoped", "--log-opts=HEAD"),
+    ],
 )
 def test_history_measure_keeps_scan_argv_and_rejects_shallow_or_scoped_history(
     temporary_git,
     monkeypatch: pytest.MonkeyPatch,
     clean_history_facts: tool.Facts,
-    shallow: bool,
+    case: str,
     scope: str,
 ) -> None:
+    """The pinned argv, and a chain the measure completes *before* judging it.
+
+    ``repaired`` is the hosted ``pull_request`` shape this cell kept flipping on: the workspace
+    arrived shallow with a reachable origin, so the measure completes the chain and the scanner's
+    commit count and the independent census agree on 2. ``no-origin`` and ``origin-gone`` are the
+    fail-closed pair -- with nothing fetchable behind it the cell keeps the truncated 1-fragment
+    reading, keeps ``shallow = true``, and is still a gap. The repair changes what history the
+    measurement can see; it never changes what the judge accepts.
+    """
     root, git = temporary_git
     text = root / "text.txt"
     for value in ("first\n", "second\n"):
         text.write_text(value, encoding="utf-8")
         git("add", "text.txt")
         git("commit", "--quiet", "-m", value.strip())
+    truncated = case in {"no-origin", "origin-gone"}
     scan_root = root
-    if shallow:
+    if case != "complete" and case != "scoped":
         scan_root = root / "shallow"
         git("clone", "--quiet", "--depth=1", root.as_uri(), str(scan_root))
+    if case == "no-origin":
+        git("-C", str(scan_root), "remote", "remove", "origin")
+    if case == "origin-gone":
+        git("-C", str(scan_root), "remote", "set-url", "origin", (root / "gone").as_uri())
     (scan_root / tool.CONFIG_REL).write_text(
         (REPO_ROOT / tool.CONFIG_REL).read_text(encoding="utf-8"), encoding="utf-8"
     )
@@ -1302,15 +1323,79 @@ def test_history_measure_keeps_scan_argv_and_rejects_shallow_or_scoped_history(
             command[-1],
         ]
         Path(command[-1]).write_text("[]", encoding="utf-8")
-        count = 1 if shallow else 2
+        count = 1 if truncated else 2
         return 0, f"{count} commits scanned\nscanned ~100 bytes\nno leaks found\n"
 
     monkeypatch.setattr(tool, "run_argv", fake_scan)
     facts = tool.measure_ac16_09(Context(scan_root, tool.load_context().doc_items, {}))
-    assert facts["fragment_population"] == ("1" if shallow else "2")
-    assert facts["git_shallow"] == ("true" if shallow else "false")
+    assert (
+        facts["history_repair"]
+        == {
+            "complete": "already-complete",
+            "repaired": "unshallowed",
+            "no-origin": "refused",
+            "origin-gone": "refused",
+            "scoped": "already-complete",
+        }[case]
+    )
+    assert facts["fragment_population"] == ("1" if truncated else "2")
+    assert facts["git_shallow"] == ("true" if truncated else "false")
     assert facts["argv_scope_limits"] == ("1" if scope else "0")
-    assert tool.judge_ac16_09(facts).state == (GAP if shallow or scope else PROVEN)
+    assert tool.judge_ac16_09(facts).state == (GAP if truncated or scope else PROVEN), facts
+
+
+def test_ensure_history_complete_repairs_a_reachable_chain_and_refuses_without_one(
+    temporary_git,
+) -> None:
+    """One origin reachable -> the chain lands complete; none -> the repair says refused, not pass.
+
+    This is the pair the two flipping cells hinge on: ``AC-16|09`` may only call a scan
+    full-history when the repository really holds the history, and ``AC-19|02`` dates an archive's
+    first landing off that chain, so a truncated one makes the record look like it landed today.
+    The repair is allowed to fix the first problem and is not allowed to fake the second.
+    """
+    root, git = temporary_git
+    text = root / "text.txt"
+    for value in ("first\n", "second\n", "third\n"):
+        text.write_text(value, encoding="utf-8")
+        git("add", "text.txt")
+        git("commit", "--quiet", "-m", value.strip())
+
+    def shallow(root_: Path) -> str:
+        return run_argv(["git", "rev-parse", "--is-shallow-repository"], cwd=root_)[1].strip()
+
+    def head_count(root_: Path) -> str:
+        return run_argv(["git", "rev-list", "--count", "HEAD"], cwd=root_)[1].strip()
+
+    assert tool.ensure_history_complete(root) == "already-complete"
+
+    reachable = root / "reachable"
+    git("clone", "--quiet", "--depth=1", root.as_uri(), str(reachable))
+    assert shallow(reachable) == "true"
+    assert head_count(reachable) == "1"
+    assert tool.ensure_history_complete(reachable) == "unshallowed"
+    assert shallow(reachable) == "false"
+    assert head_count(reachable) == "3"
+    assert tool.ensure_history_complete(reachable) == "already-complete"
+
+    stranded = root / "stranded"
+    git("clone", "--quiet", "--depth=1", root.as_uri(), str(stranded))
+    git("-C", str(stranded), "remote", "remove", "origin")
+    assert tool.ensure_history_complete(stranded) == "refused"
+    assert shallow(stranded) == "true"
+    assert head_count(stranded) == "1"
+
+    gone = root / "gone"
+    git("clone", "--quiet", "--depth=1", root.as_uri(), str(gone))
+    git("-C", str(gone), "remote", "set-url", "origin", (root / "never-existed").as_uri())
+    assert tool.ensure_history_complete(gone) == "refused"
+    assert shallow(gone) == "true"
+
+
+def test_history_repair_note_names_the_provenance_in_every_reading_it_serves() -> None:
+    """A reading says where its history came from, including when no repair fact was recorded."""
+    assert "unshallowed" in tool.history_repair_note({"history_repair": "unshallowed"})
+    assert "(未记录)" in tool.history_repair_note({})
 
 
 def test_evidence_deletions_excludes_only_bytecode_from_both_sets(
