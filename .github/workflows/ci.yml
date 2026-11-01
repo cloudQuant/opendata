@@ -5,6 +5,16 @@ on:
     branches: [dev, master, "feature/**", "fix/**", "docs/**", "refactor/**", "test/**"]
   pull_request:
     branches: [dev, master]
+  workflow_dispatch:
+    inputs:
+      sync_acceptance_ratchet:
+        type: boolean
+        default: false
+        description: >-
+          Measure the acceptance probe in this job's environment and rewrite
+          docs/quality/acceptance-gate-ratchet.json for review as an artifact,
+          instead of running the gate. Use only after the owner adjudicated a
+          ratchet entry; the file is never committed by CI.
 
 permissions:
   contents: read
@@ -58,6 +68,9 @@ jobs:
           --health-timeout=5s
           --health-retries=12
     env:
+      # A manual `sync_acceptance_ratchet` dispatch measures and uploads the ratchet
+      # baseline instead of running the gate; the two conditions below read one flag.
+      SYNC_ACCEPTANCE_RATCHET: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.sync_acceptance_ratchet == 'true' }}
       # Metadata database (main)
       MYSQL_HOST: 127.0.0.1
       MYSQL_PORT: "3306"
@@ -203,7 +216,27 @@ jobs:
           PY
           echo "PREFLIGHT step is advisory; the gate still owns the verdict."
 
+      # `--sync-ratchet` freezes what *this* measurement saw, so a baseline can only
+      # be produced where the environment is CI's (pinned gitleaks, MySQL service,
+      # clean tree). Locally the same command yields a different cell set - here it
+      # measured 13 cells including AC-13|06/AC-18|03/§6|03 and missed CI's
+      # AC-16|09/AC-17|03/AC-17|05/AC-19|02 - which is exactly why an adjudicated
+      # sync belongs in CI. The artifact still has to arrive as a reviewed commit.
+      - name: Sync the acceptance gate ratchet (manual dispatch only)
+        if: env.SYNC_ACCEPTANCE_RATCHET == 'true'
+        run: |
+          python scripts/quality/acceptance_item_probe.py --sync-ratchet
+          git --no-pager diff -- docs/quality/acceptance-gate-ratchet.json
+      - name: Upload the synced acceptance ratchet
+        if: env.SYNC_ACCEPTANCE_RATCHET == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: acceptance-gate-ratchet
+          path: docs/quality/acceptance-gate-ratchet.json
+          retention-days: 7
+
       - name: Run fail-closed quality gate
+        if: env.SYNC_ACCEPTANCE_RATCHET != 'true'
         timeout-minutes: 100
         run: |
           # The gate's own output goes to a file that is uploaded afterwards; the Actions
