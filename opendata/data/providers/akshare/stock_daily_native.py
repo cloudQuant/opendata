@@ -25,10 +25,14 @@ from pydantic import (
 
 from opendata.data.request_summary import request_summary_sha256
 
-CONTRACT_ID = "cn_equity.daily.eastmoney_push2his.native.v1"
-ADAPTER_ID = "akshare"
-UNDERLYING_PRODUCT_ID = "eastmoney.push2his.stock.kline"
-ENDPOINT_URL = "https://push2his.eastmoney.com/api/qt/stock/kline/get"
+CONTRACT_ID: Literal["cn_equity.daily.eastmoney_push2his.native.v1"] = (
+    "cn_equity.daily.eastmoney_push2his.native.v1"
+)
+ADAPTER_ID: Literal["akshare"] = "akshare"
+UNDERLYING_PRODUCT_ID: Literal["eastmoney.push2his.stock.kline"] = "eastmoney.push2his.stock.kline"
+ENDPOINT_URL: Literal["https://push2his.eastmoney.com/api/qt/stock/kline/get"] = (
+    "https://push2his.eastmoney.com/api/qt/stock/kline/get"
+)
 OPERATION_ID = "stock-daily-wire"
 MAX_RESPONSE_BYTES = 2 * 1024 * 1024
 MAX_KLINE_ROWS = 10_000

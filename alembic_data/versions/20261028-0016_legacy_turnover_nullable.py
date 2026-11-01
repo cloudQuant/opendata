@@ -12,7 +12,7 @@ nullable rows created after this revision.
 """
 
 import re
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 
 from sqlalchemy import Double, inspect, text
 
@@ -82,7 +82,7 @@ def _require_mysql_partition_layout(rows: Iterable[Sequence[object]]) -> None:
         )
 
 
-def _require_simple_sqlite_index(index: dict[str, object], definition: str) -> None:
+def _require_simple_sqlite_index(index: Mapping[str, object], definition: str) -> None:
     """Reject SQLite index semantics that batch reflection may not preserve."""
     columns = index.get("column_names")
     options = index.get("dialect_options")
@@ -171,7 +171,7 @@ def _require_legacy_table(mode: str) -> None:
         ).all()
         _require_mysql_partition_layout(partition_rows)
     else:
-        triggers = (
+        triggers: Sequence[str] = (
             bind.execute(
                 text("SELECT name FROM sqlite_master WHERE type = 'trigger' AND tbl_name = :table"),
                 {"table": _TABLE},

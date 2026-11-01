@@ -385,8 +385,8 @@ def _make_app(
     app.dependency_overrides[get_dataset_grants] = lambda: grants
     app.dependency_overrides[get_dataset_contracts] = lambda: contracts
     app.dependency_overrides[get_publication_store] = lambda: store
-    app.dependency_overrides[get_dataset_coverage_evidence_registry_loader] = (
-        lambda: lambda: coverage_evidence or DatasetCoverageEvidenceRegistry.empty()
+    app.dependency_overrides[get_dataset_coverage_evidence_registry_loader] = lambda: (
+        lambda: coverage_evidence or DatasetCoverageEvidenceRegistry.empty()
     )
     return app
 
@@ -1851,8 +1851,8 @@ async def test_api_key_without_exact_operation_and_domain_is_denied_before_store
     def fail_if_evidence_is_loaded() -> DatasetCoverageEvidenceRegistry:
         raise AssertionError("unauthorized coverage request loaded operator evidence")
 
-    app.dependency_overrides[get_dataset_coverage_evidence_registry_loader] = (
-        lambda: fail_if_evidence_is_loaded
+    app.dependency_overrides[get_dataset_coverage_evidence_registry_loader] = lambda: (
+        fail_if_evidence_is_loaded
     )
     coverage_response = await _request(
         app,

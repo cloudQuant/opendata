@@ -405,7 +405,7 @@ def _configure_sqlite_readonly(connection: Connection) -> None:
     """Enable SQLite's query-only guard for isolated tests."""
     try:
         connection.exec_driver_sql("PRAGMA query_only = ON")
-        value = connection.exec_driver_sql("PRAGMA query_only").scalar_one()
+        value: object = connection.exec_driver_sql("PRAGMA query_only").scalar_one()
     except Exception as exc:
         raise RuntimeInventoryError("sqlite_readonly_setup_failed") from exc
     if value != 1:

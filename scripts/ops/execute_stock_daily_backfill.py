@@ -20,7 +20,7 @@ import sys
 from dataclasses import replace
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
-from typing import TYPE_CHECKING, NoReturn
+from typing import TYPE_CHECKING, NoReturn, cast
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
@@ -75,6 +75,7 @@ if TYPE_CHECKING:
     from opendata.data.platform_contracts import DatasetContract
     from opendata.data.providers.akshare.models.stock_daily import StockDailyQuery
     from opendata.pipeline.run_identity import TaskDefinition
+    from opendata.pipeline.stock_daily_job import StockDailyResponseSource
 
 _LEASE_TTL = timedelta(seconds=60)
 _FAILURE_STOP_REASONS = frozenset(
@@ -239,7 +240,7 @@ def _execute(args: argparse.Namespace) -> StockDailyBackfillExecutionReceipt:
     if not hmac.compare_digest(candidate.snapshot_bytes_sha256, actual_sha256):
         raise _CliError("snapshot_sha256_mismatch")
 
-    raw_source: Callable[[object], StockDailyJsonResponse] | None = None
+    raw_source: Callable[[StockDailyQuery], StockDailyJsonResponse] | None = None
     artifact_root: Path | None = None
     if execute:
         raw_source = _offline_response_source(args, candidate.plan)
@@ -439,7 +440,8 @@ def _reviewed_execution_job(
         semantic_version=contract.semantic_version,
         contract_registry=DatasetContractRegistry([contract]),
         artifact_writer=RawResponseArtifactWriter(artifact_root),
-        response_source=raw_source or rejecting_source,
+        # The callable takes exactly the protocol's query argument; mypy cannot infer it here.
+        response_source=cast("StockDailyResponseSource", raw_source or rejecting_source),
     )
     return replace(unreviewed, reviewed=True, execution_only=True)
 

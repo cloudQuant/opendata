@@ -891,7 +891,7 @@ def _verify_actual_sqlite_connection(
     try:
         databases = connection.exec_driver_sql("PRAGMA database_list").all()
         main_files = [str(row[2]) for row in databases if row[1] == "main"]
-        busy_timeout_ms = connection.exec_driver_sql("PRAGMA busy_timeout").scalar_one()
+        busy_timeout_ms: object = connection.exec_driver_sql("PRAGMA busy_timeout").scalar_one()
         current_stat = expected_database.path.stat(follow_symlinks=False)
         current_resolved_path = expected_database.path.resolve(strict=True)
     except Exception:

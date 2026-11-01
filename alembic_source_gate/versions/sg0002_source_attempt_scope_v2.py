@@ -30,7 +30,7 @@ def downgrade() -> None:
     """Preserve append-only v2 scope evidence; downgrade is intentionally blocked."""
     connection = op.get_bind()
     try:
-        count = connection.exec_driver_sql(
+        count: int = connection.exec_driver_sql(
             "SELECT COUNT(*) FROM od_source_attempt_scope_v2"
         ).scalar_one()
     except SQLAlchemyError as exc:

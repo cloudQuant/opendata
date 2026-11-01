@@ -570,7 +570,7 @@ def _exact_turnover_amount_null_count(connection: Connection, table: str) -> int
         statement = text("SELECT COUNT(*) FROM `ods_stock_daily_akshare` WHERE `成交额` IS NULL")
     else:
         raise TransferError("null_count_table_not_allowed")
-    count = connection.execute(statement).scalar_one()
+    count: int = connection.execute(statement).scalar_one()
     if type(count) is not int or count < 0:
         raise TransferError("turnover_amount_null_count_invalid")
     return count

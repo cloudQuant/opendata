@@ -30,9 +30,7 @@ from typing import TYPE_CHECKING, Literal
 from sqlalchemy import text
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
-
-    from sqlalchemy.engine import Connection, RootTransaction
+    from sqlalchemy.engine import Connection, RootTransaction, RowMapping
 
 _SOURCE_ID_PATTERN = re.compile(r"^[a-z][a-z0-9_.-]{0,63}$")
 _INSTRUMENT_ID_PATTERN = re.compile(r"^[0-9]{6}\.(?:SH|SZ|BJ)$")
@@ -339,7 +337,7 @@ def _require_repeatable_read_transaction(connection: Connection) -> RootTransact
 def _require_innodb_table(connection: Connection) -> None:
     """Fail closed unless the exact archive table uses InnoDB MVCC."""
     try:
-        engine = connection.execute(
+        engine: object = connection.execute(
             _TABLE_ENGINE_SQL, {"table_name": _TABLE_NAME}
         ).scalar_one_or_none()
     except Exception as exc:
@@ -370,7 +368,7 @@ def _validate_cursor(
         )
 
 
-def _row_from_mapping(row: Mapping[str, object]) -> FinancialObservationArchiveRow:
+def _row_from_mapping(row: RowMapping) -> FinancialObservationArchiveRow:
     """Map a validated SQL row without changing source decimal text."""
     string_fields = (
         "observation_id",

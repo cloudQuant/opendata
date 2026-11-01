@@ -26,6 +26,8 @@ from sqlalchemy import column, inspect, select, table, text
 from alembic import op
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from sqlalchemy.engine.reflection import Inspector
 
 revision = "0021_temporal_identity_snapshot"
@@ -420,7 +422,9 @@ def _require_revision_marker() -> None:
         column("version_num", column_type),
         schema=schema,
     )
-    marker = op.get_bind().execute(select(marker_table.c.version_num)).scalars().all()
+    marker: Sequence[str] = (
+        op.get_bind().execute(select(marker_table.c.version_num)).scalars().all()
+    )
     if marker != [_EXPECTED_MARKER]:
         raise RuntimeError("revision 0021 requires exactly the 0020 warehouse marker")
 
@@ -630,7 +634,7 @@ def _require_foreign_key(inspector: Inspector) -> None:
 def _require_sqlite_key_collations(table_name: str) -> None:
     """Verify the effective SQLite primary-key comparison is BINARY."""
     bind = op.get_bind()
-    indexes = (
+    indexes: Sequence[str] = (
         bind.execute(
             text("SELECT name FROM pragma_index_list(:table) WHERE origin = 'pk'"),
             {"table": table_name},

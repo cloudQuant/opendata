@@ -2011,7 +2011,9 @@ def _begin_coverage_read_transaction(connection: Connection) -> RootTransaction:
     if dialect_name == "sqlite":
         transaction = connection.begin()
         try:
-            read_uncommitted = connection.exec_driver_sql("PRAGMA read_uncommitted").scalar_one()
+            read_uncommitted: object = connection.exec_driver_sql(
+                "PRAGMA read_uncommitted"
+            ).scalar_one()
             if read_uncommitted != 0:
                 raise CoverageSnapshotConsistencyError(
                     "SQLite read_uncommitted must be disabled for coverage verification"

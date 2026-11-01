@@ -28,7 +28,7 @@ from contextlib import contextmanager, suppress
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, cast
 from urllib.parse import urlsplit
 from uuid import uuid4
 
@@ -42,19 +42,20 @@ from alembic_source_gate.path_contract import (
 
 if TYPE_CHECKING:
     from collections.abc import Iterator, Mapping
+    from typing import Any
 
     from opendata.data.source_attempt_gate import SourceAttemptScopeV3
     from opendata.pipeline.ths_index_daily_publication import Csi500FuyaoV4SampleSpec
 
 SAMPLE_TARGET_PREFIX = "opendata-csi500-sample-"
-SAMPLE_TEMP_ROOT = Path("/tmp")  # noqa: S108 - fixed private target root, mode 0700 per target
+SAMPLE_TEMP_ROOT = Path("/tmp")  # noqa: S108  # nosec B108  # fixed private root; targets created 0700
 SAMPLE_DATABASE_FILENAME = "sample.sqlite3"
 SAMPLE_MANIFEST_FILENAME = "target.json"
 SAMPLE_LOCK_FILENAME = ".operation.lock"
 SAMPLE_SOURCE_GATE_MIGRATION_HEAD = "sg0004_source_one_shot_v4"
 SAMPLE_SOURCE_GATE_VERSION_TABLE = "alembic_version_source_gate"
 SAMPLE_TARGET_PROFILE = "csi500-source-gate-authorization-only-v1"
-SAMPLE_WAREHOUSE_SCHEMA_STATUS = "NOT_APPLIED"
+SAMPLE_WAREHOUSE_SCHEMA_STATUS: Literal["NOT_APPLIED"] = "NOT_APPLIED"
 SAMPLE_DATASET_ID = "cn.csi500.index.daily"
 SAMPLE_SOURCE = "ths"
 SAMPLE_MODEL = "index_daily"
@@ -636,20 +637,20 @@ def _build_sample_v4_spec(
     try:
         return build_csi500_v4_sample_spec(
             business_date=calendar_evidence.business_date,
-            target_id=state["target_id"],
-            target_identity_sha256=state["quota_target_identity_sha256"],
+            target_id=cast("str", state["target_id"]),
+            target_identity_sha256=cast("str", state["quota_target_identity_sha256"]),
             calendar_manifest_sha256=calendar_evidence.manifest_sha256,
             calendar_artifact_sha256=calendar_evidence.artifact_sha256,
-            authorization_actor=state["authorization_actor"],
-            grant_id=state["grant_id"],
+            authorization_actor=cast("str", state["authorization_actor"]),
+            grant_id=cast("str", state["grant_id"]),
             grant_revision=1,
-            principal_scope=state["principal_scope"],
-            grant_expires_at_utc=state["grant_expires_at_utc"],
-            rights_evidence_sha256=state["rights_evidence_sha256"],
-            budget_binding_sha256=state["quota_binding_sha256"],
-            budget_quota_key=state["quota_key"],
-            budget_policy_revision=state["quota_policy_revision"],
-            budget_policy_sha256=state["quota_policy_sha256"],
+            principal_scope=cast("str", state["principal_scope"]),
+            grant_expires_at_utc=cast("str", state["grant_expires_at_utc"]),
+            rights_evidence_sha256=cast("str", state["rights_evidence_sha256"]),
+            budget_binding_sha256=cast("str", state["quota_binding_sha256"]),
+            budget_quota_key=cast("str", state["quota_key"]),
+            budget_policy_revision=cast("int", state["quota_policy_revision"]),
+            budget_policy_sha256=cast("str", state["quota_policy_sha256"]),
         )
     except Exception:
         raise Csi500SampleCompositionError("sample_intent_invalid") from None
@@ -970,7 +971,7 @@ def _require_fresh_sample_gate(target: SampleTarget) -> None:
                 # freshness means all other gate evidence tables are empty.
                 continue
             # table_name comes from the fixed module-level gate-table allowlist.
-            query = f"SELECT COUNT(*) FROM {table_name}"  # noqa: S608
+            query = f"SELECT COUNT(*) FROM {table_name}"  # noqa: S608  # nosec B608  # fixed gate-table allowlist
             row = connection.execute(query).fetchone()
             if row is None or type(row[0]) is not int or row[0] != 0:
                 raise Csi500SampleCompositionError("source_gate_target_not_fresh")
@@ -1140,7 +1141,7 @@ def _validate_source_gate_rows(
         ).fetchall()
         sidecar_counts = {
             table_name: connection.execute(
-                f"SELECT COUNT(*) FROM {table_name}"  # noqa: S608
+                f"SELECT COUNT(*) FROM {table_name}"  # noqa: S608  # nosec B608  # fixed sidecar tuple
             ).fetchone()[0]
             for table_name in (
                 "od_source_attempt_scope_v2",
@@ -1558,7 +1559,9 @@ def _validate_sample_grant_result(
     ):
         raise Csi500SampleCompositionError("source_grant_receipt_invalid")
     expected_expiry_us = int(expires_at.timestamp() * 1_000_000)
-    if abs(int(result.expires_at_us) - expected_expiry_us) > 1_000_000:
+    # The receipt guard above rejects a missing expiry; receipts store integer microseconds.
+    receipt = cast("Any", result)
+    if abs(int(receipt.expires_at_us) - expected_expiry_us) > 1_000_000:
         raise Csi500SampleCompositionError("source_grant_expiry_mismatch")
 
 

@@ -307,9 +307,7 @@ def make_fetch_symbol_async(
     """
     _new_job_fetch_context(timeout=timeout, request_budget=request_budget)
     if request_budget is not None and (domain != "stock_daily" or source != "ths"):
-        raise ValueError(
-            "request_budget is supported only for a single-source THS stock_daily job"
-        )
+        raise ValueError("request_budget is supported only for a single-source THS stock_daily job")
 
     fetcher = resolve_fetcher(domain, source)
     if request_budget is not None:
@@ -328,9 +326,7 @@ def make_fetch_symbol_async(
     return fetch
 
 
-def _new_job_fetch_context(
-    *, timeout: float, request_budget: RequestBudget | None
-) -> FetchContext:
+def _new_job_fetch_context(*, timeout: float, request_budget: RequestBudget | None) -> FetchContext:
     """Build a per-symbol context and validate any caller-supplied budget."""
     from opendata.data.protocol import FetchContext
 
@@ -687,13 +683,9 @@ async def run_incremental_job(
     maker = session_maker or async_session_maker
     authoritative = source or default_source(domain)
     if request_budget is not None and (
-        authoritative != "ths"
-        or (second_source is not None and second_source != authoritative)
+        authoritative != "ths" or (second_source is not None and second_source != authoritative)
     ):
-        raise ValueError(
-            "request_budget is supported only for a single-source THS "
-            "stock_daily job"
-        )
+        raise ValueError("request_budget is supported only for a single-source THS stock_daily job")
     run_date = as_of or date.today()
     day_calendar = calendar if calendar is not None else resolve_calendar(warehouse)
     window = incremental_window(run_date, lookback_days=lookback_days, calendar=day_calendar)
@@ -724,9 +716,7 @@ async def run_incremental_job(
         if request_budget is None:
             fetch_symbol = make_fetch_symbol_async(domain, feed)
         else:
-            fetch_symbol = make_fetch_symbol_async(
-                domain, feed, request_budget=request_budget
-            )
+            fetch_symbol = make_fetch_symbol_async(domain, feed, request_budget=request_budget)
         pipeline = build_stock_daily_pipeline(
             engine=warehouse,
             session_maker=maker,

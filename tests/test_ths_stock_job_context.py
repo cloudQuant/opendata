@@ -42,9 +42,7 @@ async def test_async_callback_reuses_budget_across_symbols_with_fresh_contexts(
             return pd.DataFrame([{"symbol": symbol}])
 
     monkeypatch.setattr(jobs, "resolve_fetcher", lambda _domain, _source: StubFetcher())
-    fetch = jobs.make_fetch_symbol_async(
-        "stock_daily", "ths", timeout=2.5, request_budget=budget
-    )
+    fetch = jobs.make_fetch_symbol_async("stock_daily", "ths", timeout=2.5, request_budget=budget)
 
     for symbol in ("600519", "000001"):
         frame = await fetch(symbol, WINDOW)
@@ -139,9 +137,7 @@ def test_budget_requires_the_exact_ths_stock_daily_identity(
         async def fetch_raw_async(self, **kwargs: object) -> object:
             return pd.DataFrame()
 
-    monkeypatch.setattr(
-        jobs, "resolve_fetcher", lambda _domain, _source: MissingIdentityFetcher()
-    )
+    monkeypatch.setattr(jobs, "resolve_fetcher", lambda _domain, _source: MissingIdentityFetcher())
     with pytest.raises(ValueError, match="exact canonical model"):
         jobs.make_fetch_symbol_async("stock_daily", "ths", request_budget=budget)
 
@@ -186,9 +182,7 @@ async def test_incremental_job_passes_one_budget_to_each_ths_symbol(
         lambda *_args, **_kwargs: (["600519", "000001"], {"source": "fixture"}),
     )
     monkeypatch.setattr(jobs, "read_ods_watermarks", lambda *_args, **_kwargs: {})
-    monkeypatch.setattr(
-        jobs, "effective_symbol_windows", lambda symbols, *_args, **_kwargs: {}
-    )
+    monkeypatch.setattr(jobs, "effective_symbol_windows", lambda symbols, *_args, **_kwargs: {})
     monkeypatch.setattr(jobs, "resolve_fetcher", lambda _domain, source: StubFetcher(source))
 
     def build_pipeline(**kwargs: Any) -> StubPipeline:
@@ -248,9 +242,7 @@ async def test_unbudgeted_job_preserves_two_argument_factory_call(
         lambda *_args, **_kwargs: (["600519"], {"source": "fixture"}),
     )
     monkeypatch.setattr(jobs, "read_ods_watermarks", lambda *_args, **_kwargs: {})
-    monkeypatch.setattr(
-        jobs, "effective_symbol_windows", lambda _symbols, *_args, **_kwargs: {}
-    )
+    monkeypatch.setattr(jobs, "effective_symbol_windows", lambda _symbols, *_args, **_kwargs: {})
     monkeypatch.setattr(jobs, "build_stock_daily_pipeline", lambda **_kwargs: StubPipeline())
     monkeypatch.setattr(jobs, "_count_in_window", lambda *_args, **_kwargs: 0)
     monkeypatch.setattr(jobs, "_freshness", lambda *_args, **_kwargs: {})

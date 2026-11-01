@@ -48,7 +48,7 @@ import re
 from dataclasses import dataclass, field
 from datetime import date, datetime, time, timedelta, timezone
 from decimal import Decimal, InvalidOperation
-from typing import TYPE_CHECKING, Literal, TypeAlias, TypeGuard, cast
+from typing import TYPE_CHECKING, Literal, TypeAlias, TypeGuard
 from zoneinfo import ZoneInfo
 
 from sqlalchemy import (
@@ -541,7 +541,7 @@ def _validate_prepared_column_value(table: Table, column: Column[object], value:
     if isinstance(column.type, String):
         if type(value) is not str:
             raise FinancialObservationStoreError("prepared SQL text value has an invalid type")
-        string_type = cast("String", column.type)
+        string_type = column.type
         if string_type.length is not None and len(value) > string_type.length:
             raise FinancialObservationStoreError("prepared SQL text exceeds its column limit")
         try:

@@ -64,7 +64,7 @@ def _classify_initialization_state(
             raise RuntimeError(
                 "an empty source-gate SQLite file requires --initialize-empty"
             ) from v1_error
-        encoding = connection.exec_driver_sql("PRAGMA encoding").scalar_one()
+        encoding: object = connection.exec_driver_sql("PRAGMA encoding").scalar_one()
         if encoding != "UTF-8":
             raise RuntimeError(
                 "empty source-gate SQLite file must use UTF-8 encoding"

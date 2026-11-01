@@ -31,7 +31,7 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from stat import S_ISREG
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, cast
 from urllib.parse import unquote, urlsplit
 
 from sqlalchemy import text
@@ -40,6 +40,7 @@ from sqlalchemy.exc import SQLAlchemyError
 if TYPE_CHECKING:
     from collections.abc import Mapping
     from os import stat_result
+    from typing import Any
 
     from sqlalchemy.engine import Connection, Engine
 
@@ -868,7 +869,10 @@ class SourceAttemptGate:
             if one_shot_config is not None:
                 consumed = self._one_shot_consumed_state(connection, one_shot_config)
                 if consumed:
-                    duplicate = self._find_existing_v3_attempt(connection, scope)
+                    # The one-shot branch above rejects every non-V3 scope.
+                    duplicate = self._find_existing_v3_attempt(
+                        connection, cast("SourceAttemptScopeV3", scope)
+                    )
                     if duplicate is None or duplicate.status is not ReservationStatus.DUPLICATE:
                         raise SourceAttemptGateUnavailable(
                             "one-shot permit history is incomplete or conflicts with its scope"
@@ -1544,7 +1548,7 @@ class SourceAttemptGate:
 
     def _database_now_us(self, connection: Connection) -> int:
         """Read SQLite's UTC VFS clock at microsecond scale, without local time."""
-        value = connection.exec_driver_sql(
+        value: object = connection.exec_driver_sql(
             "SELECT CAST(ROUND((julianday('now') - 2440587.5) * 86400000000.0) AS INTEGER)"
         ).scalar_one()
         if type(value) is not int or not 0 < value <= MAX_TIMESTAMP_US:
@@ -3140,7 +3144,7 @@ class SourceAttemptGate:
     def _grant_denial(
         self,
         connection: Connection | sqlite3.Connection,
-        grant: Mapping[str, object] | None,
+        grant: Mapping[Any, Any] | None,
         attempt: TransportAttempt,
         effective_now: int,
     ) -> str | None:

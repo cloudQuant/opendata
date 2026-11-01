@@ -21,7 +21,7 @@ import json
 import re
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Annotated, Literal, cast
+from typing import Annotated, Literal
 
 from pydantic import (
     BaseModel,
@@ -161,10 +161,7 @@ def load_stock_daily_capacity_attestation(
         )
         if not isinstance(document, dict):
             raise StockDailyCapacityError
-        return cast(
-            "StockDailyCapacityAttestation",
-            StockDailyCapacityAttestation.model_validate(document),
-        )
+        return StockDailyCapacityAttestation.model_validate(document)
     except StockDailyCapacityError:
         raise
     except (OSError, UnicodeDecodeError, ValueError, TypeError, RecursionError):

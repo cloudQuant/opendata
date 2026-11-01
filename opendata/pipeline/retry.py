@@ -12,7 +12,7 @@ the HTTP surface and the scheduler decide when a run happens.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from sqlalchemy import select, update
 
@@ -21,7 +21,9 @@ from opendata.models.pipeline import PipelineProgress, ShardStatus
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from datetime import date
+    from typing import Any
 
+    from sqlalchemy.engine import CursorResult
     from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -106,7 +108,8 @@ async def mark_failed_for_retry(
         )
     result = await db.execute(statement.values(status=ShardStatus.PENDING, error=None))
     await db.commit()
-    return int(result.rowcount)
+    # UPDATE returns CursorResult (rowcount); AsyncSession.execute is typed as Result.
+    return int(cast("CursorResult[Any]", result).rowcount)
 
 
 def _to_failed(row: PipelineProgress) -> FailedShard:

@@ -1223,6 +1223,7 @@ def _application_utc_now() -> datetime:
 def _database_clock_us(connection: Connection) -> int:
     """Read an authoritative UTC timestamp from a supported warehouse dialect."""
     dialect_name = connection.dialect.name
+    value: object
     if dialect_name == "mysql":
         value = connection.exec_driver_sql("SELECT UTC_TIMESTAMP(6)").scalar_one()
     elif dialect_name == "postgresql":
