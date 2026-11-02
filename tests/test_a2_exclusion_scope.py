@@ -49,6 +49,7 @@ import tomllib
 import yaml
 
 from scripts.quality import a2_check as guard
+from scripts.quality.acceptance_item_probe import a2_files_on_recorded_baseline
 from scripts.quality.source_layout import FIRST_PARTY, VENDOR_ROOT, classify_path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -115,9 +116,18 @@ class TestTheCollidingPackageIsInvisibleToNoPlane:
         assert guard._is_a2_candidate(rel_path) is True
 
     def test_the_a2_set_computed_from_git_contains_the_package(self) -> None:
-        """The predicate alone is not the gate: check the real resolved set."""
-        resolved = guard.resolve_files(None)
-        assert resolved is not None, "A2 baseline missing - the gate is inactive"
+        """The predicate alone is not the gate: check the real resolved set.
+
+        Read against the *recorded baseline*, not the run's diff base. On a
+        pull-request run CI exports ``A2_BASE_REF``, which narrows
+        ``resolve_files`` to the PR's own changed files - that is the gate's
+        input, but it is not what this census asks. Measured on run 41377376327:
+        with the variable set, 19 adapter files read "dropped from the
+        zero-tolerance set" for a docs-and-tests PR, while the push run of the
+        same tree saw all of them.
+        """
+        resolved = a2_files_on_recorded_baseline(guard)
+        assert resolved, "A2 baseline missing - the gate is inactive"
         missing = [
             name
             for name in files_in_layer(COLLISION_PACKAGE, FIRST_PARTY)
@@ -157,9 +167,14 @@ class TestPortedTreeStaysSeparate:
         assert guard._is_a2_candidate(rel_path) is True
 
     def test_migration_modules_touched_since_the_baseline_are_in_the_a2_set(self) -> None:
-        """The A2 set must really carry them, not just accept the predicate."""
-        resolved = guard.resolve_files(None)
-        assert resolved is not None, "A2 baseline missing - the gate is inactive"
+        """The A2 set must really carry them, not just accept the predicate.
+
+        Same baseline-vs-diff-base rule as the adapter census above: on a
+        pull-request run the diff base reports 32 dark migration files for a PR
+        that touches none of them.
+        """
+        resolved = a2_files_on_recorded_baseline(guard)
+        assert resolved, "A2 baseline missing - the gate is inactive"
         on_disk = {name for tree in ("alembic", "alembic_data") for name in tree_files(tree)}
         dark = sorted(name for name in on_disk if name not in set(resolved))
         # Nothing may be dark: ``alembic/env.py`` used to be the single
