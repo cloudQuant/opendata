@@ -2,15 +2,34 @@
   "written_by": "python scripts/quality/acceptance_item_probe.py --sync-ratchet",
   "meaning": "items.AC-N|NN.families.<family> = 该条存量 finding 文本的 sha256（judge 族来自反事实自检，stale-proof 族来自台账 proven 而探针读 gap；deferred 格在安静树下同样成立）；ledger_state = 冻结当时的台账状态，改动它以静音 finding 会让门禁红",
   "items": {
-    "AC-16|07": {
+    "AC-1|08": {
       "families": {
-        "stale-proof": "4138045a885ae0ab333f8a970d6acb2c653230d96605fffc5c3fda5d69e53c2f"
+        "judge": "536b869e5223ef6c7f0b2406e19c6898a848f5271ae101c059d7f36b2359ad4f",
+        "stale-proof": "9063a0a4b26c6c7049e1da66df25ce184deb108dde729e8cfb7ae5d8a9bb7cbd"
       },
       "ledger_state": "proven"
     },
     "AC-11|04": {
       "families": {
         "stale-proof": "228b084a4d354bdee19c152cf130a4177717d545ed165bacc03fe100ee6e5077"
+      },
+      "ledger_state": "proven"
+    },
+    "AC-16|05": {
+      "families": {
+        "stale-proof": "5c4feae16d3d6088840614d88d70147f036a923f153628d3a005ea9ec2069e48"
+      },
+      "ledger_state": "proven"
+    },
+    "AC-16|06": {
+      "families": {
+        "stale-proof": "40273932e1c3adf7bbd231874712471aaa32545412a5a6acc0da36fae0a27788"
+      },
+      "ledger_state": "proven"
+    },
+    "AC-16|07": {
+      "families": {
+        "stale-proof": "4138045a885ae0ab333f8a970d6acb2c653230d96605fffc5c3fda5d69e53c2f"
       },
       "ledger_state": "proven"
     },
@@ -50,15 +69,33 @@
       },
       "ledger_state": "proven"
     },
-    "AC-1|03": {
+    "AC-1|09": {
       "families": {
-        "stale-proof": "1baa7b9598d42ee042ae15999673a6cb31687f46a114fbc9885c6d335dde3313"
+        "stale-proof": "c16ed706d4bb86a58d76c0e97450c0318b578a6263a97f5a3298ee7d59bf0821"
+      },
+      "ledger_state": "proven"
+    },
+    "AC-4|01": {
+      "families": {
+        "stale-proof": "70b0fc104a5c3213b72094f1a03e413b96a1be954551870d37de63319a3cba8d"
+      },
+      "ledger_state": "proven"
+    },
+    "AC-5|03": {
+      "families": {
+        "stale-proof": "c278235ccafb68ae322663fa2a85a27577ceadd63dc7aa685a661b95565c907c"
       },
       "ledger_state": "proven"
     },
     "AC-5|07": {
       "families": {
         "stale-proof": "07f00f88ecdfe8e9697606d558af8ab59449e7295cd4ba9996d05760811f2ab7"
+      },
+      "ledger_state": "proven"
+    },
+    "AC-8|02": {
+      "families": {
+        "stale-proof": "bb39f83911a387e5b08028331b5ccaad85b1fe0263e6d43761b1edc6e8a853e3"
       },
       "ledger_state": "proven"
     }
