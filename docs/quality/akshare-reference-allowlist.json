@@ -944,8 +944,8 @@
       "purpose": "品牌、分层质量、来源依赖或验收判据的测量工具；被测来源名不用于加载外部包。本轮把三条 AC 面改成子解释器里的 import hook 见证：包名只作为字符串常量出现在被交给子进程的字面 argv 与被拒计数里，没有任何一处用它去加载外部包。",
       "category": "operations-tool",
       "reviewed_date": "2026-11-02",
-      "reviewer": "本轮复核 sha 漂移：pin 字节属 rev 4068b45b，此后 0 个 revision；HEAD 与工作树字节一致。改动只把 AC-17|07 的「新增面」总体改为按已记录基线解析（不再随 A2_BASE_REF 在 PR 跑里缩成 PR 自己的文件集），判定逻辑、breaks 与 moment 面集合均未变。带品牌行的增删为 0/0（含品牌行 212==212，akshare 出现 163==163，openbb 出现 96==96），扫描器命中多重集与 pin 一致、无新增加载形态，没有任何一处用品牌名加载外部包。",
-      "sha256": "e3528c80c3d3e693c43e1bc80a3ffc074c29bbb7108f87c7c789a86bf196a099",
+      "reviewer": "本轮复核 sha 漂移：pin 字节属 rev 2d86e945，此后 0 个 revision；HEAD 与工作树字节一致。改动只把三处 A2 文件集读取统一到 a2_files_on_recorded_baseline()（按已记录基线解析，不再随 A2_BASE_REF 在 PR 跑里缩成 PR 自己的文件集），判据、breaks 与 moment 面集合均未变。带品牌行的增删为 0/0（含品牌行 212==212，akshare 出现 163==163，openbb 出现 96==96），扫描器命中多重集与 pin 一致、无新增加载形态，没有任何一处用品牌名加载外部包。",
+      "sha256": "1ab81a26b988f60e00caaed8d77bcbe78c5377a65f817b57f91f2ba90d0daef9",
       "ast_exceptions": []
     },
     {
