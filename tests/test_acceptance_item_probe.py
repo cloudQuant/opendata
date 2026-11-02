@@ -484,7 +484,10 @@ def test_ac1_08_real_registry_measures_complete_restricted_review() -> None:
     assert "markets.newyorkfed.org" in todo
 
     verdict = judge_ac1_08(facts)
-    assert "登记完整性不等于所有用途获准" in registry
+    # #23 (`5db160ba`) rewrote the v1.8 caveat 「登记完整性不等于所有用途获准」 into the v1.9
+    # sentence 「不代表独立核验或全量许可」. Same meaning, so the registry still declares its own
+    # limits and the assertion right below still forbids the verdict from claiming blanket approval.
+    assert "不代表独立核验或全量许可" in registry
     assert "全部获准" not in " ".join(verdict.readings)
     assert verdict.state == PROVEN
 

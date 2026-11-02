@@ -944,8 +944,8 @@
       "purpose": "品牌、分层质量、来源依赖或验收判据的测量工具；被测来源名不用于加载外部包。本轮把三条 AC 面改成子解释器里的 import hook 见证：包名只作为字符串常量出现在被交给子进程的字面 argv 与被拒计数里，没有任何一处用它去加载外部包。",
       "category": "operations-tool",
       "reviewed_date": "2026-11-02",
-      "reviewer": "本轮复核 sha 漂移：pin 字节属 rev 01e3a179（git show 01e3a179:该路径 的 sha256 与改钉前的注册表值 1ab81a26b988f60e 实测相等），此后该路径 0 个 revision，本次改动就是它的下一个 revision 并随本提交入库。改动只有一条：把 .gitleaks.toml 的 generic-api-key 允许面第 8 条（C150 的八字面量枚举正则，由 rev e940fd7d 引入）逐字镜像进 GENERIC_API_KEY_ALLOWED_REGEXES，另加 24 行注释说明这条豁免保护什么；变动行 diff 口径 增25 删0，文本去重口径同样 增25 删0（两口径差 0 条，de-dupe 命中 0 条）。带品牌行的增删为 0/0（口径与前述各条一致=大小写敏感；含品牌行 212==212，akshare 出现 163==163，openbb 出现 96==96；不敏感口径 234==234 与 172==172/117==117 同样未动），扫描器 (module, kind) 命中多重集 pinned=13 live=13（8 条 akshare|string + 5 条 openbb|string），identical=True；宽口径加载形态行 264->266，两条新增行都只是本轮注释散文里的 never read from an environment 与 reads its bytes from the commits，不含任何品牌名，窄口径（既是加载形态又含品牌名）21==21 且新增 0 条；不敏感含来源名行 503->505 的 2 行是注释里两次写出字面量 fixture-ths-quota-v1，不是新的品牌引用。没有任何一处用品牌名加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准。",
-      "sha256": "6c71ae68f49023ad895086ab8914a23421c5cdde96b353cb85dc6ac7d94c7cf6",
+      "reviewer": "本轮复核 sha 漂移：pin 字节 = origin/dev 397a8508 的该文件 + 本 PR 的 1 个 revision。改动把 AC-1|08 的 §1 表头要求从字面量「复核日期」改为「恰有一列以『复核日期』结尾」并重新键入 RIGHTS_DATE_COLUMN；判据、breaks 与 moment 面集合均未变。反例实测：列名去掉后缀 -> table_valid=False，出现两列同后缀 -> False，shipped 表 -> True/35 行，AC-1|08 单格 --item 重测 VERDICT gap -> proven。带品牌行的增删为 0/0（同一把尺：不区分大小写统计 akshare/AkShare 与 openbb/OpenBB；含品牌行 234==234，akshare 出现 163==163，openbb 出现 113==113），扫描器命中多重集与 pin 一致、无新增加载形态，没有任何一处用品牌名加载外部包。与 #178 的正则镜像合入后需重算摘要，本条即重算结果。",
+      "sha256": "0e0044c54156015539618544a9fad1202cdfccf11464341f8758e97efb2db5fd",
       "ast_exceptions": []
     },
     {
