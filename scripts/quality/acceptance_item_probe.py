@@ -1906,6 +1906,31 @@ GENERIC_API_KEY_ALLOWED_REGEXES: Final = (
     # first, and gitleaks treats a duplicate rule id as a whole-block REPLACE -- 65 exemptions
     # from the C36/C75/C89/C104 lines above came back red. One rule id = one block.
     r"^e53f08f6c9e04bfd9760701085ec93b4$",
+    # C150: the eight synthetic run/quota identifiers the scheduler-ledger and stock-daily tests
+    # key their OWN rows by, declared as `RUN_KEY =` / `QUOTA_KEY =` / `budget_quota_key=` /
+    # `run_key=` / `PRINCIPAL =` / `"source_verification":`. What trips the rule is the FIELD
+    # NAME -- `generic-api-key` reads it as a key name and the quoted value as that key's secret;
+    # the same mechanism C75 recorded for `source_key=` and C89 for `environment_variable=`. Every
+    # one of these eight values is constructed in the same file and never read from an environment
+    # or a config, so the bytes the scanner would silence ARE the label, not a credential.
+    # WHAT THIS EXEMPTION DOES NOT WIDEN: it is enumeration, not a value class -- granting
+    # `fixture-*`/`quota-*` by prefix would also excuse a real key typed into the same slot, which
+    # is the widening this file's header refuses. The alternation is fully anchored on both sides
+    # with `regexTarget = "secret"`, so nothing that is not byte-exactly one of these eight
+    # literals is excused. docs/evidence/C150/gitleaks-counterfactual.txt measures all three arms:
+    # dropping this one line returns all 10 findings, one extra character on any of the eight is
+    # reported again, and a credential planted in the very same slot is still reported (`github-pat`
+    # for the prefixed form, `generic-api-key` for an unprefixed mixed-case secret).
+    # TRIPWIRE: this tuple must equal the shipped config's `generic-api-key` allowlist regexes in
+    # order and content, so a NINTH regex added to .gitleaks.toml without a review here reddens
+    # tests/test_acceptance_item_probe.py::
+    # test_ac1_09_accepts_only_the_two_exact_public_rule_regexes
+    # ("two" counts the reviewed RULE IDS -- curl-auth-header and generic-api-key -- not regexes),
+    # and the mutation arms below keep failing on any reordered, shortened or broadened regex.
+    # NOTE: `fixture-ths-quota-v1` has no live-tree carrier left (its test file moved on); it stays
+    # enumerated because the full-history scan still reads its bytes from the commits that shipped
+    # it, and the register keeps `scripts/quality/acceptance_item_probe.py` by path+sha256.
+    r"^(?:fixture-csi500-v3-integration-run|fixture-csi500-v3-quota|fixture-csi500-v3-run|fixture-ths-quota-v1|fixture-observation-quota-v1|fixture-quota-v1|quota-v3-boundary|stock-daily-v2-api-fixture)$",
 )
 
 
