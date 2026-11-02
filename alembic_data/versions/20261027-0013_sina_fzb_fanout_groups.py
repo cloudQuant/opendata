@@ -25,6 +25,7 @@ from sqlalchemy import (
     table,
 )
 from sqlalchemy.dialects.mysql import MEDIUMTEXT
+from sqlalchemy.engine.mock import MockConnection
 
 from alembic import op
 
@@ -36,12 +37,28 @@ depends_on = None
 _TABLE = "od_sina_fzb_fanout_groups"
 
 
-def _require_supported_database() -> None:
-    """Require enforced CHECK constraints on supported MySQL installations."""
-    dialect = op.get_bind().dialect
+def _require_supported_database(*, render_upgrade: bool = False) -> None:
+    """Require enforced CHECK constraints on supported MySQL installations.
+
+    Args:
+        render_upgrade: Allow an offline ``--sql`` render of ``upgrade()`` to
+            skip only the server-version assertion. A render opens no server
+            connection, so the dialect's ``server_version_info`` is always
+            ``None``; the journal DDL below is version-independent. Every
+            online call, and ``downgrade()`` in both modes, keeps the original
+            refusal because the rollback reads the live journal rows first.
+
+    Raises:
+        RuntimeError: If the target is MariaDB, or a MySQL server older than
+            8.0.16 or outside major version 8.
+    """
+    bind = op.get_bind()
+    dialect = bind.dialect
     if dialect.name == "mariadb" or getattr(dialect, "is_mariadb", False):
         raise RuntimeError("This migration supports MySQL 8.0.16+ but not MariaDB.")
     if dialect.name != "mysql":
+        return
+    if render_upgrade and isinstance(bind, MockConnection):
         return
     version = dialect.server_version_info
     if version is None or len(version) < 3 or version[0] != 8 or version[:3] < (8, 0, 16):
@@ -50,7 +67,7 @@ def _require_supported_database() -> None:
 
 def upgrade() -> None:
     """Create the application-frozen manifest journal and its claim indexes."""
-    _require_supported_database()
+    _require_supported_database(render_upgrade=True)
     op.create_table(
         _TABLE,
         Column(

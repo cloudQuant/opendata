@@ -117,6 +117,7 @@ public-api-quality:
 # face 3); before C50 nothing in the gate re-measured it at all (face 2: 0 of 46
 # gate logs ran the judging plane).
 acceptance-probe-check:
+	bash scripts/quality/ensure_full_history.sh
 	python scripts/quality/acceptance_item_probe.py --gate-check
 
 zero-dep-check:

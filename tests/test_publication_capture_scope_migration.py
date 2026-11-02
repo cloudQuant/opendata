@@ -30,7 +30,16 @@ MIGRATION_PATH = (
     REPOSITORY_ROOT / "alembic_data" / "versions" / "20261027-0012_instrument_capture_scope.py"
 )
 MIGRATION_NAME = "instrument_capture_scope_migration_0012"
-MIGRATION_SHA256 = "24c55bce92d97aa65ae2afb7b7b516ade21704d1956aa85c50827177aca2b9f2"
+# 0012's bytes were re-pinned when its guard learned to skip only the
+# server-version assertion for an offline ``--sql`` render of upgrade(). The
+# fence guards DDL and refusal semantics, and both are unchanged: the rendered
+# ALTER/CREATE text is byte-identical to the pristine file's render with the
+# dialect reporting MySQL 8.0.16, every online refusal (MariaDB, 5.7, 8.0.15,
+# 9.x, unknown version) still fires before any I/O, and downgrade() keeps
+# asserting because it reads the live selector columns first. The edit is
+# inert; a later byte change must be re-checked the same way rather than
+# accepted by moving this expectation.
+MIGRATION_SHA256 = "e7d627e7044072259b1d81e9045e4a935899c85e55fe189bc303037fdfeef4a3"
 FACT_TABLE = "od_published_fact_versions"
 SNAPSHOT_TABLE = "od_publication_snapshots"
 NEIGHBOR_TABLE = "od_migration_neighbor"

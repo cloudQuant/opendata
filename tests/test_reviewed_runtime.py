@@ -66,6 +66,14 @@ WORKER_ID = "fixture-runtime-worker"
 LEASE_TTL = timedelta(seconds=2)
 HEARTBEAT_INTERVAL_SECONDS = 0.05
 DATABASE_IO_TIMEOUT_SECONDS = 0.1
+#: Budget for a fetch whose child process has to finish, in step with the
+#: measurement documented in tests/test_process_executor.py: with 18 xdist
+#: workers each spawning a child plus 18 co-tenant CPU hogs, one child round
+#: trip measured 4.6-5.1 s p50, 6.4-12.3 s p95 and 18.1 s worst. The 3 s this
+#: factory used to hard-code is inside that spread, so the CLI vertical failed
+#: only when the runner was parallel. No test here relies on this deadline
+#: firing - the timeout branches are driven by explicit smaller budgets.
+_CHILD_COMPLETION_TIMEOUT_SECONDS = 60.0
 
 FACT_METADATA = MetaData()
 FIXTURE_FACTS = Table(
@@ -237,7 +245,7 @@ def _catalog(dataset_id: str = DATASET_ID) -> ReviewedTaskCatalog:
         "fixture-runtime",
         _build_parameters,
         _decode_result,
-        timeout_seconds=3.0,
+        timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS,
     )
     return ReviewedTaskCatalog(
         [

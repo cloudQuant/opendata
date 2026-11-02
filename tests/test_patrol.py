@@ -11,7 +11,7 @@ suite here instead of quietly weakening ``auto`` routing in production.
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, timedelta
 from typing import Any
 
 import httpx
@@ -34,6 +34,7 @@ from opendata.pipeline.key_health import (
     REDACTED_MARKER,
 )
 from opendata.pipeline.patrol import (
+    OPTION_PROBE_HORIZON_DAYS,
     PROBE_PARAMS,
     PROBE_RESOLVERS,
     PatrolProbeConfigError,
@@ -139,11 +140,30 @@ def real_registry() -> ProviderRegistry:
     return get_registry()
 
 
+#: The probe date every resolver case in this file pins. ``patrol()`` itself has
+#: no probe-date parameter, so the legs driven through it read the real clock.
+PINNED_PROBE_DAY = date(2026, 9, 25)
+
+
 @pytest.fixture
 def offline_catalog(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Serve the option probe a stub catalog so no test hits the network."""
+    """Serve the option probe a stub catalog so no test hits the network.
+
+    ``first_live_contract`` keeps a contract only while its listing reaches
+    ``OPTION_PROBE_HORIZON_DAYS`` past the probe date, and the patrol-driven legs
+    take that date from the clock. A hard-coded expiry is therefore a date bomb:
+    the 2026-12-23 contract this fixture used to pin fell inside the 60-day
+    horizon as soon as the probe date passed 2026-10-24, and the leg went red
+    with the stub fetcher never even called. What the fixture means to say is
+    relational - one contract listed beyond every horizon in play (the clock for
+    patrol, ``PINNED_PROBE_DAY`` for the resolver cases), one expiring inside it,
+    one with no listing date at all.
+    """
+    live_horizon_end = max(date.today(), PINNED_PROBE_DAY) + timedelta(
+        days=OPTION_PROBE_HORIZON_DAYS + 1
+    )
     rows = [
-        _instrument("10011425.SH", date(2026, 12, 23)),
+        _instrument("10011425.SH", live_horizon_end),
         _instrument("10011424.SH", date(2026, 10, 1)),
         _instrument("10011423.SH", None),
     ]

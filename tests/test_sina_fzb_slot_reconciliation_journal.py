@@ -333,7 +333,13 @@ def test_migration_downgrade_refuses_slot_rows_even_without_cursor(tmp_path: Pat
 
 
 def test_migration_graph_has_one_0014_head() -> None:
-    """The data migration chain remains linear through the new journal head."""
+    """The data chain stays linear, single-headed, and 0014 keeps its own edge.
+
+    0014 was the head when the journal landed; 0015-0021 extended the same
+    linear chain afterwards, so naming the head's literal id re-staled this
+    guard on every landed revision. What must not break is the shape: one
+    head, no branch, 0014 directly on 0013 and reachable from the head.
+    """
     revisions: dict[str, str | None] = {}
     for path in (REPOSITORY_ROOT / "alembic_data" / "versions").glob("*.py"):
         tree = ast.parse(path.read_text(encoding="utf-8"))
@@ -354,9 +360,25 @@ def test_migration_graph_has_one_0014_head() -> None:
         down_revision = values.get("down_revision")
         if isinstance(revision, str):
             revisions[revision] = down_revision if isinstance(down_revision, str) else None
+    journal_revision = "0014_sina_fzb_slot_reconciliation"
     parents = {parent for parent in revisions.values() if parent is not None}
-    assert set(revisions) - parents == {"0014_sina_fzb_slot_reconciliation"}
-    assert revisions["0014_sina_fzb_slot_reconciliation"] == "0013_sina_fzb_fanout_groups"
+    heads = set(revisions) - parents
+    assert len(heads) == 1, f"the chain must have exactly one head, found {sorted(heads)}"
+    assert revisions[journal_revision] == "0013_sina_fzb_fanout_groups"
+
+    children: dict[str | None, list[str]] = {}
+    for identifier, parent in revisions.items():
+        children.setdefault(parent, []).append(identifier)
+    branches = {parent: sorted(kids) for parent, kids in children.items() if len(kids) > 1}
+    assert branches == {}, f"the chain must stay linear, found branches: {branches}"
+
+    walked: list[str] = []
+    current: str | None = heads.pop()
+    while current is not None:
+        assert current not in walked, f"cycle detected at {current}: {walked}"
+        walked.append(current)
+        current = revisions[current]
+    assert journal_revision in walked, f"{journal_revision} orphaned off the head chain: {walked}"
 
 
 def test_constructor_rejects_unowned_engine_and_unsupported_clock(

@@ -109,6 +109,17 @@ PERIOD_KEYED_LEGS = frozenset({"financial_indicator", "financial_statement", "in
 
 _AKSHARE_PACKAGE = "opendata.data.providers.akshare"
 _AKSHARE_VENDOR = f"{_AKSHARE_PACKAGE}._vendor"
+#: The one akshare leg whose extraction left the ported vendor package for the
+#: governed Eastmoney wire client; it is the same outbound boundary, reached by
+#: a different import, so the triage probe patches it too.
+_STOCK_DAILY_WIRE = f"{_AKSHARE_PACKAGE}.stock_daily_wire"
+
+#: The symbol the triage probe asks every leg with. It has to be a well-formed
+#: request for all of them: ``financial_statement`` spells its code through
+#: ``sina_symbol`` and ``stock_daily`` validates it in its query model, both of
+#: which reject a non-A-share code *before* any outbound call is made, which
+#: would leave the probe measuring an input error instead of the leg's behaviour.
+_TRIAGE_SYMBOL = "600519"
 
 LEG_CASES = pytest.mark.parametrize(
     ("domain", "date_attr", "frame_factory"),
@@ -245,12 +256,19 @@ def _window_reaches_upstream(
     monkeypatch.setattr(package, "_vendor", recorder)
     assert sys.modules[_AKSHARE_VENDOR] is recorder
     assert package._vendor is recorder
+    # ``stock_daily`` reaches Eastmoney through the governed wire client instead
+    # of the vendor package; record that call too, or the leg leaves no trace of
+    # what it actually sends and the triage below would classify a blind spot.
+    wire_module = importlib.import_module(_STOCK_DAILY_WIRE)
+    wire_call = wire_module.fetch_stock_daily_wire
+    monkeypatch.setattr(wire_module, "fetch_stock_daily_wire", recorder.fetch_stock_daily_wire)
+    assert wire_module.fetch_stock_daily_wire is not wire_call
 
     fetcher = _fetcher(domain)
     # 空帧会让某些腿在 normalize 处 fail-closed（financial_indicator 就是这样）：
     # 要读的是出站调用，它在 normalize 之前就已经发生了。
     try:
-        list(fetcher.fetch(symbol="10011425", start_date=WINDOW_START, end_date=WINDOW_END))
+        list(fetcher.fetch(symbol=_TRIAGE_SYMBOL, start_date=WINDOW_START, end_date=WINDOW_END))
     except _OutboundBlockedError:
         raise
     except Exception:
@@ -260,7 +278,10 @@ def _window_reaches_upstream(
         f"{domain} escaped the patched AKShare vendor namespace and reached "
         f"the outbound tripwire: {tripwire.attempts}"
     )
-    assert recorder.calls, f"{domain} did not call the patched canonical AKShare vendor package"
+    assert recorder.calls, (
+        f"{domain} recorded no outbound call at either patched upstream boundary "
+        f"(the canonical AKShare vendor package or the governed stock_daily wire client)"
+    )
     return any(_carries_window(kwargs) for _, kwargs in recorder.calls)
 
 

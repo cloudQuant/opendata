@@ -828,6 +828,66 @@ def worktree_quiet() -> tuple[bool, str]:
     return False, f"{len(lines)} entry(ies), first: {lines[0]}"
 
 
+#: The refspec that pulls every remote branch's chain into the local object store. It is the one
+#: ``scripts/quality/ensure_full_history.sh`` uses, so the probe's repair and the shell's repair
+#: cannot drift onto two different meanings of "the history is complete".
+HISTORY_REPAIR_REFSPEC: Final = "+refs/heads/*:refs/remotes/origin/*"
+
+
+def ensure_history_complete(root: Path) -> str:
+    """Complete the history behind *root* at the moment a history face is about to be read.
+
+    Why this exists: on a hosted ``pull_request`` run the workspace's commit chain can be truncated
+    *while* the gate executes, even though the checkout asked for full history. Measured on one
+    commit: ``after-checkout shallow=false head_commits=976 all_commits=1004`` and, inside the same
+    run, ``HEAD/all = 2/1002, shallow=true``. Cells that judge a history face then flip on that
+    platform side effect rather than on anything their item is about -- ``AC-16|09`` refuses to call
+    a shallow clone a full-history scan, and ``AC-19|02`` dates an archive's first landing off the
+    chain, so a truncated chain makes the record look like it landed today.
+
+    Completing the chain immediately before the read is what makes the reading reproducible. The
+    repair deliberately fails closed and never manufactures a fact: with no ``origin``, or with an
+    ``origin`` that cannot complete the chain, it returns ``refused`` and the measurement proceeds
+    with whatever history the repository really has. Nothing here raises, because a probe that
+    cannot reach the network still has to report a reading.
+
+    Deliberately not cached: the truncation this guards against happens mid-run, so a result
+    recorded at the start of the gate would be a stale guarantee by the time a cell is judged.
+
+    Args:
+        root: The repository whose history is about to be read.
+
+    Returns:
+        ``already-complete`` when the chain was never shallow, ``unshallowed`` when the fetch
+        completed it, ``refused`` when there is no ``origin`` or the chain is still shallow
+        afterwards, and ``unread`` when git itself could not be asked.
+    """
+    code, out = run_argv(["git", "rev-parse", "--is-shallow-repository"], cwd=root)
+    if code != 0:
+        return "unread"
+    if out.strip() != "true":
+        return "already-complete"
+    if run_argv(["git", "remote", "get-url", "origin"], cwd=root)[0] != 0:
+        return "refused"
+    unshallow = ["git", "fetch", "--unshallow", "--prune", "origin", HISTORY_REPAIR_REFSPEC]
+    if run_argv(unshallow, cwd=root)[0] != 0:
+        refetch = ["git", "fetch", "--refetch", "--prune", "origin", HISTORY_REPAIR_REFSPEC]
+        run_argv(refetch, cwd=root)
+    code, out = run_argv(["git", "rev-parse", "--is-shallow-repository"], cwd=root)
+    if code != 0:
+        return "unread"
+    return "refused" if out.strip() == "true" else "unshallowed"
+
+
+def history_repair_note(facts: Facts) -> str:
+    """The clause naming, inside a printed reading, what the history repair did.
+
+    Read with ``.get`` because a counterfact or an archived reading may carry no repair fact at all;
+    saying so is the honest reading, and it keeps a judge from raising over a missing key.
+    """
+    return f"history face 的取得方式 history_repair = {facts.get('history_repair', '(未记录)')}"
+
+
 # --------------------------------------------------------------------------- #
 # AC-1 -- brand, licence, configuration, credentials
 # --------------------------------------------------------------------------- #
@@ -2010,6 +2070,7 @@ def measure_ac1_10(ctx: Context) -> Facts:
     residue = [p for p in tracked if any(re.search(rx, p) for rx in RESIDUE_PATTERNS)]
     rc_status, status = run_argv(["git", "status", "--porcelain", "--untracked-files=all"])
     untracked = [line[3:] for line in status.splitlines() if line.startswith("??")]
+    repair = ensure_history_complete(REPO_ROOT)
     rc_log, first = run_argv(
         ["git", "log", "--reverse", "--format=%H", "--", "opendata/__init__.py"]
     )
@@ -2047,6 +2108,7 @@ def measure_ac1_10(ctx: Context) -> Facts:
         if tracked and tree_files
         else "n/a",
         "git_rc": count(max(rc_status, rc_log, rc_tree, rc_sub)),
+        "history_repair": repair,
     }
 
 
@@ -2072,6 +2134,7 @@ def judge_ac1_10(facts: Facts) -> Verdict:
         f"its tree = {facts['first_tree']} files, holding every part of the project it should "
         f"(missing: {facts['essentials_absent']}), against {facts['tracked_now']} tracked today "
         f"({facts['ratio']}; the rest arrived with later rounds, which is growth)",
+        history_repair_note(facts),
     )
     reason = (
         ""
@@ -3103,6 +3166,7 @@ def measure_ac17_03(ctx: Context) -> Facts:
     """Run the ratchet and the A2 gate, then ask every static plane what *it* decided to read."""
     ratchet = script_module(RATCHET_TOOL)
     a2 = script_module(A2_CHECK_TOOL)
+    repair = ensure_history_complete(ctx.root)
     code, out = run_argv([sys.executable, RATCHET_TOOL])
     facts: Facts = {"ratchet_exit": count(code), "ratchet_face": ratchet_face(out)}
     for name in SELFDEBT_METRICS:
@@ -3198,6 +3262,7 @@ def measure_ac17_03(ctx: Context) -> Facts:
             "touched_dropped_sample": ", ".join(dropped_selfdev[:6]),
         }
     )
+    facts["history_repair"] = repair
     return facts
 
 
@@ -3283,6 +3348,7 @@ def judge_ac17_03(facts: Facts) -> Verdict:
             f"{facts['touched_dropped_selfdev']} 个",
             facts["touched_dropped_sample"],
         ),
+        history_repair_note(facts),
     )
     reason = (
         ""
@@ -3301,6 +3367,7 @@ def measure_ac17_05(ctx: Context) -> Facts:
     ported = tuple(ratchet.PORTED_PATHS)
     root = ported[0]
 
+    repair = ensure_history_complete(ctx.root)
     code, out = run_argv([sys.executable, RATCHET_TOOL])
     facts: Facts = {"ratchet_exit": count(code), "ratchet_face": ratchet_face(out)}
     for name in PORTED_METRICS:
@@ -3380,6 +3447,7 @@ def measure_ac17_05(ctx: Context) -> Facts:
             "edits_disagree": count(disagree),
         }
     )
+    facts["history_repair"] = repair
     return facts
 
 
@@ -3473,6 +3541,7 @@ def judge_ac17_05(facts: Facts) -> Verdict:
                 if listing
             ),
         ),
+        history_repair_note(facts),
     )
     reason = (
         ""
@@ -3490,7 +3559,18 @@ def measure_ac17_07(ctx: Context) -> Facts:
     a2 = script_module(A2_CHECK_TOOL)
     code, out = run_argv([sys.executable, PUBLIC_API_TOOL])
     scope = tuple(str(entry) for entry in pub.A2_SCOPE)
-    a2_files = sorted(a2.resolve_files(None) or [])
+    # The denominator has to be the same in every run. `A2_BASE_REF` is set only on
+    # pull_request CI runs, where it narrows this population to the PR's own changed files:
+    # an unrelated PR then measures zero new public callables and the item refuses to trust
+    # an empty population, so the same tree reads proven on a push run and gap on a PR run.
+    # Resolving against the recorded baseline gives the repo-wide view, which is the wider of
+    # the two bases the A2 gate itself uses, so no file can pass here that a push run fails.
+    env_base = os.environ.pop("A2_BASE_REF", "")
+    try:
+        a2_files = sorted(a2.resolve_files(None) or [])
+    finally:
+        if env_base:
+            os.environ["A2_BASE_REF"] = env_base
     a2_set = set(a2_files)
     ported = tuple(f"{name}/" for name in sorted(a2.EXCLUDED_ROOT_DIRS))
     outside = [name for name in a2_files if not under_any(name, scope)]
@@ -3693,9 +3773,11 @@ def measure_ac17_10(ctx: Context) -> Facts:
         facts["dated_header"] = dated.group(1)
         facts["logs_total"] = dated.group(2)
         facts["dated_run"] = dated.group(3)
+    repair = ensure_history_complete(REPO_ROOT)
     gone, tracked = evidence_deletions()
     facts["gone_archives"] = gone
     facts["tracked_archives"] = tracked
+    facts["history_repair"] = repair
     try:
         payload = json.loads(ctx.read(TRACE_BASELINE_REL))
     except (ProbeError, json.JSONDecodeError) as exc:
@@ -3732,6 +3814,7 @@ def judge_ac17_10(facts: Facts) -> Verdict:
         f"date answers among gate logs = header {facts['dated_header']} + printed by the run "
         f"{facts['dated_run']} out of {facts['logs_total']}: 日期 is satisfied by either face, "
         "and the two together have to cover every gate log",
+        history_repair_note(facts),
     )
     reason = (
         ""
@@ -8496,6 +8579,7 @@ def stale_ledger_paths(ctx: Context) -> list[str]:
 def measure_ac16_01(ctx: Context) -> Facts:
     """Read the rule, then ask how many providers have the record the rule demands."""
     names = provider_packages(ctx)
+    repair = ensure_history_complete(REPO_ROOT)
     declared = clean_room_commits(names)
     records, binds, refusals = canonical_clean_room_records(ctx, names)
     legacy_named, legacy_binds = legacy_prose_record_face(ctx, names)
@@ -8516,6 +8600,7 @@ def measure_ac16_01(ctx: Context) -> Facts:
         "legacy_record_binds": count(legacy_binds),
         "code_declared_pkgs": count(len(clean_room_in_code(names))),
         "undeclared_list": ", ".join(n for n in names if n not in declared) or "-",
+        "history_repair": repair,
     }
 
 
@@ -8549,6 +8634,7 @@ def judge_ac16_01(facts: Facts) -> Verdict:
         "即「把『记录不存在』那句话说成记录」，故 C77 起只作对照、不进判定",
         f"另有 {facts['code_declared_pkgs']} 个包把「{CODE_CLEAN_ROOM_PHRASE}」写进了自己模块的"
         " docstring —— 那是代码里的自声明，不是逐包审查记录，本条按字面不认",
+        history_repair_note(facts),
     )
     reason = (
         ""
@@ -8575,6 +8661,7 @@ def measure_ac16_02(ctx: Context) -> Facts:
     runtime = tuple(runtime_py_files(ctx))
     hits, parsed, roots = openbb_import_map(runtime)
     names = provider_packages(ctx)
+    repair = ensure_history_complete(REPO_ROOT)
     declared = clean_room_commits(names)
     records, binds, refusals = canonical_clean_room_records(ctx, names)
     legacy_named, legacy_binds = legacy_prose_record_face(ctx, names)
@@ -8600,6 +8687,7 @@ def measure_ac16_02(ctx: Context) -> Facts:
         "record_refusal_detail": " | ".join(refusals) or "-",
         "legacy_record_pkgs": count(len(legacy_named)),
         "legacy_record_binds": count(legacy_binds),
+        "history_repair": repair,
     }
 
 
@@ -8640,6 +8728,7 @@ def judge_ac16_02(facts: Facts) -> Verdict:
         f"旧口径（docs/evidence/ 散文同行匹配，C77 起只作对照）会记 "
         f"{facts['legacy_record_pkgs']}/{facts['provider_pkgs']} 个包 / "
         f"{facts['legacy_record_binds']} 行，其来源实为缺口复述与探针读数转储",
+        history_repair_note(facts),
     )
     if ok:
         reason = ""
@@ -9653,6 +9742,7 @@ def measure_ac19_02(ctx: Context) -> Facts:
     """
     body = ctx.read(AC19_DRILL_REL) if AC19_DRILL_REL in set(ac19_tracked(ctx)) else ""
     rows = drill_checklist(body)
+    repair = ensure_history_complete(REPO_ROOT)
     code, out = run_argv(
         ["git", "log", "--diff-filter=A", "--format=%H %ad", "--date=short", "--", AC19_DRILL_REL]
     )
@@ -9677,6 +9767,7 @@ def measure_ac19_02(ctx: Context) -> Facts:
         "rowcmp": flag("对象一致" in body),
         "health": flag("status=healthy" in body),
         "in_a0_dod": flag("restore-drill" in a0 or "恢复演练" in a0),
+        "history_repair": repair,
     }
 
 
@@ -9703,6 +9794,8 @@ def judge_ac19_02(facts: Facts) -> Verdict:
         f"两个隔离恢复库均可指认 {facts['isolated_dbs']}/2；关键表行数比对 = {facts['rowcmp']}，"
         f"起栈后 /health 读到 status=healthy = {facts['health']}",
         f"A0 DoD 里点着这份档案 = {facts['in_a0_dod']}",
+        history_repair_note(facts)
+        + " ——「首次入库」读的是这条链；链被截断时提交日期会变成今天，所以判定前先把链补全",
     )
     reason = (
         ""
@@ -13456,6 +13549,11 @@ def _control_scan(mod: ModuleType, root: Path, tmp: Path) -> Facts:
 
 def measure_ac16_09(ctx: Context) -> Facts:
     """Read the device, run the pinned full-history scan, run the control; decide nothing."""
+    #: First thing, because every face below is a history face: the pinned scanner walks the
+    #: commit chain, the fragment census counts it, and the three ``rev-list``/``rev-parse``
+    #: readings are the chain itself. Repairing after any of them had run would report a scan of
+    #: the truncated chain as a full-history scan.
+    repair = ensure_history_complete(ctx.root)
     mod = script_module(SCANNER_REL)
     manifest = mod.load_manifest()
     found = mod.local_tool_version(manifest)
@@ -13516,6 +13614,7 @@ def measure_ac16_09(ctx: Context) -> Facts:
         "git_commits_all": all_out.strip() if code_all == 0 else "(unread)",
         "fragment_population": fragment_population(ctx.root),
         "git_shallow": shallow_out.strip() if code_shallow == 0 else "(unread)",
+        "history_repair": repair,
         "scan_exit": count(scan_exit),
         "report_items": findings,
         "stderr_leaks": _leak_words(logs),
@@ -13613,7 +13712,9 @@ def judge_ac16_09(facts: Facts) -> Verdict:
         f"git rev-list --count HEAD = {facts['git_commits_head']}，"
         f"--all = {facts['git_commits_all']}；"
         f"shallow = {facts['git_shallow']} ——扫描数必须等于独立片段群体，非全部可达提交数；"
-        f"HEAD/all 必须为正，all 不小于片段群体，且仓库不是浅克隆",
+        f"HEAD/all 必须为正，all 不小于片段群体，且仓库不是浅克隆；"
+        + history_repair_note(facts)
+        + "（refused/unread 表示这条链当场补不全，下面三个口径就按补不全的那份读，判 gap）",
         f"未豁免的凭证：报告 {facts['report_items']} 条、"
         f"日志口径 {facts['stderr_leaks']} 条、退出码 "
         f"{facts['scan_exit']}；三个口径互为印证（退出码为 0 当且仅当报告为空、且与日志行数相同），"
@@ -14636,6 +14737,7 @@ def measure_ac17_06(c: Context) -> Facts:
     empty_pops = 0
     unmapped: list[str] = []
     absent: list[str] = []
+    repair = ensure_history_complete(REPO_ROOT)
     for token in COV_NAMED_ROOTS:
         keys, how, miss_map, miss_rows = _cov_root_keys(token, rows)
         pops[token] = _cov_ratio(keys, rows)
@@ -14683,6 +14785,7 @@ def measure_ac17_06(c: Context) -> Facts:
         facts["live_a2_in_report"] = "-"
         facts["drift_max"] = "-"
         facts["drift_within"] = "no"
+    facts["history_repair"] = repair
     return facts
 
 
@@ -14767,6 +14870,7 @@ def judge_ac17_06(facts: Facts) -> Verdict:
         f"（{facts['live_xml_bytes']} 字节，A2 命中 {facts['live_a2_in_report']}），"
         f"与归档最大漂移 {facts['drift_max']} 个百分点，在 ±{COV_DRIFT_MAX} 内="
         f"{facts['drift_within']}",
+        history_repair_note(facts),
     )
     reason = "" if ok else " / ".join(label for label, fired in checks if fired)
     return Verdict(PROVEN if ok else GAP, readings, reason)

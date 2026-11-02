@@ -215,6 +215,11 @@ def test_normalizer_rejects_response_for_another_instrument() -> None:
 def test_normalizer_rejects_invalid_source_business_dates(bad_date: object) -> None:
     """Reject invalid values instead of dropping rows or epoch-coercing numbers."""
     frame = _synthetic_eastmoney_frame()
+    # pandas 3 backs a str column with Arrow and rejects a non-string when it is
+    # assigned, so writing the offending value straight into ``日期`` would prove
+    # the dtype's rule instead of the normalizer's. Keep that column object-backed
+    # so the raw source value reaches ``transform_data`` unchanged.
+    frame["日期"] = frame["日期"].astype("object")
     frame.loc[0, "日期"] = bad_date
     params = AkshareStockDailyFetcher().transform_query(symbol="600519")
 

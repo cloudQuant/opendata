@@ -54,6 +54,14 @@ UTC = timezone.utc
 TRADE_DATE = date(2026, 10, 26)
 OCCURRENCE = datetime(2026, 10, 26, 16, tzinfo=UTC)
 DATASET = "fixture_daily_chain"
+#: Budget for a fetch whose child process has to finish, in step with the
+#: measurement documented in tests/test_process_executor.py: under 18 xdist
+#: workers each spawning a child plus 18 co-tenant CPU hogs, one child round
+#: trip measured 4.6-5.1 s p50, 6.4-12.3 s p95 and 18.1 s worst against the 15 s
+#: this fixture used to hard-code. The dispatch test asserts a *succeeded* run,
+#: so the old budget only measured how busy the runner was. The timeout branch is
+#: driven separately by ``chain["options"]["timeout"] = 0.5``.
+_CHILD_COMPLETION_TIMEOUT_SECONDS = 60.0
 
 
 def fixture_source_response(parameters: dict[str, JsonValue]) -> JsonValue:
@@ -115,7 +123,7 @@ def chain(tmp_path: Path):
     )
     captures: list[CapturedRawResponse] = []
     fetch_calls: list[str] = []
-    options: dict[str, object] = {"timeout": 15.0, "corrupt": False}
+    options: dict[str, object] = {"timeout": _CHILD_COMPLETION_TIMEOUT_SECONDS, "corrupt": False}
 
     def fetch(request: RunRequest, context: RunExecutionContext) -> CapturedRawResponse:
         fetch_calls.append(context.run_key)
