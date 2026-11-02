@@ -11,6 +11,34 @@ route table (``opendata/api/tasks.py`` registers GET/POST ``/``, GET/PUT/DELETE
 So the comparison is asserted here, and so is the extractor that performs it:
 an extraction that silently returned nothing would also report "no missing
 endpoints", which is the failure mode this whole line of work exists to close.
+
+A later measurement found four more missing calls, all in
+``api/reviewedRuns.ts``, and they are a different shape from the ones above, so
+they are recorded here to stop the next reader from "fixing" them backwards:
+
+* ``GET /reviewed/jobs``, ``POST /reviewed/runs``, ``GET /reviewed/runs/{key}``
+  and ``POST /reviewed/runs/{key}/cancel`` are all implemented — a real router
+  exists in ``opendata/api/reviewed_runs.py`` (``APIRouter(prefix="/reviewed")``)
+  with exactly those four operations.
+* The table is not blind to them. This guard reads the app's generated OpenAPI
+  document, which does cross FastAPI >=0.162's lazy ``_IncludedRouter`` nesting
+  (a flat ``app.routes`` walk would see 8 objects where the document has 151
+  paths), and ``test_the_browser_prefix_is_a_real_mount`` already compares this
+  table against the live ``opendata.main`` document and agrees with it. Traversing
+  the live app's include branches by hand yields 178 routes, none under
+  ``/reviewed``; ``opendata.main`` never mentions the reviewed runtime.
+* The router is mounted only by ``create_reviewed_app``
+  (``opendata/reviewed_app.py``), which no entrypoint calls — every deployment
+  surface (``Dockerfile``, ``opendata.service``, ``start_app.sh``) serves
+  ``opendata.main:app``, and nginx sends ``/api/`` to that one process.
+
+So this is a shipped product gap, not an enumeration bug: the admin page routed
+at ``admin/reviewed-runs`` calls four endpoints its own process does not answer.
+Deleting the client declarations or including the router in ``opendata.main``
+without a reviewed runtime both turn this line green while the page still fails
+— the router's dependency answers 503 unless ``app.state.reviewed_runtime`` is an
+exact ``ReviewedRuntime`` — so neither is a fix. What is needed is an owner
+decision about which process hosts the reviewed runtime and ledger schema.
 """
 
 from __future__ import annotations

@@ -23,7 +23,6 @@ from alembic.operations import Operations
 from sqlalchemy import text
 from sqlalchemy.pool import NullPool
 
-from alembic_source_gate.schema_contract import V2_REVISION
 from opendata.data.dataset_contract_registry import DatasetContractRegistry
 from opendata.data.providers.ths import endpoints as ths_endpoints
 from opendata.data.providers.ths.index_daily_publication import build_index_daily_contract
@@ -203,6 +202,23 @@ def _readonly_schema_snapshot_matches(gate: SourceAttemptGate) -> bool:
         connection.close()
 
 
+def _installed_marker_revision(engine: Engine) -> str:
+    """Return the revision the migrated fixture really holds.
+
+    These two cases rewrite only the marker's DDL *text*, so they must re-insert
+    whatever revision the gate chain installed. Pinning an old revision here
+    would compare the fixture's current tables against an older reference schema
+    and make the marker-format assertions prove nothing.
+    """
+    with engine.connect() as connection:
+        revision: object = connection.execute(
+            text("SELECT version_num FROM alembic_version_source_gate")
+        ).scalar_one()
+    if not isinstance(revision, str):
+        raise AssertionError("the source-gate marker holds a non-string revision")
+    return revision
+
+
 def test_real_alembic_migration_marker_matches_the_pinned_schema(
     source_gate: tuple[Engine, SourceAttemptGate],
 ) -> None:
@@ -217,6 +233,7 @@ def test_legacy_adjacent_parentheses_marker_format_remains_accepted(
 ) -> None:
     """Adjacent PK and table closing parentheses remain a valid marker DDL form."""
     engine, gate = source_gate
+    revision = _installed_marker_revision(engine)
     with engine.begin() as connection:
         connection.exec_driver_sql("DROP TABLE alembic_version_source_gate")
         connection.exec_driver_sql(
@@ -226,7 +243,7 @@ def test_legacy_adjacent_parentheses_marker_format_remains_accepted(
         )
         connection.execute(
             text("INSERT INTO alembic_version_source_gate (version_num) VALUES (:revision)"),
-            {"revision": V2_REVISION},
+            {"revision": revision},
         )
 
     assert _readonly_schema_snapshot_matches(gate)
@@ -237,6 +254,7 @@ def test_migration_marker_rejects_a_changed_constraint_name(
 ) -> None:
     """A semantically similar but altered marker DDL still fails closed."""
     engine, gate = source_gate
+    revision = _installed_marker_revision(engine)
     with engine.begin() as connection:
         connection.exec_driver_sql("DROP TABLE alembic_version_source_gate")
         connection.exec_driver_sql(
@@ -246,7 +264,7 @@ def test_migration_marker_rejects_a_changed_constraint_name(
         )
         connection.execute(
             text("INSERT INTO alembic_version_source_gate (version_num) VALUES (:revision)"),
-            {"revision": V2_REVISION},
+            {"revision": revision},
         )
 
     assert not _readonly_schema_snapshot_matches(gate)

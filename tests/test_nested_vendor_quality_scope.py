@@ -296,10 +296,28 @@ def test_zero_dependency_baseline_keeps_partition_guards_after_historical_rekey(
     assert set(baseline.files) == set(expected_scope)
     assert all(type(count) is int for count in baseline.files.values())
     assert baseline.files[VENDOR_ROOT] == 325
-    assert baseline.files["opendata_client"] == 2
+    # Three client modules since the strict snapshot SDK added ``snapshots.py``;
+    # the register re-pinned 2 -> 3 with that census and the scanner reddens on
+    # either direction of drift, so this is a census pin, not a dependency budget.
+    assert baseline.files["opendata_client"] == 3
     historical_opendata_lower_bound = 215
     assert baseline.files["opendata"] >= historical_opendata_lower_bound
-    assert baseline.entries == ()
+    # The frozen reference baseline moved 0 -> 9 when #161 re-reviewed the
+    # scanned perimeter. Every entry is a source-identity literal (an adapter id
+    # or dataset source id string), reviewed path by path in the reference policy
+    # with no import or dynamic-load form. Pinning the identities here is the
+    # tripwire: a new upstream reference cannot join the register unnoticed.
+    assert baseline.entries == (
+        ("opendata/api/stock_daily_capacity.py", "akshare.daily", "string"),
+        ("opendata/data/providers/akshare/stock_daily_mapper.py", "akshare", "string"),
+        ("opendata/data/providers/akshare/stock_daily_mapper.py", "akshare", "string"),
+        ("opendata/data/providers/akshare/stock_daily_native.py", "akshare", "string"),
+        ("opendata/data/providers/akshare/stock_daily_native.py", "akshare", "string"),
+        ("opendata/data/providers/akshare/stock_daily_native.py", "akshare", "string"),
+        ("opendata/data/providers/akshare/stock_daily_native.py", "akshare", "string"),
+        ("opendata/data/providers/akshare/stock_daily_native.py", "akshare", "string"),
+        ("opendata/pipeline/stock_daily_backfill_executor.py", "akshare.daily", "string"),
+    )
     raw_policy = json.loads(
         (REPO_ROOT / "docs/quality/akshare-reference-allowlist.json").read_text(encoding="utf-8")
     )
@@ -313,7 +331,7 @@ def test_zero_dependency_baseline_keeps_partition_guards_after_historical_rekey(
     assert set(census) == set(expected_scope)
     assert all(type(count) is int for count in census.values())
     assert census[VENDOR_ROOT] == 325
-    assert census["opendata_client"] == 2
+    assert census["opendata_client"] == 3
     assert census["opendata"] >= baseline.files["opendata"]
     assert len(unique_files) == sum(census.values())
 
