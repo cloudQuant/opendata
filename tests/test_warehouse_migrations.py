@@ -45,8 +45,12 @@ P0_ODS_TABLES = ("ods_stock_daily_akshare",)
 #: shape, protected row counts) and the DDL they emit is *chosen* from that
 #: read. Rendering them offline would fabricate an inspection result, so the
 #: refusal is the correct behaviour and each revision's own test module pins
-#: it. ``0015_source_attempt_gate`` renders on its own (its MySQL step is a
-#: documented no-op) but sits behind 0014, so it is not in this prefix.
+#: it. ``0015_source_attempt_gate`` is a special case: its bytes are the
+#: byte-frozen v1 reference that ``alembic_source_gate.schema_contract``
+#: (`V1_REFERENCE_SHA256`) compares against before adopting a gate schema, so
+#: editing it to make one more offline render possible would change the
+#: reference itself and 178 source-gate tests would refuse to adopt - the
+#: pin is the stronger invariant and it stays. It sits behind 0014 either way.
 #: ``test_offline_boundary_is_exactly_the_declared_set`` fails if a revision
 #: outside the prefix ever renders offline (the prefix must widen) or if a
 #: revision stops rendering offline without declaring itself, so the fence can
@@ -56,6 +60,7 @@ OFFLINE_HEAD = "0013_sina_fzb_fanout_groups"
 #: revision -> the message its offline refusal must carry.
 _ONLINE_ONLY_REFUSALS = {
     "0014_sina_fzb_slot_reconciliation": "MySQL offline SQL generation is unsupported",
+    "0015_source_attempt_gate": "source attempt gate revision 0015 supports ",
     "0016_legacy_turnover_nullable": "revision 0016 requires an online connection",
     "0017_sina_capture_discovery_index": "revision 0017 requires a live connection",
     "0018_publication_outbox": "revision 0018 requires a live connection",
@@ -306,8 +311,9 @@ class TestOfflineReplay:
         assert leading_run[-1] == OFFLINE_HEAD, (
             f"the chain-from-base offline render must stop at {OFFLINE_HEAD}, got {leading_run[-1]}"
         )
-        # 0015 is renderable in isolation; only 0014 keeps it out of the run.
-        assert "0015_source_attempt_gate" in renderable
+        # 0015 stays byte-frozen as the v1 adoption reference, so its own
+        # version guard keeps refusing an offline render; see the pin note above.
+        assert "0015_source_attempt_gate" in refused
         assert chain[chain.index(OFFLINE_HEAD) + 1] == "0014_sina_fzb_slot_reconciliation"
 
     def test_head_is_beyond_the_offline_prefix(self):
