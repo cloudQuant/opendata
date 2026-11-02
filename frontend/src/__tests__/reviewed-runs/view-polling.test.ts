@@ -11,8 +11,14 @@ const apiMocks = vi.hoisted(() => ({
   getRun: vi.fn(),
   cancelRun: vi.fn(),
 }))
+const runtimeState = vi.hoisted(() => ({ enabled: true }))
 
-vi.mock('@/api/reviewedRuns', () => ({ reviewedRunsApi: apiMocks }))
+vi.mock('@/reviewed/api', () => ({ reviewedRunsApi: apiMocks }))
+
+vi.mock('@/reviewed/runtime', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/reviewed/runtime')>()
+  return { ...actual, isReviewedRuntimeEnabled: () => runtimeState.enabled }
+})
 
 import { useAuthStore } from '@/stores/auth'
 
@@ -95,6 +101,7 @@ async function mountPage() {
 beforeEach(() => {
   vi.useRealTimers()
   vi.resetAllMocks()
+  runtimeState.enabled = true
   apiMocks.listJobs.mockResolvedValue({ jobs: [JOB] })
   apiMocks.createRun.mockResolvedValue(acceptedRun())
 })
@@ -187,6 +194,33 @@ describe('reviewed runs page polling', () => {
     expect(requestSignal.aborted).toBe(true)
     expect(router.currentRoute.value.path).toBe('/login')
     expect(wrapper.text()).not.toContain('排队中')
+    wrapper.unmount()
+  })
+})
+
+describe('reviewed runs page with no composed runtime', () => {
+  it('says the runtime is not assembled and never calls the transport', async () => {
+    runtimeState.enabled = false
+    const { wrapper } = await mountPage()
+
+    expect(wrapper.find('[data-testid="reviewed-runtime-not-enabled"]').exists()).toBe(true)
+    expect(wrapper.text()).toContain('审核运行时未装配')
+    expect(wrapper.text()).toContain('本页不会调用任何 /reviewed 接口')
+    expect(apiMocks.listJobs).not.toHaveBeenCalled()
+    expect(apiMocks.createRun).not.toHaveBeenCalled()
+    expect(apiMocks.getRun).not.toHaveBeenCalled()
+    expect(apiMocks.cancelRun).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
+  it('renders no submission or lookup control while the runtime is absent', async () => {
+    runtimeState.enabled = false
+    const { wrapper } = await mountPage()
+
+    expect(wrapper.text()).not.toContain('提交运行')
+    expect(wrapper.text()).not.toContain('查询运行状态')
+    expect(wrapper.text()).not.toContain('刷新任务目录')
+    expect(wrapper.find('form').exists()).toBe(false)
     wrapper.unmount()
   })
 })

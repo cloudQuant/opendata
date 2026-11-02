@@ -10,7 +10,8 @@ import {
   type ReviewedRunAccepted,
   type ReviewedRunStatus,
   type ReviewedRunView,
-} from '@/api/reviewedRuns'
+} from '@/reviewed/api'
+import { isReviewedRuntimeEnabled } from '@/reviewed/runtime'
 
 const RUN_KEY_PATTERN = /^[0-9a-f]{64}$/
 const ACTIVE_STATUSES = new Set<ReviewedRunStatus>(['queued', 'running'])
@@ -253,6 +254,12 @@ export const useReviewedRunsStore = defineStore('reviewed-runs', () => {
   const pendingIntentKey = ref<string | null>(null)
 
   const runnableJobs = computed(() => jobs.value.filter((job) => job.reviewed && job.enabled))
+  /**
+   * False while no reviewed runtime is composed, which is every deployment this
+   * repo ships. Every action below returns on this gate before touching the
+   * transport, so the not-enabled state costs the browser zero requests.
+   */
+  const runtimeEnabled = computed(() => isReviewedRuntimeEnabled())
 
   let jobsEpoch = 0
   let runEpoch = 0
@@ -262,6 +269,13 @@ export const useReviewedRunsStore = defineStore('reviewed-runs', () => {
   let pendingIntent: RunIntent | null = null
 
   async function loadJobs(signal?: AbortSignal): Promise<boolean> {
+    if (!runtimeEnabled.value) {
+      jobsEpoch += 1
+      jobs.value = []
+      jobsLoading.value = false
+      jobsError.value = null
+      return false
+    }
     const epoch = ++jobsEpoch
     jobsLoading.value = true
     jobsError.value = null
@@ -323,6 +337,7 @@ export const useReviewedRunsStore = defineStore('reviewed-runs', () => {
     input: StartRunInput,
     signal?: AbortSignal
   ): Promise<ReviewedRunAccepted | null> {
+    if (!runtimeEnabled.value) return null
     const job = jobs.value.find(
       (candidate) =>
         jobIdentity(candidate.job_id) === jobIdentity(input.jobId) &&
@@ -397,6 +412,7 @@ export const useReviewedRunsStore = defineStore('reviewed-runs', () => {
   }
 
   async function fetchRun(runKey: string, signal?: AbortSignal): Promise<ReviewedRunView | null> {
+    if (!runtimeEnabled.value) return null
     if (!RUN_KEY_PATTERN.test(runKey) || activeRunKey.value !== runKey) return null
     const context = runEpoch
     const requestEpoch = ++fetchEpoch
@@ -433,6 +449,7 @@ export const useReviewedRunsStore = defineStore('reviewed-runs', () => {
   }
 
   async function cancelRun(signal?: AbortSignal): Promise<CancelReviewedRunResponse | null> {
+    if (!runtimeEnabled.value) return null
     const runKey = activeRunKey.value
     const current = currentRun.value
     if (!runKey || !current || !ACTIVE_STATUSES.has(current.status)) {
@@ -483,6 +500,7 @@ export const useReviewedRunsStore = defineStore('reviewed-runs', () => {
   return {
     jobs,
     runnableJobs,
+    runtimeEnabled,
     jobsLoading,
     jobsError,
     activeRunKey,
