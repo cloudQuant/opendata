@@ -3162,6 +3162,33 @@ def registered_hand_edits(ctx: Context, pm: ModuleType) -> tuple[int, int, int, 
     return len(lock), len(notices), len(codemod), len((lock | codemod | notices) - agreed)
 
 
+def a2_files_on_recorded_baseline(a2: ModuleType) -> list[str]:
+    """A2's own file set, resolved against the recorded baseline rather than the run's diff base.
+
+    `a2_check.resolve_files` narrows to the changed files of *this run* whenever
+    `A2_BASE_REF` is set, and the CI workflow sets it only on pull_request runs. Cells that
+    count an A2 population would then measure the PR's own files on one shape and everything
+    since the baseline on another: an unrelated PR presents an empty population, which several
+    of these items refuse to trust, so the same tree read proven on a push run and gap on a PR
+    run (measured: AC-17|07 `0 file(s) / 0 callable(s)` with the variable set,
+    `179 file(s) / 599 callable(s)` without). The recorded baseline is the older of the two
+    bases the A2 gate itself considers, so this view is a superset of the per-diff one and no
+    file can pass a cell here that a push run would fail.
+
+    Args:
+        a2: The imported `scripts/quality/a2_check.py` module.
+
+    Returns:
+        The A2 file paths, sorted, as the baseline defines them.
+    """
+    env_base = os.environ.pop("A2_BASE_REF", "")
+    try:
+        return sorted(a2.resolve_files(None) or [])
+    finally:
+        if env_base:
+            os.environ["A2_BASE_REF"] = env_base
+
+
 def measure_ac17_03(ctx: Context) -> Facts:
     """Run the ratchet and the A2 gate, then ask every static plane what *it* decided to read."""
     ratchet = script_module(RATCHET_TOOL)
@@ -3196,7 +3223,7 @@ def measure_ac17_03(ctx: Context) -> Facts:
     try:
         base = a2._checked_baseline()
         touched = a2.changed_files(base) if base else []
-        a2_files = a2.resolve_files(None) or []
+        a2_files = a2_files_on_recorded_baseline(a2)
     except baseline_error as exc:
         raise ProbeError(str(exc)) from exc
     a2_code, _a2_out = run_argv([sys.executable, A2_CHECK_TOOL])
@@ -3559,18 +3586,7 @@ def measure_ac17_07(ctx: Context) -> Facts:
     a2 = script_module(A2_CHECK_TOOL)
     code, out = run_argv([sys.executable, PUBLIC_API_TOOL])
     scope = tuple(str(entry) for entry in pub.A2_SCOPE)
-    # The denominator has to be the same in every run. `A2_BASE_REF` is set only on
-    # pull_request CI runs, where it narrows this population to the PR's own changed files:
-    # an unrelated PR then measures zero new public callables and the item refuses to trust
-    # an empty population, so the same tree reads proven on a push run and gap on a PR run.
-    # Resolving against the recorded baseline gives the repo-wide view, which is the wider of
-    # the two bases the A2 gate itself uses, so no file can pass here that a push run fails.
-    env_base = os.environ.pop("A2_BASE_REF", "")
-    try:
-        a2_files = sorted(a2.resolve_files(None) or [])
-    finally:
-        if env_base:
-            os.environ["A2_BASE_REF"] = env_base
+    a2_files = a2_files_on_recorded_baseline(a2)
     a2_set = set(a2_files)
     ported = tuple(f"{name}/" for name in sorted(a2.EXCLUDED_ROOT_DIRS))
     outside = [name for name in a2_files if not under_any(name, scope)]
@@ -14675,7 +14691,7 @@ def measure_ac17_06(c: Context) -> Facts:
     """measure_ac17_06: see the AC-17|06 measurement it serves."""
     arch = c.root / COV_ARCHIVE_XML
     live = c.root / COV_LIVE_REL
-    a2 = list(script_module(A2_CHECK_TOOL).resolve_files(None) or [])
+    a2 = a2_files_on_recorded_baseline(script_module(A2_CHECK_TOOL))
     facts: Facts = {
         "formula_controls": count(_cov_formula_controls()),
         "archive_xml_exists": flag(arch.is_file()),
