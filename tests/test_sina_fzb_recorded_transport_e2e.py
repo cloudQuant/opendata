@@ -80,6 +80,40 @@ OTHER_SYMBOL = "000001.SZ"
 SIGNING_KEY = b"w12-recorded-transport-test-cursor-signing-key"
 PROCESS_OPERATION_ID = "test.sina.fzb.recorded-transport"
 
+#: Wall-clock budget for a child that this case expects to *finish*.
+#:
+#: The claim under test is that one recorded response traverses the closed
+#: transport, the worker, the fenced publication and the REST pages; nothing
+#: here measures deadline enforcement, so the budget must not be reachable by a
+#: slow-but-alive child. Measured on this pipeline (18-core host, idle): the
+#: child round trip is 1.27 s and the whole ``run_once`` is 5.88 s. Under 36
+#: co-tenant CPU hogs the child measured 6.37 s; under 72 hogs it measured
+#: 12.51 s and 25.20 s, and the 25 s budget this case used to carry was crossed,
+#: so the run reported ``execution_failed:ProcessExecutionCleanupError`` instead
+#: of the replay the case names. The sibling case for the same job and the same
+#: 103-record publication sized the identical budget at 60 s after the same
+#: measurement (``tests/test_sina_fzb_process_job.py``); the product's own wired
+#: budget for this operation is 30 s
+#: (``opendata/pipeline/sina_fzb_process_job.py``).
+_CHILD_COMPLETION_TIMEOUT_SECONDS = 60.0
+
+#: Lease that must outlive the one window the worker cannot renew.
+#:
+#: The parent renews while the child is active and cooperatively through
+#: normalize and batch validation, so a long child never endangers the lease.
+#: The fenced publication commit cannot renew: it holds the only connection of
+#: this worker Engine (``create_worker_engine`` pins ``pool_size=1``) inside one
+#: transaction, and ``RunLedger.commit_result`` re-reads the lease expiry with
+#: that same held clock and raises ``RunLeaseExpiredError`` when the write
+#: outlives it. So ``lease_ttl`` alone bounds the 103-row publish write.
+#: Measured: ``commit_result`` took 0.74 s idle, 2.25 s under 36 hogs and 5.05 s
+#: under 72 hogs, while the last renewal landed 0.32 s before it. The 3 s lease
+#: this case used to carry therefore expired on a loaded runner: the success
+#: transition rolled back, the fenced ``fail`` transition could no longer hold
+#: the lease either, and the run was left ``running``. The sibling case for this
+#: same job publishes under a 60 s lease.
+_PUBLICATION_LEASE_TTL = timedelta(seconds=60)
+
 
 def _contract_registry() -> DatasetContractRegistry:
     """Return only the exact source-native Sina FZB publication contract."""
@@ -133,7 +167,7 @@ def _worker(database_path: Path) -> tuple[PersistentRunWorker, Engine]:
         PROCESS_OPERATION_ID,
         _build_sina_fzb_process_parameters,
         _decode_sina_fzb_process_result,
-        timeout_seconds=25.0,
+        timeout_seconds=_CHILD_COMPLETION_TIMEOUT_SECONDS,
     )
     job = ReviewedJob(
         task=_task(),
@@ -146,7 +180,7 @@ def _worker(database_path: Path) -> tuple[PersistentRunWorker, Engine]:
         worker_engine,
         ReviewedJobRegistry([job]),
         worker_id="sina-recorded-transport-e2e",
-        lease_ttl=timedelta(seconds=3),
+        lease_ttl=_PUBLICATION_LEASE_TTL,
         heartbeat_interval_seconds=0.1,
         database_io_timeout_seconds=0.1,
     )
