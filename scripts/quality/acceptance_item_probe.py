@@ -1570,8 +1570,22 @@ def judge_ac1_07(facts: Facts) -> Verdict:
     return Verdict(PROVEN if ok else GAP, readings, reason)
 
 
+#: Canonical key that AC-1|08's faces read for the review date. The shipped column may carry a
+#: longer name that *ends* with this label (see `_parse_rights_registration_table`).
+RIGHTS_DATE_COLUMN: Final = "复核日期"
+
+
 def _parse_rights_registration_table(text: str) -> tuple[bool, list[str], list[dict[str, str]]]:
-    """Parse only the single, well-formed registration table in section 1."""
+    """Parse only the single, well-formed registration table in section 1.
+
+    The review-date column is resolved by suffix, not by exact spelling. #23 (`5db160ba`) renamed
+    `复核日期` to `公开条款复核日期`; a spelling-exact requirement read that as "no usable table",
+    `records` became empty, `uncovered` then cascaded to 35, and the cell spent five weeks looking
+    like an owner data gap while the table was complete. Exactly one column may end with the
+    canonical label, so a rename that keeps the meaning still passes and a second date column, a
+    missing one or a reworded one still reddens the cell. Its values are re-keyed to
+    `RIGHTS_DATE_COLUMN` so the faces downstream read one spelling.
+    """
     lines = text.splitlines()
     section_heads = [
         index
@@ -1612,16 +1626,19 @@ def _parse_rights_registration_table(text: str) -> tuple[bool, list[str], list[d
         "允许本项目落库",
         "允许再分发",
         "允许商业使用",
-        "复核日期",
         "责任人",
     )
+    date_columns = [name for name in header if name.endswith(RIGHTS_DATE_COLUMN)]
     if (
         len(header) != len(separator)
         or len(set(header)) != len(header)
         or any(name not in header for name in required)
+        or len(date_columns) != 1
         or not all(re.fullmatch(r":?-{3,}:?", cell) for cell in separator)
     ):
         return False, header, []
+
+    canonical_header = [RIGHTS_DATE_COLUMN if name in date_columns else name for name in header]
 
     records: list[dict[str, str]] = []
     row_ids: set[str] = set()
@@ -1634,7 +1651,7 @@ def _parse_rights_registration_table(text: str) -> tuple[bool, list[str], list[d
         ):
             return False, header, []
         row_ids.add(values[0])
-        records.append(dict(zip(header, values, strict=True)))
+        records.append(dict(zip(canonical_header, values, strict=True)))
     return bool(records), header, records
 
 
@@ -1672,7 +1689,7 @@ def measure_ac1_08(ctx: Context) -> Facts:
     responsible_missing = 0
     uses = ("允许本项目落库", "允许再分发", "允许商业使用")
     for record in records:
-        review_date = record["复核日期"]
+        review_date = record[RIGHTS_DATE_COLUMN]
         with suppress(ValueError):
             dated += int(date.fromisoformat(review_date).isoformat() == review_date)
         undecided += int(any(unspecified(record[name]) for name in uses))

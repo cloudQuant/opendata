@@ -2,13 +2,6 @@
   "written_by": "python scripts/quality/acceptance_item_probe.py --sync-ratchet",
   "meaning": "items.AC-N|NN.families.<family> = 该条存量 finding 文本的 sha256（judge 族来自反事实自检，stale-proof 族来自台账 proven 而探针读 gap；deferred 格在安静树下同样成立）；ledger_state = 冻结当时的台账状态，改动它以静音 finding 会让门禁红",
   "items": {
-    "AC-1|08": {
-      "families": {
-        "judge": "536b869e5223ef6c7f0b2406e19c6898a848f5271ae101c059d7f36b2359ad4f",
-        "stale-proof": "9063a0a4b26c6c7049e1da66df25ce184deb108dde729e8cfb7ae5d8a9bb7cbd"
-      },
-      "ledger_state": "proven"
-    },
     "AC-11|04": {
       "families": {
         "stale-proof": "228b084a4d354bdee19c152cf130a4177717d545ed165bacc03fe100ee6e5077"
