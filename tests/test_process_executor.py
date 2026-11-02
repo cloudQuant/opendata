@@ -13,9 +13,9 @@ import sys
 import threading
 import time
 import types
-from contextlib import suppress
+from contextlib import contextmanager, suppress
 from pathlib import Path
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 import pytest
 
@@ -32,6 +32,9 @@ from opendata.pipeline.process_executor import (
     ReviewedProcessRegistry,
 )
 
+if TYPE_CHECKING:
+    from collections.abc import Callable, Iterator
+
 #: Budget for one call whose child has to *finish*, as opposed to the calls below
 #: that set a sub-second deadline to prove the deadline itself fires. A real
 #: child is a fresh interpreter launch plus the import of this module, so this
@@ -47,6 +50,94 @@ from opendata.pipeline.process_executor import (
 #: bound costs nothing while still failing a genuinely stuck child long before
 #: CI's 1200 s ``faulthandler_timeout``.
 _CHILD_COMPLETION_TIMEOUT_SECONDS = 60.0
+
+#: Cap on *observing* an exit transition that this harness produces itself. It is
+#: not a budget the behaviour under test has to beat: ``_FakeContext`` posts the
+#: transition from its own consumer thread the moment that thread has read the
+#: command frame, so the wait is milliseconds and this number exists only so a
+#: broken harness reports itself instead of hanging the suite.
+_FAKE_CHILD_EXIT_WAIT_SECONDS = 10.0
+
+#: Deadline for the calls whose child must boot, then have the parent's deadline
+#: fire and the hung worker be killed. Those calls must not encode a wall-clock
+#: expectation at all, so they ask for the largest deadline the product allows and
+#: let :class:`_ReadinessClock` move the parent's clock past it at the first moment
+#: "the worker is running and hung" is actually true.
+_READINESS_ARMED_TIMEOUT_SECONDS = process_executor_module.MAX_TIMEOUT_SECONDS
+#: More than any deadline the parent can be given, so the first clock read after
+#: the worker touches its marker is already past that deadline.
+_READINESS_ARM_OFFSET_SECONDS = process_executor_module.MAX_TIMEOUT_SECONDS + 60.0
+#: How long the parent may take to *notice* a deadline that has already armed.
+#: Measures the polling loop's own latency; interpreter boot is excluded by
+#: construction, which is what made the old absolute ``elapsed`` bounds flaky.
+_DEADLINE_NOTICE_SECONDS = 1.5
+
+
+class _ReadinessClock:
+    """Parent-side ``time.monotonic`` seam armed by a worker readiness marker.
+
+    ``_run_registered`` compares ``time.monotonic()`` against
+    ``started_at + timeout_seconds`` on every poll. With ``pytest -n auto`` each
+    worker spawns a *real* child interpreter, and that boot is unbounded on a
+    shared box (tranche #172 measured 4.6-18.1 s for a trivial round trip), so a
+    small deadline used to fire before the worker existed: the call still raised
+    ``process_execution_timeout``, but for the wrong reason, and the follow-up
+    read of the worker's own pid marker failed with ``FileNotFoundError``.
+
+    This seam keeps the deadline branch as the thing that raises while tying
+    *when it becomes reachable* to an event the worker emits itself. Before the
+    marker exists the clock is the real one, so a child that never starts cannot
+    arm anything; the instant the marker appears the clock jumps past the
+    deadline. Nothing about the product's timeout policy changes.
+    """
+
+    def __init__(self, marker: Path) -> None:
+        self._marker = marker
+        self._real_monotonic = time.monotonic
+        self._offset = 0.0
+        self._installed = False
+        self.armed_at: float | None = None
+
+    def monotonic(self) -> float:
+        now = self._real_monotonic()
+        if self._offset == 0.0 and self._marker.exists():
+            self._offset = _READINESS_ARM_OFFSET_SECONDS
+            self.armed_at = now
+        return now + self._offset
+
+    def install(self) -> _ReadinessClock:
+        time.monotonic = self.monotonic  # type: ignore[method-assign]
+        self._installed = True
+        return self
+
+    def restore(self) -> None:
+        if self._installed:
+            time.monotonic = self._real_monotonic  # type: ignore[method-assign]
+            self._installed = False
+
+    def require_armed(self) -> float:
+        """Return the arm instant, failing loudly if the worker never started."""
+        if self.armed_at is None:
+            raise AssertionError(
+                f"worker never touched its readiness marker {self._marker}; "
+                "the deadline fired against a child that did not exist, so no "
+                "kill was observable"
+            )
+        return self.armed_at
+
+    def notice_seconds(self) -> float:
+        """Return how long the parent took to act once the deadline had armed."""
+        return self._real_monotonic() - self.require_armed()
+
+
+@contextmanager
+def _deadline_arms_on(marker: Path) -> Iterator[_ReadinessClock]:
+    """Scope the readiness clock to one ``executor.run`` call."""
+    clock = _ReadinessClock(marker).install()
+    try:
+        yield clock
+    finally:
+        clock.restore()
 
 
 def _echo(parameters: dict[str, object]) -> dict[str, object]:
@@ -346,8 +437,11 @@ def _wait_until_stopped(pid: int, timeout: float = 2.0) -> bool:
 
 
 class _FakeSocket:
-    def __init__(self, underlying: socket.socket) -> None:
+    def __init__(
+        self, underlying: socket.socket, on_close: Callable[[], None] | None = None
+    ) -> None:
         self.underlying = underlying
+        self.on_close = on_close
         self.closed = False
 
     def setblocking(self, blocking: bool) -> None:
@@ -368,6 +462,8 @@ class _FakeSocket:
     def close(self) -> None:
         self.underlying.close()
         self.closed = True
+        if self.on_close is not None:
+            self.on_close()
 
 
 class _FakeProcess:
@@ -386,11 +482,31 @@ class _FakeProcess:
         self.killed = False
         self.resists_terminate = resists_terminate
         self.resists_kill = resists_kill
+        self.terminate_calls = 0
+        self.kill_calls = 0
+        #: Event the harness posts when this child's exit is *produced* by the
+        #: command consumer thread. ``poll``/``wait`` wait on it, so the parent
+        #: observes the exit when it happens instead of on whichever side of a
+        #: wall-clock deadline the scheduler happened to place the thread.
+        self._exit_event: threading.Event | None = None
+        #: Set only if the event was armed and never posted within the harness
+        #: cap, i.e. the double itself broke. A case must never pass on this.
+        self.exit_observation_timed_out = False
+
+    def arm_exit(self, event: threading.Event) -> None:
+        self._exit_event = event
+
+    def _observe_exit(self) -> None:
+        event = self._exit_event
+        if self.alive and event is not None and not event.wait(_FAKE_CHILD_EXIT_WAIT_SECONDS):
+            self.exit_observation_timed_out = True
 
     def poll(self) -> int | None:
+        self._observe_exit()
         return None if self.alive else self.returncode
 
     def wait(self, timeout: float | None = None) -> int:
+        self._observe_exit()
         if self.alive and timeout:
             time.sleep(min(timeout, 0.01))
         if self.alive:
@@ -398,11 +514,13 @@ class _FakeProcess:
         return self.returncode or 0
 
     def terminate(self) -> None:
+        self.terminate_calls += 1
         if not self.resists_terminate:
             self.alive = False
             self.returncode = -15
 
     def kill(self) -> None:
+        self.kill_calls += 1
         self.killed = True
         if not self.resists_kill:
             self.alive = False
@@ -412,15 +530,29 @@ class _FakeProcess:
 class _FakeContext:
     def __init__(self, messages: list[bytes], *, process: _FakeProcess | None = None) -> None:
         receiver, sender = socket.socketpair()
+        self.command_consumed = threading.Event()
+        self.command_finished = threading.Event()
+        self.consumption_error: BaseException | None = None
+        self.process = process if process is not None else _FakeProcess(stays_alive=True)
+        # Which children are meant to exit: a harness-supplied process exits only
+        # when it carries a nonzero status, the default child exits successfully.
+        self.exits_after_command = process is None or process.exitcode != 0
         self.receiver = _FakeSocket(receiver)
-        self.sender = _FakeSocket(sender)
+        # The child's exit becomes observable when the parent has finished writing
+        # the command and closed its own end of the pair -- the first instant at
+        # which a real child could already have died. Arming earlier would make
+        # poll() block inside _send_parent_command, which inspects the child
+        # *before* it has written anything, and deadlock the send against itself.
+        self.sender = _FakeSocket(sender, self._arm_exit_observation)
         for message in messages:
             self.sender.sendall(struct.pack(">I", len(message)) + message)
-        self.process = process or _FakeProcess(stays_alive=True)
-        self.auto_exit_after_command = process is None
         self.command: list[str] | None = None
         self.options: dict[str, object] = {}
         self.command_thread: threading.Thread | None = None
+
+    def _arm_exit_observation(self) -> None:
+        if self.exits_after_command:
+            self.process.arm_exit(self.command_consumed)
 
     def socketpair(self) -> tuple[_FakeSocket, _FakeSocket]:
         return self.receiver, self.sender
@@ -428,32 +560,71 @@ class _FakeContext:
     def launch(self, *args: object, **kwargs: object) -> _FakeProcess:
         self.command = cast("list[str]", args[0])
         self.options = kwargs
-
-        def consume_command() -> None:
-            command_socket = socket.socket(fileno=os.dup(self.sender.fileno()))
-            try:
-                header = bytearray()
-                while len(header) < 4:
-                    chunk = command_socket.recv(4 - len(header))
-                    if not chunk:
-                        return
-                    header.extend(chunk)
-                size = struct.unpack(">I", header)[0]
-                remaining = size
-                while remaining:
-                    chunk = command_socket.recv(remaining)
-                    if not chunk:
-                        break
-                    remaining -= len(chunk)
-                if self.auto_exit_after_command or self.process.exitcode != 0:
-                    self.process.alive = False
-                    self.process.returncode = self.process.exitcode
-            finally:
-                command_socket.close()
-
-        self.command_thread = threading.Thread(target=consume_command, daemon=True)
+        # Duplicate the child's end of the pair *here*, not inside the thread. The
+        # parent closes ``sender`` as soon as the command is written, so a thread
+        # that had not been scheduled by then duplicated a closed descriptor
+        # (``OSError: [Errno 9] Bad file descriptor``), never posted the exit, and
+        # left the parent to reach its wall-clock deadline instead of the outcome
+        # under test -- which is why the failing parametrization moved between runs
+        # while the count stayed the same.
+        command_fd = os.dup(self.sender.fileno())
+        self.command_thread = threading.Thread(
+            target=self._consume_command,
+            args=(command_fd,),
+            daemon=True,
+            name="fake-worker-command",
+        )
         self.command_thread.start()
         return self.process
+
+    def _consume_command(self, command_fd: int) -> None:
+        command_socket = socket.socket(fileno=command_fd)
+        command_socket.settimeout(_FAKE_CHILD_EXIT_WAIT_SECONDS)
+        try:
+            header = bytearray()
+            while len(header) < 4:
+                chunk = command_socket.recv(4 - len(header))
+                if not chunk:
+                    return
+                header.extend(chunk)
+            size = struct.unpack(">I", header)[0]
+            remaining = size
+            while remaining:
+                chunk = command_socket.recv(remaining)
+                if not chunk:
+                    break
+                remaining -= len(chunk)
+            if self.exits_after_command:
+                self.process.alive = False
+                self.process.returncode = self.process.exitcode
+        except BaseException as error:  # recorded below, never swallowed silently
+            self.consumption_error = error
+        finally:
+            command_socket.close()
+            # Posted even on failure so an observation never blocks for the full
+            # cap; the recorded error and the flags below make the cause explicit.
+            self.command_consumed.set()
+            self.command_finished.set()
+
+    def require_clean_command_consumption(self) -> None:
+        """Assert the child's exit came from the harness transition, not luck."""
+        assert self.consumption_error is None, f"fake worker failed: {self.consumption_error!r}"
+        assert self.command_consumed.wait(_FAKE_CHILD_EXIT_WAIT_SECONDS), (
+            "the fake worker never consumed its command"
+        )
+        assert self.process.exit_observation_timed_out is False, (
+            "the parent could not observe the fake child's exit within the harness cap"
+        )
+
+    def await_command_thread(self) -> None:
+        """Join the harness thread through its completion event, not a budget."""
+        assert self.command_thread is not None
+        assert self.command_finished.wait(_FAKE_CHILD_EXIT_WAIT_SECONDS), (
+            "the fake worker command thread never finished"
+        )
+        # The event is the thread's last statement, so this join cannot block.
+        self.command_thread.join()
+        assert not self.command_thread.is_alive()
 
 
 def _message(**payload: object) -> bytes:
@@ -505,9 +676,8 @@ def test_worker_command_uses_isolated_no_bytecode_flags(monkeypatch) -> None:
     assert context.command[0] == sys.executable
     assert context.command[1:3] == ["-I", "-B"]
     assert context.command[3] == str(process_executor_module._WORKER_SCRIPT)
-    assert context.command_thread is not None
-    context.command_thread.join(timeout=1)
-    assert not context.command_thread.is_alive()
+    context.require_clean_command_consumption()
+    context.await_command_thread()
 
 
 def test_fixed_worker_helper_validates_descriptor_and_dispatches(monkeypatch) -> None:
@@ -610,8 +780,13 @@ def test_timeout_terminates_and_reaps_child_and_closes_process_resources(tmp_pat
         _registry(waiter=_write_pid_and_wait), shutdown_grace_seconds=0.05
     )
 
-    with pytest.raises(ProcessExecutionTimeoutError, match="process_execution_timeout"):
-        executor.run("waiter", {"marker": str(marker)}, timeout_seconds=3)
+    with (
+        _deadline_arms_on(marker),
+        pytest.raises(ProcessExecutionTimeoutError, match="process_execution_timeout"),
+    ):
+        executor.run(
+            "waiter", {"marker": str(marker)}, timeout_seconds=_READINESS_ARMED_TIMEOUT_SECONDS
+        )
 
     worker_pid = int(marker.read_text(encoding="utf-8"))
     assert _wait_until_stopped(worker_pid)
@@ -648,14 +823,19 @@ def test_partial_ipc_frame_does_not_block_parent_deadline_or_cleanup(
     executor = ReviewedProcessExecutor(
         _registry(echo=_echo), poll_interval_seconds=0.005, shutdown_grace_seconds=0.05
     )
-    started = time.monotonic()
 
-    with pytest.raises(ProcessExecutionTimeoutError, match="process_execution_timeout"):
-        executor.run("echo", {"marker": str(marker)}, timeout_seconds=0.25)
+    with (
+        _deadline_arms_on(marker) as clock,
+        pytest.raises(ProcessExecutionTimeoutError, match="process_execution_timeout"),
+    ):
+        executor.run(
+            "echo", {"marker": str(marker)}, timeout_seconds=_READINESS_ARMED_TIMEOUT_SECONDS
+        )
 
-    elapsed = time.monotonic() - started
+    # The deadline armed only because the worker was demonstrably up and holding
+    # a half frame, and the parent acted on it without stalling in the reader.
+    assert clock.notice_seconds() < _DEADLINE_NOTICE_SECONDS
     worker_pid = int(marker.read_text(encoding="utf-8"))
-    assert elapsed < 1.5
     assert _wait_until_stopped(worker_pid)
 
 
@@ -683,12 +863,16 @@ def test_deadline_and_cancel_remain_responsive_while_command_send_is_backpressur
         poll_interval_seconds=0.005,
         shutdown_grace_seconds=0.05,
     )
-    started = time.monotonic()
 
-    with pytest.raises(ProcessExecutionTimeoutError, match="process_execution_timeout"):
-        executor.run("echo", {"payload": "x" * 600_000}, timeout_seconds=0.25)
+    with (
+        _deadline_arms_on(marker) as clock,
+        pytest.raises(ProcessExecutionTimeoutError, match="process_execution_timeout"),
+    ):
+        executor.run(
+            "echo", {"payload": "x" * 600_000}, timeout_seconds=_READINESS_ARMED_TIMEOUT_SECONDS
+        )
 
-    assert time.monotonic() - started < 1.5
+    assert clock.notice_seconds() < _DEADLINE_NOTICE_SECONDS
     worker_pid = int(marker.read_text(encoding="utf-8"))
     assert _wait_until_stopped(worker_pid)
 
@@ -735,8 +919,13 @@ def test_timeout_before_ready_kills_descendant_in_launch_isolated_group(
         _registry(echo=_echo), poll_interval_seconds=0.005, shutdown_grace_seconds=0.05
     )
 
-    with pytest.raises(ProcessExecutionTimeoutError, match="process_execution_timeout"):
-        executor.run("echo", {"marker": str(marker)}, timeout_seconds=3)
+    with (
+        _deadline_arms_on(marker),
+        pytest.raises(ProcessExecutionTimeoutError, match="process_execution_timeout"),
+    ):
+        executor.run(
+            "echo", {"marker": str(marker)}, timeout_seconds=_READINESS_ARMED_TIMEOUT_SECONDS
+        )
 
     descendant_pid = int(marker.read_text(encoding="utf-8"))
     stopped = _wait_until_stopped(descendant_pid)
@@ -901,8 +1090,13 @@ def test_posix_timeout_kills_descendants_in_the_isolated_worker_group(tmp_path: 
         _registry(descendant=_spawn_descendant_and_wait), shutdown_grace_seconds=0.05
     )
 
-    with pytest.raises(ProcessExecutionTimeoutError, match="process_execution_timeout"):
-        executor.run("descendant", {"marker": str(marker)}, timeout_seconds=3)
+    with (
+        _deadline_arms_on(marker),
+        pytest.raises(ProcessExecutionTimeoutError, match="process_execution_timeout"),
+    ):
+        executor.run(
+            "descendant", {"marker": str(marker)}, timeout_seconds=_READINESS_ARMED_TIMEOUT_SECONDS
+        )
 
     descendant_pid = int(marker.read_text(encoding="utf-8"))
     assert _wait_until_stopped(descendant_pid)
@@ -1150,12 +1344,19 @@ def test_parent_rejects_invalid_worker_protocol_and_cleans_handles(
     with pytest.raises(error, match=message):
         ReviewedProcessExecutor(_registry(echo=_echo)).run("echo", {}, timeout_seconds=1)
 
+    # The exit the parent acted on must have been the transition the harness
+    # posts, not the 1 s deadline happening to expire first. Without these two
+    # the case would pass on a scheduler accident and assert nothing.
+    context.require_clean_command_consumption()
     assert context.receiver.closed is True
     assert context.sender.closed is True
     assert context.process.poll() is not None
-    assert context.command_thread is not None
-    context.command_thread.join(timeout=1)
-    assert not context.command_thread.is_alive()
+    if error is ProcessExecutionTimeoutError:
+        # The one parametrization whose subject *is* the deadline: a child that
+        # never exits must be escalated to death by the cleanup path, not merely
+        # reported. Records the signal calls the product actually made.
+        assert context.process.terminate_calls + context.process.kill_calls >= 1
+    context.await_command_thread()
 
 
 def test_parent_rejects_extra_ipc_messages_and_escalates_worker_cleanup(monkeypatch) -> None:
@@ -1175,11 +1376,15 @@ def test_parent_rejects_extra_ipc_messages_and_escalates_worker_cleanup(monkeypa
 
     with pytest.raises(ProcessExecutionProtocolError, match="extra_message"):
         ReviewedProcessExecutor(_registry(echo=_echo)).run("echo", {}, timeout_seconds=1)
-    assert context.command_thread is not None
-    context.command_thread.join(timeout=1)
+    context.require_clean_command_consumption()
+    context.await_command_thread()
 
     stuck = _FakeProcess(stays_alive=True, resists_terminate=True)
     process_executor_module._stop_process(stuck, isolated_group=False, grace_seconds=0.01)
+    # Escalation, not just a flag: terminate was attempted, it did not take, and
+    # the product then killed the worker itself.
+    assert stuck.terminate_calls == 1
+    assert stuck.kill_calls == 1
     assert stuck.killed is True
     assert stuck.alive is False
 
@@ -1198,8 +1403,7 @@ def test_socket_closes_even_when_a_child_cannot_be_reaped(monkeypatch) -> None:
     assert context.receiver.closed is True
     assert context.sender.closed is True
     assert stuck.poll() is None
-    assert context.command_thread is not None
-    context.command_thread.join(timeout=1)
+    context.await_command_thread()
 
 
 def test_socket_reader_rejects_invalid_and_truncated_frames(monkeypatch) -> None:
