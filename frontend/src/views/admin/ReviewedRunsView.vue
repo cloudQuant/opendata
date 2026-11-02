@@ -3,7 +3,11 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useReviewedRunsStore } from '@/stores/reviewedRuns'
-import type { ReviewedJob, ReviewedRunStatus } from '@/api/reviewedRuns'
+import type { ReviewedJob, ReviewedRunStatus } from '@/reviewed/api'
+import {
+  REVIEWED_RUNTIME_NOT_ENABLED_MESSAGE,
+  REVIEWED_RUNTIME_NOT_ENABLED_TITLE,
+} from '@/reviewed/runtime'
 
 const MAX_JSON_LENGTH = 8192
 const POLL_INTERVAL_MS = 2000
@@ -13,6 +17,9 @@ const RUN_KEY_PATTERN = /^[0-9a-f]{64}$/
 const router = useRouter()
 const authStore = useAuthStore()
 const store = useReviewedRunsStore()
+
+const notEnabledTitle = REVIEWED_RUNTIME_NOT_ENABLED_TITLE
+const notEnabledMessage = REVIEWED_RUNTIME_NOT_ENABLED_MESSAGE
 
 const selectedJobKey = ref('')
 const queryText = ref('{}')
@@ -249,6 +256,7 @@ function statusLabel(status: ReviewedRunStatus): string {
 }
 
 async function loadJobs(): Promise<void> {
+  if (!store.runtimeEnabled) return
   jobsController?.abort()
   const controller = new AbortController()
   jobsController = controller
@@ -285,163 +293,179 @@ onBeforeUnmount(() => {
     <header class="page-header">
       <div>
         <h1 id="reviewed-runs-title">审核任务运行</h1>
-        <p>只提交已审核且启用的登记任务。页面不会执行脚本或连接外部数据源。</p>
+        <p v-if="!store.runtimeEnabled">审核运行时未装配，本页不调用 /reviewed 接口。</p>
+        <p v-else>只提交已审核且启用的登记任务。页面不会执行脚本或连接外部数据源。</p>
       </div>
-      <el-button :loading="store.jobsLoading" @click="loadJobs">刷新任务目录</el-button>
+      <el-button v-if="store.runtimeEnabled" :loading="store.jobsLoading" @click="loadJobs">
+        刷新任务目录
+      </el-button>
     </header>
 
     <el-alert
-      v-if="store.jobsError"
-      :title="store.jobsError"
+      v-if="!store.runtimeEnabled"
       type="warning"
       :closable="false"
       show-icon
       role="alert"
-    />
-    <el-alert
-      v-else-if="!store.jobsLoading && store.jobs.length === 0"
-      title="当前没有任务登记在审核目录中。请确认目录配置后再提交运行。"
-      type="info"
-      :closable="false"
-      show-icon
+      :title="notEnabledTitle"
+      :description="notEnabledMessage"
+      data-testid="reviewed-runtime-not-enabled"
     />
 
-    <el-card class="run-card">
-      <template #header>
-        <h2>提交审核任务</h2>
-      </template>
+    <template v-else>
+      <el-alert
+        v-if="store.jobsError"
+        :title="store.jobsError"
+        type="warning"
+        :closable="false"
+        show-icon
+        role="alert"
+      />
+      <el-alert
+        v-else-if="!store.jobsLoading && store.jobs.length === 0"
+        title="当前没有任务登记在审核目录中。请确认目录配置后再提交运行。"
+        type="info"
+        :closable="false"
+        show-icon
+      />
 
-      <el-form label-position="top" @submit.prevent="submitRun">
-        <el-form-item label="审核任务">
-          <el-select
-            v-model="selectedJobKey"
-            placeholder="选择已审核且启用的任务"
-            :disabled="store.jobsLoading || store.runnableJobs.length === 0"
-            @change="handleJobChange"
-          >
-            <el-option
-              v-for="job in store.jobs"
-              :key="jobOptionValue(job)"
-              :label="`${job.dataset_id} · ${job.provider}/${job.model} · v${job.version}${job.reviewed ? '' : '（未审核）'}${job.enabled ? '' : '（已停用）'}`"
-              :value="jobOptionValue(job)"
-              :disabled="!job.reviewed || !job.enabled"
+      <el-card class="run-card">
+        <template #header>
+          <h2>提交审核任务</h2>
+        </template>
+
+        <el-form label-position="top" @submit.prevent="submitRun">
+          <el-form-item label="审核任务">
+            <el-select
+              v-model="selectedJobKey"
+              placeholder="选择已审核且启用的任务"
+              :disabled="store.jobsLoading || store.runnableJobs.length === 0"
+              @change="handleJobChange"
+            >
+              <el-option
+                v-for="job in store.jobs"
+                :key="jobOptionValue(job)"
+                :label="`${job.dataset_id} · ${job.provider}/${job.model} · v${job.version}${job.reviewed ? '' : '（未审核）'}${job.enabled ? '' : '（已停用）'}`"
+                :value="jobOptionValue(job)"
+                :disabled="!job.reviewed || !job.enabled"
+              />
+            </el-select>
+            <p v-if="store.jobs.length > 0 && store.runnableJobs.length === 0" class="hint">
+              目录中的任务均未审核或已停用，当前不能提交运行。
+            </p>
+          </el-form-item>
+
+          <el-form-item label="query（JSON 对象，最多 8192 字符）">
+            <el-input
+              v-model="queryText"
+              type="textarea"
+              :rows="5"
+              :maxlength="MAX_JSON_LENGTH"
+              resize="vertical"
+              autocomplete="off"
+              @input="handleIntentInput"
             />
-          </el-select>
-          <p v-if="store.jobs.length > 0 && store.runnableJobs.length === 0" class="hint">
-            目录中的任务均未审核或已停用，当前不能提交运行。
-          </p>
-        </el-form-item>
+          </el-form-item>
 
-        <el-form-item label="query（JSON 对象，最多 8192 字符）">
+          <el-form-item label="partition（JSON 对象，最多 8192 字符）">
+            <el-input
+              v-model="partitionText"
+              type="textarea"
+              :rows="4"
+              :maxlength="MAX_JSON_LENGTH"
+              resize="vertical"
+              autocomplete="off"
+              @input="handleIntentInput"
+            />
+          </el-form-item>
+
+          <el-alert
+            v-if="store.pendingIntentKey"
+            type="info"
+            :closable="false"
+            title="上次提交结果未确认。再次手动提交相同内容会复用同一幂等键；不会自动重提。"
+            class="intent-alert"
+          >
+            <code>{{ store.pendingIntentKey }}</code>
+          </el-alert>
+
+          <p v-if="formError" class="error-text" role="alert">{{ formError }}</p>
+          <p v-if="store.runError" class="error-text" role="alert">{{ store.runError }}</p>
+          <el-button
+            type="primary"
+            :loading="store.submitting"
+            :disabled="!selectedJob || store.jobsLoading"
+            native-type="submit"
+          >
+            {{ store.pendingIntentKey ? '手动重试同一提交' : '提交运行' }}
+          </el-button>
+        </el-form>
+      </el-card>
+
+      <el-card class="run-card">
+        <template #header>
+          <h2>查询运行状态</h2>
+        </template>
+        <div class="lookup-row">
           <el-input
-            v-model="queryText"
-            type="textarea"
-            :rows="5"
-            :maxlength="MAX_JSON_LENGTH"
-            resize="vertical"
+            v-model="runKeyText"
+            aria-label="运行键"
+            placeholder="粘贴 64 位小写十六进制运行键"
+            maxlength="64"
             autocomplete="off"
-            @input="handleIntentInput"
           />
-        </el-form-item>
+          <el-button :loading="store.runLoading" @click="trackRunKey">查询</el-button>
+          <el-button v-if="store.activeRunKey" :loading="store.runLoading" @click="refreshRun">
+            手动刷新
+          </el-button>
+        </div>
 
-        <el-form-item label="partition（JSON 对象，最多 8192 字符）">
-          <el-input
-            v-model="partitionText"
-            type="textarea"
-            :rows="4"
-            :maxlength="MAX_JSON_LENGTH"
-            resize="vertical"
-            autocomplete="off"
-            @input="handleIntentInput"
-          />
-        </el-form-item>
-
-        <el-alert
-          v-if="store.pendingIntentKey"
-          type="info"
-          :closable="false"
-          title="上次提交结果未确认。再次手动提交相同内容会复用同一幂等键；不会自动重提。"
-          class="intent-alert"
-        >
-          <code>{{ store.pendingIntentKey }}</code>
-        </el-alert>
-
-        <p v-if="formError" class="error-text" role="alert">{{ formError }}</p>
         <p v-if="store.runError" class="error-text" role="alert">{{ store.runError }}</p>
+        <p v-if="pollNotice" class="hint" role="status">{{ pollNotice }}</p>
+        <p v-if="cancelNotice" class="hint" role="status">{{ cancelNotice }}</p>
+
+        <dl v-if="store.currentRun" class="run-details">
+          <div>
+            <dt>运行键</dt>
+            <dd>
+              <code>{{ store.currentRun.run_key }}</code>
+            </dd>
+          </div>
+          <div>
+            <dt>状态</dt>
+            <dd>{{ statusLabel(store.currentRun.status) }}</dd>
+          </div>
+          <div>
+            <dt>创建时间</dt>
+            <dd>{{ store.currentRun.created_at }}</dd>
+          </div>
+          <div v-if="store.currentRun.started_at">
+            <dt>开始时间</dt>
+            <dd>{{ store.currentRun.started_at }}</dd>
+          </div>
+          <div v-if="store.currentRun.finished_at">
+            <dt>结束时间</dt>
+            <dd>{{ store.currentRun.finished_at }}</dd>
+          </div>
+          <div v-if="store.currentRun.failure_code">
+            <dt>安全错误码</dt>
+            <dd>{{ store.currentRun.failure_code }}</dd>
+          </div>
+        </dl>
         <el-button
-          type="primary"
-          :loading="store.submitting"
-          :disabled="!selectedJob || store.jobsLoading"
-          native-type="submit"
+          v-if="store.currentRun"
+          type="danger"
+          :loading="store.cancelling"
+          :disabled="!isActiveRun"
+          @click="cancelCurrentRun"
         >
-          {{ store.pendingIntentKey ? '手动重试同一提交' : '提交运行' }}
+          请求取消
         </el-button>
-      </el-form>
-    </el-card>
-
-    <el-card class="run-card">
-      <template #header>
-        <h2>查询运行状态</h2>
-      </template>
-      <div class="lookup-row">
-        <el-input
-          v-model="runKeyText"
-          aria-label="运行键"
-          placeholder="粘贴 64 位小写十六进制运行键"
-          maxlength="64"
-          autocomplete="off"
-        />
-        <el-button :loading="store.runLoading" @click="trackRunKey">查询</el-button>
-        <el-button v-if="store.activeRunKey" :loading="store.runLoading" @click="refreshRun">
-          手动刷新
-        </el-button>
-      </div>
-
-      <p v-if="store.runError" class="error-text" role="alert">{{ store.runError }}</p>
-      <p v-if="pollNotice" class="hint" role="status">{{ pollNotice }}</p>
-      <p v-if="cancelNotice" class="hint" role="status">{{ cancelNotice }}</p>
-
-      <dl v-if="store.currentRun" class="run-details">
-        <div>
-          <dt>运行键</dt>
-          <dd>
-            <code>{{ store.currentRun.run_key }}</code>
-          </dd>
-        </div>
-        <div>
-          <dt>状态</dt>
-          <dd>{{ statusLabel(store.currentRun.status) }}</dd>
-        </div>
-        <div>
-          <dt>创建时间</dt>
-          <dd>{{ store.currentRun.created_at }}</dd>
-        </div>
-        <div v-if="store.currentRun.started_at">
-          <dt>开始时间</dt>
-          <dd>{{ store.currentRun.started_at }}</dd>
-        </div>
-        <div v-if="store.currentRun.finished_at">
-          <dt>结束时间</dt>
-          <dd>{{ store.currentRun.finished_at }}</dd>
-        </div>
-        <div v-if="store.currentRun.failure_code">
-          <dt>安全错误码</dt>
-          <dd>{{ store.currentRun.failure_code }}</dd>
-        </div>
-      </dl>
-      <el-button
-        v-if="store.currentRun"
-        type="danger"
-        :loading="store.cancelling"
-        :disabled="!isActiveRun"
-        @click="cancelCurrentRun"
-      >
-        请求取消
-      </el-button>
-      <p v-if="store.currentRun?.status === 'failed'" class="hint">
-        运行失败。页面只显示安全错误码，不展示内部堆栈或敏感信息。
-      </p>
-    </el-card>
+        <p v-if="store.currentRun?.status === 'failed'" class="hint">
+          运行失败。页面只显示安全错误码，不展示内部堆栈或敏感信息。
+        </p>
+      </el-card>
+    </template>
   </section>
 </template>
 

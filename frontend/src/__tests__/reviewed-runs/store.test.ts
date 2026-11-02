@@ -7,8 +7,14 @@ const apiMocks = vi.hoisted(() => ({
   getRun: vi.fn(),
   cancelRun: vi.fn(),
 }))
+const runtimeState = vi.hoisted(() => ({ enabled: true }))
 
-vi.mock('@/api/reviewedRuns', () => ({ reviewedRunsApi: apiMocks }))
+vi.mock('@/reviewed/api', () => ({ reviewedRunsApi: apiMocks }))
+
+vi.mock('@/reviewed/runtime', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/reviewed/runtime')>()
+  return { ...actual, isReviewedRuntimeEnabled: () => runtimeState.enabled }
+})
 
 import { useReviewedRunsStore } from '@/stores/reviewedRuns'
 
@@ -63,6 +69,7 @@ function deferred<T>() {
 beforeEach(() => {
   setActivePinia(createPinia())
   vi.resetAllMocks()
+  runtimeState.enabled = true
   apiMocks.listJobs.mockResolvedValue({ jobs: [makeJob()] })
 })
 
@@ -184,5 +191,40 @@ describe('reviewed runs store', () => {
       run: { status: 'cancelled' },
     })
     expect(store.currentRun?.status).toBe('cancelled')
+  })
+})
+
+describe('reviewed runs store with no composed runtime', () => {
+  it('reports the runtime as not enabled and calls the transport zero times', async () => {
+    runtimeState.enabled = false
+    const store = useReviewedRunsStore()
+
+    expect(store.runtimeEnabled).toBe(false)
+    await expect(store.loadJobs()).resolves.toBe(false)
+    await expect(
+      store.startRun({ jobId: 'daily-equity', version: 'v3', query: {}, partition: {} })
+    ).resolves.toBeNull()
+    expect(store.selectRunKey(RUN_KEY)).toBe(true)
+    await expect(store.fetchRun(RUN_KEY)).resolves.toBeNull()
+    await expect(store.cancelRun()).resolves.toBeNull()
+
+    expect(apiMocks.listJobs).not.toHaveBeenCalled()
+    expect(apiMocks.createRun).not.toHaveBeenCalled()
+    expect(apiMocks.getRun).not.toHaveBeenCalled()
+    expect(apiMocks.cancelRun).not.toHaveBeenCalled()
+    expect(store.jobs).toEqual([])
+    expect(store.jobsError).toBeNull()
+    expect(store.runError).toBeNull()
+    expect(store.submitting).toBe(false)
+    expect(store.cancelling).toBe(false)
+  })
+
+  it('does not claim a transport error while the runtime is absent', async () => {
+    runtimeState.enabled = false
+    const store = useReviewedRunsStore()
+    await store.loadJobs()
+
+    expect(store.jobsError).toBeNull()
+    expect(store.jobsLoading).toBe(false)
   })
 })

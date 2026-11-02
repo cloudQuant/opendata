@@ -2,6 +2,7 @@ import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AxiosAdapter, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 
 const toastMocks = vi.hoisted(() => ({ error: vi.fn(), success: vi.fn(), warning: vi.fn() }))
+const runtimeState = vi.hoisted(() => ({ enabled: true }))
 
 vi.mock('@/stores/auth', () => ({
   useAuthStore: () => ({
@@ -14,8 +15,16 @@ vi.mock('@/stores/auth', () => ({
 
 vi.mock('element-plus', () => ({ ElMessage: toastMocks }))
 
+// The reviewed runtime is composed by no entrypoint today, so the client reads
+// its enablement from one build-time variable. The wire contract below is the
+// enabled path; the disabled path is judged in its own block.
+vi.mock('@/reviewed/runtime', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/reviewed/runtime')>()
+  return { ...actual, isReviewedRuntimeEnabled: () => runtimeState.enabled }
+})
+
 import request from '@/utils/request'
-import { reviewedRunsApi } from '@/api/reviewedRuns'
+import { reviewedRunsApi } from '@/reviewed/api'
 
 const calls: Array<{
   url: string
@@ -48,6 +57,7 @@ const adapter: AxiosAdapter = async (
 beforeEach(() => {
   calls.length = 0
   responseBody = null
+  runtimeState.enabled = true
   request.defaults.adapter = adapter
   vi.clearAllMocks()
 })
@@ -131,6 +141,39 @@ describe('reviewed runs API wire contract', () => {
     await expect(reviewedRunsApi.cancelRun('A'.repeat(64))).rejects.toThrow(
       'reviewed_run_key_invalid'
     )
+    expect(calls).toEqual([])
+  })
+})
+
+describe('reviewed runs API with no composed runtime', () => {
+  it('issues zero requests and names the not-enabled cause for all four operations', async () => {
+    runtimeState.enabled = false
+
+    await expect(reviewedRunsApi.listJobs()).rejects.toThrow('reviewed_runtime_not_enabled')
+    await expect(
+      reviewedRunsApi.createRun({
+        job_id: 'daily-equity',
+        version: 'v3',
+        idempotency_key: 'b'.repeat(64),
+        query: {},
+        partition: {},
+        shard: null,
+      })
+    ).rejects.toThrow('reviewed_runtime_not_enabled')
+    await expect(reviewedRunsApi.getRun('a'.repeat(64))).rejects.toThrow(
+      'reviewed_runtime_not_enabled'
+    )
+    await expect(reviewedRunsApi.cancelRun('a'.repeat(64))).rejects.toThrow(
+      'reviewed_runtime_not_enabled'
+    )
+
+    expect(calls).toEqual([])
+  })
+
+  it('refuses before validating the run key, so no path is ever built', async () => {
+    runtimeState.enabled = false
+
+    await expect(reviewedRunsApi.getRun('../other')).rejects.toThrow('reviewed_runtime_not_enabled')
     expect(calls).toEqual([])
   })
 })
