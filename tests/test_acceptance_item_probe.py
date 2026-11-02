@@ -850,12 +850,27 @@ def test_ac1_09_real_gitleaks_rejects_slack_shaped_template_token() -> None:
 def test_ac1_08_registered_repair_and_counterfactuals_remain_reachable() -> None:
     ctx = Context(REPO_ROOT, (), {})
     probe = probe_for("AC-1|08")
-    clean = resolve_repair(measure_ac1_08(ctx), probe.repair)
+    measured = measure_ac1_08(ctx)
+    clean = resolve_repair(measured, probe.repair)
 
     assert probe.judge(clean).state == PROVEN
     for counterfact in probe.breaks:
         broken = {**clean, **dict(counterfact.facts)}
         assert probe.judge(broken).state == GAP, counterfact.label
+
+    # The recipe has to stay reachable from the very reading it is meant to repair. An unparseable
+    # or empty section 1 measures `rows=0` and cascades `uncovered` to the cited count, so a recipe
+    # that inherited `rows` (the old `dated="*rows"` copied the *measured* rows) could never satisfy
+    # `int(rows) > 0` -- a repair that cannot be repaired, and invisible here, because the healthy
+    # reading above already passes.
+    collapsed = {
+        **measured,
+        "table_valid": "no",
+        "rows": "0",
+        "dated": "0",
+        "uncovered": measured["cited"],
+    }
+    assert probe.judge(resolve_repair(collapsed, probe.repair)).state == PROVEN
 
 
 def test_ac1_05_runtime_counterfactuals_remain_reachable() -> None:

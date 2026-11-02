@@ -16611,7 +16611,14 @@ PROBES: Final[tuple[Probe, ...]] = (
         ),
         repair={
             "table_valid": "yes",
-            "dated": "*rows",
+            # Both counters reference the measured `cited` face, not each other: `resolve_repair`
+            # copies from the *measured* facts, so the old `dated="*rows"` inherited whatever the
+            # broken table reported. With an unparseable or empty section that was `rows=0`, and
+            # `int(rows) > 0` then kept the clean reading unreachable -- a repair that cannot be
+            # repaired. `cited` comes from the inventory rather than the table, so it stays the
+            # number the registry has to match even in the reading being repaired.
+            "rows": "*cited",
+            "dated": "*cited",
             "undecided": "0",
             "unlinked": "0",
             "responsible_missing": "0",
