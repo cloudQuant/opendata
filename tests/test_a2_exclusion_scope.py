@@ -162,9 +162,11 @@ class TestPortedTreeStaysSeparate:
         assert resolved is not None, "A2 baseline missing - the gate is inactive"
         on_disk = {name for tree in ("alembic", "alembic_data") for name in tree_files(tree)}
         dark = sorted(name for name in on_disk if name not in set(resolved))
-        # alembic/env.py predates the A0 baseline and is unmodified since, so it
-        # is legitimately outside the "touched since A0" set; nothing else is.
-        assert dark == ["alembic/env.py"], f"migration files missing from the A2 set: {dark}"
+        # Nothing may be dark: ``alembic/env.py`` used to be the single
+        # legitimate exception because it predated the A0 baseline untouched, and
+        # #161 edited it (the raw-SQL table carve-outs), so it joined the
+        # "changed since A0" set like every other migration module.
+        assert dark == [], f"migration files missing from the A2 set: {dark}"
 
     def test_a_walk_from_the_repo_root_still_skips_the_ported_tree(self) -> None:
         """``[tool.ruff].exclude`` patterns match the path *relative to the walk

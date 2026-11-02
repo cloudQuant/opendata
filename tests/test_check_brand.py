@@ -20,6 +20,23 @@ INVENTORY_PATHS = (
     "docs/afi204-runtime-inventory.json",
     "docs/afi204-migration-catalog.json",
 )
+#: Paths #161 added to the register for the single ``*_data`` token, because each
+#: one names the pre-migration warehouse/metadata database or the persisted
+#: rights-evidence label as a factual identifier. They are allowlisted for that
+#: token only; every other brand token and the app-reference sweep still apply.
+FACTUAL_PREDECESSOR_NAME_PATHS = (
+    "docs/operations-afi204-migration.md",
+    "opendata/data/providers/sina/lrb_statement_process.py",
+    "opendata/migration_plan.py",
+    "scripts/ops/sina_lrb_raw_canary.py",
+    "tests/test_legacy_stock_daily_inventory.py",
+    "tests/test_legacy_stock_daily_transfer_cli.py",
+    "tests/test_migration_host_reconcile.py",
+    "tests/test_migration_plan.py",
+    "tests/test_sina_lrb_statement_process.py",
+)
+#: Every path the schema token may appear in, i.e. the register's own exact set.
+SCHEMA_TOKEN_PATHS = (*TRANSFER_PATHS, *INVENTORY_PATHS, *FACTUAL_PREDECESSOR_NAME_PATHS)
 
 
 def _write_fixture(root: Path, relative_path: str, contents: str) -> None:
@@ -32,23 +49,23 @@ def _brand_token(suffix: str) -> str:
     return "_".join(("akshare", suffix))
 
 
-def test_legacy_schema_token_is_allowed_only_at_exact_transfer_and_inventory_paths(
+def test_legacy_schema_token_is_allowed_only_at_exact_registered_paths(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     schema_token = _brand_token("data")
     unrelated_path = "tests/fixtures/unrelated.py"
     monkeypatch.setattr(check_brand, "REPO_ROOT", tmp_path)
 
-    for relative_path in (*TRANSFER_PATHS, *INVENTORY_PATHS):
+    for relative_path in SCHEMA_TOKEN_PATHS:
         _write_fixture(tmp_path, relative_path, schema_token)
     _write_fixture(tmp_path, unrelated_path, schema_token)
 
     expected_allowlist = {
-        schema_token: frozenset((*TRANSFER_PATHS, *INVENTORY_PATHS)),
+        schema_token: frozenset(SCHEMA_TOKEN_PATHS),
         _brand_token("network"): frozenset({"docs/afi204-migration-catalog.json"}),
     }
     assert expected_allowlist == check_brand.TOKEN_PATH_ALLOWLIST
-    assert not {*TRANSFER_PATHS, *INVENTORY_PATHS}.intersection(check_brand.WHITELISTED_FILES)
+    assert not set(SCHEMA_TOKEN_PATHS).intersection(check_brand.WHITELISTED_FILES)
     assert [hit.file for hit in check_brand.scan_token(schema_token)] == [unrelated_path]
 
 
