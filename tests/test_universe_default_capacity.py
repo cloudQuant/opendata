@@ -167,6 +167,7 @@ async def test_builtin_incremental_schedule_without_limit_uses_job_default(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     captured: dict[str, Any] = {}
+    real_job = jobs.run_incremental_job
 
     async def fake_job(**kwargs: Any) -> jobs.JobResult:
         captured.update(kwargs)
@@ -178,7 +179,28 @@ async def test_builtin_incremental_schedule_without_limit_uses_job_default(
     await jobs._execute_template(template)
 
     assert "limit" not in captured
-    assert jobs.DEFAULT_SYMBOL_LIMIT == 10_000
+    # The job default is judged on the cap the schedule-forwarded arguments actually resolve
+    # to at the derive boundary: handed the template's kwargs with no limit key, the real
+    # job passes its signature default -- 10,000, the capacity the sibling tests refuse one
+    # symbol past -- into derive_universe. Renaming or resizing the default turns this red.
+    database_module = ModuleType("opendata.core.database")
+    database_module.async_session_maker = object()  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "opendata.core.database", database_module)
+    seen: dict[str, Any] = {}
+
+    class _DeriveBoundaryError(Exception):
+        pass
+
+    def spy_derive(engine: Any, domain: str, *, symbols: Any, limit: Any, window: Any) -> Any:
+        seen["limit"] = limit
+        raise _DeriveBoundaryError
+
+    monkeypatch.setattr(jobs, "derive_universe", spy_derive)
+    with pytest.raises(_DeriveBoundaryError):
+        await real_job(
+            **captured, engine=_Warehouse([]), as_of=WINDOW.end, calendar=weekday_calendar()
+        )
+    assert seen == {"limit": 10_000}
 
 
 @pytest.mark.asyncio

@@ -18,7 +18,6 @@ from opendata.data.protocol import FetchContext
 from opendata.data.providers.fmp import provider as fmp_provider
 from opendata.data.providers.fmp.models import _client as fmp_client
 from opendata.data.providers.fmp.models.iter2 import (
-    FMP_CALENDAR_PAGE_LIMIT,
     AvailableIndicesFetcher,
     CalendarDividendFetcher,
     CalendarEarningsFetcher,
@@ -291,7 +290,40 @@ def test_calendar_paging_uses_zero_based_pages_until_empty_not_short_page(
 
     assert [row.symbol for row in rows] == ["GRG.L", "AAPL"]
     assert [call[1]["page"] for call in http_client.calls] == ["0", "1", "2"]
-    assert FMP_CALENDAR_PAGE_LIMIT == 4_000
+
+
+def test_calendar_earnings_page_limit_bites_at_the_documented_4000_record_cap(
+    http_client: _HTTPClient,
+) -> None:
+    """Unpatched boundary: a full 4,000-record page reads; one record past it is refused."""
+    first = _official_earnings()
+    at_cap = [{**first, "symbol": f"CAP{index:05d}"} for index in range(4_000)]
+    http_client.responses = [_ok(at_cap), _ok([])]
+
+    rows = CalendarEarningsFetcher().fetch(
+        ctx=_context("CalendarEarnings"),
+        start_date="2026-07-01",
+        end_date="2026-09-29",
+        max_requests=2,
+    )
+
+    assert len(rows) == 4_000
+    assert [call[1]["page"] for call in http_client.calls] == ["0", "1"]
+
+    http_client.calls.clear()
+    http_client.responses = [_ok([*at_cap, {**first, "symbol": "CAP99999"}])]
+
+    with pytest.raises(fmp_client.FMPProviderError) as error:
+        CalendarEarningsFetcher().fetch(
+            ctx=_context("CalendarEarnings"),
+            start_date="2026-07-01",
+            end_date="2026-09-29",
+            max_requests=2,
+        )
+
+    assert error.value.code == "FMP_PROVIDER_LIMIT_VIOLATION"
+    assert error.value.requests_made == 1
+    assert len(http_client.calls) == 1
 
 
 def test_calendar_page_and_record_limits_raise_explicit_incomplete_errors(

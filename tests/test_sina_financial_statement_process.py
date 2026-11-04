@@ -206,8 +206,6 @@ def test_private_capture_seam_preserves_exact_fixture_bytes_in_canonical_base64(
     assert client._config.max_attempts == 1
     assert context.request_budget is not None
     assert context.request_budget.attempts_used == 1
-    assert MAX_RESULT_BYTES == 16 * 1024 * 1024
-    assert MAX_RESULT_TEXT_BYTES == 8 * 1024 * 1024
 
 
 @pytest.mark.parametrize(
@@ -382,6 +380,22 @@ def test_production_child_closes_session_when_configuration_fails(
         fetch_sina_fzb_capture({"protocol": SINA_FZB_PROCESS_PROTOCOL, "symbol": SYMBOL})
 
     assert session.closed
+
+
+def test_reviewed_result_ceilings_are_enforced_at_the_executor_boundary() -> None:
+    """16 MiB encoded / 8 MiB of JSON text are ceilings the executor refuses to exceed."""
+    registry = ReviewedProcessRegistry({SINA_FZB_PROCESS_OPERATION_ID: fetch_sina_fzb_capture})
+    with pytest.raises(ValueError, match="max_result_bytes is outside the supported range"):
+        ReviewedProcessExecutor(registry, max_result_bytes=16 * 1024 * 1024 + 1)
+    with pytest.raises(ValueError, match="max_result_text_bytes is outside the supported range"):
+        ReviewedProcessExecutor(registry, max_result_text_bytes=8 * 1024 * 1024 + 1)
+    # Exactly at each ceiling the executor binds — shrink either bound and this construction
+    # refuses, widen it and the two refusals above stop firing.
+    ReviewedProcessExecutor(
+        registry,
+        max_result_bytes=16 * 1024 * 1024,
+        max_result_text_bytes=8 * 1024 * 1024,
+    )
 
 
 def test_fixed_production_operation_fails_safely_in_a_real_child_process() -> None:

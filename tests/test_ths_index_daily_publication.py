@@ -201,7 +201,13 @@ def test_contracts_and_tasks_are_one_to_one_and_remain_disabled() -> None:
         seen_dataset_ids.add(contract.dataset_id)
 
     assert len(seen_dataset_ids) == len(INDEX_DATASET_ID_BY_SYMBOL) == 4
-    assert INDEX_DATASET_ID_BY_SYMBOL["000906.SH"] == "cn.csi800.index.daily"
+    # The CSI800 id is a routing key, so the reading is the registry: the precomputed
+    # "cn.csi800.index.daily" triple resolves through the registry the loop just built to
+    # exactly the contract the builder produces for 000906.SH. Rename the id on either side
+    # and the lookup misses (DatasetContractNotFoundError) or the contract no longer matches.
+    assert registry.resolve(
+        "cn.csi800.index.daily", SSE50_INDEX_SCHEMA_VERSION, SSE50_INDEX_SEMANTIC_VERSION
+    ) == build_index_daily_contract("000906.SH")
     assert build_sse50_index_daily_contract().dataset_id == SSE50_INDEX_DATASET_ID
     with pytest.raises(ValueError, match="four reviewed benchmark codes"):
         build_index_daily_contract("883300.TI")

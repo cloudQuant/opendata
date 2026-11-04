@@ -21,10 +21,7 @@ import pytest
 
 from opendata.data.providers.ths._source import SOURCE
 from opendata.data.providers.ths.endpoints import PRICES_ENDPOINT, shanghai_midnight_millis
-from opendata.data.providers.ths.transport.credentials import (
-    DEFAULT_FUYAO_API_BASE_URL,
-    FuyaoCredentials,
-)
+from opendata.data.providers.ths.transport.credentials import FuyaoCredentials
 from opendata.data.providers.ths.transport.envelope import parse_envelope
 from opendata.data.providers.ths.transport.errors import error_for_transport
 from opendata.data.providers.ths.transport.http_client import (
@@ -1480,7 +1477,10 @@ def test_default_client_factory_pins_single_attempt_and_no_cache(
     rate_limiter = captured["rate_limiter"]
     assert isinstance(rate_limiter, FuyaoRateLimiter)
     assert rate_limiter.burst == 1
-    assert DEFAULT_FUYAO_API_BASE_URL == "https://fuyao.aicubes.cn"
+    # The pinned origin is judged on the credential object the client is actually built
+    # around: the reviewed default base URL must land on the credentials the factory
+    # receives, so renaming or dropping the default turns this red.
+    assert credentials.base_url == "https://fuyao.aicubes.cn"
 
 
 @pytest.mark.parametrize(

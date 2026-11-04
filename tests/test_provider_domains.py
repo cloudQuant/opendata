@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import importlib
 import json
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -1916,10 +1917,20 @@ def test_public_exports_match_reviewed_batch5_counts_and_types() -> None:
     assert models.ContractModel is ContractModel
     assert "ContractModel" in models.__all__
     assert issubclass(models.FredSeniorLoanOfficerSurvey, ContractModel)
-    assert models.FredSeniorLoanOfficerSurvey.__module__ == "opendata.data.models.fred_sloos"
+    # The reviewed module placement is judged through the import machinery: the class the
+    # facade exports must be the very object published at its reviewed module path -- a move,
+    # split, or duplicate definition of either class turns the identity red, not just a
+    # renamed __module__.
+    assert (
+        importlib.import_module("opendata.data.models.fred_sloos").FredSeniorLoanOfficerSurvey
+        is models.FredSeniorLoanOfficerSurvey
+    )
     assert is_dataclass(models.BlsCatalogPage)
     assert issubclass(models.BlsCatalogPage, Sequence)
-    assert models.BlsCatalogPage.__module__ == "opendata.data.models.period_series"
+    assert (
+        importlib.import_module("opendata.data.models.period_series").BlsCatalogPage
+        is models.BlsCatalogPage
+    )
     assert get_origin(models.FredOutputType) is Literal
     assert get_args(models.FredOutputType) == (1, 2, 3, 4)
     assert get_origin(models.FredTransformUnits) is Literal
@@ -1936,7 +1947,10 @@ def test_public_exports_match_reviewed_batch5_counts_and_types() -> None:
     )
     assert issubclass(models.FredSeniorLoanOfficerSurveyQuery, QueryParams)
     assert not issubclass(models.FredSeniorLoanOfficerSurveyQuery, ContractModel)
-    assert models.FredSeniorLoanOfficerSurveyQuery.__module__ == ("opendata.data.models.fred_sloos")
+    assert (
+        importlib.import_module("opendata.data.models.fred_sloos").FredSeniorLoanOfficerSurveyQuery
+        is models.FredSeniorLoanOfficerSurveyQuery
+    )
 
 
 def test_domain_query_permission_does_not_grant_default_api_key_scope() -> None:

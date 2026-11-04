@@ -134,7 +134,15 @@ class TestDeclarationFace:
     def test_the_window_is_a_query_pair_with_an_absolute_start_and_relative_end(self) -> None:
         """overnight_bank_funding_rate.py:78-82 fills start ABSOLUTE, end RELATIVE (:96-98)."""
         assert OVERNIGHT_BANK_FUNDING_RATE.path_placeholders == ()
-        assert OVERNIGHT_BANK_FUNDING_RATE.rows_pointer == "refRates"
+        # rows_pointer is judged where it works: the kernel only finds the published records
+        # when the pointer reaches into the document's ``refRates`` key. Reading the fixture
+        # document through the fetch proves it -- a pointer that stopped naming that key
+        # refuses with FEDERAL_RESERVE_SHAPE_INVALID before a single row normalizes.
+        fetcher, _ = served(OVERNIGHT_BANK_FUNDING_RATE, OBFR_ROWS)
+        assert [row.date for row in rows_of(fetcher, OVERNIGHT_BANK_FUNDING_RATE)] == [
+            date(2024, 6, 24),
+            date(2024, 6, 25),
+        ]
         assert {p.encoded_key for p in OVERNIGHT_BANK_FUNDING_RATE.params} == {
             "startDate",
             "endDate",

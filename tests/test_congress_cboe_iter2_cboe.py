@@ -497,7 +497,9 @@ def test_each_all_access_model_rejects_its_hand_authored_destructive_fixture(
     assert transport.responses == []
 
 
-def test_all_access_bindings_preserve_unverified_rights_and_the_fixed_eleven_model_count() -> None:
+def test_all_access_bindings_preserve_unverified_rights_and_the_fixed_eleven_model_count(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     assert set(PROVIDER.fetcher_dict) == {
         "AvailableIndices",
         "IndexConstituents",
@@ -512,7 +514,25 @@ def test_all_access_bindings_preserve_unverified_rights_and_the_fixed_eleven_mod
         "OptionsChains",
     }
     assert all(not fetcher.capability.verified for fetcher in PROVIDER.fetchers)
-    assert PROVIDER.credentials[0].environment_variable == "CBOE_LIVEVOL_ACCESS_TOKEN"
+    # The declared credential name is judged by use, not by copying the string: the value
+    # provisioned under the name PROVIDER publishes lands on the wire as the bearer token,
+    # and removing it fails closed before any request is sent. Declaration-client drift
+    # (either side renamed alone) turns this red.
+    credential_env = PROVIDER.credentials[0].environment_variable
+    transport = _Transport({"quotes": []})
+    monkeypatch.setattr(_client, "get_shared_http_client", lambda: transport)
+    monkeypatch.setenv(credential_env, "witness-token")
+    _client.get_json(
+        "/market/underlying-quotes", params={}, context=_fixture_context("EquityQuote")
+    )
+    assert len(transport.requests) == 1
+    assert transport.requests[0]["headers"]["Authorization"] == "Bearer witness-token"
+    monkeypatch.delenv(credential_env)
+    with pytest.raises(_client.CboeAllAccessError, match="CBOE_LIVEVOL_ACCESS_TOKEN_MISSING"):
+        _client.get_json(
+            "/market/underlying-quotes", params={}, context=_fixture_context("EquityQuote")
+        )
+    assert len(transport.requests) == 1
     # IndexSnapshots moved from the refusal ledger to a bound adapter once the official panel was
     # captured (wave 37), and FuturesCurve once Cboe's own settlement CSV was captured with a
     # working dt= day selection (wave 39). Both legs are now 11 + 0 and the fixed identity count
