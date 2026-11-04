@@ -12,6 +12,15 @@
       "ast_exceptions": []
     },
     {
+      "path": ".github/workflows/ci.yml",
+      "purpose": "CI 作业为 AC-17|05 的重放面取得 upstream.lock 钉住的上游检出，并把目录交给 OPENDATA_AKSHARE_UPSTREAM_PATH；这是搬运层与上游逐行 diff 所需的只读取证步骤，不是依赖安装。",
+      "category": "operations-tool",
+      "reviewed_date": "2026-11-04",
+      "reviewer": "新登记（非 sha 漂移重钉）：该路径此前不含裸品牌词，本 PR 引入 4 行 / 4 次出现 —— 步骤名、LOCK 路径 opendata/data/providers/akshare/_vendor/upstream.lock、RUNNER_TEMP 目录名与 OPENDATA_AKSHARE_UPSTREAM_PATH 导出。逐行核对没有任何 `import akshare` / `from akshare …` / `pip install akshare` 形态的加载行，URL 与 commit 都从 upstream.lock 现读而非写字面量，检出后用 rev-parse 断言等于锁内 commit，取到的是干净上游树且只被 report_port/ported_signature_fidelity/port_scope_inventory 用于逐字节重放对账；带品牌的加载形态行 0==0，出现次数 pinned=4==live=4。",
+      "sha256": "abe808c1ab6d4f9488999664b14bf86b3ec103753c1fd0ad0b1262243f9f9f3f",
+      "ast_exceptions": []
+    },
+    {
       "path": ".pre-commit-config.yaml",
       "purpose": "分层检查的来源搬运路径和工具名称，沿用质量规范；不加载外部包。",
       "category": "build-declaration",

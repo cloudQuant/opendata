@@ -147,6 +147,24 @@ jobs:
           test "$(git -C "$CHECKOUT" rev-parse HEAD)" = "$COMMIT"
           printf 'OPENDATA_OPENBB_PATH=%s/openbb_platform\n' "$CHECKOUT" >> "$GITHUB_ENV"
 
+      - name: Fetch pinned upstream akshare checkout for the port replay face
+        run: |
+          # AC-17|05 asks whether every vendored file is the deterministic replay of the upstream
+          # source at the pinned commit. `upstream.lock` is the only authority for both the URL and
+          # the commit, so they are read from it rather than repeated as literals here; the fetch is
+          # depth-1 and the rev-parse assertion fails the job if HEAD is not exactly that commit.
+          LOCK=opendata/data/providers/akshare/_vendor/upstream.lock
+          URL=$(python -c "import json;print(json.load(open('$LOCK'))['upstream']['url'])")
+          COMMIT=$(python -c "import json;print(json.load(open('$LOCK'))['upstream']['commit'])")
+          test -n "$URL" && test -n "$COMMIT" || { echo "AC-17|05: upstream.lock carries no commit"; exit 1; }
+          CHECKOUT="$RUNNER_TEMP/opendata-akshare"
+          git init "$CHECKOUT"
+          git -C "$CHECKOUT" fetch --depth=1 "$URL" "$COMMIT"
+          git -C "$CHECKOUT" checkout --detach FETCH_HEAD
+          test "$(git -C "$CHECKOUT" rev-parse HEAD)" = "$COMMIT"
+          printf 'OPENDATA_AKSHARE_UPSTREAM_PATH=%s\n' "$CHECKOUT" >> "$GITHUB_ENV"
+          echo "port replay upstream: $COMMIT"
+
       - name: Install frontend dependencies
         run: npm ci --prefix frontend
 
