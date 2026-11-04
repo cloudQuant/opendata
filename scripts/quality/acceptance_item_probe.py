@@ -14684,10 +14684,27 @@ def _cov_formula_controls() -> int:
 
 
 def _cov_relative(filename: str, sources: Sequence[str], root: Path) -> str:
-    """_cov_relative: resolve a Cobertura ``filename`` (relative to ``<source>``) to the repo."""
+    """_cov_relative: resolve a Cobertura ``filename`` (relative to ``<source>``) to the repo.
+
+    The absolute ``<source>`` in an archived report is the *stamping machine's* path, so
+    ``relative_to(root)`` raises ``ValueError`` on every other machine and the key used to fall
+    back to the raw ``filename``. That silently degrades a populated population to an empty one:
+    the A2 set is repo-relative (``opendata/pipeline/x.py``) while Cobertura says
+    ``pipeline/x.py``. Retrying under the recorded source's own last component recovers the
+    mapping whenever archive and repository agree, and it can only return a path that exists --
+    an unverifiable key still falls through to the raw name, so the 「联接必须过 <source>」 face
+    keeps failing closed instead of inventing a join.
+    """
     for source in sources:
         with suppress(ValueError):
             return str((Path(source) / filename).resolve().relative_to(root))
+    for source in sources:
+        package = Path(source).name
+        if not package:
+            continue
+        candidate = root / package / filename
+        if candidate.is_file():
+            return str(candidate.relative_to(root))
     return filename
 
 
