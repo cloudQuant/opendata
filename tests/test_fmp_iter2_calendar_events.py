@@ -17,7 +17,6 @@ from opendata.data.protocol import FetchContext
 from opendata.data.providers.fmp import provider as fmp_provider
 from opendata.data.providers.fmp.models import _client as fmp_client
 from opendata.data.providers.fmp.models.iter2 import (
-    FMP_CALENDAR_PAGE_LIMIT,
     CalendarEventsFetcher,
     CalendarEventsQuery,
 )
@@ -388,9 +387,42 @@ def test_calendar_events_rejects_provider_page_limit_violation(
             end_date="2026-09-29",
         )
 
-    assert FMP_CALENDAR_PAGE_LIMIT == 4_000
+    # The refusal is put on the wire at the first page of the first paginated route -- no
+    # second request is issued once a page has outgrown the limit the engine reads.
+    assert [call[1]["page"] for call in http_client.calls] == ["0"]
     assert error.value.code == "FMP_PROVIDER_LIMIT_VIOLATION"
     assert error.value.requests_made == 1
+
+
+def test_calendar_events_page_limit_bites_at_the_documented_4000_record_cap(
+    http_client: _HTTPClient,
+) -> None:
+    """Unpatched boundary: exactly 4,000 records page through; one more is refused."""
+    valid = _fixtures()["earnings"]
+    at_cap = [{**valid, "symbol": f"CAP{index:05d}"} for index in range(4_000)]
+    http_client.responses = [_ok(at_cap), _ok([]), _ok([]), _ok([]), _ok([])]
+
+    rows = CalendarEventsFetcher().fetch(
+        ctx=_context(),
+        start_date="2026-07-01",
+        end_date="2026-09-29",
+    )
+
+    assert len(rows) == 4_000
+
+    http_client.calls.clear()
+    http_client.responses = [_ok([*at_cap, {**valid, "symbol": "CAP99999"}])]
+
+    with pytest.raises(fmp_client.FMPProviderError) as error:
+        CalendarEventsFetcher().fetch(
+            ctx=_context(),
+            start_date="2026-07-01",
+            end_date="2026-09-29",
+        )
+
+    assert error.value.code == "FMP_PROVIDER_LIMIT_VIOLATION"
+    assert error.value.requests_made == 1
+    assert len(http_client.calls) == 1
 
 
 def test_calendar_events_provider_model_query_injects_identity_and_serializes_typed_rows(

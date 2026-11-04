@@ -53,7 +53,6 @@ from opendata.pipeline.run_service import (
     RunService,
 )
 from opendata.pipeline.stock_daily_job import (
-    MAX_STOCK_DAILY_WINDOW_DAYS,
     CapturedStockDailyResponse,
     StockDailyJsonResponse,
     build_stock_daily_job,
@@ -658,7 +657,21 @@ def test_window_has_a_fixed_maximum_and_rejects_partitions(tmp_path: Path) -> No
     partitioned = _request().model_copy(update={"partition": {"date": "2026-10-26"}})
     with pytest.raises(ValueError, match="extra partitions"):
         job.fetch(partitioned, _context())
-    assert MAX_STOCK_DAILY_WINDOW_DAYS == 3_660
+    # The 3,660-day inclusive cap is judged at its boundary, not copied: a window of exactly
+    # 3,660 days passes the date-range guard (the NEXT guard -- partitions -- is what refuses
+    # it), while 3,661 days is refused by the range guard itself. Shrink the cap and the
+    # boundary window starts raising "date-range limit"; grow it and the over-cap window
+    # starts raising "extra partitions".
+    boundary_start = (date(2026, 10, 27) - timedelta(days=3_659)).isoformat()
+    over_start = (date(2026, 10, 27) - timedelta(days=3_660)).isoformat()
+    at_cap = _request(start=boundary_start, end="2026-10-27").model_copy(
+        update={"partition": {"date": "2026-10-26"}}
+    )
+    with pytest.raises(ValueError, match="extra partitions"):
+        job.fetch(at_cap, _context())
+    past_cap = _request(start=over_start, end="2026-10-27")
+    with pytest.raises(ValueError, match="date-range limit"):
+        job.fetch(past_cap, _context())
     assert calls == []
 
 

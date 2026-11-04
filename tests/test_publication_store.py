@@ -20,7 +20,6 @@ from sqlalchemy.schema import CreateTable
 
 from opendata.pipeline import publication_store
 from opendata.pipeline.publication_store import (
-    MAX_PAGE_BYTES,
     MAX_SNAPSHOT_TTL,
     PUBLICATION_HEADS,
     PUBLICATION_METADATA,
@@ -1051,7 +1050,16 @@ def test_read_page_streams_and_rejects_over_budget_without_a_partial_page(
         "equity.daily", publication_id=publication.publication_id, page_size=1_000
     )
     assert snapshot.record_count == len(rows)
-    assert MAX_PAGE_BYTES == 8 * 1024 * 1024
+    # The budget is judged at its boundary: the same publication reads cleanly page by page
+    # while a page stays inside 8,388,608 response bytes -- 100 rows of this fixture are
+    # ~7.2 MiB and stream fully with the tail left for the next cursor. Only the page that
+    # crosses the cap is refused (below).
+    under_budget = store.create_snapshot(
+        "equity.daily", publication_id=publication.publication_id, page_size=100
+    )
+    streamed = store.read_page(under_budget.snapshot_id)
+    assert len(streamed.records) == 100
+    assert streamed.next_cursor is not None
 
     consumed = 0
     original_iter = MappingResult.__iter__

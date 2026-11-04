@@ -663,8 +663,27 @@ def test_fingerprint_is_order_independent_but_binds_listing_and_delisting_eviden
 
 def test_constants_describe_the_full_scope_and_upstream_limit() -> None:
     assert {exchange.value for exchange in ALL_A_SHARE_EXCHANGES} == {"SSE", "SZSE", "BSE"}
-    assert ALL_A_SHARE_SCOPE_ID == "cn-a-share-equity"
-    assert MAX_FINANCIAL_WINDOW_SPAN_DAYS == 3650
+    # The scope id is judged at the planner's exact-match gate: evidence attesting the
+    # precomputed "cn-a-share-equity" scope plans without a scope blocker, while evidence one
+    # suffix off it is refused and the refusal detail names that exact scope. Renaming the
+    # constant moves both legs red -- the clean claim no longer matches, the blocker text
+    # stops spelling the reviewed scope.
+    clean = _plan(_manifest(scope_id="cn-a-share-equity"))
+    assert FinancialPlanBlockReason.UNIVERSE_SCOPE_ID_MISMATCH not in _reasons(
+        clean.universe_blockers
+    )
+    drifted = _plan(_manifest(scope_id="cn-a-share-equity-v2"))
+    scope_details = [
+        blocker.detail
+        for blocker in drifted.universe_blockers
+        if blocker.reason is FinancialPlanBlockReason.UNIVERSE_SCOPE_ID_MISMATCH
+    ]
+    assert scope_details == ["universe evidence must attest the exact cn-a-share-equity scope"]
+    # The ten-year cap bites at its boundary: a capability declaring exactly 3650 days is
+    # accepted, one day more is refused with the bound spelled out in the message.
+    assert _capability(max_window_span_days=3650).max_window_span_days == 3650
+    with pytest.raises(FinancialManifestError, match="max_window_span_days must be 1\\.\\.3650"):
+        _capability(max_window_span_days=3651)
 
 
 def test_security_evidence_rejects_malformed_identity_and_boundary_claims() -> None:

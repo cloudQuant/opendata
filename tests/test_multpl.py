@@ -60,8 +60,13 @@ def test_percent_and_annual_specs_are_source_declared() -> None:
     assert yield_rows[0].value == 3.75
     assert yield_rows[0].value_unit == "percent"
     assert yield_rows[0].frequency == "monthly"
-    assert METRIC_PAGES["price_to_book"].frequency == "annual"
-    assert METRIC_PAGES["price_to_sales"].frequency == "annual"
+    # The annual pages' cadence is judged on the observations the parser stamps: parsing the
+    # Date/Value table through each annual spec must surface "annual" on every row it
+    # produces -- reclassifying a page (or the parser dropping the field) turns this red.
+    book_rows = parse_table(HTML_FIXTURE, "price_to_book", METRIC_PAGES["price_to_book"])
+    assert [row.frequency for row in book_rows] == ["annual", "annual"]
+    sales_rows = parse_table(HTML_FIXTURE, "price_to_sales", METRIC_PAGES["price_to_sales"])
+    assert [row.frequency for row in sales_rows] == ["annual", "annual"]
 
 
 def test_fetcher_routes_single_metric_and_filters_inclusive_dates(

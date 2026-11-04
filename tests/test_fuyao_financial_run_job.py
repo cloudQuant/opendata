@@ -1120,6 +1120,7 @@ def test_job_factory_and_process_fetch_handler_remain_fail_closed(
         FUYAO_PROCESS_OPERATION_ID,
         FuyaoProcessDeploymentBinding,
         ReviewedProcessExecutor,
+        ReviewedProcessRegistry,
     )
     from opendata.pipeline.run_identity import RunRequest, TaskDefinition
     from opendata.pipeline.run_service import RunExecutionContext
@@ -1211,7 +1212,20 @@ def test_job_factory_and_process_fetch_handler_remain_fail_closed(
         "run_key",
     }
     assert received_parameters["run_key"] == "c" * 64
-    assert FUYAO_PROCESS_OPERATION_ID == "fuyao-financial-observation-v1"
+    # The operation id is a registry routing key, judged by the handler the reviewed registry
+    # resolves for it -- the same {id: handler} binding the production factory builds (
+    # fuyao_financial_run_job.py:289-290). Renaming either side makes the precomputed lookup
+    # miss the handler, and an unregistered id resolves to nothing.
+    from opendata.pipeline import fuyao_financial_process as process_module
+
+    registry = ReviewedProcessRegistry(
+        {FUYAO_PROCESS_OPERATION_ID: process_module.execute_fuyao_financial_request}
+    )
+    assert (
+        registry.registered_handler("fuyao-financial-observation-v1")
+        is process_module.execute_fuyao_financial_request
+    )
+    assert registry.registered_handler("fuyao-financial-observation-v2") is None
 
 
 @pytest.mark.parametrize("invalid_field", ["identity", "enabled", "scheduled", "timezone"])
