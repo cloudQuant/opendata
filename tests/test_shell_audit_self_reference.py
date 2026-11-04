@@ -313,6 +313,30 @@ def test_normalized_rows_match_the_fetchers_own_normalization(client) -> None:
     assert "normalize" in hits[0]
 
 
+def test_private_function_of_an_imported_production_module_as_oracle_fires(
+    census: ModuleType,
+) -> None:
+    """run_ledger_database_clock 那一形：期望值是问**导入的生产模块**的私有换算函数要的.
+
+    被测侧 ``timestamp_us`` 是 ``run_ledger_module._database_clock_us(...)`` 的观测值，
+    期望侧再问同一个模块要 ``_datetime_to_epoch_us(...)``：换算与读表一起改，断言不红。
+    """
+    source = """
+from datetime import datetime, timezone
+
+import opendata.pipeline.run_ledger as run_ledger_module
+
+
+def test_database_clock_matches_the_module_own_conversion(connection) -> None:
+    database_value = datetime(2026, 10, 26, 9, 30, tzinfo=timezone.utc)
+    timestamp_us = run_ledger_module._database_clock_us(connection)
+    assert timestamp_us == run_ledger_module._datetime_to_epoch_us(database_value)
+"""
+    hits = _hits(census, source)
+    assert len(hits) == 1
+    assert "_datetime_to_epoch_us" in hits[0]
+
+
 def test_locally_overridden_member_is_not_a_production_oracle(census: ModuleType) -> None:
     """本地替身自己覆写了那个成员：算期望的是测试代码，不是生产实现，不红."""
     source = """

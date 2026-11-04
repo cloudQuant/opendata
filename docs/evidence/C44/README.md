@@ -347,7 +347,7 @@ source-form-check=0`，`VERDICT shells=clean exit=0`。那句话属于那棵临�
 
 ### 反事实（改判据必须自带能红的面）
 
-`tests/test_shell_audit_self_reference.py`，34 条，全部在合成源码上钉读数：
+`tests/test_shell_audit_self_reference.py`，35 条，全部在合成源码上钉读数：
 
 | 条目 | 旧判据 | 新判据 |
 | --- | --- | --- |
@@ -356,6 +356,7 @@ source-form-check=0`，`VERDICT shells=clean exit=0`。那句话属于那棵临�
 | 生产藏在 `fetcher.millis_for(...)` 属性链后 | 0（假阴性） | 1 |
 | 私有成员当预言机 `pipeline.invalidated == [pipeline._pipeline_id(W)] * 2` | 0（假阴性） | 1 |
 | 公开成员当预言机 `fetcher.normalized_rows == fetcher.normalize(rows)` | 0（假阴性） | 1 |
+| 导入的生产模块私有函数当预言机 `ts == module._datetime_to_epoch_us(v)` | 0（假阴性） | 1 |
 | `_worksheet(...)` 造输入 + 字面量期望 | 1（假阳性） | 0 |
 | `_context(...)` 造输入 + `== []` | 1（假阳性） | 0 |
 | 拼路径读档案的 `ledger_rows()` | 1（假阳性） | 0 |
@@ -377,7 +378,7 @@ source-form-check=0`，`VERDICT shells=clean exit=0`。那句话属于那棵临�
 在改动后重跑仍 7/7。
 
 ```bash
-python -m pytest tests/test_shell_audit_self_reference.py -q --no-cov   # 34 passed
+python -m pytest tests/test_shell_audit_self_reference.py -q --no-cov   # 35 passed
 python docs/evidence/C44/census_counterfactuals.py                      # 7/7
 python docs/evidence/C44/shell_audit.py                                 # 自指 0，定义抄写 19
 ```
