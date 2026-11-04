@@ -1497,6 +1497,40 @@ def test_real_browser_download_chain_against_owned_mysql(
             assert source_calls == []
             assert database_state["task_executions"] == []
         else:
+            # A browser/infra abort must never be reported as a product mismatch.
+            # The spec writes its redacted trace unconditionally in afterEach
+            # (e2e/script-download-backend.spec.ts), so browser_trace_exists
+            # stays true even when Playwright dies before any download reaches
+            # the backend - without this gate the first failing line is the
+            # source-call set below, which blames the API for a Vite webServer
+            # that never came up, a port that changed, or an early render abort.
+            if playwright.returncode != 0:
+                # The single sanctioned non-zero exit is the classified natural
+                # UI-navigation failure, whose own verdict is still owed below
+                # (see the navigation_failures branch); anything else aborted.
+                assert "AC21 natural UI navigation failed" in playwright.stdout, (
+                    "AC21 frontend-e2e aborted before the download chain ran: playwright "
+                    f"exited {playwright.returncode}. This is an infra/browser failure, not a "
+                    "backend source-call mismatch. "
+                    f"Log: {evidence_dir / 'playwright.log'}; "
+                    f"stdout tail: {redact_generated_output(playwright.stdout[-4000:])!r}; "
+                    f"stderr tail: {redact_generated_output(playwright.stderr[-2000:])!r}"
+                )
+            accepted_download_events = [
+                event
+                for event in backend_http_events
+                if event["method"] == "POST"
+                and event["path"] == "/api/v1/data/download"
+                and event.get("status") == 202
+            ]
+            assert len(accepted_download_events) == 5, (
+                f"AC21 frontend-e2e drove only {len(accepted_download_events)} of the five "
+                "accepted (202) POST /api/v1/data/download calls the browser is required to "
+                f"click (playwright exit {playwright.returncode}). Fewer than five acceptances "
+                "means the browser leg never reached the downloads, so a missing source call "
+                "below is an unexecuted test rather than a backend defect. "
+                f"Log: {evidence_dir / 'playwright.log'}"
+            )
             assert {call["interface_id"] for call in source_calls} == {91, 92, 93, 94, 95}
             assert len(database_state["task_executions"]) == 5
             assert database_state["task_executions"]

@@ -32,6 +32,14 @@ router = APIRouter()
 # Service instance
 data_service = DataAcquisitionService()
 
+#: In-flight manual downloads, keyed by execution id.
+#: The event loop keeps only a *weak* reference to a scheduled task, so a
+#: fire-and-forget ``create_task`` whose only reference is a function-local can
+#: be garbage-collected before it runs. This registry is that strong reference
+#: (the same idiom as ``opendata.api.pipeline._TASKS``), and it also lets a
+#: caller await the task the route scheduled.
+_DOWNLOAD_TASKS: dict[int, asyncio.Task[None]] = {}
+
 
 @router.get("/capabilities")
 async def list_capabilities(current_user: CurrentUser) -> list[Capability]:
@@ -86,7 +94,8 @@ async def trigger_download(
 
     Initiates data acquisition for the specified interface.
     Returns execution ID immediately for progress tracking.
-    The actual download runs as a background task.
+    The actual download runs as a background task, kept referenced in
+    :data:`_DOWNLOAD_TASKS` until it completes.
     """
     # Get interface
     result = await db.execute(select(DataInterface).where(DataInterface.id == request.interface_id))
@@ -147,7 +156,17 @@ async def trigger_download(
                 )
 
     bg = asyncio.create_task(_bg_download())
-    bg.add_done_callback(_log_task_exception)
+    # Hold the task until it finishes: the loop's own reference is weak, and a
+    # download dropped by the collector is a 202 that never does any work.
+    _DOWNLOAD_TASKS[exec_id] = bg
+
+    def _forget(task: asyncio.Task, *, execution_id: int = exec_id) -> None:
+        # Release the reference the moment the task is done, so the registry
+        # stays bounded by the number of downloads actually in flight.
+        _DOWNLOAD_TASKS.pop(execution_id, None)
+        _log_task_exception(task)
+
+    bg.add_done_callback(_forget)
 
     return DataDownloadResponse(
         execution_id=execution.id,
