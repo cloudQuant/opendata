@@ -33,12 +33,13 @@ import argparse
 import ast
 import hashlib
 import json
+import os
 import re
 import subprocess  # nosec B404  # literal argv, shell disabled
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Final
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
@@ -55,7 +56,23 @@ UPSTREAM_PACKAGE = "akshare"
 PORTED_PACKAGE = "opendata.data.providers.akshare._vendor"
 PORTED_ROOT = REPO_ROOT.joinpath(*PORTED_PACKAGE.split("."))
 LOCK_PATH = PORTED_ROOT / "upstream.lock"
-DEFAULT_UPSTREAM_REPO = REPO_ROOT.parent / "akshare"
+#: Where the pristine upstream tree comes from. ``OPENDATA_AKSHARE_UPSTREAM_PATH`` is the CI seam,
+#: the same shape as ``OPENDATA_OPENBB_PATH`` for the OpenBB inventory face: the workflow checks out
+#: the commit ``upstream.lock`` pins and exports that directory, so the line-by-line diffability
+#: face is measured where the gate runs instead of only on a maintainer laptop. With the variable
+#: unset the old sibling-clone default still applies. A configured path that does not exist is not
+#: tolerated silently: ``verify_upstream`` turns each absent upstream file into its own TODO.
+UPSTREAM_REPO_ENV: Final = "OPENDATA_AKSHARE_UPSTREAM_PATH"
+
+
+def _default_upstream_repo() -> Path:
+    configured = os.environ.get(UPSTREAM_REPO_ENV, "").strip()
+    if configured:
+        return Path(configured)
+    return REPO_ROOT.parent / "akshare"
+
+
+DEFAULT_UPSTREAM_REPO = _default_upstream_repo()
 RESOURCE_SUFFIXES = frozenset({".js", ".json", ".dat"})
 #: Our own documents that sit inside the vendor tree without having been ported from upstream, so
 #: ``upstream.lock`` can carry neither an ``upstream_path`` nor a pristine hash for them. One set,
