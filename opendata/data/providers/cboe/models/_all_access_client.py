@@ -16,8 +16,7 @@ if TYPE_CHECKING:
     from opendata.data.protocol import FetchContext
 
 CBOE_ALL_ACCESS_BASE_URL = "https://api.livevol.com/v1/delayed/allaccess"
-# B105 exception: this is an environment-variable name; os.environ.get below reads the secret.
-CBOE_ACCESS_TOKEN_ENV = "CBOE_LIVEVOL_ACCESS_TOKEN"  # noqa: S105  # nosec B105
+CBOE_ACCESS_TOKEN_ENV = "CBOE_LIVEVOL_ACCESS_TOKEN"  # noqa: S105  # nosec B105  # os.environ key that require_access_token() resolves; the bearer value itself is provisioned outside the repo
 JSON_RESPONSE_LIMIT = 16 * 1024 * 1024
 DEFAULT_TIMEOUT_SECONDS = 30.0
 _ALLOWED_PATHS = frozenset(

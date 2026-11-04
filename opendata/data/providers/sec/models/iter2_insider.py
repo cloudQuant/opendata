@@ -30,8 +30,7 @@ from opendata.data.providers.sec.models._common import (
 )
 
 if TYPE_CHECKING:
-    # B405: type-only import; runtime parsing uses defusedxml.
-    from xml.etree.ElementTree import (  # nosec B405
+    from xml.etree.ElementTree import (  # nosec B405  # TYPE_CHECKING-only: Element labels Form4 node helpers, while _children/_text consume defusedxml SafeET trees
         Element,
     )
 

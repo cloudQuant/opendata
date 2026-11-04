@@ -375,8 +375,7 @@ def _insert_ignore(
     # Identifiers are fixed or validated with isidentifier above; caller data
     # remains in bound parameters.
     if connection.dialect.name == "mysql" and conflict_column:
-        # B608: validated internal identifiers; values are bound.
-        sql = f"INSERT INTO {table} ({', '.join(names)}) VALUES ({placeholders})"  # noqa: S608 # nosec B608
+        sql = f"INSERT INTO {table} ({', '.join(names)}) VALUES ({placeholders})"  # noqa: S608 # nosec B608  # MySQL savepoint branch: _insert_ignore already rejects unless table and every split column satisfy isidentifier(); placeholders reuse those same names as binds
         savepoint = connection.begin_nested()
         try:
             connection.execute(text(sql), dict(values))
@@ -395,13 +394,11 @@ def _insert_ignore(
             return True
     elif connection.dialect.name in {"sqlite", "postgresql"} and conflict_column:
         sql = (
-            # B608: identifiers validated; conflict column is guarded.
-            f"INSERT INTO {table} ({', '.join(names)}) VALUES ({placeholders}) "  # noqa: S608 # nosec B608
+            f"INSERT INTO {table} ({', '.join(names)}) VALUES ({placeholders}) "  # noqa: S608 # nosec B608  # sqlite/postgres branch appends ON CONFLICT (conflict_column), and conflict_column was rejected unless it is an identifier already inside names
             f"ON CONFLICT ({conflict_column}) DO NOTHING"
         )
     else:
-        # B608: validated internal identifiers; values are bound.
-        sql = f"INSERT INTO {table} ({', '.join(names)}) VALUES ({placeholders})"  # noqa: S608 # nosec B608
+        sql = f"INSERT INTO {table} ({', '.join(names)}) VALUES ({placeholders})"  # noqa: S608 # nosec B608  # no-conflict-column fallback: identical validated-identifier INSERT as the dialect branches above, with dict(values) supplying every bound parameter
     result = connection.execute(text(sql), dict(values))
     return bool(result.rowcount)
 
@@ -432,8 +429,7 @@ def _existing_financial_version(
     row = (
         connection.execute(
             text(
-                # B608: lock clause is fixed; value is bound.
-                "SELECT payload_digest, payload_json, provenance "  # nosec B608
+                "SELECT payload_digest, payload_json, provenance "  # nosec B608  # the string is whole except locking_clause, which is either "" or the literal " FOR UPDATE" chosen by dialect check; version_id binds
                 "FROM financial_pit_versions WHERE version_id = :version_id" + locking_clause
             ),
             {"version_id": version_id},
@@ -576,8 +572,7 @@ def _raise_for_conflicts(
     rows = (
         connection.execute(
             text(
-                # B608: indexed placeholders only; values are bound.
-                "SELECT DISTINCT c.symbol, c.statement_type, c.item, c.indicator, "  # nosec B608
+                "SELECT DISTINCT c.symbol, c.statement_type, c.item, c.indicator, "  # nosec B608  # conflicts scan: the joined fragment is ", ".join(symbol_binds), whose elements are only f":symbol_{index}" bind names; table names here are hard-coded
                 "v.version_id AS linked_version_id, "
                 "c.report_period, v.public_time_precision, v.visible_at_utc, v.source_timezone "
                 "FROM financial_pit_conflicts AS c LEFT JOIN financial_pit_versions AS v "
@@ -660,8 +655,7 @@ def _candidate_versions(
     rows = (
         connection.execute(
             text(
-                # B608: indexed placeholders only; values are bound.
-                "SELECT version_id, source, symbol, report_period, announce_date, "  # nosec B608
+                "SELECT version_id, source, symbol, report_period, announce_date, "  # nosec B608  # candidate scan over the hard-coded financial_pit_versions table; symbols enter solely as the generated :symbol_N names in the IN list, values stay in params
                 "statement_type, item, indicator, revision_order, public_time_precision, "
                 "visible_at_utc, source_timezone, observed_at_utc, payload_json "
                 "FROM financial_pit_versions WHERE domain = :domain AND source = :source "

@@ -543,6 +543,158 @@ def function_body(source: str, name: str) -> str:
     return ""
 
 
+CONTEXT_MANAGER_DECORATORS: Final = frozenset({"contextmanager", "asynccontextmanager"})
+
+
+def decorator_names(node: ast.FunctionDef | ast.AsyncFunctionDef) -> set[str]:
+    """The trailing identifier of every decorator on a function, bare or called.
+
+    ``@contextmanager`` and ``@contextlib.contextmanager`` name one decorator to a judge, and a
+    reader that only knows the dotted form reports a real context manager as a plain function.
+    """
+    names: set[str] = set()
+    for decorator in node.decorator_list:
+        tail = decorator.func if isinstance(decorator, ast.Call) else decorator
+        if isinstance(tail, ast.Attribute):
+            names.add(tail.attr)
+        elif isinstance(tail, ast.Name):
+            names.add(tail.id)
+    return names
+
+
+def defined_functions(source: str) -> list[ast.FunctionDef | ast.AsyncFunctionDef]:
+    """Every function in a source, methods and nested definitions included."""
+    return [
+        node
+        for node in ast.walk(ast.parse(source))
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+    ]
+
+
+def module_functions(source: str) -> dict[str, ast.FunctionDef | ast.AsyncFunctionDef]:
+    """The module-level functions of a source, keyed by name, so a call can be resolved."""
+    tree = ast.parse(source)
+    return {
+        node.name: node
+        for node in tree.body
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+    }
+
+
+def with_item_names(node: ast.AST) -> tuple[set[str], set[str]]:
+    """What ``with`` / ``async with`` statements inside ``node`` enter, in two spellings.
+
+    The first set is the callee of each context expression that is a call (``with self._gate(h):``
+    contributes ``_gate``); the second is each context expression that is a bare name
+    (``with slot:`` contributes ``slot``). A judge written against one literal ``with`` line goes
+    blind the moment a refactor binds the context manager to a name first and enters it on the
+    next line -- which is exactly how a live host gate stopped being readable.
+    """
+    callees: set[str] = set()
+    entered: set[str] = set()
+    for child in ast.walk(node):
+        if not isinstance(child, (ast.With, ast.AsyncWith)):
+            continue
+        for item in child.items:
+            expression = item.context_expr
+            if isinstance(expression, ast.Name):
+                entered.add(expression.id)
+            elif isinstance(expression, ast.Call):
+                function = expression.func
+                if isinstance(function, ast.Attribute):
+                    callees.add(function.attr)
+                elif isinstance(function, ast.Name):
+                    callees.add(function.id)
+    return callees, entered
+
+
+def names_assigned_from_call(node: ast.AST, callee: str) -> set[str]:
+    """Names bound to the result of a call to ``callee`` anywhere inside ``node``."""
+    bound: set[str] = set()
+    for child in ast.walk(node):
+        targets: Sequence[ast.expr] = ()
+        value: ast.expr | None = None
+        if isinstance(child, ast.Assign):
+            targets, value = child.targets, child.value
+        elif isinstance(child, ast.AnnAssign):
+            targets, value = (child.target,), child.value
+        else:
+            continue
+        if not isinstance(value, ast.Call):
+            continue
+        function = value.func
+        name = function.attr if isinstance(function, ast.Attribute) else getattr(function, "id", "")
+        if name != callee:
+            continue
+        bound.update(item.id for item in targets if isinstance(item, ast.Name))
+    return bound
+
+
+def calls_binding(node: ast.AST, binding: str, method: str) -> bool:
+    """Whether ``binding.<method>()`` is called anywhere inside ``node``."""
+    return any(
+        isinstance(child, ast.Call)
+        and isinstance(child.func, ast.Attribute)
+        and child.func.attr == method
+        and isinstance(child.func.value, ast.Name)
+        and child.func.value.id == binding
+        for child in ast.walk(node)
+    )
+
+
+def binding_released_in_finally(node: ast.AST, binding: str) -> bool:
+    """Whether ``binding.release()`` sits in a ``finally``, so every exit path returns the gate."""
+    return any(
+        isinstance(child, ast.Try)
+        and child.finalbody
+        and calls_binding(ast.Module(body=child.finalbody, type_ignores=[]), binding, "release")
+        for child in ast.walk(node)
+    )
+
+
+def lifespan_guard_body(source: str, name: str) -> str:
+    """The source a lifespan startup guard is allowed to live in, plus one delegation hop.
+
+    ``lifespan`` may wrap another context manager instead of holding the guard itself;
+    ``1ee7be9c`` did exactly that, and reading only the wrapper reported the production DDL guard
+    as absent while the delegated ``_existing_lifespan`` still skipped ``create_tables()`` in
+    production. Exactly one hop is followed, and only when it is statically resolvable: the
+    wrapper must itself be a decorated async context manager, and it must enter by name in an
+    ``async with`` that carries the ``yield`` exactly one module-level ``async def`` decorated
+    with ``@asynccontextmanager``. A second hop, an attribute callee (dynamic dispatch), a
+    delegate that is not an async context manager, or more than one candidate is not followed:
+    the wrapper alone is judged, so a guard cannot be smuggled past this face by indirection.
+    """
+    own = function_body(source, name)
+    if not own:
+        return ""
+    wrapper = module_functions(source).get(name)
+    if wrapper is None or not (decorator_names(wrapper) & CONTEXT_MANAGER_DECORATORS):
+        return own
+    candidates: set[str] = set()
+    for child in ast.walk(wrapper):
+        if not isinstance(child, ast.AsyncWith):
+            continue
+        for item in child.items:
+            expression = item.context_expr
+            if not (isinstance(expression, ast.Call) and isinstance(expression.func, ast.Name)):
+                continue
+            if any(isinstance(inner, ast.Yield) for inner in ast.walk(child)):
+                candidates.add(expression.func.id)
+    if len(candidates) != 1:
+        return own
+    (delegate_name,) = candidates
+    if delegate_name == name:
+        return own
+    delegate = module_functions(source).get(delegate_name)
+    if not isinstance(delegate, ast.AsyncFunctionDef):
+        return own
+    if "asynccontextmanager" not in decorator_names(delegate):
+        return own
+    segment = ast.get_source_segment(source, delegate) or ""
+    return f"{own}\n{segment}" if segment else own
+
+
 def set_literal_members(source: str, name: str) -> tuple[str, ...]:
     """The element source of a module-level ``NAME = frozenset({...})`` constant.
 
@@ -5759,7 +5911,7 @@ def measure_ac8_02(ctx: Context) -> Facts:
     env = ctx.read(ALEMBIC_DATA_ENV_REL)
     control_env = ctx.read("alembic/env.py")
     app_src = ctx.read(MAIN_REL)
-    lifespan = function_body(app_src, "lifespan")
+    lifespan = lifespan_guard_body(app_src, "lifespan")
     create = function_body(ctx.read(DATABASE_REL), "create_tables")
     face = ctx.read(ODS_FACE_REL)
     live = _facts_line(face)
@@ -5814,7 +5966,8 @@ def judge_ac8_02(facts: Facts) -> Verdict:
         f"``data_database_url`` = {facts['warehouse_url']}，版本表各自一张 = "
         f"{facts['version_table_split']}，控制 env 里出现仓库 URL = "
         f"{'no' if facts['control_cannot_reach_data_url'] == 'yes' else 'yes'}",
-        f"启动面：``lifespan`` 里 ``create_tables()`` 只有一处且在 ``is_production`` 分支之外 = "
+        f"启动面：``lifespan``（含一层可静态解析的模块级 ``async with`` 委托）里 "
+        f"``create_tables()`` 只有一处且在 ``is_production`` 分支之外 = "
         f"{facts['startup_guarded']}；``create_tables`` 只做 ``Base.metadata.create_all``、"
         f"不引 ``data_engine`` = {facts['create_tables_control_only']}",
         f"真仓库侧（{ODS_FACE_REL}）：控制库里的仓库表 {facts['ctrl_warehouse_tables']} 张，"
@@ -10286,12 +10439,61 @@ def _c64_behavior(facts: Facts) -> Verdict:
     )
 
 
+def semaphore_gates(source: str, helper: str) -> set[str]:
+    """Functions that hold the ``helper`` semaphore across their own ``yield``.
+
+    The live client no longer enters the host gate at the call site: ``_semaphore_for`` is bound
+    inside ``_scoped_semaphore`` / ``_request_semaphore``, which acquire the binding, yield the
+    protected region, and release it in a ``finally``. A ``with`` on one of those delegators is a
+    real acquire around the request path, so the delegator is read as the gate itself. The
+    acquire/release pair is required (release specifically in a ``finally``) so that a helper
+    which merely touches the semaphore, or one that leaks it, is not counted as a gate.
+    """
+    gates: set[str] = set()
+    for function in defined_functions(source):
+        if not decorator_names(function) & CONTEXT_MANAGER_DECORATORS:
+            continue
+        if not any(isinstance(node, (ast.Yield, ast.YieldFrom)) for node in ast.walk(function)):
+            continue
+        for binding in names_assigned_from_call(function, helper):
+            if calls_binding(function, binding, "acquire") and binding_released_in_finally(
+                function, binding
+            ):
+                gates.add(function.name)
+    return gates
+
+
+def per_host_semaphore_entered(source: str) -> bool:
+    """Whether the per-host gate handed out by ``_semaphore_for`` is actually entered.
+
+    Replaces the literal ``"with self._semaphore_for(host)"``, a spelling that died in
+    ``7ee1ef25`` when the request path moved behind two delegating context managers while the
+    gate itself stayed exactly as binding as it was. Three forms count, each of them an entry:
+    ``with self._semaphore_for(host):`` (the historical form, so refactoring back to it cannot
+    redden this face), that call bound and then entered in the same function, and a ``with`` on a
+    ``semaphore_gates`` delegator -- entered directly or through a name bound to its call.
+    Binding without entering does not count: that is the reading this face has to keep failing.
+    """
+    gates = semaphore_gates(source, "_semaphore_for")
+    for function in defined_functions(source):
+        callees, entered = with_item_names(function)
+        if "_semaphore_for" in callees:
+            return True
+        if names_assigned_from_call(function, "_semaphore_for") & entered:
+            return True
+        if callees & gates:
+            return True
+        if any(names_assigned_from_call(function, gate) & entered for gate in gates):
+            return True
+    return False
+
+
 def measure_c64_ac4_01(ctx: Context) -> Facts:
     """Check timeout, 429 retry, bucket rate and shared host concurrency behavior."""
     source = ctx.read("opendata/data/http_client.py")
     return {
         **node_plane_facts("c64", C64_HTTP_NODES),
-        "binding": flag("with self._semaphore_for(host)" in source and "max_attempts" in source),
+        "binding": flag(per_host_semaphore_entered(source) and "max_attempts" in source),
         "scope": "offline actual transport mocks; no real supplier ban or uptime claim",
     }
 

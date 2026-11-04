@@ -20,7 +20,7 @@ import re
 import signal
 import socket
 import struct
-import subprocess  # nosec B404
+import subprocess  # nosec B404  # used only by _run_registered to fork the sibling process_executor_worker.py helper; no command name comes from caller data
 import sys
 import time
 from collections.abc import Callable, Mapping
@@ -561,8 +561,7 @@ class ReviewedProcessExecutor:
         )
         try:
             try:
-                # The command is a fixed adjacent helper; arguments contain only the inherited FD.
-                process = subprocess.Popen(  # noqa: S603  # nosec B603
+                process = subprocess.Popen(  # noqa: S603  # nosec B603  # argv is the five fixed items below: interpreter path, -I, -B, _WORKER_SCRIPT beside this module, and an inherited socket fd number
                     [sys.executable, "-I", "-B", str(_WORKER_SCRIPT), str(sender.fileno())],
                     stdin=subprocess.DEVNULL,
                     stdout=subprocess.DEVNULL,

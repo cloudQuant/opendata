@@ -19,9 +19,7 @@ import selectors
 import shlex
 import signal
 import stat
-
-# This module executes only fixed read-only query commands through the argv allowlist.
-import subprocess  # nosec B404
+import subprocess  # nosec B404  # the only spawn is _run_bounded_command, which returns error_code=invalid_command unless _allowed_query_argv matches the argv against its literal systemd/crontab forms
 import sys
 import tempfile
 import time
@@ -150,8 +148,7 @@ def _run_bounded_command(
             stdin=subprocess.DEVNULL,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            # The argv allowlist blocks mutating commands; shell execution stays disabled.
-            shell=False,  # nosec B603
+            shell=False,  # nosec B603  # B603 covers this Popen: the argv already cleared the literal-command allowlist and env comes from _allowed_environment's key whitelist, so no caller-supplied command or variable reaches it
             close_fds=True,
             start_new_session=True,
             env=_allowed_environment(environment_keys),
