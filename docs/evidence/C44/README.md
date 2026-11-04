@@ -266,7 +266,7 @@ touched = ({n.id for n in ast.walk(statement) if isinstance(n, ast.Name)} & prod
 | vacuous-assert / source-form-check | 0 / 0 | 0 / 0 |
 | files_scanned | 670 | 671（新增 `tests/test_shell_audit_self_reference.py`） |
 
-（本节的 0 是**上一轮**的读数；再补一层生产自当预言机之后变成 5 → 0，见下面「又补了一层」。）
+（本节的 0 是**上一轮**的读数；再补一层生产自当预言机之后变成 5 → 0，见下面「再补一层」。）
 
 11 处旧命中逐条核对，**全部是输入构造器形状**（期望值分别是 `[]`、`()`、
 `{'code': ...}`、`"cell_limit_exceeded"`、一段逐字写死的字节串），按新判据不再命中；
@@ -312,6 +312,15 @@ assert pipeline.invalidated == [pipeline._pipeline_id(WINDOW)] * 2   # tests/tes
 | self-reference | 0 | 5 → 0（5 处全部改掉用例，没有动判据） |
 | constant-shell / vacuous-assert / source-form-check | 19 / 0 / 0 | 19 / 0 / 0 |
 | files_scanned | 671 | 671 |
+
+上面两列都是**本分支这棵树**（`fix/od-shell-census-precision`）的读数，`shell_audit.py`
+直接面它。定义抄写那一列在这里仍是 19——那 19 处的用例修在 #186
+（`fix/od-shell-constant-copy`，tip `d6b64b2e`）上，还没进 `dev`，不是本轮判据的问题。
+四个面同时为 0 只在**两批修复合起来的那棵树**上成立：本轮用
+`git merge-tree --write-tree` + `git commit-tree` 造了一棵临时合并树（本分支 + #186），
+在那里跑同一份脚本读到 `self-reference=0 / vacuous-assert=0 / constant-shell=0 /
+source-form-check=0`，`VERDICT shells=clean exit=0`。那句话属于那棵临时树，
+不属于本分支，也不属于 `dev`；#186 合进来之前，本格不能凭本分支写 proven。
 
 5 处命中逐条改成了什么（都改在**测试**里，期望值独立写下；没有删、跳、xfail 或削弱判据）：
 
