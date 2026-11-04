@@ -72,6 +72,10 @@ VERDICT shells=found t1=gap exit=1
 正控制那条是本轮刻意加的：规则分不清「抄定义」和「黄金向量」，就会把作者推向删掉预计算断言
 （预计算恰恰是 §5.2 T1② 要求的）。所以派生标签这一格必须是**能算出来的不命中**。
 
+> 面①（自指）的判定后来被改过一次，改的是**判据本身**：操作数职责、本地算子的口径，
+> 以及随之新增与关闭的反事实。规则现形与代价见第十节，`census-counterfactuals.txt` 那 7 条
+> 在改动后仍逐条复算通过（含 `_ms` 那条真自指）。
+
 ## 四、真实信封录下来了，并且当场证伪了一套手造样本
 
 `scripts/ops/fuyao_envelope_recorder.py` 联调录制（read-only GET，两次请求间隔 12s，
@@ -201,3 +205,115 @@ public-api-quality、frontend-lint、frontend-typecheck、frontend-collection、
 所以按上面这张表逐段落档。
 两遍都是完整未裁剪输出，抬头带运行前 provenance；本档案是运行返回后才落成的，
 所以任何一遍的日志里都不含它自己（`evidence-traceability` 那一段读到 `files 447`，加上本档才是 448）。
+
+## 十、面①（自指）改成按操作数判定：规则现形、代价、反事实
+
+脚本抬头那句「规则写死在下面：改规则等于改判据」在这一节兑现。面①原来那样判：
+
+```python
+used_helpers = _callee_names(statement) & helpers      # 整条 assert 里出现过本地算子
+touched = ({n.id for n in ast.walk(statement) if isinstance(n, ast.Name)} & production) - used_helpers
+```
+
+它把一条断言当成一团符号，不问两边各是什么身份，于是两个方向都出错：
+
+* **假阳性**（本轮 11 处命中全是这一形）：`assert adapter.parse(_worksheet(...)) == {'code': '...'}`
+  —— `_worksheet` 只是造输入，期望值写的是字面量，被测实现的输出没有被本地重算过；
+* **假阴性**（危险方向：以后可能被读成「全树干净」）：
+  `expected = _ms(day)` 之后 `assert result == expected`（期望值确实先被本地重算，但断言句里
+  没有本地算子的调用）；`fetcher = YieldCurveFetcher(client)` 之后
+  `assert _ms(day) == fetcher.millis_for(...)`（生产只出现在属性链后面，句中没有生产裸名）。
+
+### 现在的判据（按 `ast.Compare` 的操作数各判一次）
+
+一个操作数只有两种身份，先判身份再判命中：
+
+1. **碰到生产的那一侧 = 被测值**。`_production_names_touched()` 认四种来路：生产裸名
+   （`adapter.X`）、属性链（`fetcher.fetch(...)`）、经普通局部赋值绕过去
+   （`fetcher = Fetcher(client)`）、经本地构造函数体绕过去（`snapshot = registry(...)`，
+   `registry` 里点的是 `TemporalIdentityRegistry`）。这一侧**不能**当期望值来源，
+   因此也不参与「本地重算」的认领（`_recomputed_by()` 遇到这种调用直接剪掉整棵参数子树——
+   这就是 `_worksheet(...)` 那批误伤被关闭的地方）。
+2. **没碰生产的那一侧才可能是期望值**。期望值「出自本地重算」= 它是本地算子的调用结果，
+   或顺着普通局部赋值（`x = ...` / `x: T = ...`）追到这样一个调用；沿值结构递归
+   （容器、算术、调用参数、推导式**的元素**），但**不**穿过 `a.b` / `a[0]` 这类成员读取，
+   也不穿过推导式的 `iter`——`pytest.approx(legacy_bar.close * 0.8)` 是「相对输入陈述期望」，
+   不是把生产另算一遍。
+3. 命中要求：某一侧本地重算 **且** 至少另一侧跑到生产。四个面名一字未改
+   （`self-reference / vacuous-assert / constant-shell / source-form-check`），
+   验收棘轮按「格 id + 面名」打哈希，改名等于作废旧钉。
+
+配套的本地算子口径（`_does_the_work()`）也按「在算数量还是在书写」收窄了一步，
+因为操作数判据把旧规则里那道偶然的护栏（必须同时出现生产裸名）拆掉之后，
+书写形的本地函数会成批被点成自指：
+
+* `REPO_ROOT / LEDGER_RELATIVE_PATH` 借的是 `/`，是路径拼接不是除法；
+  除/整除只有一侧是数字字面量时才算数量换算（`us / 1_000_000`）。
+* `"c" * 64` 是字符串填充，`Mult` 两侧有 str/bytes 字面量即不算重算。
+* 单步换算 `date.fromisoformat("2024-01-03")` 是把测试自己写下的字面量换个写法；
+  两步以上的换算链（`combine` + `timestamp`）才算把生产实现另算一遍。
+  **代价写清楚**：`assert report.requested_end == d("2024-01-03")` 这一形从此不在面①里
+  （旧判据在 `test_temporal_instrument_identity.py:294/382` 点过它，两处都是同一个日期书写）。
+
+### 读数：11 → 0，但不是靠少看
+
+| 面 | 改前 | 改后 |
+| --- | --- | --- |
+| self-reference | 11 | 0 |
+| constant-shell | 19 | 19（本轮不动这一面） |
+| vacuous-assert / source-form-check | 0 / 0 | 0 / 0 |
+| files_scanned | 670 | 671（新增 `tests/test_shell_audit_self_reference.py`） |
+
+11 处旧命中逐条核对，**全部是输入构造器形状**（期望值分别是 `[]`、`()`、
+`{'code': ...}`、`"cell_limit_exceeded"`、一段逐字写死的字节串），按新判据不再命中；
+其中 `test_temporal_instrument_identity.py:294/382` 两处是上表的 `d()` 书写形。
+新判据反过来抓到 6 处旧判据看不见的**真自指**，并在本轮把用例改掉（不是把判据关掉）：
+
+* `tests/test_ecb_series_parser.py:192/238/239/307`：`_key(prefix, values, dimensions)` 把
+  生产里 `f"{prefix}." + ".".join(...)` 的 series_key 拼接另算一遍再断言相等。
+  改成把期望串逐字写死（`"YC.B.U2.EUR.4F.G_N_A.SV_C_YM.SR_3M"` 等），`_key` 随之删除，
+  参数化那条把期望串作为参数列出（用例数 2→2，没有减少）；
+* `tests/test_source_grant_provisioning.py:564/565`：`_datetime_to_epoch_us()` 用整数把
+  UTC 时刻重算成 epoch 微秒，正是被测实现做的那次换算。改成**反方向**表达：
+  `_from_epoch_us(result.not_before_us) == expected_not_before`，即把观测解码到期望的口径，
+  期望值是测试自己构造的那个 UTC 时刻。整数换算、无浮点，µs 级精度与改前逐位相同，
+  变异 tz 偏移那条判据没有被削弱（`53 passed`）。
+
+### 反事实（改判据必须自带能红的面）
+
+`tests/test_shell_audit_self_reference.py`，17 条，全部在合成源码上钉读数：
+
+| 条目 | 旧判据 | 新判据 |
+| --- | --- | --- |
+| `_ms` 直接重算 vs 生产函数（C44 那一形） | 1 | 1 |
+| 期望值先写进局部变量 | 0（假阴性） | 1 |
+| 生产藏在 `fetcher.millis_for(...)` 属性链后 | 0（假阴性） | 1 |
+| `_worksheet(...)` 造输入 + 字面量期望 | 1（假阳性） | 0 |
+| `_context(...)` 造输入 + `== []` | 1（假阳性） | 0 |
+| 拼路径读档案的 `ledger_rows()` | 1（假阳性） | 0 |
+| 预计算黄金向量 `== 1704124800000` | 0 | 0（正控制） |
+| 两侧都是生产输出的 `!=` 行为判据 | 0 | 0（正控制） |
+| 单步 `date.fromisoformat` 书写 | 0 | 0（正控制，代价写在上面） |
+
+外加两条守住判据面本身：四个面名一字不能改；被改的那批用例文件（含 11 处误伤的原件）
+在面①上读数为 0。`docs/evidence/C44/census_counterfactuals.py` 的 7 条（含 `_ms` 真自指与
+派生标签正控制）在改动后重跑仍 7/7。
+
+```bash
+python -m pytest tests/test_shell_audit_self_reference.py -q --no-cov   # 17 passed
+python docs/evidence/C44/census_counterfactuals.py                      # 7/7
+python docs/evidence/C44/shell_audit.py                                 # 自指 0，定义抄写 19
+```
+
+### 这一面现在仍然看不见的（如实登记）
+
+1. 期望值从生产对象上**读**出来再比（`assert got == expected.rows`，`expected = _ms(...)`），
+   成员读取不 recurse，看不见；
+2. 期望值用生产类型书写（`assert bars == (Bar(symbol=..., close=10.0),)`，值全是字面量）
+   —— 这是 §5.1/§5.2 推荐的预计算写法，**有意**不命中，但同一侧混进本地重算时也会被这条
+   身份判定一起放过；
+3. `assert got == PRODUCTION_CONST * 2` 这种「拿生产常量算一下当期望」不在面①里
+   （本地算子必须是函数定义；抄定义那一格由面②管，而面②只认 `PROD == 字面量`）；
+4. 经 fixture 参数、`monkeypatch`、`conftest` 落到生产的来路不追（只追本模块内的赋值与 `def`）；
+5. 面①只看 `ast.Compare`；`assert production_call(local_builder(...))`（无比较的一元断言）
+   不在这一面。
