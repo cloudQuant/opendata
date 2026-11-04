@@ -366,16 +366,17 @@ def test_bounded_fetch_uses_exact_query_and_propagates_the_execution_scope() -> 
 
     snapshot = transport.fetch(context)
 
-    assert SINA_FZB_HOST == "quotes.sina.cn"
-    assert SINA_FZB_URL == (
-        "https://quotes.sina.cn/cn/api/openapi.php/CompanyFinanceService.getFinanceReport2022"
-    )
     assert len(transport.adapter.requests) == 1
     assert budget.attempts_used == 1
     assert budget.attempts_used_for(_SOURCE) == 1
     assert len(transport.bounded_calls) == 1
     bounded = transport.bounded_calls[0]
-    assert bounded["url"] == SINA_FZB_URL
+    # The endpoint and its host are judged on the request the fetch actually put on the wire,
+    # not on the two module constants that spell them out.
+    assert bounded["url"] == (
+        "https://quotes.sina.cn/cn/api/openapi.php/CompanyFinanceService.getFinanceReport2022"
+    )
+    assert urlsplit(bounded["url"]).hostname == "quotes.sina.cn"
     assert bounded["source"] == _SOURCE
     assert bounded["params"] == {
         "paperCode": "sh600519",

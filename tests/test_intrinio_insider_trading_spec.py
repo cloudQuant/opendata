@@ -46,6 +46,7 @@ from opendata.data.providers._engine.testing import (
     SequencedResponseTransport,
     fixture_context,
 )
+from opendata.data.providers.catalog import get_provider
 from opendata.data.providers.intrinio._source import SOURCE
 from opendata.data.providers.intrinio.provider import PROVIDER
 from opendata.data.providers.intrinio.specs import (
@@ -213,7 +214,12 @@ class TestCensusRowIsDeclared:
     """The refusal this ledger carried for one round is now a declaration, not a rename."""
 
     def test_the_model_is_declared_and_no_longer_refused(self) -> None:
-        assert INSIDER_TRADING.model == "InsiderTrading"
+        registered = [
+            fetcher
+            for fetcher in get_provider("intrinio").fetchers
+            if getattr(fetcher, "model_spec", None) is INSIDER_TRADING
+        ]
+        assert [fetcher.canonical_model for fetcher in registered] == ["InsiderTrading"]
         assert "InsiderTrading" in DECLARED_MODELS
         assert "InsiderTrading" not in NOT_DECLARABLE
         assert not set(DECLARED_MODELS) & set(NOT_DECLARABLE), "declared *and* refused"
@@ -261,7 +267,20 @@ class TestCensusRowIsDeclared:
         }
         assert bounds["start_date"].years == -5
         assert bounds["end_date"].years == 0 and bounds["end_date"].months == 0
-        assert INSIDER_TRADING.pagination.kind == "cursor"
+        # pagination.kind is judged on the wire: a document publishing a cursor is followed into a
+        # second request whose query carries it, and a null cursor stays terminal.
+        _, terminal_rows = _run(symbol="AAPL")
+        assert len(terminal_rows) == 3, "the fixture document publishes a null cursor"
+        paged_transport = SequencedResponseTransport(
+            HttpResponse(200, {**DOCUMENT, "next_page": "CENSUS-CURSOR-2"}),
+            HttpResponse(200, SECOND_TRANSACTION_PAGE),
+        )
+        paged_calls, paged_rows = _fetch(INSIDER_TRADING, paged_transport, sends=4, symbol="AAPL")
+        assert [call["params"].get("next_page") for call in paged_calls] == [
+            None,
+            "CENSUS-CURSOR-2",
+        ]
+        assert len(paged_rows) == 4, "the cursor page is appended, not swapped in"
 
 
 class TestNestedArrayExplode:

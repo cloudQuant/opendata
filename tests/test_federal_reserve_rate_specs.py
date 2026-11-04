@@ -34,6 +34,7 @@ from opendata.data.providers._engine.http_json import (
 from opendata.data.providers._engine.spec import ModelSpec, ParamSpec, RelativeDefault
 from opendata.data.providers._engine.testing import FixedResponseTransport, fixture_context
 from opendata.data.providers._engine.value_transform import ValueTransformError
+from opendata.data.providers.catalog import register_provider
 from opendata.data.providers.federal_reserve._source import SOURCE
 from opendata.data.providers.federal_reserve.models.federal_funds_rate import (
     FederalReserveFederalFundsRateFetcher,
@@ -45,6 +46,7 @@ from opendata.data.providers.federal_reserve.specs import (
     NOT_DECLARED,
     SOFR,
 )
+from opendata.data.registry import ProviderRegistry
 
 #: One full effective-funds-rate record, cells spelled as decimal text the way the kernel
 #: reads them; ``type`` and ``footnoteId`` are published but undeclared, and the row model
@@ -170,8 +172,14 @@ class TestDeclarationFace:
         """The refusal is gone from every reachable face and the descriptor binds five models."""
         assert "Sofr" not in NOT_DECLARED and "FederalFundsRate" not in NOT_DECLARED
         assert {"FederalFundsRate", "SOFR"} <= set(DECLARED_GAPS)
-        assert FederalReserveFederalFundsRateFetcher.canonical_model == "FederalFundsRate"
-        assert FederalReserveSOFRFetcher.canonical_model == "SOFR"
+        # Both ids are routing keys: the reading is the fetcher the registry resolves for each,
+        # not the class attribute that registration happened to read.
+        registry = ProviderRegistry()
+        register_provider("federal_reserve", registry)
+        assert type(registry.resolve_model("federal_reserve", "FederalFundsRate")) is (
+            FederalReserveFederalFundsRateFetcher
+        )
+        assert type(registry.resolve_model("federal_reserve", "SOFR")) is FederalReserveSOFRFetcher
 
     def test_the_facet_counts_are_the_upstream_validator_lists(self) -> None:
         """9 scale stages and 1 sentinel column for FFR; 5 scale and 4 sentinel for SOFR.

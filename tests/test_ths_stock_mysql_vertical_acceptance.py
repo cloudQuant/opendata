@@ -605,7 +605,14 @@ async def test_ths_single_stock_reaches_mysql_ods_dwd_batch_and_v1_rest(
             "client",
             _create_mock_client_factory(source_handler),
         )
-        assert ThsStockDailyFetcher.canonical_model == "stock_daily"
+        from opendata.data.providers.catalog import register_provider
+        from opendata.data.registry import ProviderRegistry
+
+        vertical_registry = ProviderRegistry()
+        register_provider("ths", vertical_registry)
+        assert (
+            type(vertical_registry.resolve_model("ths", "stock_daily")) is ThsStockDailyFetcher
+        ), "the vertical is not routed under the model id this run writes"
 
         from opendata.pipeline.subscription import hub
 

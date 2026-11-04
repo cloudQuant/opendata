@@ -74,9 +74,18 @@ def test_omitted_derived_limit_accepts_10000_and_probes_one_extra(
         warehouse, "stock_daily", symbols=None, limit=None, window=WINDOW
     )
 
-    assert jobs.DEFAULT_SYMBOL_LIMIT == 10_000
     assert len(symbols) == 10_000
     assert warehouse.calls[0]["params"] == {"cap": 10_001}
+    # The default is a capacity the query enforces, not a number this file echoes: one symbol
+    # past it is refused, and the refusal names the same capacity the probe just asked for.
+    with pytest.raises(jobs.UniverseLimitExceededError, match="exceeds limit 10000"):
+        jobs.derive_universe(
+            _Warehouse([f"{index:06d}" for index in range(10_001)]),
+            "stock_daily",
+            symbols=None,
+            limit=None,
+            window=WINDOW,
+        )
     assert provenance == {"from": "dwd_stock_daily", "catalog": "absent"}
 
 

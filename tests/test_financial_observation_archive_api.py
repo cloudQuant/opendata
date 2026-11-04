@@ -576,7 +576,23 @@ def test_sync_read_uses_repeatable_read_and_returns_only_the_bounded_projection(
     }
     assert payload["completeness"] == "unknown"
     assert payload["point_in_time_reconstruction"] == "unavailable"
-    assert payload["records"] == [archive_api._row_payload(_row(value="123.4500"))]
+    # The row face is judged against a precomputed payload -- including the ``Z``-suffixed
+    # microsecond observation instant the serializer owes the public contract -- never against
+    # ``_row_payload``'s own output, which could only ever agree with itself.
+    assert payload["records"] == [
+        {
+            "source_id": "ths_fuyao",
+            "instrument_id": "600519.SH",
+            "statement_type": "income",
+            "periodicity": "quarterly",
+            "report_period": "2025-03-31",
+            "source_disclosure_date": "2025-04-25",
+            "observed_at_utc": "2025-04-25T03:04:05.006000Z",
+            "item_code": "revenue",
+            "value_decimal_text": "123.4500",
+            "native_unit": "CNY",
+        }
+    ]
 
 
 def test_sync_read_failure_closes_connection_and_sanitizes_driver_details(
