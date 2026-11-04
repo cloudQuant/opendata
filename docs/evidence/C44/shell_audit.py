@@ -356,8 +356,242 @@ def _sides(compare: ast.Compare) -> list[ast.expr]:
     return [compare.left, *compare.comparators]
 
 
+def _local_classes(tree: ast.Module) -> dict[str, ast.ClassDef]:
+    """``class`` names in the module mapped to their node (the ``class Fake(Pipeline)`` hop).
+
+    ``_local_definitions()`` only knows ``def``; a test double that subclasses a production
+    class is therefore reachable from ``spec = FakePipeline(...)`` only through this map.
+    """
+    return {node.name: node for node in ast.walk(tree) if isinstance(node, ast.ClassDef)}
+
+
+def _root_reaches_production(
+    node: ast.expr,
+    production: set[str],
+    values: dict[str, list[ast.expr]],
+    classes: dict[str, ast.ClassDef],
+    seen: set[str],
+) -> bool:
+    """这个表达式落到底是不是生产实现（名字指向谁，不看它装着什么值）.
+
+    认四条边：生产裸名（``DataPipeline``、``import opendata... as run_ledger_module`` 的模块名）、
+    属性链（``models.Fred``）、一次造出生产对象的调用（``DataPipeline(spec)``、
+    ``RecordingPipeline(spec)``）、普通局部赋值（``pipeline = RecordingPipeline(...)``）。
+    三条**不**走的边各有理由：构造调用的参数（``local = fake(specs.PROD_NAME)`` 里参数出现过
+    生产名，并不使 ``local`` 成为生产对象）；本地 ``def`` 的函数体（``cache_key(...)`` 那类
+    「两侧同经一个本地包装」的行为判据要放过的正是这条路）；以及生产**函数**的返回值
+    （``first = build_migration_worklist(...)`` 拿到的是一个 dict，对它调 ``first.items()``
+    是在读一个已经拿到的值，不是叫生产再算一遍）。
+    """
+    if isinstance(node, ast.Name):
+        return _name_reaches_production(node.id, production, values, classes, seen)
+    if isinstance(node, ast.Attribute | ast.Subscript | ast.Call):
+        current: ast.expr = node
+        if isinstance(current, ast.Call):
+            return _callee_is_production_class(current.func, production, values, classes, seen)
+        while isinstance(current, ast.Attribute | ast.Subscript):
+            current = current.value
+        return _root_reaches_production(current, production, values, classes, seen)
+    return False
+
+
+def _name_reaches_production(
+    name: str,
+    production: set[str],
+    values: dict[str, list[ast.expr]],
+    classes: dict[str, ast.ClassDef],
+    seen: set[str],
+) -> bool:
+    """这个名字是不是生产对象：直接导入、继承生产的本地子类实例，或顺着普通局部赋值追到."""
+    if not name or name in seen:
+        return False
+    seen.add(name)
+    if name in production:
+        return True
+    for source in values.get(name, ()):
+        if isinstance(source, ast.Call):
+            if _callee_is_production_class(source.func, production, values, classes, seen):
+                return True
+        elif _root_reaches_production(source, production, values, classes, seen):
+            return True
+    return False
+
+
+def _callee_is_production_class(
+    callee: ast.expr,
+    production: set[str],
+    values: dict[str, list[ast.expr]],
+    classes: dict[str, ast.ClassDef],
+    seen: set[str],
+) -> bool:
+    """被调用的那个东西造出来的是不是一台**生产机器**（生产类，或继承生产类的本地替身）.
+
+    生产**函数**的返回值不算：``first = build_migration_worklist(...)`` 拿到的是一个 dict，
+    ``first.items()`` 是那个 dict 自带的读取，不是叫生产再算一遍期望值。类与函数之间只用
+    「名字首字母大写」这条仓库命名规范来分——判错的方向是把合法写法多放一步（少判），
+    而不是把合法写法点红。
+    """
+    if isinstance(callee, ast.Name):
+        if callee.id in production:
+            return callee.id[:1].isupper()
+        definition = classes.get(callee.id)
+        if definition is None:
+            return False
+        return any(
+            _root_reaches_production(base, production, values, classes, seen)
+            for base in definition.bases
+        )
+    if isinstance(callee, ast.Attribute):
+        if not callee.attr[:1].isupper():
+            return False
+        return _root_reaches_production(callee.value, production, values, classes, seen)
+    return False
+
+
+def _local_class_chain(
+    name: str,
+    values: dict[str, list[ast.expr]],
+    classes: dict[str, ast.ClassDef],
+    seen: set[str],
+) -> list[ast.ClassDef]:
+    """这个名字的对象，其类链上的**本地**类定义：测试替身自己覆写的成员住在这里."""
+    if name in seen:
+        return []
+    seen.add(name)
+    found: list[ast.ClassDef] = []
+    for source in values.get(name, ()):
+        callee = source.func if isinstance(source, ast.Call) else None
+        definition = classes.get(callee.id) if isinstance(callee, ast.Name) else None
+        if definition is None:
+            continue
+        found.append(definition)
+        for base in definition.bases:
+            if isinstance(base, ast.Name) and base.id in classes:
+                found.extend(_local_class_chain(base.id, values, classes, seen))
+    return found
+
+
+def _member_is_locally_overridden(
+    root: str, member: str, values: dict[str, list[ast.expr]], classes: dict[str, ast.ClassDef]
+) -> bool:
+    """本地替身自己覆写了这个成员吗——覆写了就算测试代码在算，不算生产自当预言机."""
+    for definition in _local_class_chain(root, values, classes, set()):
+        for statement in definition.body:
+            if (
+                isinstance(statement, ast.FunctionDef | ast.AsyncFunctionDef)
+                and statement.name == member
+            ):
+                return True
+    return False
+
+
+def _production_member_calls_on(
+    side: ast.expr,
+    production: set[str],
+    values: dict[str, list[ast.expr]],
+    classes: dict[str, ast.ClassDef],
+) -> list[tuple[str, str]]:
+    """这一侧**直接写着**的 ``name.member(...)``，且 ``name`` 落到生产（成员名一起带回）.
+
+    只认接收者是**裸名**的调用：``capture.manifest.response_sha256``、``params.values()``、
+    ``traced.iloc[0]["_merged_at"].date()`` 这些接收者本身是一串读取/下标的，是在读一个
+    已经拿到的值，不是叫生产再算一遍期望。
+    """
+    found: list[tuple[str, str]] = []
+    for node in ast.walk(side):
+        if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Attribute):
+            continue
+        receiver = node.func.value
+        if not isinstance(receiver, ast.Name):
+            continue
+        if _root_reaches_production(receiver, production, values, classes, set()):
+            found.append((receiver.id, node.func.attr))
+    return found
+
+
+def _reads_member_of(sides: list[ast.expr], index: int, root: str) -> bool:
+    """另一侧是不是**挂着这个对象读成员**（``pipeline.invalidated`` 对 ``pipeline._pipeline_id``）.
+
+    只把对象整个传给别人（``canonical_sha256(contract)``）不算「读它的成员」：那种断言里
+    两侧都是生产函数的输出，比的是行为（round-trip、幂等），不是「读出来 vs 叫它算」。
+    """
+    for position, side in enumerate(sides):
+        if position == index:
+            continue
+        for node in ast.walk(side):
+            if not isinstance(node, ast.Attribute | ast.Subscript):
+                continue
+            base: ast.expr = node
+            while isinstance(base, ast.Attribute | ast.Subscript):
+                base = base.value
+            if isinstance(base, ast.Name) and base.id == root:
+                return True
+    return False
+
+
+def _oracle_expectation(
+    sides: list[ast.expr],
+    touched_by_side: list[set[str]],
+    production: set[str],
+    values: dict[str, list[ast.expr]],
+    classes: dict[str, ast.ClassDef],
+) -> tuple[str, str, set[str]] | None:
+    """这一条比较是不是「期望值叫生产对象自己算出来」（生产自当预言机）.
+
+    旧的身份判定把「碰到生产的一侧」整个当被测值放过，于是
+    ``assert pipeline.invalidated == [pipeline._pipeline_id(WINDOW)] * 2`` 读成 0：两侧都碰
+    生产，谁都不算本地重算。可那正是空壳——期望值是问生产对象要的，生产把 ``_pipeline_id``
+    的算法改掉，这条断言跟着一起改，永远不会红。命中要求五件事，缺一不算（判据，不是加宽）：
+
+    1. 期望值那一侧**直接**写着 ``name.member(...)``，``name`` 落到生产（导入的生产名/生产
+       模块、生产类造出来的对象、继承生产类的本地替身都算）；
+    2. 这一侧不是最左操作数——最左侧是「跑一遍被测实现」的写法位置
+       （``assert adapter.parse(_worksheet(...)) == {'code': ...}``、
+       ``assert gate.reserve_attempt_v3(scope).status is ReservationStatus.RESERVED_NEW``），
+       期望值写在右边；
+    3. 这条比较里只有这一侧这样调用生产成员：两侧都调的是行为判据
+       （``codec.encode(a) == codec.encode(b)``、``x.key() != y.key()``）；
+    4. 另一侧确实**读**到生产（成员读取/下标），它是被测值：比较链里出现写下来的字面量
+       （``assert budget.attempts_used == budget.attempts_used_for("fred") == 32``）、
+       或者另一侧只是个字面量（§5.2 要的「跑一遍生产、期望写预计算值」），都不命中；
+    5. 分工得明确到这两种形之一：(a) 观测那一侧**挂着同一个生产对象读成员**（读的是它、
+       期望这一侧又叫同一个对象算）；(b) 调的是生产的**私有成员**
+       （``module._datetime_to_epoch_us(...)``）。公开成员不命中 (b)：
+       ``ddl.Column("volume", "json", nullable=True)``、
+       ``_LegacyQuery.model_json_schema(...)``、``data_query.registered_legs()``
+       是用生产类型/生产目录书写预计算期望，§5.1/§5.2 推荐的写法。
+       本地替身自己覆写了那个成员也不命中：那时算期望的是测试代码，不是生产实现。
+
+    必须绿的相对期望：``reclaimed.fencing_token == old_claim.fencing_token + 1`` 与
+    ``pytest.approx(legacy_bar.close * 0.8)`` 不调用任何成员；
+    ``unadjust_bars(bars, []) == tuple(bars)`` 的生产调用在最左，而且是个裸名函数。
+    """
+    flags = [_production_member_calls_on(side, production, values, classes) for side in sides]
+    for index, members in enumerate(flags):
+        if not members or index == 0:
+            continue
+        if any(other for position, other in enumerate(flags) if position != index):
+            continue
+        others = [side for position, side in enumerate(sides) if position != index]
+        if any(_literal_only(side) for side in others):
+            continue
+        observed: set[str] = set()
+        for position, names in enumerate(touched_by_side):
+            if position != index:
+                observed |= names
+        if not observed:
+            continue
+        for root, member in members:
+            if not (_reads_member_of(sides, index, root) or member.startswith("_")):
+                continue
+            if _member_is_locally_overridden(root, member, values, classes):
+                continue
+            return root, member, observed
+    return None
+
+
 def self_reference_findings(path: Path, tree: ast.Module) -> list[Finding]:
-    """面①：期望值出自本地重算，同一句比较的另一侧又跑到生产实现（自指）.
+    """面①：期望值出自本地重算，或出自「叫生产对象自己算一下」（自指）.
 
     第一版整条 assert 走一遍，只看「出现过本地算子」+「出现过生产裸名」，两边各自的职责不分：
     ``assert adapter.build(_worksheet(...)) == {'literal': 'x'}``（``_worksheet`` 只是在造输入、
@@ -373,12 +607,21 @@ def self_reference_findings(path: Path, tree: ast.Module) -> list[Finding]:
 
     两侧同时满足才算自指；只出现本地算子而期望值仍是字面量（输入构造器），或只出现生产符号
     而期望值是字面量（黄金向量），都不命中。
+
+    上面那层身份判定有个致命的放过：期望值那一侧「碰到生产」就被当成被测值，于是
+    ``assert pipeline.invalidated == [pipeline._pipeline_id(WINDOW)] * 2`` 两侧都碰生产，
+    谁都不算本地重算，读数 0 —— 但期望值正是叫生产对象自己算出来的，生产改了算法这条断言
+    永远跟着改，AC-17|08 要抓的空壳就是这个。所以再加一层 ``_oracle_expectation()``：
+    期望值那一侧直接调用生产对象的成员（含私有方法），另一侧只是读生产的观测值，即命中。
+    这一层是判据而非加宽：它要求「这一侧调成员、那一侧只读取」这种明确的分工才红，
+    本地算子那一族（``helpers``）为空也要跑，因为它跟本地重算无关。
     """
     production = _imports_production_names(tree)
-    helpers = _computing_helpers(tree)
-    if not production or not helpers:
+    if not production:
         return []
+    helpers = _computing_helpers(tree)
     defs = _local_definitions(tree)
+    classes = _local_classes(tree)
     parents = _parent_links(tree)
     module_values = _assigned_values(tree)
     scope_values: dict[int, dict[str, list[ast.expr]]] = {}
@@ -398,6 +641,7 @@ def self_reference_findings(path: Path, tree: ast.Module) -> list[Finding]:
             touched_by_side = [
                 _production_names_touched(side, production, values, defs, set()) for side in sides
             ]
+            hit = False
             for index, side in enumerate(sides):
                 if touched_by_side[index]:
                     continue
@@ -418,7 +662,21 @@ def self_reference_findings(path: Path, tree: ast.Module) -> list[Finding]:
                             f"{sorted(touched)}",
                         )
                     )
+                    hit = True
                     break
+            if hit:
+                continue
+            oracle = _oracle_expectation(sides, touched_by_side, production, values, classes)
+            if oracle is not None:
+                findings.append(
+                    Finding(
+                        path,
+                        statement.lineno,
+                        "self-reference",
+                        f"期望值叫生产对象 {oracle[0]} 的成员 {oracle[1]}(...) 现算"
+                        f"（生产自当预言机），同一断言另一侧引用生产符号 {sorted(oracle[2])}",
+                    )
+                )
     return findings
 
 

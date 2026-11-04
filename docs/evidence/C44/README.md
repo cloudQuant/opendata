@@ -242,6 +242,8 @@ touched = ({n.id for n in ast.walk(statement) if isinstance(n, ast.Name)} & prod
 3. 命中要求：某一侧本地重算 **且** 至少另一侧跑到生产。四个面名一字未改
    （`self-reference / vacuous-assert / constant-shell / source-form-check`），
    验收棘轮按「格 id + 面名」打哈希，改名等于作废旧钉。
+   这一层判不出时还有下一层：期望值那一侧「碰到生产」不再直接算被测值，
+   叫生产对象**算**出来的那一侧会被当回期望值（见「再补一层」）。
 
 配套的本地算子口径（`_does_the_work()`）也按「在算数量还是在书写」收窄了一步，
 因为操作数判据把旧规则里那道偶然的护栏（必须同时出现生产裸名）拆掉之后，
@@ -264,6 +266,8 @@ touched = ({n.id for n in ast.walk(statement) if isinstance(n, ast.Name)} & prod
 | vacuous-assert / source-form-check | 0 / 0 | 0 / 0 |
 | files_scanned | 670 | 671（新增 `tests/test_shell_audit_self_reference.py`） |
 
+（本节的 0 是**上一轮**的读数；再补一层生产自当预言机之后变成 5 → 0，见下面「又补了一层」。）
+
 11 处旧命中逐条核对，**全部是输入构造器形状**（期望值分别是 `[]`、`()`、
 `{'code': ...}`、`"cell_limit_exceeded"`、一段逐字写死的字节串），按新判据不再命中；
 其中 `test_temporal_instrument_identity.py:294/382` 两处是上表的 `d()` 书写形。
@@ -279,28 +283,92 @@ touched = ({n.id for n in ast.walk(statement) if isinstance(n, ast.Name)} & prod
   期望值是测试自己构造的那个 UTC 时刻。整数换算、无浮点，µs 级精度与改前逐位相同，
   变异 tz 偏移那条判据没有被削弱（`53 passed`）。
 
+### 再补一层：期望值叫生产对象自己算（生产自当预言机）
+
+一次专门的测量（临时探针分支加了四个只读数、不进判据的盲区测量臂，量完即弃）把上面
+那五条盲区的实际规模量了出来：成员读取型 14 处（抽样全是合法的：读 fake client 的调用记录、
+读 sha 钉住的录制夹具）、拿生产常量做算术 38 处（其中真自指约 2 处）、经 fixture 落生产 0 处、
+无比较的一元断言 142 处（70 条是 `isinstance` 契约、28 条是纯真值判断，抽样 8 条里 0 条自指）。
+也就是说这些盲区**不是**危险分子；剩下的危险只有一形，而它恰好被旧判据的身份判定放过：
+期望值那一侧「碰到生产」就被当成被测值，于是
+
+```python
+assert pipeline.invalidated == [pipeline._pipeline_id(WINDOW)] * 2   # tests/test_c85_runner.py:160
+```
+
+两侧都碰生产、谁都不算本地重算，面①读 0。可这行的期望值是问被测对象要的：`_pipeline_id` 的
+算法改掉，等号两边一起改，断言永远不会红——这正是 AC-17|08 要抓的空壳。格子里
+「盲区登记为文档」但读数仍写 proven 是假绿，所以把这**一形**升进默认面（面名不变，
+仍报 `self-reference`）。规则见 `self_reference_findings()` 里的 `_oracle_expectation()`：
+五个条件缺一不红（期望侧直接写 `name.member(...)` 且 `name` 落到生产；不在最左操作数；
+这条比较里只它这么调；另一侧确实挂着同一对象读成员；要么调的是私有成员、要么观测与期望
+挂在同一个生产对象上，且该成员没被本地替身自己覆写）。它是判据不是加宽——第一次实现按
+「这一侧碰到生产就行」粗判时读 45 处，逐条核对几乎全是合法写法，收窄后才 5 处。
+
+读数（同一棵树，只换判据）：
+
+| 面 | 补这一层前 | 补这一层后 |
+| --- | --- | --- |
+| self-reference | 0 | 5 → 0（5 处全部改掉用例，没有动判据） |
+| constant-shell / vacuous-assert / source-form-check | 19 / 0 / 0 | 19 / 0 / 0 |
+| files_scanned | 671 | 671 |
+
+5 处命中逐条改成了什么（都改在**测试**里，期望值独立写下；没有删、跳、xfail 或削弱判据）：
+
+* `tests/test_c85_runner.py:160/161`：`[pipeline._pipeline_id(WINDOW)] * 2` /
+  `[pipeline._pipeline_id(WINDOW)]` → 模块级黄金常量
+  `ODS_FAILURE_PIPELINE_ID = "stock_daily:ods-failure:2026-09-22..2026-09-24:c64820a90be90557"`
+  （domain + source + 窗口标签 + spec/shard/hooks 摘要的前 16 位，一次算好写成数据）。
+  原先这两条在算法改动时永不失败，现在会失败——判据变强不是变弱；
+* `tests/test_run_ledger_database_clock.py:235`：`== run_ledger_module._datetime_to_epoch_us(...)`
+  → 参数化里加一列写下来的黄金微秒 `1_793_007_000_123_456`（2026-10-26 09:30:00.123456 UTC
+  距 epoch 的微秒数，`calendar.timegm` 独立算的）；tz 归一化的判据没变（naive/aware 两条参数
+  都仍要求同一个数），`9 passed`；
+* `tests/test_sina_fzb_fanout_journal.py:972`（以及同一个循环里同形、当时还没被点到的
+  `:975-977` naive-postgres 那条）：`== fanout_journal_module._datetime_to_epoch_us(expected_time)`
+  → 每个方言带一个黄金微秒列（`1_893_553_445_123_456`，sqlite 只到毫秒 →
+  `1_893_553_445_123_000`），三条方言仍各判各的，`44 passed`；
+* `tests/test_ths_csi500_sample_composition.py:732`：
+  `== sample._sample_identity_sha256(current.identity)` → 测试自己取证自己编码：
+  `os.stat(current.database_path)` 的 `(st_dev, st_ino)` 先与状态里记录的
+  `database_device`/`database_inode` 对上看一眼，再断状态里的锚等于**测试写下的**
+  canonical JSON（键名、`sort_keys`、`separators` 都由测试规定）的 sha256。
+  实现改 payload 或改 canonical 形式时这条会红；问实现要答案时它跟着实现一起改。
+  这一形不能写成字面量（device/inode 随机器变），是「独立写下的期望」而不是抄定义。
+
 ### 反事实（改判据必须自带能红的面）
 
-`tests/test_shell_audit_self_reference.py`，17 条，全部在合成源码上钉读数：
+`tests/test_shell_audit_self_reference.py`，34 条，全部在合成源码上钉读数：
 
 | 条目 | 旧判据 | 新判据 |
 | --- | --- | --- |
 | `_ms` 直接重算 vs 生产函数（C44 那一形） | 1 | 1 |
 | 期望值先写进局部变量 | 0（假阴性） | 1 |
 | 生产藏在 `fetcher.millis_for(...)` 属性链后 | 0（假阴性） | 1 |
+| 私有成员当预言机 `pipeline.invalidated == [pipeline._pipeline_id(W)] * 2` | 0（假阴性） | 1 |
+| 公开成员当预言机 `fetcher.normalized_rows == fetcher.normalize(rows)` | 0（假阴性） | 1 |
 | `_worksheet(...)` 造输入 + 字面量期望 | 1（假阳性） | 0 |
 | `_context(...)` 造输入 + `== []` | 1（假阳性） | 0 |
 | 拼路径读档案的 `ledger_rows()` | 1（假阳性） | 0 |
 | 预计算黄金向量 `== 1704124800000` | 0 | 0（正控制） |
 | 两侧都是生产输出的 `!=` 行为判据 | 0 | 0（正控制） |
 | 单步 `date.fromisoformat` 书写 | 0 | 0（正控制，代价写在上面） |
+| 相对期望 `reclaimed.fencing_token == old_claim.fencing_token + 1` | 0 | 0（正控制） |
+| 相对期望 `pytest.approx(legacy_bar.close * 0.8)` | 0 | 0（正控制） |
+| 生产调用只出现在被测侧 `unadjust_bars(bars, []) == tuple(bars)` | 0 | 0（正控制） |
+| 被测侧是成员调用、期望是读的枚举成员 `gate.reserve(s).status is ReservationStatus.X` | 0 | 0（正控制） |
+| 比较链里写着字面量 `budget.attempts_used == budget.attempts_used_for("fred") == 32` | 0 | 0（正控制） |
+| round-trip 行为判据 `canonical_sha256(c) == canonical_sha256(Model.model_validate(c.model_dump()))` | 0 | 0（正控制） |
+| 生产函数返回的是值，不是机器：`first["worklist_sha256"] == sha({k: v for k, v in first.items()})` | 0 | 0（正控制） |
+| 本地替身覆写了那个成员（`RecordingPipeline._pipeline_id` 自己定义） | 0 | 0（正控制） |
 
-外加两条守住判据面本身：四个面名一字不能改；被改的那批用例文件（含 11 处误伤的原件）
-在面①上读数为 0。`docs/evidence/C44/census_counterfactuals.py` 的 7 条（含 `_ms` 真自指与
-派生标签正控制）在改动后重跑仍 7/7。
+外加两条守住判据面本身：四个面名一字不能改；被改的那批用例文件（含 11 处误伤的原件，
+以及本轮改掉生产自当预言机的 4 个文件）在面①上读数为 0。
+`docs/evidence/C44/census_counterfactuals.py` 的 7 条（含 `_ms` 真自指与派生标签正控制）
+在改动后重跑仍 7/7。
 
 ```bash
-python -m pytest tests/test_shell_audit_self_reference.py -q --no-cov   # 17 passed
+python -m pytest tests/test_shell_audit_self_reference.py -q --no-cov   # 34 passed
 python docs/evidence/C44/census_counterfactuals.py                      # 7/7
 python docs/evidence/C44/shell_audit.py                                 # 自指 0，定义抄写 19
 ```
@@ -308,12 +376,29 @@ python docs/evidence/C44/shell_audit.py                                 # 自指
 ### 这一面现在仍然看不见的（如实登记）
 
 1. 期望值从生产对象上**读**出来再比（`assert got == expected.rows`，`expected = _ms(...)`），
-   成员读取不 recurse，看不见；
+   成员读取不 recurse，看不见。测量臂量到 14 处，抽样全是合法的（读 fake client 的调用记录、
+   读 sha 钉住的录制夹具），所以有意不动；
 2. 期望值用生产类型书写（`assert bars == (Bar(symbol=..., close=10.0),)`，值全是字面量）
-   —— 这是 §5.1/§5.2 推荐的预计算写法，**有意**不命中，但同一侧混进本地重算时也会被这条
-   身份判定一起放过；
+   —— 这是 §5.1/§5.2 推荐的预计算写法，**有意**不命中。但同一侧「叫生产算」的那一半
+   （`bars == [pipeline._pipeline_id(w)]`、`== Budget(None).attempts_for("fred")`）
+   **从本轮起命中**：旧盲区 2 已经被收窄成「只用生产类型/字面量书写」；
 3. `assert got == PRODUCTION_CONST * 2` 这种「拿生产常量算一下当期望」不在面①里
-   （本地算子必须是函数定义；抄定义那一格由面②管，而面②只认 `PROD == 字面量`）；
+   （本地算子必须是函数定义；抄定义那一格由面②管，而面②只认 `PROD == 字面量`）。
+   测量臂量到 38 处，逐条看真自指只有约 2 处，其余是路径拼接与相对期望，所以没有升进判据；
 4. 经 fixture 参数、`monkeypatch`、`conftest` 落到生产的来路不追（只追本模块内的赋值与 `def`）；
+   测量臂量到 0 处；
 5. 面①只看 `ast.Compare`；`assert production_call(local_builder(...))`（无比较的一元断言）
-   不在这一面。
+   不在这一面。测量臂量到 142 处，其中 70 条 `isinstance` 契约、28 条纯真值，抽样 8 条
+   0 条自指，所以同样留作盲区；
+6. 生产自当预言机那一层（`_oracle_expectation()`）自己的边界，写清楚免得被读成「全树干净」：
+   * 期望值经**本地包装**再叫生产算（`def _pin(id): return sample._hash(id)` 之后
+     `assert got == _pin(current)`）不红——这一层只认写在比较操作数里的成员调用，
+     穿过本地 `def` 就会把第 1 条那类合法读取一起点红；
+   * 生产调用写在**最左操作数**（`assert module._f(x) == observed`）不红：位置是本仓库的
+     书写约定（左边跑被测实现），反过来写就落在盲区 1；
+   * 两侧都调生产成员的行为判据（`codec.encode(a) == codec.encode(b)`、`x.key() != y.key()`）
+     不红——其中确实混着「两侧都问生产」的空壳，但分不清是行为判据还是自指，判红会成批误伤；
+   * 生产**函数**的返回值当接收者不算生产对象（`first = build_worklist(...)` 之后
+     `first.items()`），类与函数只按「名字首字母大写」这条命名规范来分；
+   * 比较链里写着字面量期望（`a.x == a.for("k") == 32`）不红，尽管中段是生产调用——
+     那一条自己已经把期望钉死，改算法会红。
