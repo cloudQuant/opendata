@@ -46,6 +46,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.codemod.migrate_provider_layout import (  # noqa: E402
+    LAZY_VENDOR_FACADE_MANUAL_EDIT_REASON,
     MigrationConfig,
     _lazy_vendor_init,
     _module_in_namespace,
@@ -263,6 +264,15 @@ MANUAL_EDITS: tuple[ManualEdit, ...] = (
                 "    )",
             ),
         ),
+    ),
+    # The vendored root package is the one registered divergence that no regex transform
+    # produces: `_lazy_vendor_init` regenerates it deterministically, so `transforms` is empty
+    # and a replay stays byte-identical. It is listed here because `upstream.lock` flags it
+    # `manual_edits = true` for exactly that reason — the three registers (lock, this tuple,
+    # THIRD_PARTY_NOTICES.md) must agree, or 「人工改动登记」 silently drifts by one.
+    ManualEdit(
+        upstream_path=f"{UPSTREAM_PACKAGE}/__init__.py",
+        description=LAZY_VENDOR_FACADE_MANUAL_EDIT_REASON,
     ),
 )
 

@@ -27,7 +27,7 @@ opendata 采用 BSL 1.1（见 [`LICENSE`](LICENSE)），但仓库内**内嵌的�
 
 ### 人工改动登记（manual edits）
 
-下表的 `akshare/` 路径是原上游身份，现行本地对应 `_vendor/` 下的同名相对路径。迭代2目录迁移另记录原始来源哈希与命名空间改写后的哈希；两者不能混用。搬运代码原则上与上游逐行可 diff（便于上游同步）。人工改动分两类，全部登记在
+下表的 `akshare/` 路径是原上游身份，现行本地对应 `_vendor/` 下的同名相对路径。迭代2目录迁移另记录原始来源哈希与命名空间改写后的哈希；两者不能混用。搬运代码原则上与上游逐行可 diff（便于上游同步）。人工改动分三类，全部登记在
 `scripts/codemod/port_module.py::MANUAL_EDITS`（重跑 codemod 会重放，不会静默丢失），
 并在 `upstream.lock` 标记 `manual_edits = true`。
 
@@ -58,6 +58,14 @@ opendata 采用 BSL 1.1（见 [`LICENSE`](LICENSE)），但仓库内**内嵌的�
 `tests/test_port_fidelity.py::test_financial_statement_update_dates_ignore_the_machine_timezone`
 （同一份录制在 Asia/Shanghai / Etc/UTC / America/Los_Angeles 下必须给出同一列）与
 `docs/port-report.md` 的 `0 pending TODOs`（重放与树内容逐字节一致）。
+
+**三、生成式门面（1 处）**：`_vendor/__init__.py` 不是上游那份 flat `__init__`，而是 codemod 依据锁内导出表
+确定性重写的惰性门面（`_lazy_vendor_init`）。
+它没有任何 regex 变换，`MANUAL_EDITS` 里登记的是「这一份与上游不同、且差异可重放」这一事实本身，因此重跑 codemod 仍逐字节一致。
+
+| 文件 | 改动 | 原因 |
+|------|------|------|
+| `akshare/__init__.py` | 上游 flat `__init__` → 模块级 `__getattr__` 惰性门面（保留全部可导出名与 `__dir__`） | 上游在包导入期就会拉起整棵被 vendored 的包树；门面把 vendor 模块导入推迟到真正取用时，同时保留导出发现能力（`upstream.lock` 记 `manual_edits = true`，理由与 `LAZY_VENDOR_FACADE_MANUAL_EDIT_REASON` 同字面） |
 
 ---
 
