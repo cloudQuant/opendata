@@ -561,14 +561,17 @@ def test_custom_mutable_timezone_is_snapshotted_once_at_request_construction(
     result = SourceGrantProvisioner(gate).provision(request)
 
     assert mutable_timezone.utcoffset_calls == 2
-    assert result.not_before_us == _datetime_to_epoch_us(expected_not_before)
-    assert result.expires_at_us == _datetime_to_epoch_us(expected_expires_at)
+    assert _from_epoch_us(result.not_before_us) == expected_not_before
+    assert _from_epoch_us(result.expires_at_us) == expected_expires_at
 
 
-def _datetime_to_epoch_us(value: datetime) -> int:
-    """Convert a known UTC synthetic date to integer microseconds without floats."""
-    delta = value - datetime(1970, 1, 1, tzinfo=timezone.utc)
-    return delta.days * 86_400_000_000 + delta.seconds * 1_000_000 + delta.microseconds
+def _from_epoch_us(value_us: int) -> datetime:
+    """Decode the stored epoch-microsecond integer back to a UTC instant (no floats).
+
+    方向是「把观测解码到期望的口径」：期望值是测试自己构造的那个 UTC 时刻，而不是把
+    被测实现的「datetime -> epoch us」再算一遍（AC-17|08 面①，docs/evidence/C44/README.md）。
+    """
+    return datetime(1970, 1, 1, tzinfo=timezone.utc) + timedelta(microseconds=value_us)
 
 
 @pytest.mark.parametrize(

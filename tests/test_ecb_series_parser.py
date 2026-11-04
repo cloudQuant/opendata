@@ -154,10 +154,6 @@ def _group(value: str = "opaque") -> str:
     )
 
 
-def _key(prefix: str, values: dict[str, str], dimensions: tuple[str, ...]) -> str:
-    return prefix + "." + ".".join(values[dimension] for dimension in dimensions)
-
-
 def test_yc_reorders_xml_dimensions_and_normalizes_daily_source_faithfully() -> None:
     order = tuple(reversed(YC_DIMENSIONS))
     dataset_attributes = (
@@ -189,7 +185,7 @@ def test_yc_reorders_xml_dimensions_and_normalizes_daily_source_faithfully() -> 
     raw = parse_yield_curve_generic_data(_document([dataset]))
     assert len(raw) == 2
     assert tuple(raw[0]["dimensions"]) == YC_DIMENSIONS
-    assert raw[0]["series_key"] == _key("YC", YC_VALUES, YC_DIMENSIONS)
+    assert raw[0]["series_key"] == "YC.B.U2.EUR.4F.G_N_A.SV_C_YM.SR_3M"
     assert raw[0]["period"] == "2026-10-07"
     assert raw[0]["value"] == "-0.000"
     assert raw[0]["dataset_attributes"] == {"UNKNOWN_DATASET": "raw-Ω"}
@@ -235,8 +231,8 @@ def test_bps_month_and_quarter_periods_remain_strings_with_all_dimensions() -> N
     quarterly_series = _series(quarterly, [_obs("2014-Q3", "4.2e1")])
     raw = parse_balance_of_payments_generic_data(_document([monthly_series + quarterly_series]))
     assert [row["period"] for row in raw] == ["2014-09", "2014-Q3"]
-    assert raw[0]["series_key"] == _key("BPS", BPS_VALUES, BPS_DIMENSIONS)
-    assert raw[1]["series_key"] == _key("BPS", quarterly, BPS_DIMENSIONS)
+    assert raw[0]["series_key"] == "BPS.M.N.I10.W1.S121.S1.T.A.FA.R.F._Z.EUR.X1._X.N.ALL"
+    assert raw[1]["series_key"] == "BPS.Q.N.I10.W1.S121.S1.T.A.FA.R.F._Z.EUR.X1._X.N.ALL"
     assert tuple(raw[0]["dimensions"]) == BPS_DIMENSIONS
 
     typed = normalize_balance_of_payments_records(raw)
@@ -287,8 +283,16 @@ def test_bad_frequency_or_period_is_rejected(
         parser(_document([series]))
 
 
-@pytest.mark.parametrize("product", ["YC", "BPS"])
-def test_serieskey_requires_exact_unique_dimensions_in_any_xml_order(product: str) -> None:
+@pytest.mark.parametrize(
+    ("product", "expected_series_key"),
+    [
+        ("YC", "YC.B.U2.EUR.4F.G_N_A.SV_C_YM.SR_3M"),
+        ("BPS", "BPS.M.N.I10.W1.S121.S1.T.A.FA.R.F._Z.EUR.X1._X.N.ALL"),
+    ],
+)
+def test_serieskey_requires_exact_unique_dimensions_in_any_xml_order(
+    product: str, expected_series_key: str
+) -> None:
     if product == "YC":
         dimensions, values, parser = (
             YC_DIMENSIONS,
@@ -304,7 +308,7 @@ def test_serieskey_requires_exact_unique_dimensions_in_any_xml_order(product: st
     valid_period = "2026-10-07" if product == "YC" else "2014-09"
     permuted = tuple(reversed(dimensions))
     good = parser(_document([_series(values, [_obs(valid_period)], order=permuted)]))
-    assert good[0]["series_key"] == _key(product, values, dimensions)
+    assert good[0]["series_key"] == expected_series_key
 
     missing = dict(values)
     missing.pop(dimensions[-1])

@@ -952,30 +952,32 @@ def test_retry_delay_uses_database_time_when_caller_clock_is_offset(
 
 def test_database_clock_decodes_supported_dialect_results_without_live_servers() -> None:
     """Verify SQL selection, UTC normalization, and rejection of malformed results."""
-    fixed_utc = datetime(2030, 1, 2, 3, 4, 5, 123456, tzinfo=timezone.utc)
     mysql_value = datetime(2030, 1, 2, 3, 4, 5, 123456)
     postgres_value = datetime(2030, 1, 2, 11, 4, 5, 123456, tzinfo=timezone(timedelta(hours=8)))
     sqlite_value = "2030-01-02 03:04:05.123"
+    # 三个方言都在说同一个瞬间：2030-01-02 03:04:05 UTC（sqlite 只到毫秒）。
+    # 期望的微秒数是写下来的黄金值，不是叫被测实现的换算函数再算一遍——
+    # 问实现要答案的断言在换算被改掉时永远跟着绿。
+    fixed_utc_us = 1_893_553_445_123_456
+    sqlite_utc_us = 1_893_553_445_123_000
     cases = (
-        ("mysql", mysql_value, "SELECT UTC_TIMESTAMP(6)", fixed_utc),
-        ("postgresql", postgres_value, "SELECT clock_timestamp()", fixed_utc),
+        ("mysql", mysql_value, "SELECT UTC_TIMESTAMP(6)", fixed_utc_us),
+        ("postgresql", postgres_value, "SELECT clock_timestamp()", fixed_utc_us),
         (
             "sqlite",
             sqlite_value,
             "SELECT strftime('%Y-%m-%d %H:%M:%f', 'now')",
-            fixed_utc.replace(microsecond=123000),
+            sqlite_utc_us,
         ),
     )
-    for dialect_name, value, expected_sql, expected_time in cases:
+    for dialect_name, value, expected_sql, expected_us in cases:
         connection = _ClockConnection(dialect_name, value)
         observed = fanout_journal_module._database_clock_us(connection)  # type: ignore[arg-type]
-        assert observed == fanout_journal_module._datetime_to_epoch_us(expected_time)
+        assert observed == expected_us
         assert connection.statement == expected_sql
 
     naive_postgres = _ClockConnection("postgresql", datetime(2030, 1, 2, 3, 4, 5, 123456))
-    assert fanout_journal_module._database_clock_us(naive_postgres) == (
-        fanout_journal_module._datetime_to_epoch_us(fixed_utc)
-    )
+    assert fanout_journal_module._database_clock_us(naive_postgres) == fixed_utc_us
 
     with pytest.raises(RuntimeError, match="unsupported for 'oracle'"):
         fanout_journal_module._database_clock_us(_ClockConnection("oracle", None))  # type: ignore[arg-type]

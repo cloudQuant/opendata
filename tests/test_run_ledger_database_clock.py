@@ -200,22 +200,27 @@ def test_database_policy_never_falls_back_to_application_clock(
 
 
 @pytest.mark.parametrize(
-    ("dialect_name", "database_value", "expected_sql"),
+    ("dialect_name", "database_value", "expected_us", "expected_sql"),
     [
         (
             "mysql",
             datetime(2026, 10, 26, 9, 30, 0, 123456),
+            1_793_007_000_123_456,
             "SELECT UTC_TIMESTAMP(6)",
         ),
         (
             "postgresql",
             datetime(2026, 10, 26, 9, 30, 0, 123456, tzinfo=timezone.utc),
+            1_793_007_000_123_456,
             "SELECT clock_timestamp()",
         ),
     ],
 )
 def test_database_clock_uses_dialect_server_function(
-    dialect_name: str, database_value: datetime, expected_sql: str
+    dialect_name: str,
+    database_value: datetime,
+    expected_us: int,
+    expected_sql: str,
 ) -> None:
     statements: list[str] = []
 
@@ -232,11 +237,9 @@ def test_database_clock_uses_dialect_server_function(
 
     timestamp_us = run_ledger_module._database_clock_us(Connection())
 
-    assert timestamp_us == run_ledger_module._datetime_to_epoch_us(
-        database_value.replace(tzinfo=timezone.utc)
-        if database_value.tzinfo is None
-        else database_value
-    )
+    # 期望值是写下的一微秒不差的黄金数，不是叫被测实现再算一遍：
+    # 2026-10-26 09:30:00.123456 UTC 距 epoch 的微秒数。
+    assert timestamp_us == expected_us
     assert statements == [expected_sql]
 
 
