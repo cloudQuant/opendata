@@ -22,6 +22,7 @@ from opendata.data.providers._engine.http_json import (
     ProviderEngineError,
 )
 from opendata.data.providers._engine.testing import FixedResponseTransport, fixture_context
+from opendata.data.providers.catalog import get_provider
 from opendata.data.providers.tradingeconomics._source import SOURCE
 from opendata.data.providers.tradingeconomics.models.economic_calendar import (
     TradingEconomicsEconomicCalendarFetcher,
@@ -84,11 +85,27 @@ def _fetch(document: object, *, sends: int = 1, **query: object):
 
 
 class TestDeclaration:
-    def test_one_provider_binding_declares_the_complete_output_contract(self) -> None:
-        assert SOURCE == "tradingeconomics"
+    def test_one_provider_binding_declares_the_complete_output_contract(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        assert get_provider("tradingeconomics") is PROVIDER
         assert PROVIDER.source == SOURCE
-        assert PROVIDER.credentials[0].environment_variable == "TRADINGECONOMICS_API_KEY"
-        assert ECONOMIC_CALENDAR.model == "EconomicCalendar"
+        # The credential name is judged by the wire, not by the field: with that one environment
+        # variable absent the engine refuses before sending, and with it present its value reaches
+        # the request under the declared query key. Renaming either half turns this red.
+        monkeypatch.delenv("TRADINGECONOMICS_API_KEY", raising=False)
+        with pytest.raises(ProviderEngineError) as missing:
+            _fetch(CALENDAR_DOCUMENT, country="united-states")
+        assert missing.value.code == "TRADINGECONOMICS_CREDENTIAL_MISSING"
+        monkeypatch.setenv("TRADINGECONOMICS_API_KEY", "fixture-key")
+        key_calls, _ = _fetch(CALENDAR_DOCUMENT, country="united-states")
+        assert key_calls[0]["params"]["c"] == "fixture-key"
+        registered = [
+            fetcher
+            for fetcher in get_provider("tradingeconomics").fetchers
+            if getattr(fetcher, "model_spec", None) is ECONOMIC_CALENDAR
+        ]
+        assert [fetcher.canonical_model for fetcher in registered] == ["EconomicCalendar"]
         assert tuple(column.name for column in ECONOMIC_CALENDAR.columns) == tuple(
             TradingEconomicsEconomicCalendar.model_fields
         )

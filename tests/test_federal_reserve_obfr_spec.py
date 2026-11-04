@@ -45,6 +45,7 @@ from opendata.data.providers._engine.http_json import (
 from opendata.data.providers._engine.spec import ModelSpec, RelativeDefault
 from opendata.data.providers._engine.testing import FixedResponseTransport, fixture_context
 from opendata.data.providers._engine.value_transform import ValueTransformError
+from opendata.data.providers.catalog import register_provider
 from opendata.data.providers.federal_reserve._source import SOURCE
 from opendata.data.providers.federal_reserve.models.overnight_bank_funding_rate import (
     FederalReserveOvernightBankFundingRateFetcher,
@@ -55,6 +56,7 @@ from opendata.data.providers.federal_reserve.specs import (
     OVERNIGHT_BANK_FUNDING_RATE,
     SOFR_NULL_SENTINEL,
 )
+from opendata.data.registry import ProviderRegistry
 
 #: One OBFR record, cells spelled as decimal text the way the kernel reads them; ``type``,
 #: ``revisionIndicator`` and ``footnoteId`` are published but undeclared — the pops at
@@ -114,10 +116,12 @@ class TestDeclarationFace:
         """The refusal text is gone from every reachable face and the descriptor binds six."""
         assert "OvernightBankFundingRate" not in NOT_DECLARED
         assert "OvernightBankFundingRate" in DECLARED_GAPS
-        assert (
-            FederalReserveOvernightBankFundingRateFetcher.canonical_model
-            == "OvernightBankFundingRate"
-        )
+        # The model id is a routing key, so the reading is the fetcher the registry resolves for
+        # it -- not the class attribute the registry was built from.
+        registry = ProviderRegistry()
+        register_provider("federal_reserve", registry)
+        resolved = registry.resolve_model("federal_reserve", "OvernightBankFundingRate")
+        assert type(resolved) is FederalReserveOvernightBankFundingRateFetcher
 
     def test_the_facet_counts_are_the_upstream_validator_lists(self) -> None:
         """Five scale stages (the validator list :47-55) and ZERO sentinel columns."""

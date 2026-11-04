@@ -88,7 +88,10 @@ def test_row_filter_needed_on_an_undeclared_key_is_refused() -> None:
         ),
     )
     line = reading(broken, "econdb", "arm D value_param needle on an undeclared key")
-    assert "RED AssertionError: AvailableIndicators: its row filter tests the undeclared key 'iso'"
+    assert (
+        "RED AssertionError: AvailableIndicators: its row filter tests the undeclared key 'iso'"
+        in line
+    ), line
     assert "which rows survive is the caller's" in line, line
 
 

@@ -19,6 +19,7 @@ from opendata.data.models.deribit import (
     DeribitOptionsChains,
 )
 from opendata.data.protocol import FetchContext, Fetcher, FetchResult
+from opendata.data.providers.catalog import get_provider
 from opendata.data.providers.deribit import client
 from opendata.data.providers.deribit.client import DeribitProviderError, RpcReply
 from opendata.data.providers.deribit.models.fetchers import (
@@ -267,7 +268,8 @@ def _rpc_script(
 
 
 def test_provider_binds_exactly_the_five_deribit_models() -> None:
-    assert PROVIDER.source == "deribit"
+    # ``source`` is the catalog key: the reading is that the lookup answers with this descriptor.
+    assert get_provider("deribit") is PROVIDER, "the descriptor is not routed under this id"
     assert set(PROVIDER.fetcher_dict) == {
         "FuturesCurve",
         "FuturesHistorical",

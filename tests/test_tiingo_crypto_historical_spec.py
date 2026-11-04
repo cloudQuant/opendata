@@ -49,10 +49,12 @@ from opendata.data.providers._engine.row_expansion import (
     MISSING_POINTER,
     RowExpansionError,
 )
+from opendata.data.providers._engine.spec import RowOrderSpec
 from opendata.data.providers._engine.testing import (
     FixedResponseTransport,
     fixture_context,
 )
+from opendata.data.providers.catalog import get_provider
 from opendata.data.providers.tiingo._source import SOURCE
 from opendata.data.providers.tiingo.provider import PROVIDER
 from opendata.data.providers.tiingo.specs import (
@@ -187,7 +189,12 @@ class TestCensusRowIsDeclared:
     """The row the census put in shipped_cover now has a package to carry the declaration."""
 
     def test_the_model_is_declared_and_no_longer_refused(self) -> None:
-        assert CRYPTO_HISTORICAL.model == "CryptoHistorical"
+        registered = [
+            fetcher
+            for fetcher in get_provider("tiingo").fetchers
+            if getattr(fetcher, "model_spec", None) is CRYPTO_HISTORICAL
+        ]
+        assert [fetcher.canonical_model for fetcher in registered] == ["CryptoHistorical"]
         assert "CryptoHistorical" in DECLARED_MODELS
         assert "CryptoHistorical" not in NOT_DECLARABLE
         assert not set(DECLARED_MODELS) & set(NOT_DECLARABLE), "declared *and* refused"
@@ -206,12 +213,47 @@ class TestCensusRowIsDeclared:
 
     def test_the_five_census_needs_are_all_carried_by_fields_that_exist(self) -> None:
         expansion = CRYPTO_HISTORICAL.row_expansion[0]
-        assert CRYPTO_HISTORICAL.path == "/tiingo/crypto/prices"
-        assert CRYPTO_HISTORICAL.rows_pointer == "", "the document itself is the ticker array"
+        # The declared path is what reaches the wire, so the reading is the URL of the one call.
+        calls, rows = _run(symbol="BTCUSD,ETHUSD")
+        assert calls[0]["url"] == "https://api.tiingo.com/tiingo/crypto/prices"
+        # rows_pointer is empty because the document itself is the ticker array: hand the same
+        # body a pointer and the declaration resolves no record at all.
+        with pytest.raises(ProviderEngineError) as pointer_arm:
+            _run(replace(CRYPTO_HISTORICAL, rows_pointer="results"), symbol="BTCUSD")
+        assert pointer_arm.value.code == "TIINGO_SHAPE_INVALID"
         assert expansion.child_array_pointer == "priceData"
         assert {mapping.column for mapping in expansion.parent_fields} == {"ticker"}
-        assert CRYPTO_HISTORICAL.order_by.column == "date"
-        assert CRYPTO_HISTORICAL.order_by.direction == "asc"
+        # The sort is ``date`` ascending, and both halves of it are observable: the same five
+        # bars answer in a different sequence when the column or the direction is moved.
+        assert [row.date for row in rows] == [
+            date(2025, 1, 1),
+            date(2025, 1, 1),
+            date(2025, 1, 2),
+            date(2025, 1, 2),
+            date(2025, 1, 3),
+        ]
+        _, descending = _run(
+            replace(CRYPTO_HISTORICAL, order_by=RowOrderSpec(column="date", direction="desc")),
+            symbol="BTCUSD,ETHUSD",
+        )
+        assert [row.date for row in descending] == [
+            date(2025, 1, 3),
+            date(2025, 1, 2),
+            date(2025, 1, 2),
+            date(2025, 1, 1),
+            date(2025, 1, 1),
+        ]
+        _, by_close = _run(
+            replace(CRYPTO_HISTORICAL, order_by=RowOrderSpec(column="close", direction="asc")),
+            symbol="BTCUSD,ETHUSD",
+        )
+        assert [row.date for row in by_close] == [
+            date(2025, 1, 1),
+            date(2025, 1, 2),
+            date(2025, 1, 1),
+            date(2025, 1, 2),
+            date(2025, 1, 3),
+        ]
         assert CRYPTO_HISTORICAL.order_by.limit is None, ":183 sorts with no cap"
         aliases = {
             column.name: column.source_key
@@ -226,7 +268,17 @@ class TestCensusRowIsDeclared:
         }
         assert bounds["start_date"].years == -1 and bounds["start_date"].days == 0
         assert bounds["end_date"].years == 0 and bounds["end_date"].months == 0
-        assert CRYPTO_HISTORICAL.pagination.kind == "none", "no paging loop on this endpoint"
+        # pagination asks for one request and the engine takes exactly that: a body publishing a
+        # cursor the declaration never reads still answers without a second send.
+        cursor_body = [
+            {
+                "ticker": "BTCUSD",
+                "priceData": [{"date": "2025-01-01", "close": 1.0}],
+                "next": "PAGE-2-NEVER-FETCHED",
+            }
+        ]
+        cursor_calls, _ = _run(document=cursor_body, symbol="BTCUSD")
+        assert len(cursor_calls) == 1, "no paging loop on this endpoint"
 
 
 class TestNestedPriceDataExplode:

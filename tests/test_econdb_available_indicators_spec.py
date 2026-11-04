@@ -34,10 +34,20 @@ from datetime import date
 
 import pytest
 
-from opendata.data.providers._engine.http_json import HttpResponse, make_http_json_fetcher
-from opendata.data.providers._engine.spec import ColumnSpec, RowFilterSpec
+from opendata.data.providers._engine.http_json import (
+    HttpResponse,
+    ProviderEngineError,
+    make_http_json_fetcher,
+)
+from opendata.data.providers._engine.spec import (
+    ColumnSpec,
+    DecoderSpec,
+    RowFilterSpec,
+    RowOrderSpec,
+)
 from opendata.data.providers._engine.testing import FixedResponseTransport, fixture_context
 from opendata.data.providers._engine.value_transform import DerivePlan, DeriveStage
+from opendata.data.providers.catalog import get_provider, health_check
 from opendata.data.providers.econdb._source import SOURCE
 from opendata.data.providers.econdb.provider import PROVIDER
 from opendata.data.providers.econdb.specs import (
@@ -112,7 +122,12 @@ class TestCensusRowIsDeclared:
     """The need set is carried by fields that exist, and the residue is written down."""
 
     def test_the_model_is_declared_and_no_longer_refused(self) -> None:
-        assert AVAILABLE_INDICATORS.model == "AvailableIndicators"
+        registered = [
+            fetcher
+            for fetcher in get_provider("econdb").fetchers
+            if getattr(fetcher, "model_spec", None) is AVAILABLE_INDICATORS
+        ]
+        assert [fetcher.canonical_model for fetcher in registered] == ["AvailableIndicators"]
         assert DECLARED_MODELS == {"AvailableIndicators": AVAILABLE_INDICATORS}
         assert "AvailableIndicators" not in NOT_DECLARED
         implemented = set(DECLARED_MODELS) | set(READY_MODELS)
@@ -131,8 +146,10 @@ class TestCensusRowIsDeclared:
         assert set(NOT_DECLARED) == set()
         assert "symbol_root" in DECLARED_GAPS["AvailableIndicators"]
 
-    def test_the_provider_descriptor_binds_the_declared_and_ready_models(self) -> None:
-        assert PROVIDER.source == "econdb"
+    def test_the_provider_descriptor_binds_the_declared_and_ready_models(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        assert get_provider("econdb") is PROVIDER, "the descriptor is not routed under this id"
         bound = {
             model_id
             for binding in PROVIDER.fetcher_bindings
@@ -140,19 +157,59 @@ class TestCensusRowIsDeclared:
         }
         assert bound == set(DECLARED_MODELS) | set(READY_MODELS)
         assert len(PROVIDER.credentials) == 1
-        assert PROVIDER.credentials[0].environment_variable == "ECONDB_API_KEY"
+        # The health check reads exactly one environment variable, and it flips only when that
+        # name carries a value: rename the declared env var and ``missing_key`` survives.
+        monkeypatch.delenv("ECONDB_API_KEY", raising=False)
+        assert health_check("econdb")["econdb"].status == "missing_key"
+        monkeypatch.setenv("ECONDB_API_KEY", "fixture-token-only")
+        assert health_check("econdb")["econdb"].status == "ready"
+        assert health_check("econdb")["econdb"].missing_credentials == ()
 
     def test_the_five_facets_the_need_set_names_are_the_ones_declared(self) -> None:
-        # decode.delimited
-        assert AVAILABLE_INDICATORS.decoder.kind == "csv"
-        assert AVAILABLE_INDICATORS.rows_pointer == ""
-        # rows.filter / rows.order_limit
+        # decode.delimited: the declared decoder is what turns this body into rows at all. Read as
+        # JSON, the same roster no longer parses, so the kind is a runtime reading, not a label.
+        calls, rows = _run()
+        assert len(calls) == 1
+        assert [row.symbol for row in rows] == ["DEUPCP", "JPUPCP", "FRUPCP"]
+        with pytest.raises(ProviderEngineError) as json_arm:
+            _run(replace(AVAILABLE_INDICATORS, decoder=DecoderSpec(kind="json")))
+        assert json_arm.value.code == "ECONDB_SHAPE_INVALID"
+        # rows_pointer: a delimited body is itself the record list, so the declaration cannot
+        # point anywhere -- the engine refuses the pointer when the facet is given one.
+        with pytest.raises(ValueError, match="no nested record list"):
+            replace(AVAILABLE_INDICATORS, rows_pointer="data")
+        # rows.filter: the op negates, which is why the obsolete OECD block is the residue.
         assert len(AVAILABLE_INDICATORS.row_filters) == 1
-        assert AVAILABLE_INDICATORS.row_filters[0].op == "not_equals"
         assert AVAILABLE_INDICATORS.row_filters[0].columns == ("iso",)
+        _, inverted = _run(
+            replace(
+                AVAILABLE_INDICATORS,
+                row_filters=(RowFilterSpec(op="equals", columns=("iso",), value="OECD"),),
+            )
+        )
+        assert [row.symbol for row in inverted] == ["OECDUPCP"], "the op reads as a negation"
+        # rows.order_limit: both the sorted column and its direction are observable, because each
+        # one answers with a different sequence out of the same four published records.
         assert AVAILABLE_INDICATORS.order_by is not None
-        assert AVAILABLE_INDICATORS.order_by.column == "last_date"
-        assert AVAILABLE_INDICATORS.order_by.direction == "desc"
+        assert [row.last_date for row in rows] == [
+            date(2024, 6, 1),
+            date(2023, 11, 1),
+            date(2019, 3, 1),
+        ]
+        _, ascending = _run(
+            replace(
+                AVAILABLE_INDICATORS,
+                order_by=RowOrderSpec(column="last_date", direction="asc", limit=None),
+            )
+        )
+        assert [row.symbol for row in ascending] == ["FRUPCP", "JPUPCP", "DEUPCP"]
+        _, by_first_date = _run(
+            replace(
+                AVAILABLE_INDICATORS,
+                order_by=RowOrderSpec(column="first_date", direction="desc", limit=None),
+            )
+        )
+        assert [row.symbol for row in by_first_date] == ["JPUPCP", "DEUPCP", "FRUPCP"]
         # columns.null_sentinel: every column but the one non-nullable key carries the set
         sentinelled = [c.name for c in AVAILABLE_INDICATORS.columns if c.null_sentinel]
         assert sentinelled == [  # noqa: C416 -- preserve the assertion AST and literal test oracle

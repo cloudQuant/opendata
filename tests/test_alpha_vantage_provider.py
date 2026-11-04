@@ -35,6 +35,7 @@ from opendata.data.providers.alpha_vantage.models.historical_eps import (
     AlphaVantageHistoricalEpsFetcher,
 )
 from opendata.data.providers.alpha_vantage.provider import PROVIDER
+from opendata.data.providers.catalog import get_provider
 from opendata.data.raw_response_cache import RawResponseCache
 from opendata.data.request_budget import (
     GrantDecision,
@@ -110,7 +111,8 @@ def _context(model: str, *, attempts: int = 3) -> FetchContext:
 
 def test_provider_has_three_explicit_canonical_bindings() -> None:
     assert tuple(PROVIDER.fetcher_dict) == ("EquityHistorical", "EtfHistorical", "HistoricalEps")
-    assert PROVIDER.source == "alpha_vantage"
+    # The source id is the registry key, so the reading is the lookup it answers, not the field.
+    assert get_provider("alpha_vantage") is PROVIDER, "the descriptor is not routed under this id"
     assert [fetcher.capability.domain for fetcher in PROVIDER.fetchers] == [
         "alpha_vantage_equity_historical",
         "alpha_vantage_etf_historical",
