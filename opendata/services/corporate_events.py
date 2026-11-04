@@ -109,8 +109,7 @@ class CorporateEventVersionStore:
         with self.engine.begin() as connection:
             existing_rows = connection.execute(
                 text(
-                    # B608: fixed table identifier; values are bound.
-                    f"SELECT `revision_order`, `source_revision`, `content_digest`, "  # noqa: S608 # nosec B608
+                    f"SELECT `revision_order`, `source_revision`, `content_digest`, "  # noqa: S608 # nosec B608  # sole interpolation is the EVENT_VERSIONS_TABLE module string; the two WHERE terms are :source and :event_identity binds
                     f"`symbol`, `ex_date` FROM `{EVENT_VERSIONS_TABLE}` "
                     "WHERE `source` = :source AND `event_identity` = :event_identity"
                 ),
@@ -129,8 +128,7 @@ class CorporateEventVersionStore:
             if not same_version_exists:
                 connection.execute(
                     text(
-                        # B608: fixed table identifier; row values are bound.
-                        f"INSERT INTO `{EVENT_VERSIONS_TABLE}` ("  # noqa: S608 # nosec B608
+                        f"INSERT INTO `{EVENT_VERSIONS_TABLE}` ("  # noqa: S608 # nosec B608  # columns are written-out literals and every value arrives through _version_parameters binds; only the table name interpolates, from a module string
                         "`source`, `event_identity`, `identity_basis`, `economic_event_id`, "
                         "`symbol`, `ex_date`, `revision_order`, `source_revision`, "
                         "`content_digest`, `pre_event_share_basis`, `cash_dividend`, "
@@ -153,8 +151,7 @@ class CorporateEventVersionStore:
                     digest_a, digest_b = sorted((digest, other_digest))
                     connection.execute(
                         text(
-                            # B608: fixed table identifier; conflict values are bound.
-                            f"INSERT INTO `{EVENT_CONFLICTS_TABLE}` ("  # noqa: S608 # nosec B608
+                            f"INSERT INTO `{EVENT_CONFLICTS_TABLE}` ("  # noqa: S608 # nosec B608  # same-shape INSERT whose only interpolation is the conflicts module string; digest_a/digest_b come from sorted str digests passed as binds
                             "`source`, `event_identity`, `revision_order`, `digest_a`, `digest_b`, "
                             "`detected_at`) VALUES (:source, :event_identity, :revision_order, "
                             ":digest_a, :digest_b, :detected_at)"
@@ -208,8 +205,7 @@ class CorporateEventVersionStore:
         with self.engine.begin() as connection:
             connection.execute(
                 text(
-                    # B608: fixed table identifier; observation values are bound.
-                    f"INSERT INTO `{EVENT_CANDIDATES_TABLE}` ("  # noqa: S608 # nosec B608
+                    f"INSERT INTO `{EVENT_CANDIDATES_TABLE}` ("  # noqa: S608 # nosec B608  # preserve_unresolved stores the observation: untrusted raw_payload_json is a :raw_payload_json bind, the f-string adds only the candidates table name
                     "`observation_id`, `source`, `content_digest`, `raw_payload_json`, "
                     "`symbol`, `ex_date`, `observed_at`, `identity_status`) VALUES ("
                     ":observation_id, :source, :content_digest, :raw_payload_json, "
@@ -239,8 +235,7 @@ class CorporateEventVersionStore:
             if not normalized_symbols:
                 return []
         query = (
-            # B608: fixed table identifier; filters are bound.
-            f"SELECT `v`.`source`, `v`.`event_identity`, `v`.`economic_event_id`, "  # noqa: S608 # nosec B608
+            f"SELECT `v`.`source`, `v`.`event_identity`, `v`.`economic_event_id`, "  # noqa: S608 # nosec B608  # head of the latest-revision read; the single brace is the versions table literal, the optional symbol filter below binds :symbol_N values
             "`v`.`symbol`, `v`.`ex_date`, `v`.`revision_order`, `v`.`source_revision`, "
             "`v`.`content_digest`, `v`.`pre_event_share_basis`, `v`.`cash_dividend`, "
             "`v`.`stock_dividend`, `v`.`rights_shares`, `v`.`rights_price` "
@@ -256,8 +251,7 @@ class CorporateEventVersionStore:
                 params[exact] = symbol
                 params[prefix] = f"{symbol}.%"
             query += (
-                # B608: fixed SQL and indexed binds; symbols are bound.
-                "WHERE EXISTS ("  # noqa: S608 # nosec B608
+                "WHERE EXISTS ("  # noqa: S608 # nosec B608  # symbol_terms interpolate only loop-index placeholder names (:symbol_N, :symbol_prefix_N); the symbols themselves land in params, the table is the versions module string
                 f"SELECT 1 FROM `{EVENT_VERSIONS_TABLE}` AS `s` "
                 "WHERE `s`.`source` = `v`.`source` "
                 "AND `s`.`event_identity` = `v`.`event_identity` "
@@ -336,8 +330,7 @@ class CorporateEventVersionStore:
         with self.engine.begin() as connection:
             rows = connection.execute(
                 text(
-                    # B608: fixed table and clause; filter values are bound.
-                    f"SELECT `job_id`, `batch_id`, `source`, `event_identity`, "  # noqa: S608 # nosec B608
+                    f"SELECT `job_id`, `batch_id`, `source`, `event_identity`, "  # noqa: S608 # nosec B608  # outbox claim read; identity_where is a fixed clause string chosen by branch and its scope values bind as :identity_source/:event_identity next to :now and :limit
                     "`revision_order`, `content_digest`, `symbol`, `ex_date`, `attempt_count`, "
                     "`created_at` "
                     f"FROM `{EVENT_RECOMPUTE_OUTBOX_TABLE}` "
@@ -361,8 +354,7 @@ class CorporateEventVersionStore:
                 lease_token = str(uuid.uuid4())
                 result = connection.execute(
                     text(
-                        # B608: fixed table; lease values are bound.
-                        f"UPDATE `{EVENT_RECOMPUTE_OUTBOX_TABLE}` "  # noqa: S608 # nosec B608
+                        f"UPDATE `{EVENT_RECOMPUTE_OUTBOX_TABLE}` "  # noqa: S608 # nosec B608  # lease grab sets a uuid4 token and a computed lease_until through binds; attempt_count grows by SQL arithmetic, so no caller string reaches the f-string
                         "SET `status` = 'processing', `attempt_count` = `attempt_count` + 1, "
                         "`lease_token` = :lease_token, `lease_until` = :lease_until "
                         "WHERE `job_id` = :job_id AND "
@@ -406,8 +398,7 @@ class CorporateEventVersionStore:
             for job in jobs:
                 result = connection.execute(
                     text(
-                        # B608: fixed table; completion values are bound.
-                        f"UPDATE `{EVENT_RECOMPUTE_OUTBOX_TABLE}` "  # noqa: S608 # nosec B608
+                        f"UPDATE `{EVENT_RECOMPUTE_OUTBOX_TABLE}` "  # noqa: S608 # nosec B608  # completion write for one claimed job: every SET target (:completed_at, :factor_row_count, :factor_window_start) is a bind and the guard compares the stored lease token bind
                         "SET `status` = 'done', `completed_at` = :completed_at, "
                         "`factor_row_count` = :factor_row_count, "
                         "`factor_window_start` = :factor_window_start, "
@@ -437,8 +428,7 @@ class CorporateEventVersionStore:
                 delay = min(60, 2 ** min(job.attempt_count - 1, 6))
                 connection.execute(
                     text(
-                        # B608: fixed table; error value is bound.
-                        f"UPDATE `{EVENT_RECOMPUTE_OUTBOX_TABLE}` "  # noqa: S608 # nosec B608
+                        f"UPDATE `{EVENT_RECOMPUTE_OUTBOX_TABLE}` "  # noqa: S608 # nosec B608  # retry path: available_at is a computed datetime and last_error is the truncated exception text, both supplied as binds rather than inlined
                         "SET `status` = 'pending', `available_at` = :available_at, "
                         "`lease_token` = NULL, `lease_until` = NULL, `last_error` = :last_error "
                         "WHERE `job_id` = :job_id AND `status` = 'processing' "
@@ -621,8 +611,7 @@ def _persist_recompute_jobs(
         )
         connection.execute(
             text(
-                # B608: fixed table and dialect clause; row values are bound.
-                f"INSERT INTO `{EVENT_RECOMPUTE_OUTBOX_TABLE}` ("  # noqa: S608 # nosec B608
+                f"INSERT INTO `{EVENT_RECOMPUTE_OUTBOX_TABLE}` ("  # noqa: S608 # nosec B608  # enqueue path: the two interpolations are this module's table string and conflict_clause, a per-dialect literal picked by the if/elif above; all row values bind
                 "`job_id`, `batch_id`, `source`, `event_identity`, `revision_order`, "
                 "`content_digest`, `symbol`, `ex_date`, `status`, `attempt_count`, "
                 "`available_at`, `created_at`) VALUES ("

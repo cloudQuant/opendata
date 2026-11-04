@@ -10,9 +10,9 @@ from datetime import date, datetime, timezone
 from html.parser import HTMLParser
 from typing import TYPE_CHECKING, ClassVar, Literal, TypeVar
 from urllib.parse import urljoin, urlsplit
-
-# Used only for runtime isinstance; XML parsing uses defusedxml SafeET below.
-from xml.etree.ElementTree import Element  # nosec B405
+from xml.etree.ElementTree import (
+    Element,  # nosec B405  # only the node type is taken, for annotations and the isinstance guard in _safe_xml(); parsing is SafeET.fromstring with a DOCTYPE/ENTITY byte prefilter
+)
 
 from defusedxml import ElementTree as SafeET
 from defusedxml.common import DefusedXmlException

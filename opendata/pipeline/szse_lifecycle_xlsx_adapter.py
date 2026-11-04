@@ -23,8 +23,9 @@ from defusedxml import ElementTree as SafeET
 from defusedxml.common import DefusedXmlException
 
 if TYPE_CHECKING:
-    # Runtime parsing uses defusedxml after the bounded Expat preflight.
-    from xml.etree.ElementTree import Element  # nosec B405
+    from xml.etree.ElementTree import (
+        Element,  # nosec B405  # TYPE_CHECKING annotation for _parse_xml's cast; sheet parts are read by SafeET.fromstring plus an expat preflight that sets XML_PARAM_ENTITY_PARSING_NEVER
+    )
 
 __all__ = [
     "SZSE_LIFECYCLE_SYNTHETIC_HEADERS",

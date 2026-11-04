@@ -27,7 +27,7 @@ import resource
 import shutil
 import socket
 import stat
-import subprocess  # guarded local command calls only # nosec B404
+import subprocess  # nosec B404  # every use in this probe is a literal argv list (git archive/rev-parse, the archived runner, /bin/ps); no command name is read from evidence or CLI input
 import sys
 import tarfile
 import tempfile
@@ -111,7 +111,7 @@ RUN_LABEL = "org.opendata.c100.performance.run-id"
 PURPOSE_LABEL = "org.opendata.c100.performance.purpose"
 PROBE_PURPOSE = "iter2-stock-daily-ods"
 _SAFE_SCHEMA = re.compile(r"^opendata_c100_[a-f0-9]{12}_(before|after)_(source|target)$")
-_PASSWORD_ENV = "C100_PERF_MYSQL_PASSWORD"  # noqa: S105 -- environment variable name only # nosec B105
+_PASSWORD_ENV = "C100_PERF_MYSQL_PASSWORD"  # noqa: S105  # nosec B105  # this literal is only the environment key that os.environ.get reads and _child_env re-exports; the throwaway container password value never appears in this file
 _SNAPSHOT_EXCLUDED_DIRS = {
     ".cache",
     ".git",
@@ -665,7 +665,7 @@ def _pinned_source_snapshot(repository: Path, destination: Path) -> tuple[Path, 
     baseline_root = destination / "before"
     baseline_root.mkdir()
     archive_path = destination / "head-input-source.tar"
-    archive = subprocess.run(  # noqa: S603 -- fixed git archive argv for pinned commit # nosec B603
+    archive = subprocess.run(  # noqa: S603  # nosec B603  # argv is the five literal git archive items below: _executable("git"), the verb, --format=tar, the pinned BASELINE_COMMIT, and two fixed paths
         [
             _executable("git"),
             "archive",
@@ -1514,7 +1514,7 @@ def _run_command(
     args: Sequence[str], *, env: dict[str, str] | None = None
 ) -> subprocess.CompletedProcess[str]:
     """Run one literal argv command and retain only text output."""
-    return subprocess.run(  # noqa: S603 -- internal callers use fixed/validated argv # nosec B603
+    return subprocess.run(  # noqa: S603  # nosec B603  # this probe-wide helper takes argv as Sequence[str] with no shell, and each of its call sites inside the file passes a locally built literal list
         list(args),
         capture_output=True,
         check=False,
@@ -2929,7 +2929,7 @@ def _fixture_insert(engine: Engine) -> None:
     columns = ", ".join(f"`{name}`" for name in names)
     params = ", ".join(f":{name}" for name in names)
     statement = text(
-        f"INSERT INTO `{TABLE}` ({columns}) VALUES ({params})"  # noqa: S608 -- identifiers are constants; values bound # nosec B608
+        f"INSERT INTO `{TABLE}` ({columns}) VALUES ({params})"  # noqa: S608  # nosec B608  # columns and params are built only from the SOURCE_COLUMNS tuple plus the three fixture column names, each wrapped in backticks, and values bind by that same name
     )
     batch: list[dict[str, object]] = []
     inserted = 0
@@ -3020,7 +3020,7 @@ def _render_baseline_ddl(
     timeout_seconds = 90
     started_at = datetime.now(timezone.utc)
     try:
-        completed = subprocess.run(  # noqa: S603 -- fixed archived runner argv, shell disabled # nosec B603
+        completed = subprocess.run(  # noqa: S603  # nosec B603  # argv is sys.executable plus the literal -s/--render-ddl/--source-root flags around the archived copy of this same probe; the only path inputs are baseline_root and runner_path
             argv,
             cwd=baseline_root,
             capture_output=True,
@@ -3191,7 +3191,7 @@ def _snapshot_worker(
     ]
     if preflight_only:
         command.append("--preflight-only")
-    result = subprocess.run(  # noqa: S603 -- fixed archived runner argv, shell disabled # nosec B603
+    result = subprocess.run(  # noqa: S603  # nosec B603  # argv is this probe's own sys.executable plus the literal --worker flag block; the schema names were _SAFE_SCHEMA.fullmatch'd and docker_endpoint came from _require_local_docker_endpoint, and it is a list so nothing reaches a shell
         command,
         cwd=source_root,
         capture_output=True,
@@ -3284,7 +3284,7 @@ def _isolated_run(repository: Path, output_root: Path) -> int:
     try:
         if not str(sys.executable).startswith("/Users/yunjinqi/opt/anaconda3/"):
             raise RuntimeError("run this probe using the user's Anaconda base Python")
-        commit = subprocess.run(  # noqa: S603 -- fixed git rev-parse of pinned baseline # nosec B603
+        commit = subprocess.run(  # noqa: S603  # nosec B603  # _isolated_run resolves the hardcoded BASELINE_COMMIT sha through git rev-parse only; argv is that three-item literal list with shell never enabled
             [_executable("git"), "rev-parse", BASELINE_COMMIT],
             cwd=repository,
             capture_output=True,
@@ -3681,7 +3681,7 @@ def _preflight_smoke(repository: Path, output_root: Path) -> int:
     try:
         if not str(sys.executable).startswith("/Users/yunjinqi/opt/anaconda3/"):
             raise RuntimeError("run this smoke using the user's Anaconda base Python")
-        commit = subprocess.run(  # noqa: S603 -- fixed git rev-parse of pinned baseline # nosec B603
+        commit = subprocess.run(  # noqa: S603  # nosec B603  # in _preflight_smoke: identical three-item rev-parse of the BASELINE_COMMIT literal, used only to stamp the manifest before the dry run starts
             [_executable("git"), "rev-parse", BASELINE_COMMIT],
             cwd=repository,
             capture_output=True,
@@ -4121,7 +4121,7 @@ def _worker_measurement(
                     stream_results=True, max_row_buffer=PAGE_ROWS
                 ).execute(
                     text(
-                        f"SELECT {selected} FROM `{TABLE}` ORDER BY {order}"  # noqa: S608 -- identifiers are constants # nosec B608
+                        f"SELECT {selected} FROM `{TABLE}` ORDER BY {order}"  # noqa: S608  # nosec B608  # streaming copy read: selected and order join backticked names taken from the SOURCE_COLUMNS/KEY tuples defined in this module, never from row content
                     )
                 )
                 try:
@@ -4180,7 +4180,7 @@ def _worker_measurement(
             user=User(
                 username="c100_perf_probe",
                 email="c100-perf-probe@example.invalid",
-                hashed_password="synthetic-unused",  # noqa: S106 -- offline synthetic identity only # nosec B106
+                hashed_password="synthetic-unused",  # noqa: S106  # nosec B106  # required User field for the Principal that is handed straight to query_domain_data/export_domain_data; those routes read scopes and never compare a password
             ),
             scopes=("stock_daily",),
         )
@@ -4448,7 +4448,7 @@ def _row_count(engine: Engine, text_factory: Callable[[str], TextClause]) -> int
     with engine.connect() as connection:
         return int(
             connection.execute(
-                text_factory(f"SELECT COUNT(*) FROM `{TABLE}`")  # noqa: S608 -- fixed table identifier # nosec B608
+                text_factory(f"SELECT COUNT(*) FROM `{TABLE}`")  # noqa: S608  # nosec B608  # the sole interpolation is this module's TABLE constant; row counts come back through scalar_one and no value is spliced in
             ).scalar_one()
         )
 
@@ -4462,7 +4462,7 @@ def _business_hash(engine: Engine, text_factory: Callable[[str], TextClause]) ->
             stream_results=True, max_row_buffer=PAGE_ROWS
         ).execute(
             text_factory(
-                f"SELECT {selected} FROM `{TABLE}` ORDER BY {order}"  # noqa: S608 -- identifiers are constants # nosec B608
+                f"SELECT {selected} FROM `{TABLE}` ORDER BY {order}"  # noqa: S608  # nosec B608  # business-digest read: selected/order are backticked joins of the BUSINESS_COLUMNS and KEY tuples declared above, distinct from the copy reader's SOURCE_COLUMNS use
             )
         )
         try:
@@ -4536,7 +4536,7 @@ def _current_rss_bytes() -> int | None:
     )
     if ps is None:
         return None
-    result = subprocess.run(  # noqa: S603 -- absolute ps path and exact argv validated # nosec B603
+    result = subprocess.run(  # noqa: S603  # nosec B603  # ps is picked from the two absolute literals /bin/ps and /usr/bin/ps, and the argv carries only -o rss= plus this process's own os.getpid()
         [ps, "-o", "rss=", "-p", str(os.getpid())],
         capture_output=True,
         text=True,

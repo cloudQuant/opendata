@@ -39,8 +39,7 @@ _CLAIM_POLICY = "claim_policy"
 _CLAIM_POLICY_DEFAULT = "recover_expired"
 _MYSQL_MIN_VERSION = (8, 0, 16)
 _MYSQL_COLLATION = "utf8mb4_0900_bin"
-# This SQL literal checks a numeric fence value; it is not credential material.
-_FENCING_TOKEN_CHECK = "fencing_token >= 0"  # noqa: S105  # nosec B105
+_FENCING_TOKEN_CHECK = "fencing_token >= 0"  # noqa: S105  # nosec B105  # the word token is the run-ledger fencing counter column; this string is a MySQL CHECK constraint body, not credential material
 _CHECKS = {
     "ck_od_run_ledger_status": (
         "status IN ('queued', 'running', 'succeeded', 'failed', 'cancelled')"

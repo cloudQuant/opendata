@@ -9,9 +9,7 @@ from opendata.data.http_client import HttpFetchError, get_shared_http_client
 from opendata.data.request_budget import RequestBudgetError
 
 TRADIER_BASE_URL = "https://api.tradier.com/v1"
-# S105 rationale retained: name of the required environment variable.
-# B105 exception: this name is not a secret; os.environ.get below reads the secret.
-TRADIER_TOKEN_ENV = "TRADIER_TOKEN"  # noqa: S105  # nosec B105
+TRADIER_TOKEN_ENV = "TRADIER_TOKEN"  # noqa: S105  # nosec B105  # require_token() only does os.environ.get on this name; no token literal is stored in the module
 _DEFAULT_TIMEOUT_SECONDS = 30.0
 
 

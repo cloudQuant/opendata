@@ -69,8 +69,7 @@ class _HttpClient(Protocol):
 
 SOURCE = "intrinio"
 BASE_URL = "https://api-v2.intrinio.com"
-# B105 exception: this is an environment-variable name; os.environ.get reads the secret.
-TOKEN_ENV = "INTRINIO_API_KEY"  # noqa: S105 - environment variable name, not a secret  # nosec B105
+TOKEN_ENV = "INTRINIO_API_KEY"  # noqa: S105  # nosec B105  # environment key that _key() resolves per request; the API key arrives only from the process env and is length/control-char checked there
 PAGE_SIZE = 100
 MAX_ROWS = 5_000
 MAX_REQUESTS = 50
