@@ -89,6 +89,11 @@ class _ReadinessClock:
     marker exists the clock is the real one, so a child that never starts cannot
     arm anything; the instant the marker appears the clock jumps past the
     deadline. Nothing about the product's timeout policy changes.
+
+    Relying on ``exists()`` is only sound because every marker here is published
+    by :func:`_publish_marker` (write-then-rename). A plain ``write_text`` truncates
+    first, so a descheduled child can leave the marker existing but empty, which
+    arms this clock and then breaks the caller's ``int(marker.read_text())``.
     """
 
     def __init__(self, marker: Path) -> None:
@@ -166,9 +171,24 @@ def _return_scoped_test_secret(_parameters: dict[str, object]) -> str:
     return os.environ["OPENDATA_TEST_FUYAO_CHILD_KEY"]
 
 
+def _publish_marker(path: Path, text: str) -> None:
+    """Publish a readiness marker so ``exists()`` implies ``int(read_text())`` succeeds.
+
+    The parent-side clock treats the marker's appearance as "this worker is live".
+    ``write_text`` opens with truncate, so between the open and the write the file
+    exists and is empty; a child descheduled in that window (only reachable under
+    CI oversubscription) armed the deadline and then made the parent's
+    ``int(marker.read_text())`` raise ``ValueError: invalid literal for int() ... ''``.
+    Writing a sibling and renaming it is atomic, which removes that window entirely.
+    """
+    temporary = path.with_name(f"{path.name}.partial")
+    temporary.write_text(text, encoding="utf-8")
+    os.replace(temporary, path)
+
+
 def _write_pid_and_wait(parameters: dict[str, object]) -> dict[str, object]:
     marker = Path(str(parameters["marker"]))
-    marker.write_text(str(os.getpid()), encoding="utf-8")
+    _publish_marker(marker, str(os.getpid()))
     while True:
         time.sleep(0.02)
 
@@ -214,7 +234,7 @@ def _spawn_descendant_and_wait(parameters: dict[str, object]) -> dict[str, objec
     if child_pid == 0:
         time.sleep(30)
         os._exit(0)
-    Path(str(parameters["marker"])).write_text(str(child_pid), encoding="utf-8")
+    _publish_marker(Path(str(parameters["marker"])), str(child_pid))
     while True:
         time.sleep(0.02)
 
@@ -224,7 +244,7 @@ def _spawn_descendant_then_return(parameters: dict[str, object]) -> dict[str, ob
     if child_pid == 0:
         time.sleep(30)
         os._exit(0)
-    Path(str(parameters["marker"])).write_text(str(child_pid), encoding="utf-8")
+    _publish_marker(Path(str(parameters["marker"])), str(child_pid))
     return {"done": True}
 
 
