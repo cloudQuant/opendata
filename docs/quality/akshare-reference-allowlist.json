@@ -953,8 +953,8 @@
       "purpose": "品牌、分层质量、来源依赖或验收判据的测量工具；被测来源名不用于加载外部包。本轮把三条 AC 面改成子解释器里的 import hook 见证：包名只作为字符串常量出现在被交给子进程的字面 argv 与被拒计数里，没有任何一处用它去加载外部包。",
       "category": "operations-tool",
       "reviewed_date": "2026-11-04",
-      "reviewer": "本轮复核 sha 漂移：pin 字节 = origin dev b54ee558 的该文件（pin 之后该路径到 HEAD 共 0 个 revision，HEAD 与工作树字节一致），本 PR 再加 1 个 revision。改动只让仪器看见树里真实存在的形态，两格的阈值与判据语义都没放松：AC-8|02 的 startup_guarded 改读 lifespan_guard_body()，原三条比较（``await create_tables()`` 恰好一处 + 两个守卫串）逐字保留，只多允许沿一层可静态解析的模块级 ``async with`` 委托到被委托的 ``@asynccontextmanager`` 函数——第二跳、属性式动态派发、多于一个候选、被委托者不是异步上下文管理器都拒绝跟随，守卫被删掉的树依旧读 no；AC-4|01 的 binding 把字面量 \"with self._semaphore_for(host)\" 换成 AST 判据，要求 ``_semaphore_for`` 的绑定确实被 ``with``/``async with`` 进入（直接进入、同函数绑定后进入、或进入一个 acquire/yield/finally-release 的委托型 gate），只赋值不进入仍读 no，``max_attempts`` 比较与两格的 breaks/repair/judge 面集合均未变。带品牌行的增删为 0/0（同一把尺：不区分大小写统计 akshare/AkShare 与 openbb/OpenBB；含品牌行 234==234，akshare 出现 172==172，openbb 出现 117==117，总行数 20698→20900），扫描器 (module, kind) 命中多重集 pinned={akshare/string:8, openbb/string:5}==live（合计 13==13）、无新增加载形态，没有任何一处用品牌名加载外部包。",
-      "sha256": "e395dbadc5b0e9e11256e9487c462fd967375a6df23a9fef63825995fb3af86c",
+      "reviewer": "本轮复核 sha 漂移：pin 字节 = origin dev 58e14c54 的该文件（pin 之后该路径到 HEAD 共 0 个 revision，HEAD 与工作树字节一致），本 PR 再加 1 个 revision。改动只在 _cov_relative 的键解析：归档报告里的 <source> 是打标机器的绝对路径，换机器时 relative_to 抛 ValueError、键退化成 Cobertura 原始名，A2 总体因此静默变空集（实测：联接命中 0→290、A2 新代码 0.00%→89.85%、戳记自合 0/5→5/5、分总体 2/8→8/8）。不新增也不删除任何品牌名用法：带品牌的行数 234==234，akshare 出现 172==172，openbb 出现 117==117，行数 20900→20917 全部来自这段注释与回退分支；没有任何一处用品牌名去加载外部包。回退分支只在候选文件真的存在时才返回，否则仍旧交回原始名，判据的失败关闭方向不变。",
+      "sha256": "23da2825996d5cb051679d98dda559876bba218353d593f9858bc53abe7cd1b3",
       "ast_exceptions": []
     },
     {
