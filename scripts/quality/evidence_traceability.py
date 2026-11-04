@@ -144,7 +144,7 @@ def _git(*args: str) -> str:
     """
     if GIT is None:
         return ""
-    done = subprocess.run(  # noqa: S603  # nosec B306 B603  # literal argv, shell disabled
+    done = subprocess.run(  # noqa: S603  # nosec B603  # literal argv, shell disabled
         [GIT, "-c", "core.quotepath=false", *args],
         cwd=REPO_ROOT,
         capture_output=True,

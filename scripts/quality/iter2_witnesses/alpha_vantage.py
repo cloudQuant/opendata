@@ -137,7 +137,8 @@ def _historical_eps_envelope() -> dict[str, Any]:
 
 CONFIG: Final[dict[str, Any]] = {
     "registration_module": "opendata.data.providers.alpha_vantage.provider",
-    "credential_env": {"ALPHA_VANTAGE_API_KEY": "fixture-key-never-sent"},  # nosec B105  # offline placeholder, never sent
+    # The value here is an offline fixture placeholder; no witness request is ever sent with it.
+    "credential_env": {"ALPHA_VANTAGE_API_KEY": "fixture-key-never-sent"},
     "allowed_hosts": ["www.alphavantage.co"],
     "models": {
         "EquityHistorical": {
