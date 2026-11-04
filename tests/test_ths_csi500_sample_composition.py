@@ -729,8 +729,24 @@ def test_local_authorization_records_only_after_grant_quota_and_readback(
 
     assert authorized.phase == "authorized"
     assert authorized.state["source_rights_basis"] == "USER_DECLARED_UNVERIFIED"
-    assert authorized.state["quota_target_identity_sha256"] == sample._sample_identity_sha256(
-        current.identity
+    # 期望值不再问被测实现要：配额锚就是「这个目标库的 device/inode」这段 canonical JSON
+    # 的 sha256，取证用测试自己读的 os.stat，编码形式（键名、排序、分隔符）也由测试写下来。
+    # 实现改 payload 或改 canonical 形式时这条会红；原先写
+    # ``== sample._sample_identity_sha256(current.identity)`` 时它跟着实现一起改，永远绿。
+    database_stat = os.stat(current.database_path)
+    assert (database_stat.st_dev, database_stat.st_ino) == (
+        current.state["database_device"],
+        current.state["database_inode"],
+    )
+    assert (
+        authorized.state["quota_target_identity_sha256"]
+        == hashlib.sha256(
+            json.dumps(
+                {"device": database_stat.st_dev, "inode": database_stat.st_ino},
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        ).hexdigest()
     )
     assert len(grant_requests) == 1
     assert len(quota_requests) == 1

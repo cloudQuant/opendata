@@ -33,6 +33,11 @@ WINDOW = Window(start=date(2026, 9, 22), end=date(2026, 9, 24))
 EARLIER = Window(start=date(2026, 9, 18), end=date(2026, 9, 24))
 #: The pipeline's session factory is never touched by the recorded seams.
 NO_SESSION = object()
+#: Precomputed run id for the ``ods-failure`` spec below: ``stock_daily`` + source + the
+#: window label + the first 16 hex digits of the spec/shard-plan/hooks digest. It is written
+#: down as data on purpose — asking ``pipeline._pipeline_id(WINDOW)`` for the expectation
+#: would let the assertion follow the production algorithm instead of pinning it (AC-17|08).
+ODS_FAILURE_PIPELINE_ID = "stock_daily:ods-failure:2026-09-22..2026-09-24:c64820a90be90557"
 
 
 def _frame(symbol: str, day: date = date(2026, 9, 22)) -> pd.DataFrame:
@@ -157,8 +162,8 @@ async def test_ods_write_failure_fails_only_that_shard_and_the_run_continues() -
         (1, ShardStatus.RUNNING, 0, None),
         (1, ShardStatus.DONE, 2, None),
     ]
-    assert pipeline.invalidated == [pipeline._pipeline_id(WINDOW)] * 2
-    assert pipeline.cleared == [pipeline._pipeline_id(WINDOW)]
+    assert pipeline.invalidated == [ODS_FAILURE_PIPELINE_ID] * 2
+    assert pipeline.cleared == [ODS_FAILURE_PIPELINE_ID]
     assert pipeline.step_records == [("cross_check", "running"), ("cross_check", "done")]
     # The hook only ever sees the shard that actually landed.
     assert contexts[0].affected_keys == [
