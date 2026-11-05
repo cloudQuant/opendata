@@ -11,6 +11,7 @@ import pytest
 
 from scripts.quality.ported_security_evidence import (
     EXPECTED_ROUND,
+    MAX_EVIDENCE_AGE,
     PORT_ROOT,
     SCAN_REL,
     TRIAGE_REL,
@@ -284,6 +285,59 @@ def test_a_bundle_older_than_the_window_is_rejected(evidence_root: Path) -> None
 
     assert result.valid is False
     assert {"scan-stale", "triage-stale"} <= {issue.code for issue in result.issues}
+
+
+def test_the_window_the_gate_rebuilds_against_is_twenty_four_hours() -> None:
+    """``make security-bundle-rebuild`` exists because this constant is a countdown, not an archive.
+
+    Widening it loosens the only check binding the 1048 reviewed findings to the current bytes, so
+    the value is pinned here and the CI member is pinned in ``test_ported_security_evidence_build``.
+    """
+    assert timedelta(hours=24) == MAX_EVIDENCE_AGE
+
+
+@pytest.mark.parametrize("offset", [timedelta(hours=1), timedelta(days=1)])
+def test_a_bundle_younger_than_the_clock_is_rejected(
+    evidence_root: Path, offset: timedelta
+) -> None:
+    """The mirror arm of the stale test: judged before it was written, so no timestamp is trusted.
+
+    ``now = generated_at - 1h`` is the reading the C86 counterfact takes; the same bytes have to
+    turn the two ``*-generated-at-invalid`` codes rather than silently reading fresh.
+    """
+    generated = datetime.fromisoformat(GENERATED_AT)
+
+    result = validate(evidence_root, now=generated - offset)
+
+    assert result.valid is False
+    assert {"scan-generated-at-invalid", "triage-generated-at-invalid"} <= {
+        issue.code for issue in result.issues
+    }
+
+
+def test_a_stale_bundle_still_verifies_every_other_face(evidence_root: Path) -> None:
+    """Freshness is the only thing this cell adds, so the aged arm keeps every other face."""
+    for relative in (SCAN_REL, TRIAGE_REL):
+        document = read_json(evidence_root / relative)
+        document["generated_at"] = (NOW - timedelta(hours=25)).isoformat()
+        write_json(evidence_root / relative, document)
+    triage = read_json(evidence_root / TRIAGE_REL)
+    triage["scan_sha256"] = hashlib.sha256((evidence_root / SCAN_REL).read_bytes()).hexdigest()
+    write_json(evidence_root / TRIAGE_REL, triage)
+
+    result = validate(evidence_root, now=NOW)
+
+    facts = result.facts
+    assert (facts["issue_count"], sorted(facts["issue_codes"])) == (
+        2,
+        ["scan-stale", "triage-stale"],
+    )
+    assert facts["source_tree_valid"] is True
+    assert facts["finding_count"] == 4
+    assert facts["rule_review_valid"] is True
+    assert facts["rce_findings_retained"] is True
+    assert facts["security_fixed"] is False
+    assert facts["unresolved_risks"] is True
 
 
 def test_a_bundle_labelled_as_another_round_is_rejected(evidence_root: Path) -> None:
