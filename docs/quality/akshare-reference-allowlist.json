@@ -186,9 +186,9 @@
       "path": "opendata/core/config.py",
       "purpose": "首方集成中的来源标识、接口兼容、配置或搬运沿革说明；外部包依赖仍受零依赖AST断言。",
       "category": "runtime-integration",
-      "reviewed_date": "2026-11-01",
-      "reviewer": "本轮复核 sha 漂移：pin 字节属 rev 80da631，此后 3 个 revision，HEAD 与工作树字节一致；改动为新增 financial_archive_database_url（SecretStr，只读归档库）及 AliasChoices/SecretStr 导入，其余为行位移；akshare 出现行 pinned=5==live=5、出现次数 8==8，逐行同为 akshare Settings 注释、三个 akshare_* 超时/重试配置字段与 for akshare scripts 文档串，带品牌的加载形态行 0==0（新增的 pydantic 导入与品牌无关），没有任何一处用品牌名加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
-      "sha256": "60bf486730aabd43ea3fe5dcd5846ecde13eb2a60e8e9ad6a74086dacd7397bb",
+      "reviewed_date": "2026-11-06",
+      "reviewer": "本轮复核 sha 漂移：pin 字节属 rev 80da631，此后到本分支 HEAD；改动只在 Settings 里新增一个默认关闭的 visibility_seal_enabled 字段（含 4 行注释与 description），无新增外部包导入。akshare 出现行 pinned=5==live=5、出现次数 8==8，带品牌名的加载形态 0==0，因此这是同一批准内容下的摘要重钉，不是新的批准。",
+      "sha256": "8f6d6bc44f552f8cb23735d387f4ca61266269728532099bc07c91303a251c53",
       "ast_exceptions": []
     },
     {
