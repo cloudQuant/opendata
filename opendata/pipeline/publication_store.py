@@ -15,6 +15,16 @@ currently scans and aggregates the dataset's full as-of revision history before
 reading pages. This path is unbenchmarked and is not production-ready for
 full-A-scale reads until query plans and representative history volumes pass
 acceptance.
+
+``published_at`` / ``published_at_us`` are in-transaction host-clock fields.
+They are stamped while the publishing transaction is still open, so they are
+explicitly non-probative for commit visibility: the transaction can still roll
+back, the fact partition can still be incomplete, and the publisher clock can be
+wrong. They are kept unchanged for idempotency, ordering, and snapshot
+``as_of`` semantics, and must never be presented as proof that a publication is
+readable. Post-commit publication visibility is a separate fact recorded by the
+visibility seal and its persistent monotonic sequence in
+:mod:`opendata.pipeline.visibility_seal`; that seal is default-off.
 """
 
 from __future__ import annotations
@@ -192,6 +202,10 @@ PUBLICATIONS = Table(
     Column("idempotency_key", _key_type(MAX_IDEMPOTENCY_KEY_LENGTH), nullable=False),
     Column("payload_hash", String(64), nullable=False),
     Column("record_count", Integer, nullable=False),
+    # Non-probative in-transaction host clock, stamped while this row's publishing
+    # transaction is still open. It is never proof of commit visibility; the
+    # post-commit fact is the separate visibility seal and monotonic sequence in
+    # opendata/pipeline/visibility_seal.py.
     Column("published_at_us", BigInteger, nullable=False),
     CheckConstraint("sequence > 0", name="ck_od_publication_sequence"),
     CheckConstraint("record_count >= 0", name="ck_od_publication_record_count"),
@@ -346,7 +360,13 @@ class PublishedRecordInput:
 
 @dataclass(frozen=True, slots=True)
 class PublicationRecord:
-    """Immutable platform publication metadata and platform publication time."""
+    """Immutable platform publication metadata and platform publication time.
+
+    ``published_at`` is the non-probative in-transaction host clock reading taken when
+    the publication row was written. It is not a post-commit visibility seal; see
+    :mod:`opendata.pipeline.visibility_seal` for the sealed instant and the monotonic
+    visibility sequence.
+    """
 
     publication_id: str
     dataset_id: str
