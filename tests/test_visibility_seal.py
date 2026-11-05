@@ -1930,8 +1930,13 @@ def test_published_at_us_is_not_repurposed_as_the_visibility_seal(
     record = _seal(_store(warehouse, metadata_db), publication.publication_id).record
 
     assert record.sealed_at > datetime(2024, 1, 1, tzinfo=timezone.utc)
-    assert seal_module._datetime_to_us(record.sealed_at) != stale_us
-    assert record.clock_evidence["database_utc_us"] == seal_module._datetime_to_us(record.sealed_at)
+    sealed_us = record.clock_evidence["database_utc_us"]
+    assert sealed_us != stale_us
+    # The evidence is the seal instant in epoch microseconds, decoded here by
+    # timedelta arithmetic against the frozen 1970 epoch, never by the encoder itself.
+    delta = record.sealed_at - datetime(1970, 1, 1, tzinfo=timezone.utc)
+    decoded_us = delta.days * 86_400_000_000 + delta.seconds * 1_000_000 + delta.microseconds
+    assert decoded_us == sealed_us
     assert record.clock_evidence["authoritative_clock"] == "warehouse_database_utc_clock"
     # Sealing never rewrites or adopts the in-transaction field.
     assert (
@@ -1940,6 +1945,31 @@ def test_published_at_us_is_not_repurposed_as_the_visibility_seal(
     )
     assert "published_at_us" not in VISIBILITY_SEALS.columns
     assert {column.name for column in VISIBILITY_SEALS.c} >= {"sealed_at_us", "visibility_sequence"}
+
+
+def test_datetime_to_us_encodes_instants_to_precomputed_epoch_microseconds() -> None:
+    """The encoder's contract is pinned to literals computed outside the module."""
+    assert seal_module._datetime_to_us(datetime(1970, 1, 1, tzinfo=timezone.utc)) == 0
+    assert seal_module._datetime_to_us(datetime(2021, 1, 1, tzinfo=timezone.utc)) == (
+        1_609_459_200_000_000
+    )
+    assert (
+        seal_module._datetime_to_us(datetime(2026, 1, 1, 0, 0, 0, 123_456, tzinfo=timezone.utc))
+        == 1_767_225_600_123_456
+    )
+    # The input's own offset is honoured before encoding, never assumed to be UTC.
+    assert (
+        seal_module._datetime_to_us(
+            datetime(2026, 1, 1, 8, 0, 0, 123_456, tzinfo=timezone(timedelta(hours=8)))
+        )
+        == 1_767_225_600_123_456
+    )
+    assert (
+        seal_module._datetime_to_us(
+            datetime(2026, 1, 1, 0, 0, 0, 0, tzinfo=timezone(timedelta(hours=-5)))
+        )
+        == 1_767_243_600_000_000
+    )
 
 
 def test_receipt_event_body_guard_rejects_malformed_bodies_and_accepts_the_true_one() -> None:
