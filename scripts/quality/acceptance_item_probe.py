@@ -70,7 +70,7 @@ from datetime import date
 from functools import lru_cache
 from pathlib import Path, PurePosixPath
 from typing import TYPE_CHECKING, Any, Final, Protocol, TypedDict, cast
-from urllib.parse import urlsplit
+from urllib.parse import SplitResult, urlsplit
 
 import tomllib
 import yaml
@@ -1826,18 +1826,40 @@ def measure_ac1_08(ctx: Context) -> Facts:
             for marker in ("待确认", "未指定", "未填写", "待分配", "unspecified")
         )
 
-    def has_http_url(value: str) -> bool:
+    def parsed_clause_url(value: str) -> SplitResult | None:
+        """Parse one 条款链接 cell: the URL itself, or ``None`` when it is not a URL.
+
+        A single parse feeds both clause-link faces. ``has_http_url`` asks only whether the cell
+        is *shaped* like a link; ``site_root_only`` asks whether that link reaches any terms page
+        at all. The second face is measured only on cells the first one accepts, so prose is
+        counted once, as ``unlinked``, and never again as a site root.
+        """
         if not value or re.search(r"\s", value):
-            return False
+            return None
         try:
             parsed = urlsplit(value)
         except ValueError:
-            return False
-        return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
+            return None
+        if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+            return None
+        return parsed
+
+    def has_http_url(value: str) -> bool:
+        return parsed_clause_url(value) is not None
+
+    def is_site_root_only(value: str) -> bool:
+        """Whether the cell is a URL whose path names nothing: ``https://host/`` or ``https://host``.
+
+        A homepage is not a terms document, so it cannot satisfy a column named 条款链接; the cell
+        reads like a link while carrying no clause evidence at all.
+        """
+        parsed = parsed_clause_url(value)
+        return parsed is not None and parsed.path in {"", "/"}
 
     dated = 0
     undecided = 0
     unlinked = 0
+    site_root_only = 0
     responsible_missing = 0
     uses = ("允许本项目落库", "允许再分发", "允许商业使用")
     for record in records:
@@ -1846,6 +1868,7 @@ def measure_ac1_08(ctx: Context) -> Facts:
             dated += int(date.fromisoformat(review_date).isoformat() == review_date)
         undecided += int(any(unspecified(record[name]) for name in uses))
         unlinked += int(not has_http_url(record["条款链接"]))
+        site_root_only += int(is_site_root_only(record["条款链接"]))
         responsible_missing += int(unspecified(record["责任人"]))
 
     named = {record["数据源"] for record in records}
@@ -1864,6 +1887,7 @@ def measure_ac1_08(ctx: Context) -> Facts:
         "dated": count(dated),
         "undecided": count(undecided),
         "unlinked": count(unlinked),
+        "site_root_only": count(site_root_only),
         "responsible_missing": count(responsible_missing),
         "cited": count(len(cited)),
         "uncovered": count(len(uncovered)),
@@ -1873,14 +1897,31 @@ def measure_ac1_08(ctx: Context) -> Facts:
 
 def judge_ac1_08(facts: Facts) -> Verdict:
     """``AC-1|08``: section 1 is complete for all cited sources and names reviewers."""
+    clause_link_proven = facts["unlinked"] == "0" and facts["site_root_only"] == "0"
     ok = (
         facts["table_valid"] == "yes"
         and int(facts["rows"]) > 0
         and facts["dated"] == facts["rows"]
         and facts["undecided"] == "0"
-        and facts["unlinked"] == "0"
+        and clause_link_proven
         and facts["responsible_missing"] == "0"
         and facts["uncovered"] == "0"
+    )
+    clause_failures: list[str] = []
+    if facts["unlinked"] != "0":
+        clause_failures.append(
+            f"{facts['unlinked']} row(s) whose 条款链接 is prose instead of a URL"
+        )
+    if facts["site_root_only"] != "0":
+        clause_failures.append(
+            f"{facts['site_root_only']} row(s) whose 条款链接 is a URL that stops at the site "
+            "root, naming no terms page"
+        )
+    clause_condition = (
+        "; ".join(clause_failures)
+        if clause_failures
+        else "both faces are 0, so every row carries a deep URL (a shape test only: the page "
+        "itself is never read)"
     )
     readings = (
         f"§1 table valid = {facts['table_valid']}; rows = {facts['rows']}; "
@@ -1888,6 +1929,9 @@ def judge_ac1_08(facts: Facts) -> Verdict:
         f"rows carrying a real 复核日期 = {facts['dated']}/{facts['rows']}",
         f"rows still answering a permitted use with 待确认 = {facts['undecided']}/{facts['rows']}",
         f"rows whose 条款链接 is prose instead of a URL = {facts['unlinked']}/{facts['rows']}",
+        f"rows whose 条款链接 is a URL but only the site root, so it links no terms page = "
+        f"{facts['site_root_only']}/{facts['rows']}",
+        f"条款链接 requires unlinked = 0 AND site_root_only = 0: {clause_condition}",
         f"rows with an empty or unspecified 责任人 = "
         f"{facts['responsible_missing']}/{facts['rows']}",
         f"registry rows cited by {RIGHTS_INVENTORY} = {facts['cited']}, citations with no row = "
@@ -1899,6 +1943,7 @@ def judge_ac1_08(facts: Facts) -> Verdict:
         if facts["table_valid"] != "yes"
         else "one or more source rows lacks a complete clause URL, permitted-use decision, "
         "review date, responsible party, or cited-source match"
+        + (f" (条款链接: {'; '.join(clause_failures)})" if clause_failures else "")
         if not ok
         else ""
     )
@@ -16810,7 +16855,7 @@ PROBES: Final[tuple[Probe, ...]] = (
     Probe(
         item="AC-1|08",
         expects="数据源权利登记表",
-        summary="只读§1登记表：每个已引来源须有条款、用途、日期与责任人",
+        summary="只读§1登记表：每个已引来源须有条款链接（URL 且非站点根址）、用途、日期与责任人",
         measure=measure_ac1_08,
         judge=judge_ac1_08,
         breaks=(
@@ -16826,6 +16871,9 @@ PROBES: Final[tuple[Probe, ...]] = (
             Break("登记表缺失、畸形或被清空", (("table_valid", "no"), ("rows", "0")), GAP),
             Break("一行没写复核日期", (("dated", "0"),), GAP),
             Break("条款链接列写成散文", (("unlinked", "5"),), GAP),
+            Break(
+                "条款链接是 URL 但只到站点根址，没有指向条款页", (("site_root_only", "16"),), GAP
+            ),
             Break("责任人列为空或未指定", (("responsible_missing", "1"),), GAP),
         ),
         repair={
@@ -16840,6 +16888,7 @@ PROBES: Final[tuple[Probe, ...]] = (
             "dated": "*cited",
             "undecided": "0",
             "unlinked": "0",
+            "site_root_only": "0",
             "responsible_missing": "0",
             "uncovered": "0",
             "uncovered_sample": "",
