@@ -6,6 +6,7 @@ import base64
 import importlib.util
 import json
 import os
+import re
 import socket
 import struct
 import subprocess
@@ -358,8 +359,11 @@ def _write_test_worker(tmp_path: Path, mode: str, marker: Path | None = None) ->
             raise ValueError("before_command worker requires a marker path")
         script.write_text(
             "import os, time\n"
-            f"with open({str(marker)!r}, 'w', encoding='utf-8') as marker_file:\n"
-            "    marker_file.write(str(os.getpid()))\n"
+            f"marker = {str(marker)!r}\n"
+            "partial = marker + '.partial'\n"
+            "with open(partial, 'w', encoding='utf-8') as handle:\n"
+            "    handle.write(str(os.getpid()))\n"
+            "os.replace(partial, marker)\n"
             "while True:\n"
             "    time.sleep(0.02)\n",
             encoding="utf-8",
@@ -388,20 +392,23 @@ marker = command['parameters']['marker']
 def send(value):
     encoded = json.dumps(value, separators=(',', ':')).encode()
     channel.sendall(struct.pack('>I', len(encoded)) + encoded)
+def publish(text):
+    partial = marker + '.partial'
+    with open(partial, 'w', encoding='utf-8') as handle:
+        handle.write(text)
+    os.replace(partial, marker)
 """
     if mode == "partial":
         body = """
 send({'type': 'ready', 'isolated': True})
 channel.sendall(struct.pack('>I', 32))
-with open(marker, 'w', encoding='utf-8') as marker_file:
-    marker_file.write(str(os.getpid()))
+publish(str(os.getpid()))
 while True:
     time.sleep(0.02)
 """
     elif mode == "before_ready":
         body = """
-with open(marker, 'w', encoding='utf-8') as marker_file:
-    marker_file.write(str(os.getpid()))
+publish(str(os.getpid()))
 while True:
     time.sleep(0.02)
 """
@@ -411,8 +418,7 @@ child_pid = os.fork()
 if child_pid == 0:
     while True:
         time.sleep(0.02)
-with open(marker, 'w', encoding='utf-8') as marker_file:
-    marker_file.write(str(child_pid))
+publish(str(child_pid))
 while True:
     time.sleep(0.02)
 """
@@ -421,8 +427,7 @@ while True:
 send({'type': 'ready', 'isolated': True})
 send({'type': 'result', 'ok': True, 'value': {'ready': True}, 'stdout_bytes': 0,
       'stderr_bytes': 0, 'stdout_truncated': False, 'stderr_truncated': False})
-with open(marker, 'w', encoding='utf-8') as marker_file:
-    marker_file.write(str(os.getpid()))
+publish(str(os.getpid()))
 while True:
     time.sleep(0.02)
 """
@@ -430,6 +435,47 @@ while True:
         raise ValueError("unsupported test worker mode")
     script.write_text(common + body, encoding="utf-8")
     return script
+
+
+#: ``open(path, 'w')`` truncates before writing, so between those two operations a marker
+#: exists and is empty. The readiness clock reads existence, the parent then reads an int,
+#: and CI showed up as ``ValueError: invalid literal for int() with base 10: ''``.
+TRUNCATE_OPEN = re.compile(r"open\(\s*([^,()]+),\s*'w'")
+
+
+def _truncate_targets(source: str) -> list[str]:
+    """What each truncate-mode ``open`` in a generated worker points at, in order."""
+    return [target.strip() for target in TRUNCATE_OPEN.findall(source)]
+
+
+def test_generated_workers_publish_their_marker_without_a_truncate_window(
+    tmp_path: Path,
+) -> None:
+    """Every child mode has to make ``marker.exists()`` imply a readable pid.
+
+    :func:`_publish_marker` covers the in-process publishers; the generated scripts are
+    separate source text and were left opening the marker itself in truncate mode, which is
+    the path that kept failing on CI.
+    """
+    sources = {
+        mode: _write_test_worker(tmp_path, mode).read_text(encoding="utf-8")
+        for mode in ("partial", "before_ready", "before_ready_fork", "after_result")
+    }
+    sources["before_command"] = _write_test_worker(
+        tmp_path, "before_command", tmp_path / "standalone-pid"
+    ).read_text(encoding="utf-8")
+
+    for mode, source in sorted(sources.items()):
+        assert _truncate_targets(source) == ["partial"], (
+            f"{mode} truncates something other than its sibling: {source}"
+        )
+        assert "os.replace(partial, marker)" in source, (
+            f"{mode} publishes without the atomic rename"
+        )
+
+    # The guard has to bite on the two shapes that actually broke CI, or it reads free.
+    assert _truncate_targets("open(marker, 'w', encoding='utf-8')") == ["marker"]
+    assert _truncate_targets("open('/tmp/x/descendant-pid', 'w')") == ["'/tmp/x/descendant-pid'"]
 
 
 def _pid_is_running(pid: int) -> bool:
