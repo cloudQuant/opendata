@@ -81,6 +81,18 @@ class Settings(BaseSettings):
         ),
     )
 
+    # Publication visibility sealing remains disabled until an operator verifies
+    # the trusted UTC clock and the commit-visibility boundary in the target
+    # environment. While it is off, no seal row is written and the research
+    # cutoff query surface stays closed.
+    visibility_seal_enabled: bool = Field(
+        default=False,
+        description=(
+            "VISIBILITY_SEAL_ENABLED: explicitly enable post-commit publication visibility "
+            "sealing; false writes no seal"
+        ),
+    )
+
     # Temporal identity snapshot reads remain disabled until an operator
     # explicitly supplies a digest-pinned registry and a dedicated read-only
     # warehouse target. The MySQL acknowledgement is a deployment declaration;
