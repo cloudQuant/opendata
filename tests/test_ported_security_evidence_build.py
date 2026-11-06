@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any
 
 import pytest
 
+from scripts.quality import acceptance_item_probe as gate
 from scripts.quality import ported_security_evidence as evidence
 from scripts.quality.ported_security_evidence_build import (
     BuildError,
@@ -16,10 +17,17 @@ from scripts.quality.ported_security_evidence_build import (
     _sanitize,
     _verify_identity_coverage,
     build_bundle,
+    judge_target,
+    main,
 )
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+MAKEFILE_TEXT = (gate.REPO_ROOT / gate.MAKEFILE_REL).read_text(encoding="utf-8")
+#: The gate member that re-scans this bundle. The 24-hour window in the judge makes the bundle a
+#: per-round reading, so a recipe that stops invoking the builder reddens AC-5|07 on clock time.
+REBUILD_MEMBER = "security-bundle-rebuild"
 
 TREE = {
     "futures/cons.py": "\n".join(f"line{i} = {i}" for i in range(1, 30)),
@@ -206,3 +214,83 @@ def test_a_round_label_has_to_look_like_a_round(tmp_path: Path) -> None:
             out_dir_rel="docs/evidence/C99",
             prior_triage_rel="docs/quality/prior-triage.json",
         )
+
+
+class TestJudgeTargetBinding:
+    """The builder has to rebuild the bundle the judge reads, or the rebuild proves nothing."""
+
+    def test_defaults_are_the_judges_own_paths(self) -> None:
+        round_label, out_dir, prior_triage = judge_target()
+
+        assert (round_label, out_dir, prior_triage) == (
+            evidence.EXPECTED_ROUND,
+            evidence.EVIDENCE_DIR.as_posix(),
+            evidence.TRIAGE_REL.as_posix(),
+        )
+
+    def test_main_resolves_its_defaults_against_the_judge(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        calls: dict[str, Any] = {}
+
+        def record(root: Path, **kwargs: Any) -> dict[str, Any]:
+            calls.update({"root": root, **kwargs})
+            return {}
+
+        monkeypatch.setattr("scripts.quality.ported_security_evidence_build.build_bundle", record)
+
+        assert main([]) == 0
+        assert calls["round_label"] == evidence.EXPECTED_ROUND
+        assert calls["out_dir_rel"] == evidence.EVIDENCE_DIR.as_posix()
+        assert calls["prior_triage_rel"] == evidence.TRIAGE_REL.as_posix()
+        assert calls["force"] is False
+
+    def test_an_explicit_target_still_wins(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """A developer may point the tool elsewhere; the gate just never has to."""
+        calls: dict[str, Any] = {}
+        monkeypatch.setattr(
+            "scripts.quality.ported_security_evidence_build.build_bundle",
+            lambda root, **kwargs: calls.update(kwargs) or {},
+        )
+
+        assert main(["--round", "C99", "--out-dir", "docs/evidence/C99", "--force"]) == 0
+        assert calls["round_label"] == "C99"
+        assert calls["out_dir_rel"] == "docs/evidence/C99"
+        assert calls["force"] is True
+
+
+class TestGateRebuildWiring:
+    """AC-5|07 was red on wall-clock time because nothing in CI rebuilt the bundle.
+
+    These three assertions are the regression guard: the member is in the recipe, it runs before
+    the member that judges the bundle it writes, and its command really invokes this builder with
+    the builder's own defaults. Removing any of that re-creates the time-dependent red.
+    """
+
+    def test_the_rebuild_is_a_member_of_the_gate_recipe(self) -> None:
+        members = gate.gate_members(MAKEFILE_TEXT)
+
+        assert REBUILD_MEMBER in members
+        assert members.index(REBUILD_MEMBER) < members.index(gate.GATE_MEMBER)
+
+    def test_the_member_invokes_this_builder_with_no_hardcoded_target(self) -> None:
+        body = "\n".join(gate.make_recipes(MAKEFILE_TEXT)[REBUILD_MEMBER])
+
+        assert "scripts/quality/ported_security_evidence_build.py" in body
+        assert "--force" in body
+        assert "--round" not in body
+        assert "--out-dir" not in body
+
+    def test_the_member_line_cannot_be_masked(self) -> None:
+        """A `-` prefix or a `|| echo` would make the rebuild a printed suggestion, not a member."""
+        lines = [
+            line
+            for line in gate.gate_recipe(MAKEFILE_TEXT)
+            if REBUILD_MEMBER in gate.launched_by_line(line)
+        ]
+
+        assert len(lines) == 1
+        assert gate.masking_lines(MAKEFILE_TEXT) == ([], [], [])
+        assert gate.banner_pairing(
+            gate.gate_members(MAKEFILE_TEXT), gate.gate_banners(MAKEFILE_TEXT)
+        ) == (True, 0)
