@@ -14,7 +14,9 @@ from typing import TYPE_CHECKING, cast
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, func, select
+from sqlalchemy import create_engine, event, func, select
+from sqlalchemy.exc import TimeoutError as SQLAlchemyPoolTimeout
+from sqlalchemy.pool import NullPool
 
 from opendata.api.dependencies import Principal, get_current_principal
 from opendata.api.published_access import DatasetGrant, DatasetGrantRegistry
@@ -66,6 +68,7 @@ from opendata.pipeline.run_identity import (
 )
 from opendata.pipeline.run_ledger import (
     RUN_LEDGER_METADATA,
+    RunLedger,
     RunLedgerConflictError,
 )
 from opendata.pipeline.run_service import (
@@ -128,6 +131,10 @@ SYMBOL = "600519.SH"
 #: their own small budgets (``process_timeout_seconds=3.0``), and the product's
 #: own wired budget for this operation is 30 s.
 _CHILD_COMPLETION_TIMEOUT_SECONDS = 60.0
+#: SQLite writer wait for a ledger user that is *not* the worker. It is the plain
+#: :mod:`sqlite3` DBAPI default, so raising no bound is needed to let a second
+#: database user coexist with the worker's owned one-slot pool.
+_EXTERNAL_LEDGER_BUSY_TIMEOUT_SECONDS = 5.0
 RETRIEVED_AT = datetime(2026, 10, 27, 2, 0, 0, 123456, tzinfo=UTC)
 SIGNING_KEY = b"w12-process-test-snapshot-signing-key"
 MODEL_COPY_SENTINEL = "w12-model-copy-sentinel-do-not-leak"
@@ -254,6 +261,50 @@ def _make_worker(
         database_io_timeout_seconds=database_timeout,
     )
     return worker, worker_engine
+
+
+def _make_ledger_driver(database_path: Path) -> tuple[RunLedger, Engine]:
+    """Create a second, independent ledger user on the worker's SQLite file.
+
+    ``create_worker_engine`` hands the worker an Engine whose queue pool has
+    exactly one slot for its whole life, and it deliberately sets that slot's
+    checkout bound equal to ``database_io_timeout_seconds`` (0.05 s here). The
+    slot is the worker's private lease budget, and :meth:`PersistentRunWorker.run_once`
+    rechecks the bound on entry, so the geometry cannot be widened by a test.
+
+    A ledger user that only *observes or cancels* a run is therefore not allowed
+    to borrow that slot: while the worker thread heartbeats through it, a second
+    checkout from the same Engine waits at most 50 ms and raises
+    ``sqlalchemy.exc.TimeoutError``. The factory states the same rule itself
+    ("Direct Engines remain available to other services"), and the reviewed admin
+    cancel path is exactly such a separate user, running while the worker is
+    mid-lease.
+
+    Returns:
+        A :class:`RunLedger` bound to its own direct Engine, plus that Engine for
+        the caller to dispose. ``NullPool`` checks a fresh DBAPI connection per
+        call and returns it immediately, so nothing is pooled and no slot is
+        borrowed from the worker.
+
+    Raises:
+        Exception: Propagated unchanged if the ledger rejects the engine.
+    """
+    driver_engine = create_engine(
+        f"sqlite:///{database_path}",
+        poolclass=NullPool,
+        connect_args={"timeout": _EXTERNAL_LEDGER_BUSY_TIMEOUT_SECONDS},
+    )
+    return RunLedger(driver_engine, clock_policy="database"), driver_engine
+
+
+def _assert_pool_slot_free(engine: Engine) -> None:
+    """Prove no connection is left checked out of the worker's single pool slot.
+
+    The worker Engine has one slot, so one leaked checkout is enough to make every
+    later database access in the process time out. A test that leaves the slot
+    occupied is not finished even when its assertions passed.
+    """
+    assert engine.pool.checkedout() == 0
 
 
 def _assert_no_publication(engine: Engine) -> None:
@@ -1194,6 +1245,9 @@ def test_run_ledger_cancel_cancels_and_reaps_active_child_without_publication(
         process_handler=_sleeping_fixture,
         process_timeout_seconds=20.0,
     )
+    # The canceller is a second database user, so it gets its own Engine instead
+    # of racing the worker thread for that Engine's single pool slot.
+    driver_ledger, driver_engine = _make_ledger_driver(database_path)
     request = _manual_request(SYMBOL, "ledger-cancel-token")
     submitted = worker.submit("sina-fzb-capture", "process-v1", request)
 
@@ -1201,9 +1255,9 @@ def test_run_ledger_cancel_cancels_and_reaps_active_child_without_publication(
         with ThreadPoolExecutor(max_workers=1) as executor:
             future = executor.submit(worker.run_once)
             child_pid = _wait_for_marker(marker)
-            active = worker.ledger.get(submitted.run_key)
+            active = driver_ledger.get(submitted.run_key)
             assert active is not None and active.status == "running"
-            cancelled = worker.ledger.cancel(submitted.run_key, datetime.now(UTC))
+            cancelled = driver_ledger.cancel(submitted.run_key, datetime.now(UTC))
             assert cancelled is not None and cancelled.status == "cancelled"
             outcome = future.result(timeout=8.0)
 
@@ -1212,6 +1266,73 @@ def test_run_ledger_cancel_cancels_and_reaps_active_child_without_publication(
         assert outcome.publication is None
         _assert_process_reaped(child_pid)
         _assert_no_publication(worker_engine)
+        # The worker thread finished with its owned slot free: no connection stays
+        # checked out after a cancelled run, so the next checkout cannot starve.
+        _assert_pool_slot_free(worker_engine)
     finally:
         marker.unlink(missing_ok=True)
+        driver_engine.dispose()
+        worker_engine.dispose()
+
+
+def test_ledger_user_on_the_worker_engine_starves_while_its_slot_is_held(
+    tmp_path: Path,
+) -> None:
+    """Pin the pool geometry that broke CI, so a borrowed slot cannot return.
+
+    A slow worker heartbeat holding the worker Engine's single pool slot makes any
+    second checkout on that Engine raise ``TimeoutError`` after 50 ms. This test
+    occupies the slot directly, so it is deterministic without timing contention.
+    """
+    database_path = tmp_path / "sina-process-worker-pool-slot.sqlite"
+    database_path.touch()
+    _worker, worker_engine = _make_worker(database_path)
+    try:
+        with worker_engine.connect():
+            # One slot is now checked out, so a second checkout on the same Engine
+            # fails fast: this is exactly the failure the cancel test used to hit.
+            assert worker_engine.pool.checkedout() == 1
+            with (
+                pytest.raises(SQLAlchemyPoolTimeout, match="size 1 overflow 0"),
+                worker_engine.connect(),
+            ):
+                pass
+    finally:
+        worker_engine.dispose()
+
+
+def test_ledger_driver_engine_observes_and_cancels_while_worker_slot_is_held(
+    tmp_path: Path,
+) -> None:
+    """Guard: a second ledger user must never depend on the worker's pool slot.
+
+    The worker Engine's slot stays occupied for the whole block, exactly as a slow
+    heartbeat occupies it during a live run. The driver Engine still reads and
+    cancels the run, and it returns every connection it opens.
+    """
+    database_path = tmp_path / "sina-process-driver-pool-slot.sqlite"
+    database_path.touch()
+    worker, worker_engine = _make_worker(database_path)
+    driver_ledger, driver_engine = _make_ledger_driver(database_path)
+    outstanding: list[int] = []
+    event.listen(driver_engine, "checkout", lambda *_: outstanding.append(1))
+    event.listen(driver_engine, "checkin", lambda *_: outstanding.pop())
+    submitted = worker.submit(
+        "sina-fzb-capture",
+        "process-v1",
+        _manual_request(SYMBOL, "driver-slot-token"),
+    )
+    try:
+        with worker_engine.connect():
+            assert worker_engine.pool.checkedout() == 1
+            active = driver_ledger.get(submitted.run_key)
+            assert active is not None and active.status == "queued"
+            cancelled = driver_ledger.cancel(submitted.run_key, datetime.now(UTC))
+            assert cancelled is not None and cancelled.status == "cancelled"
+        # Every driver checkout was returned, so the second user leaks no slot.
+        assert outstanding == []
+        # The worker's own state moved, proving the driver wrote the shared file.
+        assert worker.ledger.get(submitted.run_key) is not None
+    finally:
+        driver_engine.dispose()
         worker_engine.dispose()
