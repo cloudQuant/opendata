@@ -15,6 +15,11 @@ current findings are the same objects that review classified:
 Anything else raises ``BuildError`` instead of writing a bundle. The review itself is not re-done
 here: dispositions, bases and follow-ups are carried verbatim from the prior round, and the
 reviewer block (including the user's direct-review authorization) is copied, never rewritten.
+
+``make security-bundle-rebuild`` runs this tool with its defaults on every ``make gate``, before
+``acceptance-probe-check`` validates the bundle, so AC-5|07's ``generated_at`` is a reading of this
+round rather than a countdown to the next red. That is why the defaults below resolve against the
+judge: the rebuild and the thing under judgment have to name the same bytes.
 """
 
 from __future__ import annotations
@@ -39,6 +44,28 @@ from scripts.quality import ported_security_evidence as evidence  # noqa: E402
 #: Bundles of earlier rounds are the record of what was reviewed then; this tool may read them but
 #: never writes into them.
 PROTECTED_REL: Final = ("docs/evidence/C65", "docs/evidence/C73", "docs/evidence/A2")
+
+
+def judge_target() -> tuple[str, str, str]:
+    """Return ``(round, out_dir, prior_triage)`` for the bundle the judge reads today.
+
+    The defaults are taken from ``ported_security_evidence`` instead of being written down here,
+    because a hardcoded round is how a rebuild becomes a no-op: the gate would re-scan bandit and
+    land the new bytes under ``docs/evidence/C74`` while the judge keeps reading ``EVIDENCE_DIR``,
+    so AC-5|07 stays red for the same reason it is red now. Binding the three defaults to the judge
+    means "rebuild the bundle" and "rebuild the bundle the acceptance probe validates" cannot be
+    two different statements.
+
+    The prior review is carried from the live bundle's own triage file, which is the committed
+    record of this round's human-AI review (its dispositions are themselves carried verbatim from
+    the earlier archives, and those -- C65, C73, A2 -- stay unwritable). Carrying forward is not
+    re-aging: ``generated_at`` only moves because bandit really ran again over the shipped tree and
+    every finding identity, rule count and basis locator was re-checked against it.
+    """
+    out_dir = evidence.EVIDENCE_DIR.as_posix()
+    prior = (evidence.EVIDENCE_DIR / "ported-security-triage.json").as_posix()
+    return evidence.EXPECTED_ROUND, out_dir, prior
+
 
 #: ``path/to/file.py:12``, ``file.py:22,29`` and ``file.py:149/196/249`` all appear in the
 #: carried review prose, so every one of them has to resolve in the current tree.
@@ -505,12 +532,17 @@ def build_bundle(
 
 def main(argv: list[str] | None = None) -> int:
     """Scan, carry and write one round's bundle; exit 2 when the carry condition does not hold."""
+    default_round, default_out_dir, default_prior = judge_target()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", default=_REPO_ROOT, type=Path)
-    parser.add_argument("--round", dest="round_label", default="C74")
-    parser.add_argument("--out-dir", default="docs/evidence/C74")
-    parser.add_argument("--prior-triage", default="docs/evidence/C65/ported-security-triage.json")
-    parser.add_argument("--force", action="store_true", help="rewrite this round's bundle")
+    parser.add_argument("--round", dest="round_label", default=default_round)
+    parser.add_argument("--out-dir", default=default_out_dir)
+    parser.add_argument("--prior-triage", default=default_prior)
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="rewrite this round's bundle (what the gate does every round)",
+    )
     args = parser.parse_args(argv)
     root = args.root.resolve()
     try:

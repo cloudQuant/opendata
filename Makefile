@@ -11,7 +11,8 @@
 # that debt is acceptable.
 
 .PHONY: help lint format format-check typecheck security deps-audit a2-check published-openapi-check \
-        test test-cov quality-ratchet public-api-quality acceptance-probe-check zero-dep-check brand-check \
+        test test-cov quality-ratchet public-api-quality security-bundle-rebuild acceptance-probe-check \
+        zero-dep-check brand-check \
         loguru-check secret-check ledger-check evidence-traceability \
         frontend-lint frontend-format frontend-test frontend-test-cov frontend-typecheck \
         frontend-collection frontend-e2e \
@@ -31,7 +32,7 @@ PY_PORTED := opendata/data/providers/akshare/_vendor
 
 help:
 	@echo "Gate:             gate"
-	@echo "A2 (gating):      a2-check published-openapi-check public-api-quality acceptance-probe-check zero-dep-check brand-check loguru-check secret-check ledger-check evidence-traceability quality-ratchet"
+	@echo "A2 (gating):      a2-check published-openapi-check public-api-quality security-bundle-rebuild acceptance-probe-check zero-dep-check brand-check loguru-check secret-check ledger-check evidence-traceability quality-ratchet"
 	@echo "Tests:            test test-cov"
 	@echo "Dev views (A1):   lint format format-check typecheck security deps-audit"
 	@echo "Frontend:         frontend-lint frontend-format frontend-collection frontend-e2e frontend-test frontend-test-cov frontend-typecheck"
@@ -109,6 +110,20 @@ quality-ratchet:
 
 public-api-quality:
 	python scripts/quality/public_api.py
+
+# The ported-tree security bundle is not an archive, it is a per-round reading:
+# scripts/quality/ported_security_evidence.py validates docs/evidence/<round>/ported-bandit-scan.json
+# against the shipped tree inside a hard 24-hour window (MAX_EVIDENCE_AGE). Nothing rebuilt it, so
+# AC-5|07 went red on wall-clock time rather than on anything the tree did: PR #196's quality gate
+# job 127466342249 prints `security evidence valid=no（issues=2 scan-stale, triage-stale）` with every
+# other face yes, and PR #197's job 127466360282 dies in the same step. Re-running cannot renew it.
+# This member re-scans the ported tree with bandit (1.9.4, from the `dev` extra CI installs) and
+# re-carries the reviewed dispositions only if the current findings are still the objects that
+# review classified; BuildError exits 2 and aborts the gate. The target carries no --round/--out-dir:
+# scripts/quality/ported_security_evidence_build.py resolves both from the judge, so a rebuild can
+# never land in a directory the probe does not read.
+security-bundle-rebuild:
+	python scripts/quality/ported_security_evidence_build.py --force
 
 # Entry-level acceptance judgements, measured once and read five ways: the
 # counterfact self-test, the criterion wording, the ledger<->reading reconcile,
@@ -220,6 +235,8 @@ gate:
 	@$(MAKE) --no-print-directory quality-ratchet
 	@echo "===== gate: public-api-quality ====="
 	@$(MAKE) --no-print-directory public-api-quality
+	@echo "===== gate: security-bundle-rebuild ====="
+	@$(MAKE) --no-print-directory security-bundle-rebuild
 	@echo "===== gate: acceptance-probe-check ====="
 	@$(MAKE) --no-print-directory acceptance-probe-check
 	@echo "===== gate: test-cov ====="

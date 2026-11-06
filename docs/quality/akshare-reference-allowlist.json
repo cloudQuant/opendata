@@ -42,9 +42,9 @@
       "path": "Makefile",
       "purpose": "搬运根路径、质量门禁和零依赖扫描入口的名称说明。",
       "category": "build-declaration",
-      "reviewed_date": "2026-11-01",
-      "reviewer": "Codex primary wave3 review: Makefile adds named OpenAPI gate; stock adapter replaces vendor relabeling with fixed governed HTTP and original JSON identity checks. No external SDK loads or new AST exception. Digest re-pin 2026-11-01: the acceptance-probe target now completes the repository history before judging it (scripts/quality/ensure_full_history.sh); the guarded reference-name set is unchanged and no new exemption is claimed.",
-      "sha256": "aa0ff7d3d9d0cf9d0a7b9c48a52a9a6dac2d265384cf504755e9589651b918e6",
+      "reviewed_date": "2026-11-06",
+      "reviewer": "Codex primary wave3 review: Makefile adds named OpenAPI gate; stock adapter replaces vendor relabeling with fixed governed HTTP and original JSON identity checks. No external SDK loads or new AST exception. Digest re-pin 2026-11-01: the acceptance-probe target now completes the repository history before judging it (scripts/quality/ensure_full_history.sh); the guarded reference-name set is unchanged and no new exemption is claimed. Digest re-pin 2026-11-06 (branch ci/od-rebuild-security-bundle-per-round): the edit adds exactly one named gate member, security-bundle-rebuild, whose recipe is `python scripts/quality/ported_security_evidence_build.py --force`; it is declared in .PHONY, in the help A2 listing and in the `gate` recipe ahead of acceptance-probe-check, and the added comment block records why AC-5|07's ported bandit bundle is a per-round reading inside the hard 24-hour MAX_EVIDENCE_AGE window rather than an archived artifact. The judge itself is untouched (MAX_EVIDENCE_AGE, the scan-stale/triage-stale codes and ported_security_evidence.validate unchanged) and no bundle bytes or timestamps are committed. No new reference surface: the guarded reference-name set is unchanged, ast_exceptions stays [], no added line imports or loads anything by an upstream name, and the same case-insensitive ruler reads brand-bearing lines 5==5, akshare 5==5, openbb 0==0 while the total moves 244->261 lines (+17 are this target's comment block, its rule and the two listing re-wraps); PY_PORTED still points at the already reviewed _vendor path.",
+      "sha256": "e1378c74bfffa097e9101fccbe861c6be2405c953f08887f4a796fd990a03e1c",
       "ast_exceptions": []
     },
     {
@@ -187,7 +187,7 @@
       "purpose": "首方集成中的来源标识、接口兼容、配置或搬运沿革说明；外部包依赖仍受零依赖AST断言。",
       "category": "runtime-integration",
       "reviewed_date": "2026-11-06",
-      "reviewer": "本轮复核 sha 漂移：pin 字节属 rev 80da631，此后到本分支 HEAD；改动只在 Settings 里新增一个默认关闭的 visibility_seal_enabled 字段（含 4 行注释与 description），无新增外部包导入。akshare 出现行 pinned=5==live=5、出现次数 8==8，带品牌名的加载形态 0==0，因此这是同一批准内容下的摘要重钉，不是新的批准。",
+      "reviewer": "本轮复核 sha 漂移：pin 字节属 rev 80da631，此后到本分支 HEAD；改动只在 Settings 里新增一个默认关闭的 visibility_seal_enabled 字段（含 4 行注释与 description），无新增外部包导入。akshare 出现行 pinned=5==live=5、出现次数 8==8，带品牌名的加载形态 0==0，因此这是同一批准内容下的摘要重钉，不是新的批准。 摘要重钉桥接 2026-11-06（本 PR #196 合到 dev 28607e18）：dev 在 PR #199 里重钉了 Makefile 条目，本分支重钉了 opendata/core/config.py 条目，两条不重叠；本次把两条并成一份登记，其余 101 条与 dev 逐字节一致，条目总数保持 103。Makefile 按合并后的字节（dev 版本，本分支未触及该路径）重钉，本路径按合并后的字节（本分支版本）重钉。受控引用名集合不变，ast_exceptions 仍为 []，不主张任何新的豁免。",
       "sha256": "8f6d6bc44f552f8cb23735d387f4ca61266269728532099bc07c91303a251c53",
       "ast_exceptions": []
     },
