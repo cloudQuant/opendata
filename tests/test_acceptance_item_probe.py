@@ -7,6 +7,7 @@ import shutil
 import subprocess
 from pathlib import Path
 from types import SimpleNamespace
+from urllib.parse import urlsplit
 
 import pytest
 import tomllib
@@ -192,6 +193,140 @@ def test_ac1_08_proves_a_complete_section_1_registry(tmp_path: Path) -> None:
     assert judge_ac1_08(facts).state == PROVEN
 
 
+@pytest.mark.parametrize(
+    ("clause_url", "unlinked", "site_root_only"),
+    [
+        # A deep link is what the column asks for: neither face fires.
+        ("https://example.com/legal/terms", "0", "0"),
+        ("https://example.com/terms#privacy", "0", "0"),
+        ("https://example.com:8443/tos/index.html", "0", "0"),
+        # A URL that names no page at all: a link, but not a 条款链接.
+        ("https://example.com/", "0", "1"),
+        ("https://example.com", "0", "1"),
+        ("http://example.com/", "0", "1"),
+        # Not a URL: counted once, as prose, and never again as a site root.
+        ("条款待补", "1", "0"),
+        ("", "1", "0"),
+        ("https://example.com/ 待补", "1", "0"),
+        ("ftp://example.com/terms", "1", "0"),
+        ("not a url at all", "1", "0"),
+    ],
+)
+def test_ac1_08_clause_link_faces_fire_exclusively_and_never_double_count(
+    tmp_path: Path, clause_url: str, unlinked: str, site_root_only: str
+) -> None:
+    """`unlinked` asks for a URL shape, `site_root_only` asks whether it reaches any page."""
+    registry = "\n".join(
+        (
+            "## 1. 登记表",
+            RIGHTS_HEADER,
+            RIGHTS_SEPARATOR,
+            rights_row(1, "来源甲", clause_url=clause_url),
+        )
+    )
+    ctx = rights_context(tmp_path, registry, "  rights_rows: [来源甲]\n")
+
+    facts = measure_ac1_08(ctx)
+
+    assert facts["rows"] == "1"
+    assert facts["unlinked"] == unlinked, clause_url
+    assert facts["site_root_only"] == site_root_only, clause_url
+    # The two faces are disjoint by construction: a cell has to BE a URL to be a root-only URL.
+    assert not (facts["unlinked"] != "0" and facts["site_root_only"] != "0"), clause_url
+    # Any nonzero face is a gap; a homepage can no longer satisfy a column named 条款链接.
+    if unlinked == site_root_only == "0":
+        assert judge_ac1_08(facts).state == PROVEN
+    else:
+        assert judge_ac1_08(facts).state == GAP
+
+
+def test_ac1_08_site_root_homepage_reds_the_cell_the_old_probe_passed(tmp_path: Path) -> None:
+    """The counterfactual that motivates the fix: URL-shaped, but pointing at a homepage.
+
+    Before this face existed the same registry read `unlinked = 0/35` and judged PROVEN while 16
+    rows linked `https://www.benzinga.com/`, `https://www.eia.gov/` and friends -- so the cell
+    looked proven on links that carry no terms text at all.
+    """
+    registry = "\n".join(
+        (
+            "## 1. 登记表",
+            RIGHTS_HEADER,
+            RIGHTS_SEPARATOR,
+            rights_row(1, "来源甲", clause_url="https://www.benzinga.com/"),
+            rights_row(2, "来源乙", clause_url="https://www.eia.gov"),
+            rights_row(3, "来源丙", clause_url="https://example.com/legal/terms"),
+        )
+    )
+    ctx = rights_context(tmp_path, registry, "  rights_rows: [来源甲, 来源乙, 来源丙]\n")
+
+    facts = measure_ac1_08(ctx)
+
+    assert facts["rows"] == "3"
+    assert facts["unlinked"] == "0"
+    assert facts["site_root_only"] == "2"
+
+    verdict = judge_ac1_08(facts)
+    assert verdict.state == GAP
+    assert any(
+        reading.startswith("rows whose 条款链接 is a URL but only the site root")
+        and reading.endswith("= 2/3")
+        for reading in verdict.readings
+    ), verdict.readings
+    # The reading says which of the two conditions failed, and how many rows each covers.
+    condition = next(r for r in verdict.readings if "requires unlinked = 0 AND" in r)
+    assert "0 row(s) whose 条款链接 is prose" not in condition
+    assert "2 row(s) whose 条款链接 is a URL that stops at the site root" in condition
+    assert "site root" in verdict.reason and "prose" not in verdict.reason
+
+
+def test_ac1_08_prose_row_is_counted_as_unlinked_only(tmp_path: Path) -> None:
+    """The other direction: prose still lands in `unlinked` and must not leak into the new face."""
+    registry = "\n".join(
+        (
+            "## 1. 登记表",
+            RIGHTS_HEADER,
+            RIGHTS_SEPARATOR,
+            rights_row(1, "来源甲", clause_url="条款待补"),
+            rights_row(2, "来源乙", clause_url="https://example.com/legal/terms"),
+        )
+    )
+    ctx = rights_context(tmp_path, registry, "  rights_rows: [来源甲, 来源乙]\n")
+
+    facts = measure_ac1_08(ctx)
+
+    assert facts["unlinked"] == "1"
+    assert facts["site_root_only"] == "0"
+
+    verdict = judge_ac1_08(facts)
+    assert verdict.state == GAP
+    condition = next(r for r in verdict.readings if "requires unlinked = 0 AND" in r)
+    assert "1 row(s) whose 条款链接 is prose instead of a URL" in condition
+    assert "site root" not in condition.split(":", 1)[1]
+    assert "prose" in verdict.reason
+
+
+def test_ac1_08_deep_terms_urls_satisfy_both_faces(tmp_path: Path) -> None:
+    """A registry whose every row reaches a real page stays proven -- the guard is not a veto."""
+    registry = "\n".join(
+        (
+            "## 1. 登记表",
+            RIGHTS_HEADER,
+            RIGHTS_SEPARATOR,
+            rights_row(1, "来源甲", clause_url="https://example.com/legal/terms"),
+            rights_row(2, "来源乙", clause_url="https://example.com/privacy_policy.htm"),
+        )
+    )
+    ctx = rights_context(tmp_path, registry, "  rights_rows: [来源甲, 来源乙]\n")
+
+    facts = measure_ac1_08(ctx)
+
+    assert facts["unlinked"] == "0"
+    assert facts["site_root_only"] == "0"
+    verdict = judge_ac1_08(facts)
+    assert verdict.state == PROVEN
+    assert verdict.reason == ""
+
+
 def test_ac1_08_ignores_section_2_urls_and_dates(tmp_path: Path) -> None:
     """A todo row with a URL/date cannot fill missing fields in the §1 record."""
     incomplete = rights_row(
@@ -301,6 +436,9 @@ def test_ac1_08_real_registry_measures_complete_restricted_review() -> None:
     assert facts["dated"] == facts["rows"] == "35"
     assert facts["undecided"] == "0"
     assert facts["unlinked"] == "0"
+    # The old probe stopped here and called the column complete. `unlinked = 0` only ever said the
+    # cells are URL-shaped; how many of those URLs name no page is the face below.
+    assert facts["site_root_only"] != "0"
     assert facts["responsible_missing"] == "0"
     assert facts["uncovered"] == "0"
 
@@ -330,6 +468,23 @@ def test_ac1_08_real_registry_measures_complete_restricted_review() -> None:
         11: "商业源（FMP/Tiingo/Alpha Vantage/Intrinio/Tradier…）",
     }
     assert set(rows) == set(range(1, 36))
+    # Recount the homepage cells straight from the shipped table, so the reading is pinned to the
+    # data rather than to a number the probe picked: a site root is an http(s) URL whose path is
+    # empty or "/". 16 of the 35 rows were 051824bd's honest count; assert the count, not the date.
+    live_site_roots = {
+        row_id
+        for row_id, row in rows.items()
+        if urlsplit(row["条款链接"]).scheme in {"http", "https"}
+        and urlsplit(row["条款链接"]).netloc
+        and urlsplit(row["条款链接"]).path in {"", "/"}
+    }
+    assert facts["site_root_only"] == str(len(live_site_roots))
+    assert live_site_roots, "the new face exists to expose these rows, never to certify zero"
+    assert {rows[row_id]["条款链接"] for row_id in live_site_roots} >= {
+        "https://www.benzinga.com/",
+        "https://www.eia.gov/",
+        "https://tradingeconomics.com/",
+    }
     assert {row_id: rows[row_id]["数据源"] for row_id in historical_sources} == (historical_sources)
     assert rows[12]["数据源"] == "BLS（美国劳工统计局）"
     assert rows[13]["数据源"] == "FMP（EquityHistorical / EquityQuote）"
@@ -489,7 +644,12 @@ def test_ac1_08_real_registry_measures_complete_restricted_review() -> None:
     # limits and the assertion right below still forbids the verdict from claiming blanket approval.
     assert "不代表独立核验或全量许可" in registry
     assert "全部获准" not in " ".join(verdict.readings)
-    assert verdict.state == PROVEN
+    # The shipped column itself decides the verdict now: §1 registers 16 homepages as 条款链接, so
+    # the cell is an honest gap awaiting the owner's real terms URLs. This is the outcome the fix
+    # exists to produce -- the ledger still says proven, and the ratchet books that from CI.
+    assert verdict.state == GAP
+    assert "site root" in verdict.reason
+    assert f"{facts['site_root_only']}/{facts['rows']}" in " ".join(verdict.readings)
 
 
 def test_ac1_03_judge_requires_a_current_bidirectional_path_register() -> None:
