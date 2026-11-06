@@ -15,9 +15,9 @@
       "path": ".github/workflows/ci.yml",
       "purpose": "CI 作业为 AC-17|05 的重放面取得 upstream.lock 钉住的上游检出，并把目录交给 OPENDATA_AKSHARE_UPSTREAM_PATH；这是搬运层与上游逐行 diff 所需的只读取证步骤，不是依赖安装。",
       "category": "operations-tool",
-      "reviewed_date": "2026-11-04",
-      "reviewer": "新登记（非 sha 漂移重钉）：该路径此前不含裸品牌词，本 PR 引入 4 行 / 4 次出现 —— 步骤名、LOCK 路径 opendata/data/providers/akshare/_vendor/upstream.lock、RUNNER_TEMP 目录名与 OPENDATA_AKSHARE_UPSTREAM_PATH 导出。逐行核对没有任何 `import akshare` / `from akshare …` / `pip install akshare` 形态的加载行，URL 与 commit 都从 upstream.lock 现读而非写字面量，检出后用 rev-parse 断言等于锁内 commit，取到的是干净上游树且只被 report_port/ported_signature_fidelity/port_scope_inventory 用于逐字节重放对账；带品牌的加载形态行 0==0，出现次数 pinned=4==live=4。",
-      "sha256": "abe808c1ab6d4f9488999664b14bf86b3ec103753c1fd0ad0b1262243f9f9f3f",
+      "reviewed_date": "2026-11-06",
+      "reviewer": "新登记（非 sha 漂移重钉）：该路径此前不含裸品牌词，本 PR 引入 4 行 / 4 次出现 —— 步骤名、LOCK 路径 opendata/data/providers/akshare/_vendor/upstream.lock、RUNNER_TEMP 目录名与 OPENDATA_AKSHARE_UPSTREAM_PATH 导出。逐行核对没有任何 `import akshare` / `from akshare …` / `pip install akshare` 形态的加载行，URL 与 commit 都从 upstream.lock 现读而非写字面量，检出后用 rev-parse 断言等于锁内 commit，取到的是干净上游树且只被 report_port/ported_signature_fidelity/port_scope_inventory 用于逐字节重放对账；带品牌的加载形态行 0==0，出现次数 pinned=4==live=4。摘要重钉 2026-11-06（分支 fix/od-bandit-ported-archive-rescan）：改动只落在 `Sync the acceptance gate ratchet (manual dispatch only)` 一步 —— 在 `--sync-ratchet` 之前加一行 `make security-bundle-rebuild`（复用 #199 已在 gate 配方里的具名成员，不复制其命令），另加一段说明 AC-5|07 的搬运层 bandit 档案是 24 小时窗口内的本轮读数、手动记账路径原本跳过整个 gate 因而不重扫的注释；批准内容不变，akshare 出现行 pinned=4==live=4、出现次数 4==4，逐行同为既有 upstream 检出步骤与 OPENDATA_AKSHARE_UPSTREAM_PATH 导出，新增行不含任何品牌词、不含 `import`/`from … import`/`pip install` 形态的加载行，ast_exceptions 仍为 []。",
+      "sha256": "ef1ddb87a852fa7dd8bf84a40cdbb122b1bdbd4e78b1a47f5e404064aac44932",
       "ast_exceptions": []
     },
     {
