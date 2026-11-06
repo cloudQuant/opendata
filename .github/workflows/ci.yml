@@ -257,9 +257,19 @@ jobs:
       # measured 13 cells including AC-13|06/AC-18|03/§6|03 and missed CI's
       # AC-16|09/AC-17|03/AC-17|05/AC-19|02 - which is exactly why an adjudicated
       # sync belongs in CI. The artifact still has to arrive as a reviewed commit.
+      # The booking path must measure with the same instrument as the judgment it books against.
+      # AC-5|07's ported bandit bundle is a per-round reading, not an archive: the judge validates
+      # it inside a hard 24-hour window (MAX_EVIDENCE_AGE in
+      # scripts/quality/ported_security_evidence.py), so a committed bundle that nobody re-scans
+      # goes red on wall-clock time. `make gate` rebuilt it ahead of acceptance-probe-check
+      # (#199), but this dispatch skips the whole gate, so the only member that re-scans never
+      # ran here: run 42228207697 measured the aged C89 bytes, read AC-5|07 as stale-proof, and
+      # the artifact offered a pin for a cell whose scan, triage coverage and source binding all
+      # said yes. Rebuilding first makes the sync read AC-5|07 proven instead of pinning it.
       - name: Sync the acceptance gate ratchet (manual dispatch only)
         if: env.SYNC_ACCEPTANCE_RATCHET == 'true'
         run: |
+          make security-bundle-rebuild
           python scripts/quality/acceptance_item_probe.py --sync-ratchet
           git --no-pager diff -- docs/quality/acceptance-gate-ratchet.json
       - name: Upload the synced acceptance ratchet

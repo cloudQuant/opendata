@@ -28,6 +28,41 @@ MAKEFILE_TEXT = (gate.REPO_ROOT / gate.MAKEFILE_REL).read_text(encoding="utf-8")
 #: The gate member that re-scans this bundle. The 24-hour window in the judge makes the bundle a
 #: per-round reading, so a recipe that stops invoking the builder reddens AC-5|07 on clock time.
 REBUILD_MEMBER = "security-bundle-rebuild"
+#: The workflow that books the ratchet, and the flag of the step that writes it.
+WORKFLOW_TEXT = (gate.REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+SYNC_FLAG = "--sync-ratchet"
+
+
+def sync_step_commands(text: str) -> list[str]:
+    """The shell command lines of the step that writes the acceptance ratchet, in file order.
+
+    Comments are skipped on purpose: the step's own explanatory block repeats the ``--sync-ratchet``
+    token, and a guard that counts prose cannot tell a running command from a sentence about one.
+    """
+    lines = text.splitlines()
+    hits = [
+        index
+        for index, line in enumerate(lines)
+        if SYNC_FLAG in line and line.strip().startswith("python ")
+    ]
+    assert len(hits) == 1, f"{SYNC_FLAG} must be invoked by exactly one workflow step"
+    step_head = next(
+        index for index in range(hits[0], -1, -1) if lines[index].lstrip().startswith("- name:")
+    )
+    step_end = next(
+        (
+            index
+            for index in range(hits[0] + 1, len(lines))
+            if lines[index].lstrip().startswith(("- name:", "uses:"))
+        ),
+        len(lines),
+    )
+    return [
+        line.strip()
+        for line in lines[step_head + 1 : step_end]
+        if line.strip().startswith(("make ", "python ", "git ", "-make ", "-python "))
+    ]
+
 
 TREE = {
     "futures/cons.py": "\n".join(f"line{i} = {i}" for i in range(1, 30)),
@@ -294,3 +329,40 @@ class TestGateRebuildWiring:
         assert gate.banner_pairing(
             gate.gate_members(MAKEFILE_TEXT), gate.gate_banners(MAKEFILE_TEXT)
         ) == (True, 0)
+
+
+class TestRatchetSyncRebuildWiring:
+    """The booking path went red on the clock because it skipped the member that re-scans.
+
+    ``make gate`` rebuilds the bundle before the member that judges it, but the manual
+    ``sync_acceptance_ratchet`` dispatch runs only ``--sync-ratchet`` (the gate step is behind
+    ``if: env.SYNC_ACCEPTANCE_RATCHET != 'true'``). Run 42228207697 therefore measured the aged
+    committed bytes and put AC-5|07 into the artifact as a stale-proof pin. These assertions keep
+    the two paths reading the same instrument: the sync step rebuilds first, through the same named
+    member, unmasked.
+    """
+
+    def test_the_sync_step_rebuilds_before_it_writes_the_ratchet(self) -> None:
+        commands = sync_step_commands(WORKFLOW_TEXT)
+
+        assert any(REBUILD_MEMBER in line for line in commands)
+        assert any(SYNC_FLAG in line for line in commands)
+        assert commands.index(
+            next(line for line in commands if REBUILD_MEMBER in line)
+        ) < commands.index(next(line for line in commands if SYNC_FLAG in line))
+
+    def test_the_sync_step_reuses_the_named_member_instead_of_inlining_it(self) -> None:
+        """A second copy of the builder command would let the two paths drift apart again."""
+        commands = sync_step_commands(WORKFLOW_TEXT)
+        rebuild = next(line for line in commands if REBUILD_MEMBER in line)
+
+        assert rebuild == f"make {REBUILD_MEMBER}"
+        assert "ported_security_evidence_build.py" not in rebuild
+
+    def test_the_sync_step_rebuild_cannot_be_masked(self) -> None:
+        commands = sync_step_commands(WORKFLOW_TEXT)
+        rebuild = next(line for line in commands if REBUILD_MEMBER in line)
+
+        assert not rebuild.startswith("-")
+        for token in ("|| true", "|| echo", "|| exit 0"):
+            assert token not in rebuild
