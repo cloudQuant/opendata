@@ -42,9 +42,9 @@
       "path": "Makefile",
       "purpose": "搬运根路径、质量门禁和零依赖扫描入口的名称说明。",
       "category": "build-declaration",
-      "reviewed_date": "2026-11-01",
-      "reviewer": "Codex primary wave3 review: Makefile adds named OpenAPI gate; stock adapter replaces vendor relabeling with fixed governed HTTP and original JSON identity checks. No external SDK loads or new AST exception. Digest re-pin 2026-11-01: the acceptance-probe target now completes the repository history before judging it (scripts/quality/ensure_full_history.sh); the guarded reference-name set is unchanged and no new exemption is claimed.",
-      "sha256": "aa0ff7d3d9d0cf9d0a7b9c48a52a9a6dac2d265384cf504755e9589651b918e6",
+      "reviewed_date": "2026-11-06",
+      "reviewer": "Codex primary wave3 review: Makefile adds named OpenAPI gate; stock adapter replaces vendor relabeling with fixed governed HTTP and original JSON identity checks. No external SDK loads or new AST exception. Digest re-pin 2026-11-01: the acceptance-probe target now completes the repository history before judging it (scripts/quality/ensure_full_history.sh); the guarded reference-name set is unchanged and no new exemption is claimed. Digest re-pin 2026-11-06 (branch ci/od-rebuild-security-bundle-per-round): the edit adds exactly one named gate member, security-bundle-rebuild, whose recipe is `python scripts/quality/ported_security_evidence_build.py --force`; it is declared in .PHONY, in the help A2 listing and in the `gate` recipe ahead of acceptance-probe-check, and the added comment block records why AC-5|07's ported bandit bundle is a per-round reading inside the hard 24-hour MAX_EVIDENCE_AGE window rather than an archived artifact. The judge itself is untouched (MAX_EVIDENCE_AGE, the scan-stale/triage-stale codes and ported_security_evidence.validate unchanged) and no bundle bytes or timestamps are committed. No new reference surface: the guarded reference-name set is unchanged, ast_exceptions stays [], no added line imports or loads anything by an upstream name, and the same case-insensitive ruler reads brand-bearing lines 5==5, akshare 5==5, openbb 0==0 while the total moves 244->261 lines (+17 are this target's comment block, its rule and the two listing re-wraps); PY_PORTED still points at the already reviewed _vendor path.",
+      "sha256": "e1378c74bfffa097e9101fccbe861c6be2405c953f08887f4a796fd990a03e1c",
       "ast_exceptions": []
     },
     {
@@ -953,7 +953,7 @@
       "purpose": "品牌、分层质量、来源依赖或验收判据的测量工具；被测来源名不用于加载外部包。本轮把三条 AC 面改成子解释器里的 import hook 见证：包名只作为字符串常量出现在被交给子进程的字面 argv 与被拒计数里，没有任何一处用它去加载外部包。",
       "category": "operations-tool",
       "reviewed_date": "2026-11-06",
-      "reviewer": "本轮复核 sha 漂移：pin 字节 = dev 1815e2a2 的该文件（#195 未触及此路径，与本地 051824bd 版本逐字节一致），本 PR 在其上加 1 个 revision。改动只在 AC-1|08 的条款链接判据：measure_ac1_08 把 URL 解析收成单一 parsed_clause_url，has_http_url 改为它的薄包装，新增 is_site_root_only 与 site_root_only 计数，judge_ac1_08 要求 unlinked 与 site_root_only 同时为 0，并把失败的那一面写进读数。不新增也不删除任何品牌名用法：带品牌的行数 234==234，akshare 出现 172==172，openbb 出现 117==117，行数 20917→20966 全部来自这段判据与其注释；没有任何一处用品牌名去加载外部包。本 PR 不改 docs/data-rights-registry.md 的任何一行，也不写验收棘轮基线（AC-1|08 的新 gap 留给 CI 的 --sync-ratchet 计量）。",
+      "reviewer": "本轮复核 sha 漂移：pin 字节 = dev 1815e2a2 的该文件（#195 未触及此路径，与本地 051824bd 版本逐字节一致），本 PR 在其上加 1 个 revision。改动只在 AC-1|08 的条款链接判据：measure_ac1_08 把 URL 解析收成单一 parsed_clause_url，has_http_url 改为它的薄包装，新增 is_site_root_only 与 site_root_only 计数，judge_ac1_08 要求 unlinked 与 site_root_only 同时为 0，并把失败的那一面写进读数。不新增也不删除任何品牌名用法：带品牌的行数 234==234，akshare 出现 172==172，openbb 出现 117==117，行数 20917→20966 全部来自这段判据与其注释；没有任何一处用品牌名去加载外部包。本 PR 不改 docs/data-rights-registry.md 的任何一行，也不写验收棘轮基线（AC-1|08 的新 gap 留给 CI 的 --sync-ratchet 计量）。 摘要重钉桥接 2026-11-06（本 PR #198 合到 dev 28607e18）：dev 在 PR #199 里重钉了 Makefile 条目，本分支重钉了 scripts/quality/acceptance_item_probe.py 条目，两条不重叠；本次把两条并成一份登记，其余 101 条与 dev 逐字节一致，条目总数保持 103。Makefile 按合并后的字节（dev 版本，本分支未触及该路径）重钉，本路径按合并后的字节（本分支版本）重钉。受控引用名集合不变，ast_exceptions 仍为 []，不主张任何新的豁免。",
       "sha256": "3a3ada908f54d9ba273d151d4b6a78352a4a12d6c36953acb22eaddcb92dca23",
       "ast_exceptions": []
     },
