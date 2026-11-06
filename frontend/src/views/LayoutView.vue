@@ -37,6 +37,9 @@ const menuItems = computed(() => {
   if (authStore.isAdmin) {
     items.push({ index: '/admin/interfaces', name: t('nav.interfaceManagement'), icon: 'Setting' })
     items.push({ index: '/admin/reviewed-runs', name: '审核运行', icon: 'List' })
+    items.push({ index: '/admin/coverage', name: '覆盖与新鲜度', icon: 'DataAnalysis' })
+    items.push({ index: '/admin/backfill-planning', name: '补数计划检视', icon: 'Timer' })
+    items.push({ index: '/admin/capacity-gate', name: '配额门禁', icon: 'Setting' })
     items.push({ index: '/users', name: t('nav.users'), icon: 'User' })
     items.push({ index: '/settings', name: t('nav.settings'), icon: 'Setting' })
   }

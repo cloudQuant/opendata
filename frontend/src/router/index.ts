@@ -92,6 +92,24 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '审核运行', requiresAdmin: true },
       },
       {
+        path: 'admin/coverage',
+        name: 'AdminCoverage',
+        component: () => import('@/views/admin/CoverageView.vue'),
+        meta: { title: '覆盖与新鲜度', requiresAdmin: true },
+      },
+      {
+        path: 'admin/backfill-planning',
+        name: 'AdminBackfillPlanning',
+        component: () => import('@/views/admin/BackfillPlanningView.vue'),
+        meta: { title: '补数计划检视', requiresAdmin: true },
+      },
+      {
+        path: 'admin/capacity-gate',
+        name: 'AdminCapacityGate',
+        component: () => import('@/views/admin/CapacityGateView.vue'),
+        meta: { title: '配额门禁', requiresAdmin: true },
+      },
+      {
         path: 'settings',
         name: 'Settings',
         component: () => import('@/views/SettingsView.vue'),
