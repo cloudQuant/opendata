@@ -208,3 +208,29 @@ differences, not typos:
 
 Committing that copy would turn OpenData's frontend gate red, so it stays in `port_staging/` until
 stage 3 adapts the client wrapper, types and the missing sub-modules.
+
+## Stage 3 decision input: the ported routers are not duplicates
+
+Measured (route path suffixes normalised by dropping the leading resource segment; prefixes differ
+between the two routers, so treat this as a capability delta, not an exact path diff):
+
+| Ported router | OpenData counterpart | Ported-only capabilities | OpenData-only capabilities |
+| --- | --- | --- | --- |
+| executions (6) | `api/executions.py` | `POST /{id}/retry` | `GET /failed`, `DELETE /` |
+| interfaces (7) | `api/interfaces.py` | create/update/delete, `GET /categories`, `GET /{id}`, `POST /bootstrap` | bulk `PUT /`, `DELETE /` |
+| scripts (10) | `api/scripts.py` | categories, stats, detail, run, toggle, scan, admin CRUD | `POST /`, `PUT /toggle`, `POST /scripts` |
+| tasks (9) | `api/tasks.py` | detail, executions, run, toggle, templates, CRUD | `POST /trigger`, `POST /cancel` |
+| tables (4) | `api/data.py` | detail, schema, paged data | execution result/status |
+| governance (5) | none | the whole governance API | — |
+
+So stage 3 cannot just register the ported routers at the same prefixes: the path shapes differ and
+several capabilities overlap with different semantics. Two coherent options:
+
+1. **Additive namespace (recommended given the migrate-first ruling):** register the ported routers
+   under a distinct prefix (e.g. `/api/v1/afi-data`) so every function becomes reachable in OpenData
+   without changing OpenData's existing contracts; dedupe later by folding callers onto one namespace.
+2. **Merge into the existing routers:** add only the missing capabilities (retry, bootstrap, run,
+   toggle, scan, detail, templates, categories, stats) to OpenData's routers and drop the rest. This
+   touches OpenData's public contracts and needs its own API review.
+
+Open governance API has no counterpart and ports as new routes in either option.
