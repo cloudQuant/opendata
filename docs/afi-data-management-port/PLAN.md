@@ -135,3 +135,15 @@ in the port.
   OpenData's `make gate` does not compare models with migrations, but a deployment needs the DDL.
   The intended command, where an OpenData database is reachable, is
   `alembic revision --autogenerate -m "dg governance tables"` followed by a reviewed upgrade.
+
+### Measured adaptation cost of the service layer
+
+A trial move of the two dependency-free service modules (`table_pagination.py` 401 lines,
+`param_bind_audit.py` 995 lines) into `opendata/afi_port/services/` produced **26 ruff findings**,
+all docstring rules (D102 public methods, D105 magic methods, plus D100/D101). OpenData's lint is
+stricter than AFI's, so a service module cannot be moved by copy: each needs its docstrings added
+before it can leave `port_staging/`.
+
+That trial was reverted, so `opendata/afi_port` stays green; the two modules remain staged. This is
+the real per-module cost of stage 2 and it is mechanical, not semantic — which is why the plan moves
+one module at a time rather than the whole 6k-line layer at once.
