@@ -63,3 +63,24 @@ are **18 `app.*` imports across 6 modules** — this is the entire adaptation su
 The staged copy compiles (`python -m compileall port_staging` → exit 0). It is **not** importable
 until those six are mapped, which is stage 2's work — done one module at a time, each moved into
 `opendata/afi_port/` only after it passes OpenData's lint/typecheck.
+
+## Stage 2 schema decision (measured by `scripts/port/schema_diff.py`)
+
+OpenData's models are **not** a different schema that needs replacing; they are the same schema
+under different table names (`ak_*` vs bare) with **13 AFI-only columns and 1 OpenData-only
+column** across the seven table pairs:
+
+| AFI table | OpenData table | AFI-only columns | verdict |
+| --- | --- | --- | --- |
+| `ak_data_scripts` | `data_scripts` | `created_by`, `updated_by` | afi adds 2 |
+| `ak_data_tables` | `data_tables` | `asset_type`, `dataset_storage_id`, `market`, `metadata_json`, `symbol_normalized`, `symbol_raw` | afi adds 6 |
+| `ak_data_interfaces` | `data_interfaces` | `extra_config`, `updated_at` | afi adds 2 |
+| `ak_interface_categories` | `interface_categories` | — | identical |
+| `ak_interface_parameters` | `interface_parameters` | — | identical |
+| `ak_scheduled_tasks` | `scheduled_tasks` | — | afi is a subset (OD adds `task_kind`) |
+| `ak_task_executions` | `task_executions` | `airflow_dag_id`, `airflow_run_id`, `airflow_task_id` | afi adds 3 (legacy Airflow) |
+
+**Consequence:** stage 2 does not move models. It either adds the 13 columns to OpenData's models
+(or consciously drops the 3 legacy Airflow columns, leaving 10) and binds the ported services to
+OpenData's models. The *rows* are stage 4 (copy `ak_*` data into the `data_*` tables, verified by
+count), not stage 2.

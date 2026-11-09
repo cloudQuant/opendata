@@ -1,0 +1,90 @@
+{
+  "afi_model": "port_staging/afi_data_management/models/akshare_mgmt.py",
+  "opendata_models": "opendata/models",
+  "afi_only_columns": 13,
+  "opendata_only_columns": 1,
+  "tables": [
+    {
+      "afi_table": "ak_data_scripts",
+      "opendata_table": "data_scripts",
+      "afi_columns": 20,
+      "opendata_columns": 18,
+      "only_in_afi": [
+        "created_by",
+        "updated_by"
+      ],
+      "only_in_opendata": [],
+      "verdict": "afi_adds"
+    },
+    {
+      "afi_table": "ak_data_tables",
+      "opendata_table": "data_tables",
+      "afi_columns": 18,
+      "opendata_columns": 12,
+      "only_in_afi": [
+        "asset_type",
+        "dataset_storage_id",
+        "market",
+        "metadata_json",
+        "symbol_normalized",
+        "symbol_raw"
+      ],
+      "only_in_opendata": [],
+      "verdict": "afi_adds"
+    },
+    {
+      "afi_table": "ak_data_interfaces",
+      "opendata_table": "data_interfaces",
+      "afi_columns": 14,
+      "opendata_columns": 12,
+      "only_in_afi": [
+        "extra_config",
+        "updated_at"
+      ],
+      "only_in_opendata": [],
+      "verdict": "afi_adds"
+    },
+    {
+      "afi_table": "ak_interface_categories",
+      "opendata_table": "interface_categories",
+      "afi_columns": 5,
+      "opendata_columns": 5,
+      "only_in_afi": [],
+      "only_in_opendata": [],
+      "verdict": "identical"
+    },
+    {
+      "afi_table": "ak_interface_parameters",
+      "opendata_table": "interface_parameters",
+      "afi_columns": 10,
+      "opendata_columns": 10,
+      "only_in_afi": [],
+      "only_in_opendata": [],
+      "verdict": "identical"
+    },
+    {
+      "afi_table": "ak_scheduled_tasks",
+      "opendata_table": "scheduled_tasks",
+      "afi_columns": 16,
+      "opendata_columns": 17,
+      "only_in_afi": [],
+      "only_in_opendata": [
+        "task_kind"
+      ],
+      "verdict": "afi_subset"
+    },
+    {
+      "afi_table": "ak_task_executions",
+      "opendata_table": "task_executions",
+      "afi_columns": 22,
+      "opendata_columns": 19,
+      "only_in_afi": [
+        "airflow_dag_id",
+        "airflow_run_id",
+        "airflow_task_id"
+      ],
+      "only_in_opendata": [],
+      "verdict": "afi_adds"
+    }
+  ]
+}
