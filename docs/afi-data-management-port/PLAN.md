@@ -84,3 +84,26 @@ column** across the seven table pairs:
 (or consciously drops the 3 legacy Airflow columns, leaving 10) and binds the ported services to
 OpenData's models. The *rows* are stage 4 (copy `ak_*` data into the `data_*` tables, verified by
 count), not stage 2.
+
+## Scope correction: the governance half was under-counted
+
+`ak_data_tables.dataset_storage_id` is a foreign key into `dg_dataset_storages`, and the config
+centre's 数据治理 page calls `/data-governance/*`. That half of the data-management plane is **not**
+in the 35-file manifest — it was visible only as one `app.models.data_governance` import. Measured:
+
+| AFI piece | lines | note |
+| --- | --- | --- |
+| `app/models/data_governance.py` | 267 | eight `dg_*` tables (providers, datasets, storage_targets, dataset_storages, endpoints, endpoint_params, ingest_jobs, quality_rules) |
+| `app/api/data/governance.py` | 85 | `/data-governance/*` routes |
+| `app/services/data_connectors/` | 621 | `DataGovernanceService`, executor, registry |
+| `app/api/data/deps.py` | 127 | the shared dependency module; pulls `app.api.deps`, `models.permission`, `models.user`, `schemas.auth` |
+
+So the real port is **≈1,100 lines larger** than the manifest, and it pulls the auth/permission
+models in as a dependency. `dataset_storage_id` cannot be added to OpenData's `data_tables` with its
+FK until the `dg_*` tables exist there.
+
+**Open decision for the owner:** either (a) include the governance plane in the port (it needs the
+`dg_*` models + `data_connectors` + an auth mapping), or (b) drop `dataset_storage_id` and the
+governance page from the migrated surface and record that as a deliberate reduction. The 9 remaining
+simple columns (2 audit on scripts, 4 symbol/market/asset on tables, `metadata`, `extra_config`, and
+`updated_at` on interfaces) are unblocked either way.
