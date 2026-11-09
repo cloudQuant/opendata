@@ -182,3 +182,29 @@ Risks registered for stage 4 (row hand-over), not changed here:
   `users.id` is `Integer`; they are added as indexed strings without a foreign key.
 - **`data_tables.dataset_storage_id`** now FKs `dg_dataset_storages`, so the `dg_*` tables must live
   in the same database as `data_tables`.
+
+### Stage 2: warehouse adapter moved; frontend measured and left staged
+
+`services/data.py` (648 lines) is in `opendata/afi_port/services/` and green. It binds to
+`opendata.core.database.data_engine` instead of AFI's lazy `_get_akshare_data_engine()`, so the four
+"warehouse not configured" branches are gone (they raised `RuntimeError`); every query path is
+unchanged. The five dynamic-SQL sites carry `# noqa: S608` naming the `_quote_identifier`
+validation that makes identifiers safe. One behavioural rename is required by the ORM binding: the
+metadata lookup now reads `data_tables` instead of `ak_data_tables` — consistent with the stage-4
+row hand-over. `pytest tests/test_api_interfaces_full.py` (15 tests) passes against the changed
+model plane.
+
+The frontend was copied into a trial tree and **reverted**: `vue-tsc` went from 0 errors on the
+baseline to **123** errors, all in the 15 added files (10,515 lines). The causes are stack
+differences, not typos:
+
+- OpenData's axios instance types methods as `Promise<AxiosResponse<T>>`; AFI's client returns
+  `Promise<T>` (25 unwrapping errors).
+- No OpenData equivalents for `@/api/airflow`, `@/api/sync`, `@/api/dataTopics`,
+  `@/views/data/utils`, several shared types in `@/types`, and three `DataSync` child components.
+- element-plus 2.9.1 rejects the `@vue-generic` comments AFI's 2.14.5 accepted (9 errors).
+- Auth shape differs (`is_admin` vs `authStore.isAdmin`).
+- Missing model fields the pages read (e.g. `DataTable.market/symbol_*`, `DataScript.dependencies`).
+
+Committing that copy would turn OpenData's frontend gate red, so it stays in `port_staging/` until
+stage 3 adapts the client wrapper, types and the missing sub-modules.
