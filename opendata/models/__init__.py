@@ -1,6 +1,17 @@
 """Database models."""
 
 from opendata.models.api_key import ApiKey, ApiKeyStatus
+from opendata.models.data_governance import (
+    DgDataset,
+    DgDatasetStorage,
+    DgEndpoint,
+    DgEndpointParam,
+    DgIngestJob,
+    DgJobStatus,
+    DgProvider,
+    DgQualityRule,
+    DgStorageTarget,
+)
 from opendata.models.data_script import DataScript, ScriptFrequency
 from opendata.models.data_table import DataTable
 from opendata.models.interface import DataInterface, InterfaceCategory, InterfaceParameter
@@ -27,6 +38,15 @@ __all__ = [
     "DataInterface",
     "DataScript",
     "DataTable",
+    "DgDataset",
+    "DgDatasetStorage",
+    "DgEndpoint",
+    "DgEndpointParam",
+    "DgIngestJob",
+    "DgJobStatus",
+    "DgProvider",
+    "DgQualityRule",
+    "DgStorageTarget",
     "InterfaceCategory",
     "InterfaceParameter",
     "MinuteArchiveShard",

@@ -147,3 +147,38 @@ before it can leave `port_staging/`.
 That trial was reverted, so `opendata/afi_port` stays green; the two modules remain staged. This is
 the real per-module cost of stage 2 and it is mechanical, not semantic — which is why the plan moves
 one module at a time rather than the whole 6k-line layer at once.
+
+### Stage 2 progress: four service modules and the model binding
+
+Moved and green (`ruff check`, `ruff format --check`, `mypy`, import):
+
+| Module | Lines | Adaptation |
+| --- | --- | --- |
+| `services/table_pagination.py` | 401 | 5 docstrings, TC002/TC003 relocation, D107 |
+| `services/param_bind_audit.py` | 995 | 15 findings: 9 D102, 1 D107, TC003, 3 SIM collapses with identical truth tables |
+| `services/interface.py` | 142 | rebound to OpenData's own models; 1 `Any`→`object` |
+| `services/interface_loader.py` | 156 | rebound to OpenData's own models |
+| `services/data_connectors/` (3 files) | 675 | 33 findings; 3 justified `ANN401` noqa; SQL literal split (same value) |
+
+**The model plane is not duplicated.** A first attempt moved `app/models/akshare_mgmt.py` into
+`opendata/afi_port/models/`, which made `configure_mappers()` fail with `Multiple classes found for
+path "DataInterface"`: seven ported class names (`DataScript`, `DataTable`, `DataInterface`,
+`InterfaceCategory`, `InterfaceParameter`, `ScheduledTask`, `TaskExecution`) already exist on the
+same declarative `Base`. That copy was removed; the ported services now import
+`opendata.models.interface`, and the ten AFI-only columns were added to OpenData's models instead
+(`data_scripts` 2, `data_tables` 6, `data_interfaces` 2; the three legacy `airflow_*` columns are
+deliberately dropped). `opendata.models` now imports `data_governance` so the eight `dg_*` classes
+join the same registry, and `configure_mappers()` passes.
+
+Risks registered for stage 4 (row hand-over), not changed here:
+
+- **Enum storage differs.** AFI's `ScriptFrequency`/`ParameterType` use `values_callable`, so MySQL
+  holds values (`"daily"`); OpenData's models hold names (`"DAILY"`). Copying rows without
+  translating them would fail the enum lookup. Changing OpenData's storage format needs its own
+  migration.
+- **`data_tables.last_update_status`** is `Enum("success","failed")` in OpenData but `String(20)` in
+  AFI; any other stored status would fail on read.
+- **`created_by`/`updated_by`** are AFI `String(36)` UUIDs pointing at `users.id`, while OpenData's
+  `users.id` is `Integer`; they are added as indexed strings without a foreign key.
+- **`data_tables.dataset_storage_id`** now FKs `dg_dataset_storages`, so the `dg_*` tables must live
+  in the same database as `data_tables`.

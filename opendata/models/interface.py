@@ -92,6 +92,7 @@ class DataInterface(Base):
     module_path: Mapped[str] = mapped_column(String(255), nullable=True)
     function_name: Mapped[str] = mapped_column(String(100), nullable=True)
     parameters: Mapped[dict] = mapped_column(JSON, default=dict, nullable=False)
+    extra_config: Mapped[dict] = mapped_column(JSON, default=dict, nullable=False)
     return_type: Mapped[str] = mapped_column(String(50), default="DataFrame")
     example: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
@@ -99,6 +100,12 @@ class DataInterface(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
 
