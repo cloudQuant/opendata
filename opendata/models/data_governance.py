@@ -195,7 +195,7 @@ class DgEndpoint(Base):
     rate_limit: Mapped[int] = mapped_column(Integer, default=60, nullable=False)
     cache_ttl_sec: Mapped[int] = mapped_column(Integer, default=300, nullable=False)
     target_database: Mapped[str] = mapped_column(
-        String(100), default="akshare_data", nullable=False
+        String(100), default="opendata_data", nullable=False
     )
     target_table: Mapped[str | None] = mapped_column(String(100), nullable=True)
     normalization_profile: Mapped[dict[str, JSONValue]] = mapped_column(

@@ -56,7 +56,7 @@ are **18 `app.*` imports across 6 modules** — this is the entire adaptation su
 | `app.db.database` | 6 | `opendata/core/database.py` (session/engine) |
 | `app.api.data.deps` | 5 | OpenData's FastAPI dependencies (`get_db`, auth) |
 | `app.schemas.akshare_mgmt` | 4 | OpenData's pydantic schemas for scripts/tasks/tables |
-| `app.db.akshare_data_database` | 1 | OpenData's warehouse session factory |
+| AFI's `app.db` warehouse-session module | 1 | OpenData's warehouse session factory |
 | `app.config` | 1 | `opendata/core/config.py` settings |
 | `app.models.data_governance` | 1 | OpenData's data-governance model (or drop) |
 
@@ -186,7 +186,7 @@ Risks registered for stage 4 (row hand-over), not changed here:
 ### Stage 2: warehouse adapter moved; frontend measured and left staged
 
 `services/data.py` (648 lines) is in `opendata/afi_port/services/` and green. It binds to
-`opendata.core.database.data_engine` instead of AFI's lazy `_get_akshare_data_engine()`, so the four
+`opendata.core.database.data_engine` instead of AFI's lazy warehouse-engine helper, so the four
 "warehouse not configured" branches are gone (they raised `RuntimeError`); every query path is
 unchanged. The five dynamic-SQL sites carry `# noqa: S608` naming the `_quote_identifier`
 validation that makes identifiers safe. One behavioural rename is required by the ORM binding: the

@@ -82,15 +82,12 @@ class ProviderBase:
         return symbol, region
 '''
 
-_INHERITING_SCRIPT = '''"""Class whose entrypoint signature lives in the base module."""
-
-from app.data_fetch.providers.base import ProviderBase
-
-
-class Inherited(ProviderBase):
-    def __init__(self):
-        self.name = "inherited"
-'''
+_INHERITING_SCRIPT = (
+    '"""Class whose entrypoint signature lives in the base module."""\n\n'
+    "from app.data_fetch.providers.base import ProviderBase\n\n\n"
+    "class Inherited(ProviderBase):\n    def __init__(self):\n"
+    '        self.name = "inherited"\n'
+)
 
 
 def _write(root: Path, relative: str, source: str) -> Path:
