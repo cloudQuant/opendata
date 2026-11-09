@@ -122,3 +122,16 @@ The governance plane is part of the port, not a reduction:
 Manifest after the ruling: **41 files / 18,850 lines** (`adapt` 8, `rewrite` 9, `copy` 15,
 `keep-in-afi` 9). `dataset_storage_id` stays a real foreign key because `dg_dataset_storages` is now
 in the port.
+
+## Stage 2 progress
+
+- **`opendata/models/data_governance.py` — moved in and green.** The eight `dg_*` tables now live in
+  OpenData's model plane with `from opendata.core.database import Base`; `ruff check`, `ruff format
+  --check`, `mypy` and `import opendata.models.data_governance` all pass. Porting it required three
+  OpenData-specific shapes: module/class docstrings (D100/D101), SQLAlchemy `Mapper`/`Connection`
+  annotations on the `before_insert` listener (ANN001/ANN401), and the repo's
+  `__table_args__ = (  # type: ignore[assignment]` convention for tuple constraints.
+- **Still required before this can run:** an Alembic revision creating the eight `dg_*` tables.
+  OpenData's `make gate` does not compare models with migrations, but a deployment needs the DDL.
+  The intended command, where an OpenData database is reachable, is
+  `alembic revision --autogenerate -m "dg governance tables"` followed by a reviewed upgrade.
