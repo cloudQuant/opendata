@@ -70,18 +70,29 @@ BACKEND_REWRITES = (
 )
 
 
+STAGING = "port_staging/afi_data_management"
+
+
 def target_for(relative: str) -> str:
+    """Stage every copy outside the gate's file lists.
+
+    ``PY_SELFDEV``/``PY_MYPY`` cover ``opendata scripts tests …``, so an unadapted copy placed
+    under ``opendata/`` would turn OpenData's own lint/typecheck red before stage 2 adapts it.
+    The staged tree therefore lives in ``port_staging/`` and is moved into ``opendata/afi_port``
+    (or ``frontend/src``) only once a module is adapted and passes the gate.
+    """
+
     if relative.startswith(AFI_BACKEND_API):
-        return relative.replace("src/backend/app/api/akshare", "opendata/afi_port/api")
+        return relative.replace("src/backend/app/api/akshare", f"{STAGING}/api")
     if relative.startswith(AFI_BACKEND_SERVICES):
-        return relative.replace("src/backend/app/services/akshare", "opendata/afi_port/services")
+        return relative.replace("src/backend/app/services/akshare", f"{STAGING}/services")
     if relative == AFI_BACKEND_MODEL:
-        return "opendata/afi_port/models/akshare_mgmt.py"
+        return f"{STAGING}/models/akshare_mgmt.py"
     if relative.startswith(AFI_FRONTEND_VIEWS):
-        return relative.replace("src/frontend/src/views/data", "frontend/src/views/afi-data")
+        return relative.replace("src/frontend/src/views/data", f"{STAGING}/frontend/views/data")
     if relative in AFI_FRONTEND_API:
-        return "frontend/src/api/afi-data/" + pathlib.Path(relative).name
-    return "opendata/afi_port/misc/" + pathlib.Path(relative).name
+        return f"{STAGING}/frontend/api/" + pathlib.Path(relative).name
+    return f"{STAGING}/misc/" + pathlib.Path(relative).name
 
 
 def sources(afi: pathlib.Path) -> list[str]:

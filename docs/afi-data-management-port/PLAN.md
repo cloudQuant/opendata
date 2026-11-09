@@ -24,12 +24,14 @@ survive until OpenData owns scheduling.
 
 0. **Inventory (this PR).** `scripts/port/port_afi_data_management.py` emits the manifest; dry-run
    by default, `--apply` performs the classified copy with import rewrites.
-1. **Port the plane beside OpenData's own.** Target namespace `opendata/afi_port/**`, so OpenData's
-   existing `api/` and `models/` are not overwritten by an unverified copy.
-2. **Adapt the eight `adapt` modules** to OpenData's models/session/service conventions, and add
-   tests for each. Nothing is wired into OpenData's routers yet.
-3. **Port the frontend** into `frontend/src/views/afi-data/` and `frontend/src/api/afi-data/`,
-   pointed at the ported endpoints.
+1. **Stage the copy outside the gate.** `--apply` writes to `port_staging/afi_data_management/**`.
+   `PY_SELFDEV`/`PY_MYPY` cover `opendata scripts tests alembic …`, so an unadapted copy under
+   `opendata/` would turn OpenData's own lint/typecheck red before stage 2 adapts it.
+2. **Adapt module by module and move it in.** Each module is adapted to OpenData's
+   models/session/service conventions, moved from `port_staging/` into `opendata/afi_port/**`,
+   and only then wired to a router — one green increment at a time.
+3. **Port the frontend** from `port_staging/…/frontend/` into `frontend/src/views/afi-data/` and
+   `frontend/src/api/afi-data/`, pointed at the ported endpoints, after the backend it calls is in.
 4. **Data hand-over.** Move/duplicate `ak_data_scripts`, `ak_scheduled_tasks`, `ak_task_executions`,
    `ak_data_interfaces`, `ak_data_tables` so OpenData reads them; verify counts against AFI.
 5. **Cutover.** Enable OpenData's scheduler for the migrated task set, stop AFI's scheduler, and
@@ -40,5 +42,24 @@ survive until OpenData owns scheduling.
 
 ## Not claimed
 
-- Stage 0 moves no code and changes no runtime. `--apply` has not been run.
+- `--apply` has been run **into `port_staging/` only**; nothing was written under `opendata/`,
+  no router/model changed, and no AFI file was removed.
 - The 8 `keep-in-afi` modules remain in AFI by design; "delete from AFI" is stage 6, not stage 0.
+
+## Stage 2 adaptation surface (measured after the first `--apply`)
+
+The staging copy (27 files, 824 KB) rewrites the six known AFI-internal prefixes. What remains
+are **18 `app.*` imports across 6 modules** — this is the entire adaptation surface:
+
+| AFI module | imports | maps onto |
+| --- | --- | --- |
+| `app.db.database` | 6 | `opendata/core/database.py` (session/engine) |
+| `app.api.data.deps` | 5 | OpenData's FastAPI dependencies (`get_db`, auth) |
+| `app.schemas.akshare_mgmt` | 4 | OpenData's pydantic schemas for scripts/tasks/tables |
+| `app.db.akshare_data_database` | 1 | OpenData's warehouse session factory |
+| `app.config` | 1 | `opendata/core/config.py` settings |
+| `app.models.data_governance` | 1 | OpenData's data-governance model (or drop) |
+
+The staged copy compiles (`python -m compileall port_staging` → exit 0). It is **not** importable
+until those six are mapped, which is stage 2's work — done one module at a time, each moved into
+`opendata/afi_port/` only after it passes OpenData's lint/typecheck.
