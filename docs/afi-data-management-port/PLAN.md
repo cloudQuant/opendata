@@ -11,7 +11,7 @@ removes the only control surface for a running collection system. The manifest t
 eight modules `keep-in-afi`: they are not part of "delete today", they are the part that must
 survive until OpenData owns scheduling.
 
-## Classification (35 files / 17,750 lines)
+## Classification (41 files / 18,850 lines) — includes the governance half
 
 | class | files | lines | meaning |
 | --- | --- | --- | --- |
@@ -107,3 +107,18 @@ FK until the `dg_*` tables exist there.
 governance page from the migrated surface and record that as a deliberate reduction. The 9 remaining
 simple columns (2 audit on scripts, 4 symbol/market/asset on tables, `metadata`, `extra_config`, and
 `updated_at` on interfaces) are unblocked either way.
+
+## Owner ruling 2026-11-09: the governance half is included
+
+The governance plane is part of the port, not a reduction:
+
+| AFI piece | lines | class |
+| --- | --- | --- |
+| `app/models/data_governance.py` | 267 | rewrite (8 `dg_*` tables) |
+| `app/api/data/governance.py` | 85 | rewrite |
+| `app/services/data_connectors/{__init__,executor,registry}.py` | 621 | rewrite |
+| `app/api/data/deps.py` | 127 | **keep-in-afi** — it binds `models.permission`, `models.user`, `schemas.auth`; AFI keeps it, stage 2 maps the ported routes onto OpenData's dependencies instead |
+
+Manifest after the ruling: **41 files / 18,850 lines** (`adapt` 8, `rewrite` 9, `copy` 15,
+`keep-in-afi` 9). `dataset_storage_id` stays a real foreign key because `dg_dataset_storages` is now
+in the port.

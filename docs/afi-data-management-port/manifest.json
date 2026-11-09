@@ -2,12 +2,12 @@
   "afi_root": "/home/yun/Documents/ai-for-investor",
   "opendata_root": "/home/yun/Documents/opendata",
   "applied": true,
-  "files": 35,
-  "lines": 17750,
+  "files": 41,
+  "lines": 18850,
   "classification_counts": {
     "adapt": 8,
-    "keep-in-afi": 8,
-    "rewrite": 4,
+    "keep-in-afi": 9,
+    "rewrite": 9,
     "copy": 15
   },
   "rows": [
@@ -17,7 +17,7 @@
       "classification": "adapt",
       "lines": 93,
       "counterpart": "opendata/api/executions.py",
-      "target_exists": false
+      "target_exists": true
     },
     {
       "source": "src/backend/app/api/akshare/interfaces.py",
@@ -25,7 +25,7 @@
       "classification": "adapt",
       "lines": 111,
       "counterpart": "opendata/api/interfaces.py",
-      "target_exists": false
+      "target_exists": true
     },
     {
       "source": "src/backend/app/api/akshare/scripts.py",
@@ -33,7 +33,7 @@
       "classification": "adapt",
       "lines": 145,
       "counterpart": "opendata/api/scripts.py",
-      "target_exists": false
+      "target_exists": true
     },
     {
       "source": "src/backend/app/api/akshare/tables.py",
@@ -41,7 +41,7 @@
       "classification": "adapt",
       "lines": 203,
       "counterpart": "opendata/api/data.py",
-      "target_exists": false
+      "target_exists": true
     },
     {
       "source": "src/backend/app/api/akshare/tasks.py",
@@ -49,7 +49,7 @@
       "classification": "adapt",
       "lines": 132,
       "counterpart": "opendata/api/tasks.py",
-      "target_exists": false
+      "target_exists": true
     },
     {
       "source": "src/backend/app/services/akshare/clock.py",
@@ -65,7 +65,7 @@
       "classification": "rewrite",
       "lines": 647,
       "counterpart": null,
-      "target_exists": false
+      "target_exists": true
     },
     {
       "source": "src/backend/app/services/akshare/execution.py",
@@ -81,7 +81,7 @@
       "classification": "adapt",
       "lines": 142,
       "counterpart": "opendata/services/interface_service.py",
-      "target_exists": false
+      "target_exists": true
     },
     {
       "source": "src/backend/app/services/akshare/interface_loader.py",
@@ -89,7 +89,7 @@
       "classification": "rewrite",
       "lines": 156,
       "counterpart": null,
-      "target_exists": false
+      "target_exists": true
     },
     {
       "source": "src/backend/app/services/akshare/param_bind_audit.py",
@@ -97,7 +97,7 @@
       "classification": "rewrite",
       "lines": 995,
       "counterpart": null,
-      "target_exists": false
+      "target_exists": true
     },
     {
       "source": "src/backend/app/services/akshare/run_coordinator.py",
@@ -129,7 +129,7 @@
       "classification": "adapt",
       "lines": 1823,
       "counterpart": "opendata/services/script_service.py",
-      "target_exists": false
+      "target_exists": true
     },
     {
       "source": "src/backend/app/services/akshare/script_worker.py",
@@ -153,7 +153,7 @@
       "classification": "rewrite",
       "lines": 401,
       "counterpart": null,
-      "target_exists": false
+      "target_exists": true
     },
     {
       "source": "src/backend/app/services/akshare/write_fence.py",
@@ -169,7 +169,7 @@
       "classification": "adapt",
       "lines": 369,
       "counterpart": "opendata/models/{data_script,data_table,task,interface}.py",
-      "target_exists": false
+      "target_exists": true
     },
     {
       "source": "src/frontend/src/views/data/AirflowDagsPage.vue",
@@ -177,7 +177,7 @@
       "classification": "copy",
       "lines": 952,
       "counterpart": null,
-      "target_exists": false
+      "target_exists": true
     },
     {
       "source": "src/frontend/src/views/data/DataExecutionsPage.vue",
@@ -185,7 +185,7 @@
       "classification": "copy",
       "lines": 925,
       "counterpart": null,
-      "target_exists": false
+      "target_exists": true
     },
     {
       "source": "src/frontend/src/views/data/DataGovernancePage.vue",
@@ -193,7 +193,7 @@
       "classification": "copy",
       "lines": 1078,
       "counterpart": null,
-      "target_exists": false
+      "target_exists": true
     },
     {
       "source": "src/frontend/src/views/data/DataInterfacesPage.vue",
@@ -201,7 +201,7 @@
       "classification": "copy",
       "lines": 1246,
       "counterpart": null,
-      "target_exists": false
+      "target_exists": true
     },
     {
       "source": "src/frontend/src/views/data/DataLayout.vue",
@@ -209,7 +209,7 @@
       "classification": "copy",
       "lines": 3,
       "counterpart": null,
-      "target_exists": false
+      "target_exists": true
     },
     {
       "source": "src/frontend/src/views/data/DataMarketPage.vue",
@@ -217,7 +217,7 @@
       "classification": "copy",
       "lines": 7,
       "counterpart": null,
-      "target_exists": false
+      "target_exists": true
     },
     {
       "source": "src/frontend/src/views/data/DataScriptDetailPage.vue",
@@ -225,7 +225,7 @@
       "classification": "copy",
       "lines": 654,
       "counterpart": null,
-      "target_exists": false
+      "target_exists": true
     },
     {
       "source": "src/frontend/src/views/data/DataScriptsPage.vue",
@@ -233,7 +233,7 @@
       "classification": "copy",
       "lines": 1323,
       "counterpart": null,
-      "target_exists": false
+      "target_exists": true
     },
     {
       "source": "src/frontend/src/views/data/DataSyncPage.vue",
@@ -241,7 +241,7 @@
       "classification": "copy",
       "lines": 600,
       "counterpart": null,
-      "target_exists": false
+      "target_exists": true
     },
     {
       "source": "src/frontend/src/views/data/DataTableDetailPage.vue",
@@ -249,7 +249,7 @@
       "classification": "copy",
       "lines": 683,
       "counterpart": null,
-      "target_exists": false
+      "target_exists": true
     },
     {
       "source": "src/frontend/src/views/data/DataTablesPage.vue",
@@ -257,7 +257,7 @@
       "classification": "copy",
       "lines": 632,
       "counterpart": null,
-      "target_exists": false
+      "target_exists": true
     },
     {
       "source": "src/frontend/src/views/data/DataTasksPage.vue",
@@ -265,7 +265,7 @@
       "classification": "copy",
       "lines": 1068,
       "counterpart": null,
-      "target_exists": false
+      "target_exists": true
     },
     {
       "source": "src/frontend/src/views/data/DataTopicsPage.vue",
@@ -273,7 +273,7 @@
       "classification": "copy",
       "lines": 1129,
       "counterpart": null,
-      "target_exists": false
+      "target_exists": true
     },
     {
       "source": "src/frontend/src/api/akshare.ts",
@@ -281,13 +281,61 @@
       "classification": "copy",
       "lines": 152,
       "counterpart": null,
-      "target_exists": false
+      "target_exists": true
     },
     {
       "source": "src/frontend/src/api/dataGovernance.ts",
       "target": "port_staging/afi_data_management/frontend/api/dataGovernance.ts",
       "classification": "copy",
       "lines": 63,
+      "counterpart": null,
+      "target_exists": true
+    },
+    {
+      "source": "src/backend/app/models/data_governance.py",
+      "target": "port_staging/afi_data_management/models/data_governance.py",
+      "classification": "rewrite",
+      "lines": 267,
+      "counterpart": null,
+      "target_exists": false
+    },
+    {
+      "source": "src/backend/app/api/data/governance.py",
+      "target": "port_staging/afi_data_management/api/data_governance.py",
+      "classification": "rewrite",
+      "lines": 85,
+      "counterpart": null,
+      "target_exists": false
+    },
+    {
+      "source": "src/backend/app/services/data_connectors/executor.py",
+      "target": "port_staging/afi_data_management/services/data_connectors/executor.py",
+      "classification": "rewrite",
+      "lines": 269,
+      "counterpart": null,
+      "target_exists": false
+    },
+    {
+      "source": "src/backend/app/services/data_connectors/registry.py",
+      "target": "port_staging/afi_data_management/services/data_connectors/registry.py",
+      "classification": "rewrite",
+      "lines": 348,
+      "counterpart": null,
+      "target_exists": false
+    },
+    {
+      "source": "src/backend/app/services/data_connectors/__init__.py",
+      "target": "port_staging/afi_data_management/services/data_connectors/__init__.py",
+      "classification": "rewrite",
+      "lines": 4,
+      "counterpart": null,
+      "target_exists": false
+    },
+    {
+      "source": "src/backend/app/api/data/deps.py",
+      "target": "port_staging/afi_data_management/api/data_deps.py",
+      "classification": "keep-in-afi",
+      "lines": 127,
       "counterpart": null,
       "target_exists": false
     }

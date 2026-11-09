@@ -31,6 +31,17 @@ import shutil
 AFI_BACKEND_API = "src/backend/app/api/akshare"
 AFI_BACKEND_SERVICES = "src/backend/app/services/akshare"
 AFI_BACKEND_MODEL = "src/backend/app/models/akshare_mgmt.py"
+# Owner ruling 2026-11-09: the governance half is part of the port, not a reduction. It owns the
+# eight dg_* tables that ak_data_tables.dataset_storage_id points at, and the config centre's
+# 数据治理 page depends on it.
+AFI_GOVERNANCE = (
+    "src/backend/app/models/data_governance.py",
+    "src/backend/app/api/data/governance.py",
+    "src/backend/app/services/data_connectors/executor.py",
+    "src/backend/app/services/data_connectors/registry.py",
+    "src/backend/app/services/data_connectors/__init__.py",
+    "src/backend/app/api/data/deps.py",
+)
 AFI_FRONTEND_VIEWS = "src/frontend/src/views/data"
 AFI_FRONTEND_API = ("src/frontend/src/api/akshare.ts", "src/frontend/src/api/dataGovernance.ts")
 
@@ -45,6 +56,8 @@ KEEP_IN_AFI_UNTIL_CUTOVER = {
     "src/backend/app/services/akshare/write_fence.py",
     "src/backend/app/services/akshare/execution.py",
     "src/backend/app/services/akshare/clock.py",
+    # Auth/permission models are shared with the rest of AFI; they stay and are mapped in stage 2.
+    "src/backend/app/api/data/deps.py",
 }
 
 # Files that already have an OpenData module doing the same job; these need adaptation,
@@ -88,6 +101,14 @@ def target_for(relative: str) -> str:
         return relative.replace("src/backend/app/services/akshare", f"{STAGING}/services")
     if relative == AFI_BACKEND_MODEL:
         return f"{STAGING}/models/akshare_mgmt.py"
+    if relative == "src/backend/app/models/data_governance.py":
+        return f"{STAGING}/models/data_governance.py"
+    if relative == "src/backend/app/api/data/governance.py":
+        return f"{STAGING}/api/data_governance.py"
+    if relative.startswith("src/backend/app/services/data_connectors/"):
+        return relative.replace("src/backend/app/services/data_connectors", f"{STAGING}/services/data_connectors")
+    if relative == "src/backend/app/api/data/deps.py":
+        return f"{STAGING}/api/data_deps.py"
     if relative.startswith(AFI_FRONTEND_VIEWS):
         return relative.replace("src/frontend/src/views/data", f"{STAGING}/frontend/views/data")
     if relative in AFI_FRONTEND_API:
@@ -107,6 +128,7 @@ def sources(afi: pathlib.Path) -> list[str]:
     if views.is_dir():
         found += [str(p.relative_to(afi)) for p in sorted(views.glob("*.vue"))]
     found += [rel for rel in AFI_FRONTEND_API if (afi / rel).is_file()]
+    found += [rel for rel in AFI_GOVERNANCE if (afi / rel).is_file()]
     return found
 
 
