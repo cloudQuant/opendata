@@ -298,6 +298,7 @@ class TotalCountKey:
 
     @property
     def table_bucket(self) -> str:
+        """Return the per-table cache bucket that ``evict_table`` clears."""
         return f"{self.database}\x00{self.table_name}"
 
 
@@ -337,6 +338,7 @@ class TotalCountCache:
 
     @property
     def ttl_seconds(self) -> float:
+        """Return the freshness window a ``cached`` total is valid for."""
         return self._ttl_seconds
 
     def get(self, key: TotalCountKey) -> tuple[int, float] | None:
@@ -357,6 +359,7 @@ class TotalCountCache:
             return entry[0], max(age_seconds, 0.0)
 
     def put(self, key: TotalCountKey, total: int) -> None:
+        """Store one exact measured total, evicting the least recently used entry."""
         with self._lock:
             self._entries[key] = (int(total), float(self._clock()))
             self._entries.move_to_end(key)
@@ -370,10 +373,12 @@ class TotalCountCache:
                 del self._entries[key]
 
     def clear(self) -> None:
+        """Drop every cached total; used by tests and by explicit invalidation."""
         with self._lock:
             self._entries.clear()
 
     def __len__(self) -> int:
+        """Return the number of cached totals currently held."""
         with self._lock:
             return len(self._entries)
 
