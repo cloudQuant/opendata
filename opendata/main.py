@@ -365,6 +365,16 @@ app.include_router(api_router, prefix="/api/v1")
 app.include_router(api_router, prefix="/api")
 app.include_router(api_v2_router)
 
+# Ported AFI data-management plane. Mounted at the composition root rather than
+# inside opendata.api's package initialiser because its auth adapter imports
+# opendata.api.dependencies; importing it there would re-enter a partially
+# initialised opendata.api and raise a circular-import error. It is an additive
+# namespace that keeps AFI path suffixes and response shapes under /afi-data.
+from opendata.afi_port.api.router import afi_data_router  # noqa: E402
+
+app.include_router(afi_data_router, prefix="/api/v1/afi-data", tags=["AFI Data Management"])
+app.include_router(afi_data_router, prefix="/api/afi-data", tags=["AFI Data Management"])
+
 # WebSocket routes live at the root: nginx proxies `location /ws/` to the
 # backend unchanged and the frontend dials `/ws/executions`, so the socket
 # path must not carry the versioned REST prefix (it never worked behind

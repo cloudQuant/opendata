@@ -5,7 +5,6 @@ Combines all API route modules into a single router.
 
 from fastapi import APIRouter
 
-from opendata.afi_port.api.router import afi_data_router
 from opendata.api import settings as settings_api
 from opendata.api.auth import router as auth_router
 from opendata.api.data import router as data_router
@@ -66,6 +65,3 @@ api_router.include_router(settings_api.router, prefix="/settings", tags=["Settin
 api_router.include_router(metrics_router, tags=["Metrics"])
 api_router.include_router(pipeline_router, tags=["Pipeline"])
 api_router.include_router(provider_models_router, prefix="/providers", tags=["Provider Models"])
-# Ported AFI data-management plane: additive namespace, keeps AFI path suffixes
-# and response shapes without changing any existing OpenData contract.
-api_router.include_router(afi_data_router, prefix="/afi-data", tags=["AFI Data Management"])
