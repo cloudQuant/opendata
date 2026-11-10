@@ -234,3 +234,11 @@ several capabilities overlap with different semantics. Two coherent options:
    touches OpenData's public contracts and needs its own API review.
 
 Open governance API has no counterpart and ports as new routes in either option.
+
+## Stage 4 readiness: read-only baseline (2026-11-10)
+
+`scripts/port/handover_check.py` (tests: 3) compares each ak_* / data_* pair by row count without
+writing. Baseline against the live AFI control DB and an unprovisioned target:
+ak_data_scripts=1066, ak_data_tables=1061, ak_scheduled_tasks=1103, ak_task_executions=35454;
+every target table `missing_table`. Stage 4 cannot proceed until the OpenData database is provisioned
+and the owner approves the counted copy; the checker exits non-zero until all pairs match.
