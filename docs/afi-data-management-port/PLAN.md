@@ -324,3 +324,36 @@ zero failures.
 - The `requests` import in `runtime/network_proxy.py` matches the baseline `data/http_client.py`
   bare import; the missing `types-requests` stub is the same ratchet-managed environment finding.
 
+## Collection-script tree port (2026-11-11): the 1108-file B layer
+
+The ported runtime resolves scripts as `opendata.data_fetch.scripts.*`, but OpenData previously
+held only package skeletons and one reference script while AFI owned 1108 collection files. This
+wave closes that gap so the ported scheduler/worker can actually drive the armed task set.
+
+- `scripts/port/port_afi_collection_scripts.py` is the reproducible one-shot codemod: it copies
+  AFI's `app/data_fetch` (the 1044 `AkshareToMysql` leaf scripts, their `common` helpers and the
+  `core`/`configs`/`providers`/`utils` infrastructure) into `opendata/data_fetch` and rewrites
+  every internal `app.*` reference (including the one string-form `importlib.import_module`) to
+  the OpenData package.
+- **Coexistence, not overwrite.** The OpenData-native `AkshareProvider` base (used by the A2
+  scheduler and tests), `utils/retry.py`, `configs/__init__.py` and the package re-exports are
+  protected. The colliding AFI provider lands as
+  `providers/legacy_akshare_provider.LegacyAkshareProvider`, and the AFI production
+  `stock_zh_a_hist` as `scripts/stocks/daily/stock_zh_a_hist_legacy.py`, next to the native
+  reference script. Both planes import side by side.
+- `configs/db_config.py` is rebound onto OpenData's `data_mysql_*` settings /
+  `data_database_url`, keeping the `DB_CONFIG` mapping shape (`host/user/password/database/port`)
+  that the 1044 scripts and the `mysql_base` cursor read.
+- **Verification.** `compileall` is clean; **all 1108 script modules import with zero failures**;
+  the B-layer gate `ruff --select E,F` is clean (no undefined-name/import errors — the only frozen
+  debt is 1440 E501 line-length findings, mirroring the historical `_vendor` convention and pinned
+  via per-file ignores). Scanner-style module resolution and the killable-worker entrypoint
+  descriptor both resolve against the real tree; leaf counts reconcile (705 OD vs 704 AFI, the +1
+  being the preserved legacy script).
+- **Quality-gate boundary.** The byte-faithful port keeps stdlib `logging` %-style calls and
+  predecessor identifiers (the real `akshare_data` warehouse, `akshare_network_proxy`).
+  `loguru_render_check` and `check_brand` gain an explicit `PORTED_SKIP_PREFIXES` boundary that
+  exempts the ported subtree while OpenData-native files remain fully gated; new tests pin that
+  native files are never skipped.
+
+
