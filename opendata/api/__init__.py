@@ -5,6 +5,7 @@ Combines all API route modules into a single router.
 
 from fastapi import APIRouter
 
+from opendata.afi_port.api.router import afi_data_router
 from opendata.api import settings as settings_api
 from opendata.api.auth import router as auth_router
 from opendata.api.data import router as data_router
@@ -28,7 +29,6 @@ from opendata.api.tasks import router as tasks_router
 from opendata.api.temporal_identity import router as temporal_identity_router
 from opendata.api.users import router as users_router
 from opendata.api.websocket import router as ws_router
-from opendata.afi_port.api.router import afi_data_router
 
 # WebSocket routers are mounted at the application root, not under the
 # ``/api/v1`` prefix: the docs, nginx (`location /ws/`) and the frontend
