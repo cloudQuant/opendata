@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
-import requests  # type: ignore[import-untyped]  # no types-requests in this environment
+import requests  # resolved under the global ignore_missing_imports setting (no types-requests)
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable, Mapping
