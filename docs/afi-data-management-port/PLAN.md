@@ -248,3 +248,65 @@ and the owner approves the counted copy; the checker exits non-zero until all pa
 `pytest tests/test_api_{interfaces,scripts,tasks,executions}_full.py tests/test_interface_loader.py`
 → **66 passed** on the branch with the added columns and registered dg_* models, confirming the model
 changes do not regress the existing OpenData API behaviour.
+
+## Destructive port wave (2026-11-10/11): runtime, routers, migration, hand-over tooling
+
+Under the owner's "port first, allow destructive early fixes" ruling, the whole AFI collection
+runtime and control plane was moved into `opendata.afi_port` rather than rebuilt provider by
+provider. Every new module is ruff/mypy clean (the only remaining mypy findings in the package are
+the two pre-existing baseline pandas findings in the earlier-ported `services/data.py`).
+
+### Runtime plane — `opendata/afi_port/runtime/` (was `keep-in-afi`, now ported)
+
+`clock`, `write_fence`, `persistence` (AFI `db/persistence_boundaries`), `network_proxy`
+(AFI `data_fetch/utils/akshare_network_proxy`), the killable child `script_worker` and its parent
+supervisor `script_worker_runtime`, `execution`, the 1823-line `services/script.py`, the
+APScheduler wrapper `scheduler`, `scheduler_service`, and the 601-line durable `run_coordinator`
+all now import only OpenData models/session/settings. New models `TaskRunClaim` /
+`SchedulerControl` (physical tables `task_run_claims`, `scheduler_control`; the OpenData naming
+drops the `ak_` prefix) live in `opendata/models/run_claim.py`. Six scheduler/coordinator settings
+joined `core/config.py`, including `akshare_script_root` which resolves under the OpenData repo
+layout and still tolerates a legacy `app/...` value.
+
+### Identity alignment (a deliberate destructive change)
+
+AFI used string UUID owners; OpenData's `task_executions.operator_id` and
+`scheduled_tasks.user_id` are integer FKs. The ported execution/scheduler/script-service
+signatures now take `int | None`; the `data_scripts` audit columns stay `String(36)` without an FK
+and receive `str(id)` only at the router boundary.
+
+### Routers — `opendata/afi_port/api/`, mounted at `/api/v1/afi-data`
+
+All six routers (scripts, tasks, executions, tables, interfaces, data-governance) are online in an
+additive namespace that keeps AFI path suffixes, auth boundary (any user reads, admin writes) and
+the bare `{items,total,page,page_size}` envelopes without changing any OpenData contract.
+`afi_port/api/deps.py` adapts the two AFI auth dependencies onto OpenData's `get_current_user` /
+`get_current_admin_user`. ANN401 is scoped off only for this ported router package (mirrors the
+existing legacy-router convention); D-rules are fully satisfied. 43 routes registered.
+
+### Frontend bridge
+
+`frontend/src/api/afiData.ts` is a fully-typed wrapper over the shared axios instance covering all
+six resource groups; the response interceptor passes the bare AFI envelopes through unchanged.
+`vue-tsc` stays at zero errors. The 15 large AFI Vue pages remain a separate stage (their measured
+vue-tsc delta is stack-level, not typo-level).
+
+### Migration and stage-4 tooling
+
+- Alembic `0024_run_coordinator_claims` creates the two coordination tables (utf8mb4/InnoDB);
+  renders offline for both MySQL and SQLite; single revision head preserved.
+- `scripts/port/handover_copy.py` performs the counted, enum-aware, idempotent row hand-over.
+  Dry-run by default, `--apply` to write. It translates AFI's lower-case enum *values* to OpenData
+  member *names* through the real enum classes (unknown values go NULL and are reported), drops
+  the legacy `airflow_*` columns, fills `task_kind` and the NOT NULL `user_id` from an explicit
+  `--default-user-id`, and projects only intersecting columns. The actual cross-DB copy still needs
+  a provisioned target and owner approval; no live row was copied in this wave.
+
+### Tests added (all green; no regression in the 66-case API suite)
+
+`test_afi_port_routers.py` (7: namespace, 401/403 auth, envelope, admin boundary), the ported
+19-case `test_afi_port_run_coordinator.py`, `test_afi_port_scheduler.py`,
+`test_afi_port_scheduler_clock.py`, 8-case `test_afi_port_handover_copy.py`, and the 4 frontend
+wire-contract tests. Combined targeted run: **196 passed, 6 skipped** across the port and API
+regression suites, plus 93 passed for alembic/task-lifecycle/contract/auth.
+
