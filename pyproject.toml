@@ -279,6 +279,10 @@ runtime-evaluated-base-classes = [
 "opendata/data_fetch/providers/akshare_provider.py" = ["ANN401", "S608"]
 "opendata/data_fetch/scripts/*" = ["ANN401"]
 "opendata/services/scheduler_service.py" = ["ANN401"]
+# Ported AFI data-management routers keep AFI's untyped `typing.Any` request/
+# response shape; they are an additive namespace under /afi-data and will be
+# re-typed when folded onto OpenData's typed routers.
+"opendata/afi_port/api/*" = ["ANN401"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 10

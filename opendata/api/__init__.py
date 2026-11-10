@@ -28,6 +28,7 @@ from opendata.api.tasks import router as tasks_router
 from opendata.api.temporal_identity import router as temporal_identity_router
 from opendata.api.users import router as users_router
 from opendata.api.websocket import router as ws_router
+from opendata.afi_port.api.router import afi_data_router
 
 # WebSocket routers are mounted at the application root, not under the
 # ``/api/v1`` prefix: the docs, nginx (`location /ws/`) and the frontend
@@ -65,3 +66,6 @@ api_router.include_router(settings_api.router, prefix="/settings", tags=["Settin
 api_router.include_router(metrics_router, tags=["Metrics"])
 api_router.include_router(pipeline_router, tags=["Pipeline"])
 api_router.include_router(provider_models_router, prefix="/providers", tags=["Provider Models"])
+# Ported AFI data-management plane: additive namespace, keeps AFI path suffixes
+# and response shapes without changing any existing OpenData contract.
+api_router.include_router(afi_data_router, prefix="/afi-data", tags=["AFI Data Management"])
