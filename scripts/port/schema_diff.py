@@ -27,6 +27,7 @@ PAIRS = (
 
 
 def columns(path: pathlib.Path) -> dict[str, set[str]]:
+    """Parse mapped columns per table from a model module."""
     tree = ast.parse(path.read_text(encoding="utf-8", errors="replace"))
     found: dict[str, set[str]] = {}
     for node in ast.walk(tree):
@@ -35,11 +36,12 @@ def columns(path: pathlib.Path) -> dict[str, set[str]]:
         table = None
         cols: set[str] = set()
         for stmt in node.body:
-            if isinstance(stmt, ast.Assign) and any(
-                getattr(t, "id", "") == "__tablename__" for t in stmt.targets
+            if (
+                isinstance(stmt, ast.Assign)
+                and any(getattr(t, "id", "") == "__tablename__" for t in stmt.targets)
+                and isinstance(stmt.value, ast.Constant)
             ):
-                if isinstance(stmt.value, ast.Constant):
-                    table = stmt.value.value
+                table = stmt.value.value
             if (
                 isinstance(stmt, ast.AnnAssign)
                 and isinstance(stmt.target, ast.Name)
@@ -54,6 +56,7 @@ def columns(path: pathlib.Path) -> dict[str, set[str]]:
 
 
 def main() -> int:
+    """Print the per-table column delta as JSON."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--afi-model", required=True)
     parser.add_argument("--opendata-models", required=True)

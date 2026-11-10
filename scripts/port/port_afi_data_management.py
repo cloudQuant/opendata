@@ -25,8 +25,6 @@ from __future__ import annotations
 import argparse
 import json
 import pathlib
-import re
-import shutil
 
 AFI_BACKEND_API = "src/backend/app/api/akshare"
 AFI_BACKEND_SERVICES = "src/backend/app/services/akshare"
@@ -70,13 +68,24 @@ OPENDATA_COUNTERPARTS = {
     "src/backend/app/api/akshare/tables.py": "opendata/api/data.py",
     "src/backend/app/services/akshare/script.py": "opendata/services/script_service.py",
     "src/backend/app/services/akshare/interface.py": "opendata/services/interface_service.py",
-    "src/backend/app/models/akshare_mgmt.py": "opendata/models/{data_script,data_table,task,interface}.py",
+    "src/backend/app/models/akshare_mgmt.py": (
+        "opendata/models/{data_script,data_table,task,interface}.py"
+    ),
 }
 
 BACKEND_REWRITES = (
-    ("from app.data_fetch.configs.db_config import", "from opendata.afi_port.data_fetch.db_config import"),
-    ("from app.data_fetch.providers.akshare_to_mysql import", "from opendata.afi_port.data_fetch.akshare_to_mysql import"),
-    ("from app.data_fetch.core.mysql_base import", "from opendata.afi_port.data_fetch.mysql_base import"),
+    (
+        "from app.data_fetch.configs.db_config import",
+        "from opendata.afi_port.data_fetch.db_config import",
+    ),
+    (
+        "from app.data_fetch.providers.akshare_to_mysql import",
+        "from opendata.afi_port.data_fetch.akshare_to_mysql import",
+    ),
+    (
+        "from app.data_fetch.core.mysql_base import",
+        "from opendata.afi_port.data_fetch.mysql_base import",
+    ),
     ("from app.services.akshare.", "from opendata.afi_port.services."),
     ("from app.models.akshare_mgmt import", "from opendata.afi_port.models.akshare_mgmt import"),
     ("from app.api.akshare.", "from opendata.afi_port.api."),
@@ -94,7 +103,6 @@ def target_for(relative: str) -> str:
     The staged tree therefore lives in ``port_staging/`` and is moved into ``opendata/afi_port``
     (or ``frontend/src``) only once a module is adapted and passes the gate.
     """
-
     if relative.startswith(AFI_BACKEND_API):
         return relative.replace("src/backend/app/api/akshare", f"{STAGING}/api")
     if relative.startswith(AFI_BACKEND_SERVICES):
@@ -106,7 +114,9 @@ def target_for(relative: str) -> str:
     if relative == "src/backend/app/api/data/governance.py":
         return f"{STAGING}/api/data_governance.py"
     if relative.startswith("src/backend/app/services/data_connectors/"):
-        return relative.replace("src/backend/app/services/data_connectors", f"{STAGING}/services/data_connectors")
+        return relative.replace(
+            "src/backend/app/services/data_connectors", f"{STAGING}/services/data_connectors"
+        )
     if relative == "src/backend/app/api/data/deps.py":
         return f"{STAGING}/api/data_deps.py"
     if relative.startswith(AFI_FRONTEND_VIEWS):
@@ -117,11 +127,16 @@ def target_for(relative: str) -> str:
 
 
 def sources(afi: pathlib.Path) -> list[str]:
+    """List the AFI source files the port covers."""
     found: list[str] = []
     for directory, suffix in ((AFI_BACKEND_API, ".py"), (AFI_BACKEND_SERVICES, ".py")):
         base = afi / directory
         if base.is_dir():
-            found += [str(p.relative_to(afi)) for p in sorted(base.glob(f"*{suffix}")) if p.name != "__init__.py"]
+            found += [
+                str(p.relative_to(afi))
+                for p in sorted(base.glob(f"*{suffix}"))
+                if p.name != "__init__.py"
+            ]
     if (afi / AFI_BACKEND_MODEL).is_file():
         found.append(AFI_BACKEND_MODEL)
     views = afi / AFI_FRONTEND_VIEWS
@@ -133,6 +148,7 @@ def sources(afi: pathlib.Path) -> list[str]:
 
 
 def classify(relative: str) -> str:
+    """Return the port disposition for one relative source path."""
     if relative in KEEP_IN_AFI_UNTIL_CUTOVER:
         return "keep-in-afi"
     if relative in OPENDATA_COUNTERPARTS:
@@ -141,6 +157,7 @@ def classify(relative: str) -> str:
 
 
 def main() -> int:
+    """Emit the manifest and optionally copy the staged tree."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--afi-root", required=True)
     parser.add_argument("--opendata-root", required=True)
