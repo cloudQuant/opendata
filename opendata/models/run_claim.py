@@ -36,16 +36,10 @@ class TaskRunClaim(Base):
     status: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
     owner_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
     fencing_token: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
-    lease_expires_at: Mapped[datetime | None] = mapped_column(
-        DateTime, nullable=True, index=True
-    )
+    lease_expires_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, index=True)
     attempt_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    next_retry_at: Mapped[datetime | None] = mapped_column(
-        DateTime, nullable=True, index=True
-    )
-    execution_id: Mapped[str | None] = mapped_column(
-        String(100), nullable=True, index=True
-    )
+    next_retry_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, index=True)
+    execution_id: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
     last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, nullable=False)
