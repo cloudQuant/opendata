@@ -419,6 +419,14 @@ class Settings(BaseSettings):
             "source; zero disables the gate"
         ),
     )
+    akshare_scheduler_enabled: bool = Field(
+        default=False,
+        description=(
+            "AKSHARE_SCHEDULER_ENABLED: explicit ownership switch for the ported AFI akshare "
+            "scheduler. Defaults to False (fail-closed): OpenData never starts a second "
+            "scheduler alongside AFI until cutover deliberately flips this on."
+        ),
+    )
 
     @field_validator("secret_key", mode="after")
     @classmethod
