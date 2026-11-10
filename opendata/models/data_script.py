@@ -78,6 +78,10 @@ class DataScript(Base):
     timeout: Mapped[int] = mapped_column(Integer, default=300, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     is_custom: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, index=True)
+    # AFI recorded acting users as 36-character UUID strings while OpenData's
+    # ``users.id`` is an integer, so provenance is kept without a cross-key FK.
+    created_by: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
+    updated_by: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),

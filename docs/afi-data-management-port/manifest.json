@@ -1,0 +1,343 @@
+{
+  "afi_root": "/home/yun/Documents/ai-for-investor",
+  "opendata_root": "/home/yun/Documents/opendata",
+  "applied": true,
+  "files": 41,
+  "lines": 18850,
+  "classification_counts": {
+    "adapt": 8,
+    "keep-in-afi": 9,
+    "rewrite": 9,
+    "copy": 15
+  },
+  "rows": [
+    {
+      "source": "src/backend/app/api/akshare/executions.py",
+      "target": "port_staging/afi_data_management/api/executions.py",
+      "classification": "adapt",
+      "lines": 93,
+      "counterpart": "opendata/api/executions.py",
+      "target_exists": true
+    },
+    {
+      "source": "src/backend/app/api/akshare/interfaces.py",
+      "target": "port_staging/afi_data_management/api/interfaces.py",
+      "classification": "adapt",
+      "lines": 111,
+      "counterpart": "opendata/api/interfaces.py",
+      "target_exists": true
+    },
+    {
+      "source": "src/backend/app/api/akshare/scripts.py",
+      "target": "port_staging/afi_data_management/api/scripts.py",
+      "classification": "adapt",
+      "lines": 145,
+      "counterpart": "opendata/api/scripts.py",
+      "target_exists": true
+    },
+    {
+      "source": "src/backend/app/api/akshare/tables.py",
+      "target": "port_staging/afi_data_management/api/tables.py",
+      "classification": "adapt",
+      "lines": 203,
+      "counterpart": "opendata/api/data.py",
+      "target_exists": true
+    },
+    {
+      "source": "src/backend/app/api/akshare/tasks.py",
+      "target": "port_staging/afi_data_management/api/tasks.py",
+      "classification": "adapt",
+      "lines": 132,
+      "counterpart": "opendata/api/tasks.py",
+      "target_exists": true
+    },
+    {
+      "source": "src/backend/app/services/akshare/clock.py",
+      "target": "port_staging/afi_data_management/services/clock.py",
+      "classification": "keep-in-afi",
+      "lines": 32,
+      "counterpart": null,
+      "target_exists": false
+    },
+    {
+      "source": "src/backend/app/services/akshare/data.py",
+      "target": "port_staging/afi_data_management/services/data.py",
+      "classification": "rewrite",
+      "lines": 647,
+      "counterpart": null,
+      "target_exists": true
+    },
+    {
+      "source": "src/backend/app/services/akshare/execution.py",
+      "target": "port_staging/afi_data_management/services/execution.py",
+      "classification": "keep-in-afi",
+      "lines": 262,
+      "counterpart": null,
+      "target_exists": false
+    },
+    {
+      "source": "src/backend/app/services/akshare/interface.py",
+      "target": "port_staging/afi_data_management/services/interface.py",
+      "classification": "adapt",
+      "lines": 142,
+      "counterpart": "opendata/services/interface_service.py",
+      "target_exists": true
+    },
+    {
+      "source": "src/backend/app/services/akshare/interface_loader.py",
+      "target": "port_staging/afi_data_management/services/interface_loader.py",
+      "classification": "rewrite",
+      "lines": 156,
+      "counterpart": null,
+      "target_exists": true
+    },
+    {
+      "source": "src/backend/app/services/akshare/param_bind_audit.py",
+      "target": "port_staging/afi_data_management/services/param_bind_audit.py",
+      "classification": "rewrite",
+      "lines": 995,
+      "counterpart": null,
+      "target_exists": true
+    },
+    {
+      "source": "src/backend/app/services/akshare/run_coordinator.py",
+      "target": "port_staging/afi_data_management/services/run_coordinator.py",
+      "classification": "keep-in-afi",
+      "lines": 601,
+      "counterpart": null,
+      "target_exists": false
+    },
+    {
+      "source": "src/backend/app/services/akshare/scheduler.py",
+      "target": "port_staging/afi_data_management/services/scheduler.py",
+      "classification": "keep-in-afi",
+      "lines": 188,
+      "counterpart": null,
+      "target_exists": false
+    },
+    {
+      "source": "src/backend/app/services/akshare/scheduler_service.py",
+      "target": "port_staging/afi_data_management/services/scheduler_service.py",
+      "classification": "keep-in-afi",
+      "lines": 173,
+      "counterpart": null,
+      "target_exists": false
+    },
+    {
+      "source": "src/backend/app/services/akshare/script.py",
+      "target": "port_staging/afi_data_management/services/script.py",
+      "classification": "adapt",
+      "lines": 1823,
+      "counterpart": "opendata/services/script_service.py",
+      "target_exists": true
+    },
+    {
+      "source": "src/backend/app/services/akshare/script_worker.py",
+      "target": "port_staging/afi_data_management/services/script_worker.py",
+      "classification": "keep-in-afi",
+      "lines": 185,
+      "counterpart": null,
+      "target_exists": false
+    },
+    {
+      "source": "src/backend/app/services/akshare/script_worker_runtime.py",
+      "target": "port_staging/afi_data_management/services/script_worker_runtime.py",
+      "classification": "keep-in-afi",
+      "lines": 399,
+      "counterpart": null,
+      "target_exists": false
+    },
+    {
+      "source": "src/backend/app/services/akshare/table_pagination.py",
+      "target": "port_staging/afi_data_management/services/table_pagination.py",
+      "classification": "rewrite",
+      "lines": 401,
+      "counterpart": null,
+      "target_exists": true
+    },
+    {
+      "source": "src/backend/app/services/akshare/write_fence.py",
+      "target": "port_staging/afi_data_management/services/write_fence.py",
+      "classification": "keep-in-afi",
+      "lines": 178,
+      "counterpart": null,
+      "target_exists": false
+    },
+    {
+      "source": "src/backend/app/models/akshare_mgmt.py",
+      "target": "port_staging/afi_data_management/models/akshare_mgmt.py",
+      "classification": "adapt",
+      "lines": 369,
+      "counterpart": "opendata/models/{data_script,data_table,task,interface}.py",
+      "target_exists": true
+    },
+    {
+      "source": "src/frontend/src/views/data/AirflowDagsPage.vue",
+      "target": "port_staging/afi_data_management/frontend/views/data/AirflowDagsPage.vue",
+      "classification": "copy",
+      "lines": 952,
+      "counterpart": null,
+      "target_exists": true
+    },
+    {
+      "source": "src/frontend/src/views/data/DataExecutionsPage.vue",
+      "target": "port_staging/afi_data_management/frontend/views/data/DataExecutionsPage.vue",
+      "classification": "copy",
+      "lines": 925,
+      "counterpart": null,
+      "target_exists": true
+    },
+    {
+      "source": "src/frontend/src/views/data/DataGovernancePage.vue",
+      "target": "port_staging/afi_data_management/frontend/views/data/DataGovernancePage.vue",
+      "classification": "copy",
+      "lines": 1078,
+      "counterpart": null,
+      "target_exists": true
+    },
+    {
+      "source": "src/frontend/src/views/data/DataInterfacesPage.vue",
+      "target": "port_staging/afi_data_management/frontend/views/data/DataInterfacesPage.vue",
+      "classification": "copy",
+      "lines": 1246,
+      "counterpart": null,
+      "target_exists": true
+    },
+    {
+      "source": "src/frontend/src/views/data/DataLayout.vue",
+      "target": "port_staging/afi_data_management/frontend/views/data/DataLayout.vue",
+      "classification": "copy",
+      "lines": 3,
+      "counterpart": null,
+      "target_exists": true
+    },
+    {
+      "source": "src/frontend/src/views/data/DataMarketPage.vue",
+      "target": "port_staging/afi_data_management/frontend/views/data/DataMarketPage.vue",
+      "classification": "copy",
+      "lines": 7,
+      "counterpart": null,
+      "target_exists": true
+    },
+    {
+      "source": "src/frontend/src/views/data/DataScriptDetailPage.vue",
+      "target": "port_staging/afi_data_management/frontend/views/data/DataScriptDetailPage.vue",
+      "classification": "copy",
+      "lines": 654,
+      "counterpart": null,
+      "target_exists": true
+    },
+    {
+      "source": "src/frontend/src/views/data/DataScriptsPage.vue",
+      "target": "port_staging/afi_data_management/frontend/views/data/DataScriptsPage.vue",
+      "classification": "copy",
+      "lines": 1323,
+      "counterpart": null,
+      "target_exists": true
+    },
+    {
+      "source": "src/frontend/src/views/data/DataSyncPage.vue",
+      "target": "port_staging/afi_data_management/frontend/views/data/DataSyncPage.vue",
+      "classification": "copy",
+      "lines": 600,
+      "counterpart": null,
+      "target_exists": true
+    },
+    {
+      "source": "src/frontend/src/views/data/DataTableDetailPage.vue",
+      "target": "port_staging/afi_data_management/frontend/views/data/DataTableDetailPage.vue",
+      "classification": "copy",
+      "lines": 683,
+      "counterpart": null,
+      "target_exists": true
+    },
+    {
+      "source": "src/frontend/src/views/data/DataTablesPage.vue",
+      "target": "port_staging/afi_data_management/frontend/views/data/DataTablesPage.vue",
+      "classification": "copy",
+      "lines": 632,
+      "counterpart": null,
+      "target_exists": true
+    },
+    {
+      "source": "src/frontend/src/views/data/DataTasksPage.vue",
+      "target": "port_staging/afi_data_management/frontend/views/data/DataTasksPage.vue",
+      "classification": "copy",
+      "lines": 1068,
+      "counterpart": null,
+      "target_exists": true
+    },
+    {
+      "source": "src/frontend/src/views/data/DataTopicsPage.vue",
+      "target": "port_staging/afi_data_management/frontend/views/data/DataTopicsPage.vue",
+      "classification": "copy",
+      "lines": 1129,
+      "counterpart": null,
+      "target_exists": true
+    },
+    {
+      "source": "src/frontend/src/api/akshare.ts",
+      "target": "port_staging/afi_data_management/frontend/api/akshare.ts",
+      "classification": "copy",
+      "lines": 152,
+      "counterpart": null,
+      "target_exists": true
+    },
+    {
+      "source": "src/frontend/src/api/dataGovernance.ts",
+      "target": "port_staging/afi_data_management/frontend/api/dataGovernance.ts",
+      "classification": "copy",
+      "lines": 63,
+      "counterpart": null,
+      "target_exists": true
+    },
+    {
+      "source": "src/backend/app/models/data_governance.py",
+      "target": "port_staging/afi_data_management/models/data_governance.py",
+      "classification": "rewrite",
+      "lines": 267,
+      "counterpart": null,
+      "target_exists": false
+    },
+    {
+      "source": "src/backend/app/api/data/governance.py",
+      "target": "port_staging/afi_data_management/api/data_governance.py",
+      "classification": "rewrite",
+      "lines": 85,
+      "counterpart": null,
+      "target_exists": false
+    },
+    {
+      "source": "src/backend/app/services/data_connectors/executor.py",
+      "target": "port_staging/afi_data_management/services/data_connectors/executor.py",
+      "classification": "rewrite",
+      "lines": 269,
+      "counterpart": null,
+      "target_exists": false
+    },
+    {
+      "source": "src/backend/app/services/data_connectors/registry.py",
+      "target": "port_staging/afi_data_management/services/data_connectors/registry.py",
+      "classification": "rewrite",
+      "lines": 348,
+      "counterpart": null,
+      "target_exists": false
+    },
+    {
+      "source": "src/backend/app/services/data_connectors/__init__.py",
+      "target": "port_staging/afi_data_management/services/data_connectors/__init__.py",
+      "classification": "rewrite",
+      "lines": 4,
+      "counterpart": null,
+      "target_exists": false
+    },
+    {
+      "source": "src/backend/app/api/data/deps.py",
+      "target": "port_staging/afi_data_management/api/data_deps.py",
+      "classification": "keep-in-afi",
+      "lines": 127,
+      "counterpart": null,
+      "target_exists": false
+    }
+  ]
+}

@@ -261,3 +261,6 @@ ssl/
 # 它「未跟踪且未忽略」时会被 a2_check 的 ls-files --others 收进 A2 人口，于是本地 a2/ratchet
 # 会去静态检查一批干净克隆里根本不存在的文件（60 mypy / 224 bandit B101）。忽略它让本地=CI。
 /quality-source-repairs/
+
+# Scratch output of scripts/port/port_afi_data_management.py; never versioned.
+port_staging/
