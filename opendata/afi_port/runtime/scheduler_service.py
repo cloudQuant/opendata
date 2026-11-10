@@ -105,7 +105,7 @@ class AkshareSchedulerService:
         return await db.get(ScheduledTask, task_id)
 
     async def create_task(
-        self, db: AsyncSession, payload: dict[str, Any], user_id: str
+        self, db: AsyncSession, payload: dict[str, Any], user_id: int
     ) -> ScheduledTask:
         """Create a task for an active script and register its scheduler job."""
         script = await db.scalar(
@@ -165,7 +165,7 @@ class AkshareSchedulerService:
     async def run_task_now(
         self,
         task_id: int,
-        operator_id: str | None = None,
+        operator_id: int | None = None,
     ) -> TaskExecution:
         """Run one task immediately regardless of its schedule."""
         return await self.scheduler.run_task_now(task_id, operator_id=operator_id)

@@ -1675,7 +1675,7 @@ class AkshareScriptService:
         self,
         script_id: str,
         parameters: dict[str, Any] | None = None,
-        operator_id: str | None = None,
+        operator_id: int | None = None,
         task_id: int | None = None,
         triggered_by: TriggeredBy = TriggeredBy.MANUAL,
         timeout_seconds: int | float | None = None,

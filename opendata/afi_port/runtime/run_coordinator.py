@@ -589,7 +589,5 @@ def _as_naive_utc(value: datetime) -> datetime:
 
 def _json_parameters(parameters: dict[str, Any]) -> dict[str, Any]:
     """Return a JSON-safe copy so a direct run can be recovered after restart."""
-    safe_copy: dict[str, Any] = json.loads(
-        json.dumps(parameters, ensure_ascii=False, default=str)
-    )
+    safe_copy: dict[str, Any] = json.loads(json.dumps(parameters, ensure_ascii=False, default=str))
     return safe_copy

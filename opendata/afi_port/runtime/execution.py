@@ -65,7 +65,7 @@ class AkshareExecutionService:
         task_id: int | None = None,
         params: dict | None = None,
         triggered_by: TriggeredBy = TriggeredBy.SCHEDULER,
-        operator_id: str | None = None,
+        operator_id: int | None = None,
     ) -> TaskExecution:
         """Open a pending execution ledger row and commit it."""
         execution = TaskExecution(
@@ -263,7 +263,7 @@ class AkshareExecutionService:
     async def retry_execution(
         self,
         execution_id: str,
-        operator_id: str | None = None,
+        operator_id: int | None = None,
     ) -> TaskExecution:
         """Re-run the parent task of a past execution and return the new execution."""
         execution = await self.get_execution(execution_id)

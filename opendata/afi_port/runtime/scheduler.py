@@ -168,7 +168,7 @@ class AkshareScheduler:
         for job_task_id in stale:
             await self.add_or_update_task(job_task_id)
 
-    async def run_task_now(self, task_id: int, operator_id: str | None = None) -> TaskExecution:
+    async def run_task_now(self, task_id: int, operator_id: int | None = None) -> TaskExecution:
         """Execute one task immediately and refresh its execution timestamps."""
         async with async_session_maker() as session:
             task = await session.get(ScheduledTask, task_id)
