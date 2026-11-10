@@ -140,12 +140,39 @@ class Hit:
     text: str
 
 
+#: Byte-faithful B-layer port (iteration 204): the AFI collection subtree keeps
+#: the predecessor warehouse's real identifiers (the ``akshare_data`` database,
+#: the ``akshare_network_proxy`` helper). Naming them is factual, not stale brand
+#: residue, so the ported subtree is skipped. OpenData-native files inside
+#: ``data_fetch`` are not prefixed here and stay fully checked.
+PORTED_SKIP_PREFIXES = (
+    "opendata/data_fetch/core/",
+    "opendata/data_fetch/scripts/",
+    "opendata/data_fetch/utils/logger.py",
+    "opendata/data_fetch/utils/akshare_catalog_utils.py",
+    "opendata/data_fetch/utils/akshare_network_proxy.py",
+    "opendata/data_fetch/configs/db_config.py",
+    "opendata/data_fetch/providers/legacy_akshare_provider.py",
+    "opendata/data_fetch/providers/akshare_to_mysql.py",
+    "opendata/data_fetch/providers/binance_to_mysql.py",
+    "opendata/data_fetch/providers/binance_vision.py",
+    "opendata/data_fetch/providers/factory.py",
+)
+
+
+def _is_ported_skip(rel_posix: str) -> bool:
+    """Return whether a repo-relative path is inside the byte-faithful B port."""
+    return rel_posix.startswith(PORTED_SKIP_PREFIXES)
+
+
 def _is_skipped(rel: Path, *, allow_provenance: bool = False) -> bool:
     if any(part in IGNORED_DIR_PARTS for part in rel.parts):
         return True
     if any(part.endswith(IGNORED_DIR_SUFFIXES) for part in rel.parts):
         return True
     rel_posix = rel.as_posix()
+    if _is_ported_skip(rel_posix):
+        return True
     if rel_posix in WHITELISTED_FILES:
         return True
     if not allow_provenance and rel_posix in PROVENANCE_FILES:

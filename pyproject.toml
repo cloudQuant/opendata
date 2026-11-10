@@ -277,8 +277,19 @@ runtime-evaluated-base-classes = [
 "opendata/api/tables.py" = ["S608"]
 # Legacy dynamic typing (upstream SDK calls, APScheduler jobs) — Any is intentional.
 "opendata/data_fetch/providers/akshare_provider.py" = ["ANN401", "S608"]
-"opendata/data_fetch/scripts/*" = ["ANN401"]
 "opendata/services/scheduler_service.py" = ["ANN401"]
+# The ported AFI collection tree is a byte-faithful B-layer port (iteration 204):
+# E501 line length is frozen as ported debt, mirroring the historical _vendor
+# convention. F-class (undefined-name/import) stays fully enforced and is clean.
+"opendata/data_fetch/scripts/*" = ["ANN401", "E501"]
+"opendata/data_fetch/providers/legacy_akshare_provider.py" = ["E501"]
+"opendata/data_fetch/providers/akshare_to_mysql.py" = ["E501"]
+"opendata/data_fetch/providers/binance_to_mysql.py" = ["E501"]
+"opendata/data_fetch/providers/binance_vision.py" = ["E501"]
+"opendata/data_fetch/providers/factory.py" = ["E501"]
+"opendata/data_fetch/core/*" = ["E501"]
+"opendata/data_fetch/utils/logger.py" = ["E501"]
+"opendata/data_fetch/utils/akshare_catalog_utils.py" = ["E501"]
 # Ported AFI data-management routers keep AFI's untyped `typing.Any` request/
 # response shape; they are an additive namespace under /afi-data and will be
 # re-typed when folded onto OpenData's typed routers.

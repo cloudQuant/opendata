@@ -103,3 +103,23 @@ def test_historical_network_filename_is_allowed_only_in_exact_catalog(
     _write_fixture(tmp_path, allowed, token)
     _write_fixture(tmp_path, unrelated, token)
     assert [hit.file for hit in check_brand.scan_token(token)] == [unrelated]
+
+
+def test_ported_collection_subtree_is_skipped_but_native_files_remain_gated() -> None:
+    """The byte-faithful B-layer port is skipped; OpenData-native files are not."""
+    ported = (
+        "opendata/data_fetch/scripts/stocks/daily/stock_zh_a_hist_legacy.py",
+        "opendata/data_fetch/providers/akshare_to_mysql.py",
+        "opendata/data_fetch/core/mysql_base.py",
+        "opendata/data_fetch/utils/logger.py",
+        "opendata/data_fetch/providers/legacy_akshare_provider.py",
+    )
+    native = (
+        "opendata/data_fetch/providers/akshare_provider.py",
+        "opendata/data_fetch/utils/retry.py",
+        "opendata/data_fetch/configs/__init__.py",
+        "opendata/data_fetch/__init__.py",
+    )
+    assert all(check_brand._is_ported_skip(path) for path in ported)
+    assert not any(check_brand._is_ported_skip(path) for path in native)
+

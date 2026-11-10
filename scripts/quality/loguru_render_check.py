@@ -85,6 +85,29 @@ SKIP_DIR_PARTS: Final = frozenset(
         "venv",
     }
 )
+#: Byte-faithful B-layer ports (iteration 204) keep AFI's stdlib ``logging``
+#: %-style calls, which are correct under stdlib but intentionally outside the
+#: loguru/str.format contract this gate enforces on first-party code. The
+#: OpenData-native files inside ``data_fetch`` are NOT prefixed here and stay
+#: fully gated; only the ported AFI collection subtree is skipped.
+PORTED_SKIP_PREFIXES: Final = (
+    "opendata/data_fetch/core/",
+    "opendata/data_fetch/scripts/",
+    "opendata/data_fetch/utils/logger.py",
+    "opendata/data_fetch/utils/akshare_catalog_utils.py",
+    "opendata/data_fetch/utils/akshare_network_proxy.py",
+    "opendata/data_fetch/configs/db_config.py",
+    "opendata/data_fetch/providers/legacy_akshare_provider.py",
+    "opendata/data_fetch/providers/akshare_to_mysql.py",
+    "opendata/data_fetch/providers/binance_to_mysql.py",
+    "opendata/data_fetch/providers/binance_vision.py",
+    "opendata/data_fetch/providers/factory.py",
+)
+
+
+def _is_ported_skip(identity: str) -> bool:
+    """Return whether a repo-relative file is a byte-faithful B-layer port."""
+    return identity.startswith(PORTED_SKIP_PREFIXES)
 #: Levelled methods that take a message template on both families.
 LEVELS: Final = frozenset(
     {
@@ -549,6 +572,8 @@ def scan(roots: tuple[str, ...] = CHECK_ROOTS) -> Sweep:
     for source_file in sources:
         path = source_file.path
         if any(part in SKIP_DIR_PARTS for part in path.parts):
+            continue
+        if _is_ported_skip(source_file.identity):
             continue
         try:
             source = path.read_text(encoding="utf-8")

@@ -336,6 +336,9 @@ class TestShippedTree:
                 check=True,
                 cwd=guard.REPO_ROOT,
             ).stdout.splitlines()
+            # The independent count must apply the same byte-faithful B-layer
+            # exclusion the guard applies, or the two walks cannot agree.
+            listed = [path for path in listed if not guard._is_ported_skip(path)]
             assert swept == len(listed), f"{root}: swept {swept}, find listed {len(listed)}"
 
     def test_the_unjudged_face_is_only_the_guards_own_instrumentation(self) -> None:
