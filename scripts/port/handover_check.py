@@ -56,6 +56,18 @@ def compare_pair(
     }
 
 
+def _sync_url(url: str) -> str:
+    """Map async driver URLs to their sync equivalents for a read-only engine."""
+    for async_driver, sync_driver in (
+        ("+aiomysql", "+pymysql"),
+        ("+asyncmy", "+pymysql"),
+        ("+aiosqlite", ""),
+        ("+asyncpg", "+psycopg2"),
+    ):
+        url = url.replace(async_driver, sync_driver)
+    return url
+
+
 def main(argv: list[str] | None = None) -> int:
     """Print the per-pair comparison as JSON; exit 0 only when every pair matches."""
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
@@ -67,8 +79,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     pairs = json.loads(SCHEMA_DIFF.read_text(encoding="utf-8"))["tables"]
-    source = create_engine(args.source_url)
-    target = create_engine(args.target_url)
+    source = create_engine(_sync_url(args.source_url))
+    target = create_engine(_sync_url(args.target_url))
     try:
         rows = [compare_pair(source, target, p["afi_table"], p["opendata_table"]) for p in pairs]
     finally:
