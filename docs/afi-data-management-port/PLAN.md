@@ -306,7 +306,21 @@ vue-tsc delta is stack-level, not typo-level).
 
 `test_afi_port_routers.py` (7: namespace, 401/403 auth, envelope, admin boundary), the ported
 19-case `test_afi_port_run_coordinator.py`, `test_afi_port_scheduler.py`,
-`test_afi_port_scheduler_clock.py`, 8-case `test_afi_port_handover_copy.py`, and the 4 frontend
-wire-contract tests. Combined targeted run: **196 passed, 6 skipped** across the port and API
-regression suites, plus 93 passed for alembic/task-lifecycle/contract/auth.
+`test_afi_port_scheduler_clock.py`, 8-case `test_afi_port_handover_copy.py`, 2-case
+`test_afi_port_scheduler_lifecycle.py`, and the 4 frontend wire-contract tests. Combined targeted
+run: **269 passed** across the port, API, alembic, task-lifecycle, contract and auth suites, with
+zero failures.
+
+### Stage-5 ownership switch and a circular-import fix
+
+- `runtime/lifecycle.py` plus the `akshare_scheduler_enabled` setting (default `False`) make the
+  ported scheduler fail-closed: OpenData never starts a second scheduler beside AFI until cutover
+  flips `AKSHARE_SCHEDULER_ENABLED=true` from the composition root.
+- The router is mounted at the composition root (`main.py`), not inside `opendata.api`'s package
+  initialiser. Importing `opendata.afi_port.api.router` first otherwise re-entered a partially
+  initialised `opendata.api` (the auth adapter reaches `opendata.api.dependencies`). `opendata.api`
+  now stays native-modules-only and isort-green; both import entry orders resolve, and the plane is
+  served under both `/api/v1/afi-data` and `/api/afi-data` (72 distinct paths).
+- The `requests` import in `runtime/network_proxy.py` matches the baseline `data/http_client.py`
+  bare import; the missing `types-requests` stub is the same ratchet-managed environment finding.
 
