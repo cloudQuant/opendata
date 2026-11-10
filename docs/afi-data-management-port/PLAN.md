@@ -242,3 +242,9 @@ writing. Baseline against the live AFI control DB and an unprovisioned target:
 ak_data_scripts=1066, ak_data_tables=1061, ak_scheduled_tasks=1103, ak_task_executions=35454;
 every target table `missing_table`. Stage 4 cannot proceed until the OpenData database is provisioned
 and the owner approves the counted copy; the checker exits non-zero until all pairs match.
+
+## Regression check (2026-11-10 04:14Z)
+
+`pytest tests/test_api_{interfaces,scripts,tasks,executions}_full.py tests/test_interface_loader.py`
+→ **66 passed** on the branch with the added columns and registered dg_* models, confirming the model
+changes do not regress the existing OpenData API behaviour.
