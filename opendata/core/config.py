@@ -379,6 +379,46 @@ class Settings(BaseSettings):
     akshare_timeout: int = Field(default=120, description="akshare request timeout")
     akshare_call_timeout: int = Field(default=120, description="akshare call timeout")
     akshare_retry_attempts: int = Field(default=3, description="akshare retry attempts")
+    akshare_script_root: str = Field(
+        default="opendata/data_fetch/scripts",
+        description=(
+            "AKSHARE_SCRIPT_ROOT: root directory holding the ported akshare collection "
+            "scripts; relative paths resolve against the repository root"
+        ),
+    )
+    akshare_scheduler_timezone: str = Field(
+        default="Asia/Shanghai",
+        description="AKSHARE_SCHEDULER_TIMEZONE: timezone for the ported akshare task triggers",
+    )
+    akshare_scheduler_max_concurrent_tasks: int = Field(
+        default=1,
+        ge=1,
+        description=(
+            "AKSHARE_SCHEDULER_MAX_CONCURRENT_TASKS: semaphore size for scheduler-triggered "
+            "akshare task runs"
+        ),
+    )
+    akshare_scheduler_per_source_concurrent_tasks: int = Field(
+        default=1,
+        ge=1,
+        description=(
+            "AKSHARE_SCHEDULER_PER_SOURCE_CONCURRENT_TASKS: per-source run cap enforced by "
+            "the run coordinator"
+        ),
+    )
+    akshare_scheduler_lease_seconds: int = Field(
+        default=1800,
+        ge=30,
+        description="AKSHARE_SCHEDULER_LEASE_SECONDS: coordinator claim lease duration",
+    )
+    akshare_scheduler_source_min_interval_seconds: float = Field(
+        default=0.0,
+        ge=0.0,
+        description=(
+            "AKSHARE_SCHEDULER_SOURCE_MIN_INTERVAL_SECONDS: minimum gap between runs of one "
+            "source; zero disables the gate"
+        ),
+    )
 
     @field_validator("secret_key", mode="after")
     @classmethod

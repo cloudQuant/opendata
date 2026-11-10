@@ -22,6 +22,7 @@ from opendata.models.pipeline_step import (
     PipelineStepStatus,
     PipelineSymbolWindow,
 )
+from opendata.models.run_claim import SchedulerControl, TaskRunClaim
 from opendata.models.task import (
     ScheduledTask,
     ScheduleType,
@@ -56,10 +57,12 @@ __all__ = [
     "PipelineSymbolWindow",
     "ScheduleType",
     "ShardStatus",
+    "SchedulerControl",
     "ScheduledTask",
     "ScriptFrequency",
     "TaskExecution",
     "TaskKind",
+    "TaskRunClaim",
     "TaskStatus",
     "TriggeredBy",
     "User",
