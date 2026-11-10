@@ -1,0 +1,89 @@
+"""
+Option Sse Expire Day Sina
+
+数据源: AkShare
+函数: option_sse_expire_day_sina
+频率: daily
+"""
+
+import pandas as pd
+
+from opendata.data_fetch.configs.db_config import DB_CONFIG
+from opendata.data_fetch.providers.akshare_to_mysql import AkshareToMySql
+
+
+class OptionSseExpireDaySina(AkshareToMySql):
+    """Option Sse Expire Day Sina"""
+
+    def __init__(self, db_config=DB_CONFIG, logger=None):
+        super().__init__(db_config, logger)
+        self.table_name = "OPTION_SSE_EXPIRE_DAY_SINA"
+        self.create_table_sql = """
+    CREATE TABLE IF NOT EXISTS `OPTION_SSE_EXPIRE_DAY_SINA` (
+        `R_ID` INT AUTO_INCREMENT PRIMARY KEY,
+            `symbol` VARCHAR(50) COMMENT '品种代码',
+            `name` VARCHAR(100) COMMENT '品种名称',
+            `data_date` DATE COMMENT '数据日期',
+            `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+            `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+        UNIQUE KEY uk_symbol_date (`symbol`, `data_date`),
+        INDEX idx_data_date (`data_date`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Option Sse Expire Day Sina'
+    """
+
+    def fetch_data(self, **kwargs):
+        """Fetch data from AkShare and save to database.
+
+        Args:
+            **kwargs: Parameters to pass to ak.option_sse_expire_day_sina
+
+        Returns:
+            pd.DataFrame: Fetched data
+        """
+        try:
+            # Fetch data from AkShare
+            result = self.fetch_ak_data("option_sse_expire_day_sina", **kwargs)
+            if isinstance(result, pd.DataFrame):
+                df = result
+            elif isinstance(result, (list, tuple)):
+                values = list(result)
+                df = pd.DataFrame(
+                    [
+                        {
+                            "expire_date": values[0] if len(values) > 0 else None,
+                            "remaining_days": values[1] if len(values) > 1 else None,
+                        }
+                    ]
+                )
+            else:
+                df = pd.DataFrame()
+
+            if df is None or df.empty:
+                self.logger.warning("No data found")
+                return pd.DataFrame()
+
+            # Process data if needed
+            # Add data_date if not exists
+            if "data_date" not in df.columns:
+                df["data_date"] = pd.Timestamp.now().date()
+
+            # Save to database
+            self.create_table_if_not_exists(self.table_name, self.create_table_sql)
+            self.save_data(df, self.table_name, ignore_duplicates=True)
+
+            return df
+
+        except Exception as e:
+            self.logger.error(f"Error fetching data: {e}")
+            return pd.DataFrame()
+
+
+def main():
+    """Main function to run the data fetch"""
+
+    script = OptionSseExpireDaySina()
+    script.fetch_data()
+
+
+if __name__ == "__main__":
+    main()

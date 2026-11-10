@@ -1,0 +1,86 @@
+"""
+Stock Gdfx Free Holding Analyse Em
+
+数据源: AkShare
+函数: stock_gdfx_free_holding_analyse_em
+频率: daily
+"""
+
+import pandas as pd
+
+from opendata.data_fetch.configs.db_config import DB_CONFIG
+from opendata.data_fetch.providers.akshare_to_mysql import AkshareToMySql
+from opendata.data_fetch.scripts.stocks.daily._gdfx_limited import free_holding_analyse
+
+
+class StockGdfxFreeHoldingAnalyseEm(AkshareToMySql):
+    """Stock Gdfx Free Holding Analyse Em"""
+
+    def __init__(self, db_config=DB_CONFIG, logger=None):
+        super().__init__(db_config, logger)
+        self.table_name = "STOCK_GDFX_FREE_HOLDING_ANALYSE_EM"
+        self.create_table_sql = """
+    CREATE TABLE IF NOT EXISTS `STOCK_GDFX_FREE_HOLDING_ANALYSE_EM` (
+        `R_ID` INT AUTO_INCREMENT PRIMARY KEY,
+            `symbol` VARCHAR(50) COMMENT '品种代码',
+            `name` VARCHAR(100) COMMENT '品种名称',
+            `data_date` DATE COMMENT '数据日期',
+            `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+            `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+        INDEX idx_symbol_date (`symbol`, `data_date`),
+        INDEX idx_data_date (`data_date`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Stock Gdfx Free Holding Analyse Em'
+    """
+
+    def fetch_data(self, **kwargs):
+        """Fetch data from AkShare and save to database.
+
+        Args:
+            **kwargs: Parameters to pass to ak.stock_gdfx_free_holding_analyse_em
+
+        Returns:
+            pd.DataFrame: Fetched data
+        """
+        try:
+            # Fetch data from AkShare
+            max_pages = kwargs.pop("max_pages", None)
+            if max_pages is not None:
+                df = free_holding_analyse(
+                    date=kwargs.get("date", "20260331"),
+                    max_pages=int(max_pages),
+                )
+            else:
+                df = self.fetch_ak_data("stock_gdfx_free_holding_analyse_em", **kwargs)
+
+            if df is None or df.empty:
+                self.logger.warning("No data found")
+                return pd.DataFrame()
+
+            # Process data if needed
+            # Add data_date if not exists
+            if "data_date" not in df.columns:
+                df["data_date"] = pd.Timestamp.now().date()
+
+            # Save to database
+            self.create_table_if_not_exists(self.table_name, self.create_table_sql)
+            if "data_date" in df.columns:
+                for data_date in sorted(df["data_date"].dropna().astype(str).unique()):
+                    self.delete_data(self.table_name, {"data_date": data_date})
+            self.save_data(df, self.table_name, ignore_duplicates=True)
+
+            return df
+
+        except Exception as e:
+            self.logger.error(f"Error fetching data: {e}")
+            return pd.DataFrame()
+
+
+def main():
+    """Main function to run the data fetch"""
+
+    script = StockGdfxFreeHoldingAnalyseEm()
+    script.fetch_data()
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,88 @@
+"""
+Macro Usa Exist Home Sales
+
+数据源: AkShare
+函数: macro_usa_exist_home_sales
+频率: daily
+"""
+
+import pandas as pd
+
+from opendata.data_fetch.configs.db_config import DB_CONFIG
+from opendata.data_fetch.providers.akshare_to_mysql import AkshareToMySql
+from opendata.data_fetch.scripts.common.daily._jin10_macro import (
+    add_jin10_symbol_fields,
+    fetch_jin10_list_v2,
+)
+
+
+class MacroUsaExistHomeSales(AkshareToMySql):
+    """Macro Usa Exist Home Sales"""
+
+    def __init__(self, db_config=DB_CONFIG, logger=None):
+        super().__init__(db_config, logger)
+        self.table_name = "MACRO_USA_EXIST_HOME_SALES"
+        self.create_table_sql = """
+    CREATE TABLE IF NOT EXISTS `MACRO_USA_EXIST_HOME_SALES` (
+        `R_ID` INT AUTO_INCREMENT PRIMARY KEY,
+            `symbol` VARCHAR(50) COMMENT '品种代码',
+            `name` VARCHAR(100) COMMENT '品种名称',
+            `data_date` DATE COMMENT '数据日期',
+            `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+            `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+        UNIQUE KEY uk_symbol_date (`symbol`, `data_date`),
+        INDEX idx_data_date (`data_date`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Macro Usa Exist Home Sales'
+    """
+
+    def fetch_data(self, **kwargs):
+        """Fetch data from AkShare and save to database.
+
+        Args:
+            **kwargs: Parameters to pass to ak.macro_usa_exist_home_sales
+
+        Returns:
+            pd.DataFrame: Fetched data
+        """
+        try:
+            max_pages = kwargs.pop("max_pages", None)
+            request_timeout = kwargs.pop("request_timeout", 20)
+            df = fetch_jin10_list_v2(
+                category="ec",
+                attr_id="15",
+                symbol="美国成屋销售总数年化报告",
+                timeout=request_timeout,
+                max_pages=max_pages,
+            )
+
+            if df is None or df.empty:
+                self.logger.warning("No data found")
+                return pd.DataFrame()
+
+            df = add_jin10_symbol_fields(df)
+
+            # Save to database
+            self.create_table_if_not_exists(self.table_name, self.create_table_sql)
+            self.save_data(
+                df,
+                self.table_name,
+                on_duplicate_update=True,
+                unique_keys=["symbol", "data_date"],
+            )
+
+            return df
+
+        except Exception as e:
+            self.logger.error(f"Error fetching data: {e}")
+            return pd.DataFrame()
+
+
+def main():
+    """Main function to run the data fetch"""
+
+    script = MacroUsaExistHomeSales()
+    script.fetch_data()
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,76 @@
+"""
+Match Main Contract
+
+数据源: AkShare
+函数: match_main_contract
+频率: weekly
+"""
+
+import pandas as pd
+
+from opendata.data_fetch.configs.db_config import DB_CONFIG
+from opendata.data_fetch.providers.akshare_to_mysql import AkshareToMySql
+from opendata.data_fetch.scripts.common.scalar_result import normalize_scalar_result
+
+PREFER_LOCAL_SCRIPT = True
+
+
+class MatchMainContract(AkshareToMySql):
+    """Match Main Contract"""
+
+    normalize_scalar_result = staticmethod(normalize_scalar_result)
+
+    def __init__(self, db_config=DB_CONFIG, logger=None):
+        super().__init__(db_config, logger)
+        self.table_name = "MATCH_MAIN_CONTRACT"
+        self.create_table_sql = """
+    CREATE TABLE IF NOT EXISTS `MATCH_MAIN_CONTRACT` (
+        `R_ID` INT AUTO_INCREMENT PRIMARY KEY,
+            `symbol` VARCHAR(50) COMMENT '品种代码',
+            `name` VARCHAR(100) COMMENT '品种名称',
+            `data_date` DATE COMMENT '数据日期',
+            `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+            `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+        UNIQUE KEY uk_symbol_date (`symbol`, `data_date`),
+        INDEX idx_data_date (`data_date`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Match Main Contract'
+    """
+
+    def fetch_data(self, **kwargs):
+        """Fetch data from AkShare and save to database.
+
+        Args:
+            **kwargs: Parameters to pass to ak.match_main_contract
+
+        Returns:
+            pd.DataFrame: Fetched data
+        """
+        try:
+            source_symbol = str(kwargs.get("exchange", kwargs.get("symbol", "cffex")))
+            result = self.fetch_ak_data("match_main_contract", **kwargs)
+            df = self.normalize_scalar_result(result, source_symbol=source_symbol)
+
+            if df is None or df.empty:
+                self.logger.warning("No data found")
+                return pd.DataFrame()
+
+            # Save to database
+            self.create_table_if_not_exists(self.table_name, self.create_table_sql)
+            self.save_data(df, self.table_name, ignore_duplicates=True)
+
+            return df
+
+        except Exception as e:
+            self.logger.error(f"Error fetching data: {e}")
+            return pd.DataFrame()
+
+
+def main():
+    """Main function to run the data fetch"""
+
+    script = MatchMainContract()
+    script.fetch_data()
+
+
+if __name__ == "__main__":
+    main()

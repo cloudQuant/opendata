@@ -1,0 +1,94 @@
+"""
+Stock Concept Fund Flow Hist
+
+数据源: AkShare
+函数: stock_concept_fund_flow_hist
+频率: weekly
+"""
+
+import pandas as pd
+
+from opendata.data_fetch.configs.db_config import DB_CONFIG
+from opendata.data_fetch.providers.akshare_to_mysql import AkshareToMySql
+
+
+class StockConceptFundFlowHist(AkshareToMySql):
+    """Stock Concept Fund Flow Hist"""
+
+    def __init__(self, db_config=DB_CONFIG, logger=None):
+        super().__init__(db_config, logger)
+        self.table_name = "STOCK_CONCEPT_FUND_FLOW_HIST"
+        self.create_table_sql = """
+    CREATE TABLE IF NOT EXISTS `STOCK_CONCEPT_FUND_FLOW_HIST` (
+        `R_ID` INT AUTO_INCREMENT PRIMARY KEY,
+            `symbol` VARCHAR(50) COMMENT '品种代码',
+            `name` VARCHAR(100) COMMENT '品种名称',
+            `data_date` DATE COMMENT '数据日期',
+            `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+            `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+        UNIQUE KEY uk_symbol_date (`symbol`, `data_date`),
+        INDEX idx_data_date (`data_date`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Stock Concept Fund Flow Hist'
+    """
+
+    @staticmethod
+    def normalize_columns(df: pd.DataFrame, symbol: str) -> pd.DataFrame:
+        if df.empty:
+            return df
+        df = df.copy()
+        df["symbol"] = str(symbol)
+        df["name"] = str(symbol)
+        if "日期" in df.columns:
+            df["data_date"] = pd.to_datetime(df["日期"], errors="coerce").dt.date
+        elif "data_date" not in df.columns:
+            df["data_date"] = pd.Timestamp.now().date()
+        front_columns = ["symbol", "name", "data_date"]
+        ordered = [col for col in front_columns if col in df.columns]
+        ordered.extend(col for col in df.columns if col not in ordered)
+        return df[ordered]
+
+    def fetch_data(self, **kwargs):
+        """Fetch data from AkShare and save to database.
+
+        Args:
+            **kwargs: Parameters to pass to ak.stock_concept_fund_flow_hist
+
+        Returns:
+            pd.DataFrame: Fetched data
+        """
+        try:
+            # Fetch data from AkShare
+            symbol = kwargs.get("symbol", "数据要素")
+            df = self.fetch_ak_data("stock_concept_fund_flow_hist", **kwargs)
+
+            if df is None or df.empty:
+                self.logger.warning("No data found")
+                return pd.DataFrame()
+
+            df = self.normalize_columns(df, symbol)
+
+            # Save to database
+            self.create_table_if_not_exists(self.table_name, self.create_table_sql)
+            for data_date in sorted(df["data_date"].dropna().astype(str).unique()):
+                self.delete_data(
+                    self.table_name,
+                    {"symbol": str(symbol), "data_date": data_date},
+                )
+            self.save_data(df, self.table_name, ignore_duplicates=True)
+
+            return df
+
+        except Exception as e:
+            self.logger.error(f"Error fetching data: {e}")
+            return pd.DataFrame()
+
+
+def main():
+    """Main function to run the data fetch"""
+
+    script = StockConceptFundFlowHist()
+    script.fetch_data()
+
+
+if __name__ == "__main__":
+    main()
