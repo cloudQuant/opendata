@@ -412,4 +412,14 @@ verified and then pinned with tests:
   kill/reap on timeout and cancellation, cross-process error propagation, DataFrame round trips,
   parent-fence handoff, child-receipt merge). The three DB-session ledger E2E tests remain in AFI
   until the OpenData control database is provisioned.
+- `test_afi_port_script_scanner.py` (5: the DB-free half of `scan_and_register_scripts` over the
+  real tree, asserting every one of the 1100+ derived module paths imports, the metadata shape is
+  correct, dunder inits are excluded, and extracted metadata resolves a runnable entrypoint). This
+  locks the file-to-schedulable-task bridge.
+
+The full iteration-204 port test set (`test_afi_port_*`, plus the brand/loguru gate tests) runs
+green: **142 port tests pass** in a single collection, and the wider API/alembic/scope regression
+run reported 276 passed with no new failures (the only red tests are pre-existing environment
+issues: missing `bandit`/`types-PyYAML`/`types-requests` stubs, identical on the pre-session
+baseline).
 
