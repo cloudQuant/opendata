@@ -70,3 +70,36 @@ def test_worker_descriptor_builder_handles_a_ported_entrypoint() -> None:
     descriptor = runtime._callable_descriptor(module.main)
     assert descriptor["module"].startswith("opendata.data_fetch.scripts.")
     assert descriptor["qualname"] == "main"
+
+
+@pytest.mark.parametrize(
+    ("module_name", "class_name", "method"),
+    [
+        # crypto_hourly_market is the documented production run that wrote rows
+        # after its own failure; proving it is still describable guards the fix.
+        (
+            "opendata.data_fetch.scripts.cryptos.hourly.crypto_hourly_market",
+            "CryptoHourlyMarket",
+            "fetch_data",
+        ),
+        # A pure-class, run()-based entrypoint from a different family.
+        (
+            "opendata.data_fetch.scripts.funds.weekly.money_fund_hist_em",
+            "MoneyFundHistEm",
+            "run",
+        ),
+    ],
+)
+def test_real_production_entrypoints_are_describable(
+    module_name: str, class_name: str, method: str
+) -> None:
+    """Real ported collection classes resolve to worker descriptors by module path."""
+    module = importlib.import_module(module_name)
+    cls = getattr(module, class_name)
+    descriptor = AkshareScriptService._callable_descriptor(getattr(cls(), method))
+    assert descriptor == {
+        "kind": "method",
+        "module": module_name,
+        "class_qualname": class_name,
+        "method": method,
+    }
