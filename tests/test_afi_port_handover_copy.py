@@ -20,6 +20,7 @@ from scripts.port.handover_copy import (
     SPECS,
     TableSpec,
     copy_table,
+    purge_target_tables,
     transform_row,
     translate_enum,
 )
@@ -109,7 +110,9 @@ def test_apply_translates_enums_and_is_idempotent(engines) -> None:
         rows = {r[0]: r[1] for r in conn.execute(text("SELECT id, frequency FROM data_scripts"))}
     assert rows == {1: "DAILY", 2: "WEEKLY", 3: None}
 
-    # Re-running converges instead of duplicating (delete-by-batch-PK then insert).
+    # Re-running converges instead of duplicating: the FK-safe purge clears the
+    # target (children first), then the copy re-inserts the complete source set.
+    purge_target_tables(target)
     copy_table(source, target, spec, apply=True, default_user_id=None, batch_size=2)
     with target.connect() as conn:
         assert conn.execute(text("SELECT COUNT(*) FROM data_scripts")).scalar() == 3
@@ -247,6 +250,39 @@ def test_target_missing_still_reports_the_source_count(engines) -> None:
         empty_target.dispose()
 
 
+def test_purge_clears_parent_and_child_without_fk_violation(engines) -> None:
+    """The FK-safe purge deletes children (scheduled_tasks) before parents
+    (data_scripts); a naive parent-first delete would raise IntegrityError."""
+    source, target = engines
+    with target.begin() as conn:
+        # A real parent row and a child row referencing it via the ORM FK.
+        conn.execute(
+            text(
+                "INSERT INTO data_scripts (id, script_id, script_name, category, "
+                "frequency, is_active, is_custom, source, timeout, "
+                "estimated_duration, created_at, updated_at) VALUES "
+                "(7, 'parent', 'Parent', 'stock', 'DAILY', 1, 0, 'akshare', 60, 0, "
+                "'2026-01-01', '2026-01-01')"
+            )
+        )
+        conn.execute(
+            text(
+                "INSERT INTO scheduled_tasks (id, name, script_id, schedule_expression, "
+                "schedule_type, parameters, is_active, retry_on_failure, max_retries, "
+                "timeout, task_kind, user_id, created_at, updated_at) VALUES "
+                "(70, 'child', 'parent', '0 8 * * *', 'CRON', '{}', 1, 1, 3, 0, "
+                "'script', 1, '2026-01-01', '2026-01-01')"
+            )
+        )
+
+    # Must not raise a foreign-key constraint error.
+    purge_target_tables(target)
+
+    with target.connect() as conn:
+        assert conn.execute(text("SELECT COUNT(*) FROM scheduled_tasks")).scalar() == 0
+        assert conn.execute(text("SELECT COUNT(*) FROM data_scripts")).scalar() == 0
+
+
 def test_transform_row_projects_only_target_columns() -> None:
     spec = TableSpec("ak_x", "data_scripts", "id", {"frequency": ScriptFrequency})
     row, bad = transform_row(
@@ -258,6 +294,29 @@ def test_transform_row_projects_only_target_columns() -> None:
     assert row == {"id": 1, "frequency": "DAILY"}
     assert "ghost" not in row
     assert bad == []
+
+
+def test_module_path_is_rewritten_to_the_opendata_package() -> None:
+    """Stored AFI module paths move with the collection tree."""
+    spec = TableSpec("ak_data_scripts", "data_scripts", "id")
+    row, _ = transform_row(
+        {
+            "id": 1,
+            "module_path": "app.data_fetch.scripts.stocks.daily.stock_zh_a_hist",
+        },
+        spec,
+        target_columns={"id", "module_path"},
+        default_user_id=None,
+    )
+    assert row["module_path"] == ("opendata.data_fetch.scripts.stocks.daily.stock_zh_a_hist")
+    # Non-string / NULL values pass through untouched.
+    null_row, _ = transform_row(
+        {"id": 2, "module_path": None},
+        spec,
+        target_columns={"id", "module_path"},
+        default_user_id=None,
+    )
+    assert null_row["module_path"] is None
 
 
 def test_enum_classes_cover_all_declared_enum_columns() -> None:

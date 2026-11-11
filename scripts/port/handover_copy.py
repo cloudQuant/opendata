@@ -102,6 +102,37 @@ SPECS: tuple[TableSpec, ...] = (
 )
 
 
+def purge_target_tables(target: Engine) -> None:
+    """Delete every hand-over target row in FK-safe (reverse) order.
+
+    ``SPECS`` is ordered parent-first (scripts/tables before the tasks and
+    executions that reference them). Children must be deleted first, so the
+    purge walks the specs in reverse. Each delete is a full-table TRUNCATE-like
+    clear; the subsequent copy re-inserts the complete source set, making an
+    ``--apply`` run idempotent without per-row deletes that could hit a foreign
+    key. Tables that do not yet exist are skipped so a partial provision still
+    reports cleanly.
+    """
+    inspector = inspect(target)
+    existing = set(inspector.get_table_names())
+    # Reflect every table once into one shared MetaData. Using a fresh MetaData
+    # per table inside the same transaction produced competing reflected
+    # definitions for the same physical table, so earlier deletes were silently
+    # discarded when a later table was reflected. One metadata keeps the DELETE
+    # statements bound to a single consistent schema picture.
+    metadata = MetaData()
+    reflected = {
+        name: Table(name, metadata, autoload_with=target)
+        for name in existing
+        if any(spec.opendata_table == name for spec in SPECS)
+    }
+    with target.begin() as conn:
+        for spec in reversed(SPECS):
+            table = reflected.get(spec.opendata_table)
+            if table is not None:
+                conn.execute(table.delete())
+
+
 def translate_enum(value: object, enum_cls: type[Enum]) -> str | None:
     """Map a stored lower-case enum value to its OpenData member name.
 
@@ -153,6 +184,11 @@ def transform_row(
             # Keep the value only when it is already an integer reference.
             target_row[column] = value if isinstance(value, int) else None
             continue
+        if column == "module_path" and isinstance(value, str):
+            # The collection tree moved from app.data_fetch to
+            # opendata.data_fetch during the code port; rewrite the stored
+            # module paths so the runtime resolves them against the new package.
+            value = value.replace("app.data_fetch", "opendata.data_fetch")
         target_row[column] = value
     return target_row, untranslated
 
@@ -214,20 +250,19 @@ def copy_table(
                 "copied_columns": readable,
             }
 
+        # Idempotency is provided by purge_target_tables() (FK-safe, reverse
+        # dependency order) before any insert, not by per-row deletes here.
+        # Deleting inside the copy loop violated cross-table foreign keys when
+        # a child table (scheduled_tasks) referenced a parent (data_scripts).
         with target.begin() as dst_conn:
             rows = src_conn.execute(select(*[source_table.c[c] for c in readable])).mappings()
             batch: list[dict[str, Any]] = []
-            keys: list[Any] = []
 
             def flush() -> None:
                 if not batch:
                     return
-                dst_conn.execute(
-                    target_table.delete().where(target_table.c[spec.primary_key].in_(keys))
-                )
                 dst_conn.execute(target_table.insert(), batch)
                 batch.clear()
-                keys.clear()
 
             for source_row in rows:
                 target_row, bad = transform_row(
@@ -238,7 +273,6 @@ def copy_table(
                 )
                 untranslated.extend(bad)
                 batch.append(target_row)
-                keys.append(target_row[spec.primary_key])
                 if len(batch) >= batch_size:
                     flush()
             flush()
@@ -274,6 +308,10 @@ def main(argv: list[str] | None = None) -> int:
     source = create_engine(_sync_url(args.source_url))
     target = create_engine(_sync_url(args.target_url))
     try:
+        # On a real apply, clear the target tables FK-safe (children first)
+        # so the parent-first inserts below form a complete, idempotent set.
+        if args.apply:
+            purge_target_tables(target)
         reports = [
             copy_table(
                 source,
