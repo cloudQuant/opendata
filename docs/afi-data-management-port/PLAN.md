@@ -384,11 +384,19 @@ unprovisioned; the read-only baseline is archived under `var/reports/afi204/` (g
 
 ## Remaining cutover decisions (owner/deployment, not code)
 
-1. Provision `opendata`/`opendata_data` and authorise the hand-over user, then run the counted copy.
-2. Translate the `scheduled_tasks.user_id` string owners to OpenData integer users via
-   `--default-user-id` or a reviewed mapping.
+1. ~~Provision `opendata`/`opendata_data` and authorise the hand-over user, then run the counted
+   copy.~~ **Done (2026-11-12):** both databases created with `utf8mb4_unicode_ci`; a dedicated
+   `opendata` MySQL application user was provisioned; both Alembic chains run clean (control at
+   `0011`, warehouse at `0022`); the counted, idempotent copy populated all 17 tables including the
+   eight `dg_*` registry tables, with full source/target row parity and `module_path` rewritten to
+   the `opendata.data_fetch` package. The app reads the migrated data over its default `.env`
+   connection and resolves real rows to ported entrypoints end to end.
+2. ~~Translate the `scheduled_tasks.user_id` string owners to OpenData integer users.~~ **Done:** an
+   admin migration-owner user (`id=1`) was created and `--default-user-id 1` mapped every task; all
+   1103 tasks now carry integer `user_id=1`, `task_kind='script'`.
 3. Flip `AKSHARE_SCHEDULER_ENABLED=true` only after stopping AFI's scheduler, so the two never
-   double-run the 1048 armed tasks (the fail-closed lifecycle switch already exists).
+   double-run the armed tasks. The fail-closed lifecycle switch exists and is verified DISABLED;
+   `.env` pins both `ENABLE_SCHEDULER=false` and `AKSHARE_SCHEDULER_ENABLED=false` until cutover.
 4. Stage-6 deletion from AFI follows a verified natural-cycle run on OpenData.
 
 ## Runtime behaviour verification (2026-11-11): the ported worker actually runs
