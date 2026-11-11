@@ -356,4 +356,38 @@ wave closes that gap so the ported scheduler/worker can actually drive the armed
   exempts the ported subtree while OpenData-native files remain fully gated; new tests pin that
   native files are never skipped.
 
+## Stage-4 live read-only baseline (2026-11-11)
+
+The live AFI control database is reachable with the source credentials and was measured read-only;
+no row was written. `handover_check` and a `handover_copy` dry run agree on the pending hand-over:
+
+| AFI source table | live rows | OpenData target | status |
+| --- | ---: | --- | --- |
+| ak_data_scripts | 1066 | data_scripts | target_missing |
+| ak_data_tables | 1061 | data_tables | target_missing |
+| ak_data_interfaces | 0 | data_interfaces | target_missing |
+| ak_interface_categories | 0 | interface_categories | target_missing |
+| ak_interface_parameters | 0 | interface_parameters | target_missing |
+| ak_scheduled_tasks | 1103 | scheduled_tasks | target_missing |
+| ak_task_executions | 37429 | task_executions | target_missing |
+| ak_task_run_claims | 29126 | task_run_claims | target_missing |
+| ak_scheduler_control | 1 | scheduler_control | target_missing |
+
+Total pending: **69786 rows**. The 29126 claim rows match the iteration's documented terminal-claim
+count, corroborating the measurement. The source DB user holds rights only on the three AFI
+databases (`ai_for_investor`, `akshare_data`, `backtrader_web`) and lacks both `CREATE DATABASE`
+and any grant on `opendata`/`opendata_data`, so the physical `--apply` copy is gated on a
+deployment step outside this code change: provision the OpenData databases, grant the hand-over
+user, then run `handover_copy.py --apply --default-user-id <int>` (the enum-aware, idempotent
+copier). `handover_copy` now runs standalone and reports source counts even while the target is
+unprovisioned; the read-only baseline is archived under `var/reports/afi204/` (git-ignored).
+
+## Remaining cutover decisions (owner/deployment, not code)
+
+1. Provision `opendata`/`opendata_data` and authorise the hand-over user, then run the counted copy.
+2. Translate the `scheduled_tasks.user_id` string owners to OpenData integer users via
+   `--default-user-id` or a reviewed mapping.
+3. Flip `AKSHARE_SCHEDULER_ENABLED=true` only after stopping AFI's scheduler, so the two never
+   double-run the 1048 armed tasks (the fail-closed lifecycle switch already exists).
+4. Stage-6 deletion from AFI follows a verified natural-cycle run on OpenData.
 
