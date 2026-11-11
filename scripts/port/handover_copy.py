@@ -27,11 +27,19 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import MetaData, Table, create_engine, func, inspect, select
+# Allow direct CLI execution (python scripts/port/handover_copy.py): pytest
+# injects the repo root via pythonpath, but a standalone process needs it on
+# sys.path before the opendata package imports below.
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
+from sqlalchemy import MetaData, Table, create_engine, func, inspect, select  # noqa: E402
 
 if TYPE_CHECKING:
     from enum import Enum
@@ -39,9 +47,13 @@ if TYPE_CHECKING:
     from sqlalchemy.engine import Engine
 
 # Enum columns translated lower-case value -> member name through OpenData.
-from opendata.models.data_script import ScriptFrequency
-from opendata.models.interface import ParameterType
-from opendata.models.task import ScheduleType, TaskStatus, TriggeredBy
+from opendata.models.data_script import ScriptFrequency  # noqa: E402
+from opendata.models.interface import ParameterType  # noqa: E402
+from opendata.models.task import (  # noqa: E402
+    ScheduleType,
+    TaskStatus,
+    TriggeredBy,
+)
 
 
 @dataclass(frozen=True)
@@ -171,21 +183,29 @@ def copy_table(
     target_inspector = inspect(target)
     if not source_inspector.has_table(spec.afi_table):
         return {"table": spec.opendata_table, "verdict": "source_missing", "rows": 0}
-    if not target_inspector.has_table(spec.opendata_table):
-        return {"table": spec.opendata_table, "verdict": "target_missing", "rows": 0}
 
     source_columns = {c["name"] for c in source_inspector.get_columns(spec.afi_table)}
-    target_columns = {c["name"] for c in target_inspector.get_columns(spec.opendata_table)}
-    readable = sorted((source_columns - spec.drop_columns) & target_columns)
-    # Reflect real Table objects so column access and insert/delete carry the
-    # database's actual column definitions rather than an empty TableClause.
+    # Reflect the real source Table so the count carries actual column metadata.
     source_table = Table(spec.afi_table, MetaData(), autoload_with=source)
-    target_table = Table(spec.opendata_table, MetaData(), autoload_with=target)
-
-    total = 0
-    untranslated: list[str] = []
     with source.connect() as src_conn:
         total = int(src_conn.execute(select(func.count()).select_from(source_table)).scalar() or 0)
+
+    if not target_inspector.has_table(spec.opendata_table):
+        # Report the source count even before the target is provisioned, so the
+        # owner sees the pending hand-over size from a dry run.
+        return {
+            "table": spec.opendata_table,
+            "verdict": "target_missing",
+            "rows": total,
+        }
+
+    target_columns = {c["name"] for c in target_inspector.get_columns(spec.opendata_table)}
+    readable = sorted((source_columns - spec.drop_columns) & target_columns)
+    # Reflect the real target Table so insert/delete carry actual definitions.
+    target_table = Table(spec.opendata_table, MetaData(), autoload_with=target)
+
+    untranslated: list[str] = []
+    with source.connect() as src_conn:
         if not apply:
             return {
                 "table": spec.opendata_table,

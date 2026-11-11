@@ -199,6 +199,54 @@ def test_missing_tables_are_reported_not_guessed(engines) -> None:
     assert report["verdict"] == "source_missing"
 
 
+def test_target_missing_still_reports_the_source_count(engines) -> None:
+    """A provisioned source but missing target reports the pending row count."""
+    source, _provisioned_target = engines
+    # A fresh engine with no tables stands in for an unprovisioned target.
+    empty_target = create_engine(
+        "sqlite+pysqlite://",
+        poolclass=StaticPool,
+        connect_args={"check_same_thread": False},
+    )
+    try:
+        with source.begin() as conn:
+            conn.execute(
+                text(
+                    "CREATE TABLE ak_data_scripts ("
+                    "id INTEGER PRIMARY KEY, script_id VARCHAR(100) NOT NULL, "
+                    "script_name VARCHAR(200), category VARCHAR(50), frequency VARCHAR(20), "
+                    "is_active BOOLEAN, is_custom BOOLEAN, source VARCHAR(50), timeout INTEGER, "
+                    "estimated_duration INTEGER, created_at DATETIME NOT NULL, "
+                    "updated_at DATETIME NOT NULL)"
+                )
+            )
+            conn.execute(
+                text(
+                    "INSERT INTO ak_data_scripts ("
+                    "id, script_id, script_name, category, frequency, is_active, "
+                    "is_custom, source, timeout, estimated_duration, created_at, updated_at) "
+                    "VALUES "
+                    "(1, 's1', 'One', 'stock', 'daily', 1, 0, "
+                    "'akshare', 60, 0, '2026-01-01', '2026-01-01'),"
+                    "(2, 's2', 'Two', 'fund', 'weekly', 1, 0, "
+                    "'akshare', 60, 0, '2026-01-01', '2026-01-01')"
+                )
+            )
+
+        report = copy_table(
+            source,
+            empty_target,
+            _spec("data_scripts"),
+            apply=False,
+            default_user_id=None,
+            batch_size=100,
+        )
+        assert report["verdict"] == "target_missing"
+        assert report["rows"] == 2
+    finally:
+        empty_target.dispose()
+
+
 def test_transform_row_projects_only_target_columns() -> None:
     spec = TableSpec("ak_x", "data_scripts", "id", {"frequency": ScriptFrequency})
     row, bad = transform_row(
