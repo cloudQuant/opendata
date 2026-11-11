@@ -391,3 +391,25 @@ unprovisioned; the read-only baseline is archived under `var/reports/afi204/` (g
    double-run the 1048 armed tasks (the fail-closed lifecycle switch already exists).
 4. Stage-6 deletion from AFI follows a verified natural-cycle run on OpenData.
 
+## Runtime behaviour verification (2026-11-11): the ported worker actually runs
+
+Importability alone does not prove the collection tree is schedulable, so the execution contract was
+verified and then pinned with tests:
+
+- **Entrypoint contract.** All 1043 `AkshareToMySql` leaf modules resolve a callable through the
+  same `_resolve_module_callable` helper the runtime uses, with zero unresolved leaves. Both AFI
+  shapes are covered: module-level `main()` dispatching to `fetch_data()`, and no-main pure classes
+  exposing `fetch_data`/`run`. Every leaf exposes a `table_name`.
+- **Worker descriptors.** Real production classes (including `crypto_hourly_market`, the documented
+  incident run) build killable-worker descriptors carrying the rewritten `opendata.*` module path.
+- **Real subprocess round trip.** A live `_execute_callable` spawns a distinct interpreter and
+  returns the result across the process boundary.
+- **New test files (99 runtime tests, all green):** `test_afi_port_collection_contract.py` (6:
+  import + both entrypoint shapes + descriptors + parametrised production describability),
+  `test_afi_port_write_fence.py` (9: attribution boundary, thread/context isolation, receipt
+  merging), `test_afi_port_script_worker_unit.py` (40: in-process descriptor/recorder/fence), and
+  `test_afi_port_killable_worker_process.py` (15: real interpreter subprocesses - process-group
+  kill/reap on timeout and cancellation, cross-process error propagation, DataFrame round trips,
+  parent-fence handoff, child-receipt merge). The three DB-session ledger E2E tests remain in AFI
+  until the OpenData control database is provisioned.
+
