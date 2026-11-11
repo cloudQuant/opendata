@@ -423,3 +423,24 @@ run reported 276 passed with no new failures (the only red tests are pre-existin
 issues: missing `bandit`/`types-PyYAML`/`types-requests` stubs, identical on the pre-session
 baseline).
 
+## Port boundary: what is deliberately not ported
+
+The AFI `app/api/data/` package holds two distinct concerns. Only its **management** piece is in
+scope; the market-data query piece already has an OpenData-native home and is not duplicated:
+
+- **Ported (management):** `api/data/governance.py` -> `afi_port/api/data_governance.py` (the
+  dg_* registry CRUD), with its auth rebound onto OpenData's admin dependency.
+- **Not ported (market-data plane):** `base.py`, `queries.py`, `trust.py`, `topics.py`,
+  `realtime.py`, `instrument_reference.py` and their shared `deps.py`. These serve read/query and
+  realtime market-data endpoints whose function is already covered by OpenData's native
+  `api/data_query.py`, `api/published_data.py`, `api/published_access.py`, `api/data_subscribe.py`
+  and the provider/domain model layer. Porting them would create a second, diverging query surface.
+- **Not ported (deprecated):** the `AirflowDagsPage`/airflow-callback routes and the three legacy
+  `airflow_*` execution columns, which have no OpenData equivalent by design.
+
+All 15 AFI `services/akshare` modules, the three `data_connectors`, both model files
+(`akshare_mgmt`, `akshare_scheduler` -> `run_claim`) plus `data_governance`, and all 1123
+collection-tree files are accounted for on the OpenData side; the full `afi_port` tree contains
+zero residual `app.` imports.
+
+
