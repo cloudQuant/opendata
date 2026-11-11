@@ -331,3 +331,28 @@ def test_enum_classes_cover_all_declared_enum_columns() -> None:
             assert column  # the physical column name is non-empty
             assert issubclass(enum_cls, Enum)
             assert issubclass(enum_cls, allowed)
+
+
+def test_specs_cover_the_governance_registry_tables() -> None:
+    """The eight dg_* registry tables must be part of the counted hand-over."""
+    targets = {spec.opendata_table for spec in SPECS}
+    expected = {
+        "dg_providers",
+        "dg_storage_targets",
+        "dg_datasets",
+        "dg_dataset_storages",
+        "dg_endpoints",
+        "dg_endpoint_params",
+        "dg_quality_rules",
+        "dg_ingest_jobs",
+    }
+    assert expected <= targets
+
+
+def test_governance_specs_are_ordered_parent_first_for_fk_safe_purge() -> None:
+    """Parents precede children so reversed SPECS purge children first."""
+    targets = [spec.opendata_table for spec in SPECS]
+    # datasets is referenced by dataset_storages/endpoints, so it must come first.
+    assert targets.index("dg_datasets") < targets.index("dg_dataset_storages")
+    assert targets.index("dg_providers") < targets.index("dg_endpoints")
+    assert targets.index("dg_endpoints") < targets.index("dg_endpoint_params")

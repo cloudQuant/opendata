@@ -99,6 +99,17 @@ SPECS: tuple[TableSpec, ...] = (
     ),
     TableSpec("ak_task_run_claims", "task_run_claims", "claim_key"),
     TableSpec("ak_scheduler_control", "scheduler_control", "control_id"),
+    # Data-governance registry (dg_*). Same table name on both sides; ordered
+    # parent-first per the foreign keys: providers/storage_targets -> datasets
+    # -> dataset_storages -> endpoints -> their children.
+    TableSpec("dg_providers", "dg_providers", "id"),
+    TableSpec("dg_storage_targets", "dg_storage_targets", "id"),
+    TableSpec("dg_datasets", "dg_datasets", "id"),
+    TableSpec("dg_dataset_storages", "dg_dataset_storages", "id"),
+    TableSpec("dg_endpoints", "dg_endpoints", "id"),
+    TableSpec("dg_endpoint_params", "dg_endpoint_params", "id"),
+    TableSpec("dg_quality_rules", "dg_quality_rules", "id"),
+    TableSpec("dg_ingest_jobs", "dg_ingest_jobs", "id"),
 )
 
 
