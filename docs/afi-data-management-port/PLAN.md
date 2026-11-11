@@ -416,6 +416,10 @@ verified and then pinned with tests:
   real tree, asserting every one of the 1100+ derived module paths imports, the metadata shape is
   correct, dunder inits are excluded, and extracted metadata resolves a runnable entrypoint). This
   locks the file-to-schedulable-task bridge.
+- `test_afi_port_scheduling_loop.py` (2: an isolated SQLite database proving the full post-port
+  chain persisted `DataScript` row -> `AkshareScriptService.get_script` -> `_resolve_callable` ->
+  the real `MoneyFundHistEm.run` entrypoint, plus the unknown-id negative case). This closes the
+  loop from stored task metadata to an executable callable without MySQL.
 
 The full iteration-204 port test set (`test_afi_port_*`, plus the brand/loguru gate tests) runs
 green: **142 port tests pass** in a single collection, and the wider API/alembic/scope regression
