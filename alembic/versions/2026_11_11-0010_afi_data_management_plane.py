@@ -1,7 +1,7 @@
 """Add the ported data-management governance schema and audit columns.
 
-Revision ID: 0023_afi_data_management_plane
-Revises: 0022_publication_visibility_seal
+Revision ID: 0010_afi_data_management_plane
+Revises: 0009
 Create Date: 2026-11-09
 
 This revision materializes the AFI data-management plane that OpenData now
@@ -40,8 +40,8 @@ from sqlalchemy import (
 
 from alembic import op
 
-revision = "0023_afi_data_management_plane"
-down_revision = "0022_publication_visibility_seal"
+revision = "0010_afi_data_management_plane"
+down_revision = "0009"
 branch_labels = None
 depends_on = None
 

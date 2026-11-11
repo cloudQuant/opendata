@@ -24,8 +24,11 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Set sqlalchemy.url from settings
-config.set_main_option("sqlalchemy.url", settings.database_url_sync)
+# Set sqlalchemy.url from settings. ConfigParser treats ``%`` as an
+# interpolation marker, but URL-quoted passwords legitimately contain ``%XY``
+# sequences (e.g. ``%24`` for ``$``). Escape them for the config-only copy;
+# the online engine below still consumes the un-escaped settings URL directly.
+config.set_main_option("sqlalchemy.url", settings.database_url_sync.replace("%", "%%"))
 
 # Add your model's MetaData object here for 'autogenerate' support
 target_metadata = Base.metadata

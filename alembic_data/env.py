@@ -35,8 +35,12 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # An explicitly provided URL wins; otherwise the warehouse URL.
+# Escape ``%`` for the ConfigParser-only copy: URL-quoted passwords contain
+# ``%XY`` sequences that ConfigParser would otherwise read as interpolation.
 if not config.get_main_option("sqlalchemy.url"):
-    config.set_main_option("sqlalchemy.url", settings.data_database_url)
+    config.set_main_option(
+        "sqlalchemy.url", settings.data_database_url.replace("%", "%%")
+    )
 
 # Warehouse tables come from opendata/pipeline/ddl.py, not from ORM models.
 target_metadata = None

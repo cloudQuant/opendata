@@ -274,7 +274,17 @@ def _create_state() -> None:
     """Create the single-row persistent visibility sequence ledger."""
     op.create_table(
         _STATE,
-        Column("state_id", Integer(), primary_key=True, nullable=False),
+        # autoincrement=False: this is a single-row state table whose only row
+        # has state_id = 1 (enforced by ck_od_visibility_state_single_row).
+        # MySQL 8.0.46 rejects a CHECK constraint that refers to an
+        # auto-increment column (error 3818), so this must be a plain integer PK.
+        Column(
+            "state_id",
+            Integer(),
+            primary_key=True,
+            nullable=False,
+            autoincrement=False,
+        ),
         Column("last_visibility_sequence", BigInteger(), nullable=False),
         Column("last_sealed_at_us", BigInteger(), nullable=False),
         Column("seal_count", BigInteger(), nullable=False),

@@ -1,7 +1,7 @@
 """Create the ported run-coordinator claim and scheduler-control tables.
 
-Revision ID: 0024_run_coordinator_claims
-Revises: 0023_afi_data_management_plane
+Revision ID: 0011_run_coordinator_claims
+Revises: 0010_afi_data_management_plane
 Create Date: 2026-11-10
 
 This revision materializes the two coordination tables declared by
@@ -31,8 +31,8 @@ from sqlalchemy import (
 
 from alembic import op
 
-revision = "0024_run_coordinator_claims"
-down_revision = "0023_afi_data_management_plane"
+revision = "0011_run_coordinator_claims"
+down_revision = "0010_afi_data_management_plane"
 branch_labels = None
 depends_on = None
 
