@@ -412,6 +412,34 @@ unprovisioned; the read-only baseline is archived under `var/reports/afi204/` (g
    no processes. Actual source removal belongs to a later cleanup after the natural-cycle sign-off,
    scoped to the data-management packages rather than the whole AFI application.
 
+## Post-cutover hardening (2026-11-13): production-run bug fixes
+
+After cutover the system ran as a persistent `opendata.service` (port 8010) against the live
+databases. Observation of real executions plus targeted checks produced these fixes; none of the
+remaining failures are port defects - they are external data-source outages (eastmoney 502/DNS/empty
+responses), which fail identically on AFI.
+
+- **Health check false "degraded".** `/health` only inspected the native `task_scheduler`
+  (intentionally off), so it reported `scheduler=stopped` while the ported scheduler was running all
+  1048 jobs. Added a read-only `ported_akshare_scheduler_running()` helper that walks the two-level
+  wrapper (`service.scheduler.scheduler`); `/health` now combines both schedulers and reports
+  `native_scheduler`/`ported_scheduler` separately. Live endpoint returns `healthy`.
+- **Scheduler arming could crash the API.** `start_ported_akshare_scheduler` propagated arming
+  exceptions (e.g. a transient DB error during `reload_active_tasks`), aborting the whole lifespan.
+  Now logs the traceback and returns `False`, keeping the control plane queryable.
+- **Orphaned RUNNING ledger rows on restart.** A process restart leaves any `RUNNING` execution
+  unable to finish, permanently inflating the running-count metric. `AkshareScheduler.start` now
+  calls `_reap_interrupted_executions`, marking pre-restart RUNNING rows as FAILED with an
+  explanatory message, before arming jobs. Session maker is injectable for isolated tests.
+- **Operational dependency (host, not in git):** the append-mode uvicorn log had no rotation and
+  would grow unbounded (AFI's `backend.log` already reached ~82 MB). Added
+  `/etc/logrotate.d/opendata` (daily / 50 MB, 14 rotations, `copytruncate`), picked up by the system
+  `logrotate.timer`.
+- Verified in production: 1048 armed tasks reload after restart (NRestarts=0), scheduler fires at the
+  correct Shanghai-time cron minute (e.g. hourly `:03`), FK integrity has zero orphans, enum/user_id
+  translations are correct, and the same scripts that fail here also fail on AFI for the same
+  external reasons (and their target tables are absent on both sides).
+
 ## Runtime behaviour verification (2026-11-11): the ported worker actually runs
 
 Importability alone does not prove the collection tree is schedulable, so the execution contract was
