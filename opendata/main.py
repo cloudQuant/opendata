@@ -201,12 +201,25 @@ async def _existing_lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     else:
         logger.warning(f"Scheduler DISABLED: {decision.reason}")
 
+    # Ported AFI collection scheduler. Fail-closed: starts only when
+    # AKSHARE_SCHEDULER_ENABLED is explicitly true, so it never double-runs the
+    # armed task set alongside another owner. This is the stage-5 cutover hook
+    # that owns the migrated AkshareToMysql collection jobs.
+    from opendata.afi_port.runtime.lifecycle import (
+        start_ported_akshare_scheduler,
+        stop_ported_akshare_scheduler,
+    )
+
+    ported_scheduler_started = await start_ported_akshare_scheduler()
+
     logger.info("Application startup complete")
 
     yield
 
     # Shutdown
     logger.info("Shutting down application...")
+    if ported_scheduler_started:
+        await stop_ported_akshare_scheduler()
     await task_scheduler.shutdown()
 
     # Shutdown the akshare thread pool executor
