@@ -23,6 +23,11 @@ async def start_ported_akshare_scheduler() -> bool:
     Returns ``True`` when the scheduler was started, ``False`` when the
     fail-closed default left it stopped. Repeated calls are safe because the
     underlying scheduler service is a cached singleton.
+
+    A failure while arming the scheduler is contained: the API process must
+    stay up so the control plane stays queryable and the problem is observable
+    in the logs, rather than a transient database/scheduler error aborting the
+    whole application lifespan. The operator can retry by restarting the service.
     """
     settings = get_settings()
     if not settings.akshare_scheduler_enabled:
@@ -31,8 +36,17 @@ async def start_ported_akshare_scheduler() -> bool:
             "(set AKSHARE_SCHEDULER_ENABLED=true at cutover to own the task set)"
         )
         return False
-    service = get_akshare_scheduler_service()
-    await service.start()
+    try:
+        service = get_akshare_scheduler_service()
+        await service.start()
+    except Exception:
+        # Logged with the traceback, then swallowed deliberately: see the
+        # docstring. Never let background-scheduler arming crash the API.
+        logger.opt(exception=True).error(
+            "Ported AFI akshare scheduler failed to start; the API remains up "
+            "but no collection jobs will fire until the service is restarted"
+        )
+        return False
     logger.info("Ported AFI akshare scheduler started under explicit cutover switch")
     return True
 

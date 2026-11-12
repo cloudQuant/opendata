@@ -51,3 +51,32 @@ async def test_scheduler_starts_only_under_the_explicit_switch(monkeypatch) -> N
 
     await lifecycle.stop_ported_akshare_scheduler()
     assert fake.shutdown_calls == 1
+
+
+class _FailingSchedulerService:
+    """A scheduler whose arming fails, as on a transient database error."""
+
+    async def start(self) -> None:
+        raise RuntimeError("transient DB failure while loading armed tasks")
+
+    async def shutdown(self) -> None:
+        return None
+
+
+@pytest.mark.asyncio
+async def test_scheduler_start_failure_is_contained_not_raised(monkeypatch) -> None:
+    """A scheduler arming failure must not crash the API lifespan.
+
+    The function returns False (scheduler considered stopped) and logs instead
+    of propagating, so the rest of the application stays available.
+    """
+    settings = get_settings().model_copy(update={"akshare_scheduler_enabled": True})
+    monkeypatch.setattr(lifecycle, "get_settings", lambda: settings)
+    monkeypatch.setattr(
+        lifecycle,
+        "get_akshare_scheduler_service",
+        lambda: _FailingSchedulerService(),
+    )
+
+    started = await lifecycle.start_ported_akshare_scheduler()
+    assert started is False
