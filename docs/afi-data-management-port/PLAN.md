@@ -394,10 +394,23 @@ unprovisioned; the read-only baseline is archived under `var/reports/afi204/` (g
 2. ~~Translate the `scheduled_tasks.user_id` string owners to OpenData integer users.~~ **Done:** an
    admin migration-owner user (`id=1`) was created and `--default-user-id 1` mapped every task; all
    1103 tasks now carry integer `user_id=1`, `task_kind='script'`.
-3. Flip `AKSHARE_SCHEDULER_ENABLED=true` only after stopping AFI's scheduler, so the two never
-   double-run the armed tasks. The fail-closed lifecycle switch exists and is verified DISABLED;
-   `.env` pins both `ENABLE_SCHEDULER=false` and `AKSHARE_SCHEDULER_ENABLED=false` until cutover.
-4. Stage-6 deletion from AFI follows a verified natural-cycle run on OpenData.
+3. ~~Flip `AKSHARE_SCHEDULER_ENABLED=true` only after stopping AFI's scheduler.~~ **Done
+   (2026-11-12 cutover):** AFI was fully stopped first - all six systemd timers stopped+disabled,
+   the full-history-recovery service and the main `ai-for-investor.service` (in-process APScheduler)
+   stopped and disabled, leaving zero AFI processes and freeing port 8000. The ported scheduler is
+   now wired into the OpenData lifespan and runs as a persistent `opendata.service` (port 8010)
+   with `AKSHARE_SCHEDULER_ENABLED=true`; its AsyncIOScheduler loaded all 1048 armed tasks. A real
+   `run_task_now` on the hourly crypto job completed end to end, self-provisioned
+   `CRYPTO_HOURLY_MARKET` in the warehouse and recorded 2370 rows on the execution ledger. The
+   native `ENABLE_SCHEDULER` stays false so the two in-process schedulers never double-run.
+4. **AFI old code: shut down, not deleted (deliberate).** Physical deletion is unsafe now: the AFI
+   data-management plane is imported by 12+ other AFI modules (market data, risk analytics,
+   orchestration), and AFI remains the rollback path until OpenData completes a verified natural
+   collection cycle. OpenData is fully self-contained at runtime (the only `ai_for_investor`
+   strings left here are read-only migration-inventory references), so the safe Stage-6 outcome is
+   the durable shutdown already in place: AFI services `disabled`/`inactive`, all timers disabled,
+   no processes. Actual source removal belongs to a later cleanup after the natural-cycle sign-off,
+   scoped to the data-management packages rather than the whole AFI application.
 
 ## Runtime behaviour verification (2026-11-11): the ported worker actually runs
 
