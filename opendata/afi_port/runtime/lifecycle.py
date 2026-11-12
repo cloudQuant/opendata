@@ -56,3 +56,19 @@ async def stop_ported_akshare_scheduler() -> None:
     service = get_akshare_scheduler_service()
     await service.shutdown()
     logger.info("Ported AFI akshare scheduler shut down")
+
+
+def ported_akshare_scheduler_running() -> bool:
+    """Report whether the ported collection scheduler is currently running.
+
+    Read-only and side-effect free: resolving the singleton never starts the
+    scheduler, and a not-yet-started wrapper reports ``False``. Used by the
+    health endpoint so monitoring sees the scheduler that actually owns the
+    migrated armed task set after cutover.
+    """
+    service = get_akshare_scheduler_service()
+    # service.scheduler is the AkshareScheduler wrapper; the live APScheduler
+    # is one level deeper on its own .scheduler attribute.
+    wrapper = getattr(service, "scheduler", None)
+    apscheduler = getattr(wrapper, "scheduler", None)
+    return bool(apscheduler is not None and getattr(apscheduler, "running", False))

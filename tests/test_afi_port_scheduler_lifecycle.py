@@ -80,3 +80,30 @@ async def test_scheduler_start_failure_is_contained_not_raised(monkeypatch) -> N
 
     started = await lifecycle.start_ported_akshare_scheduler()
     assert started is False
+
+
+def test_ported_scheduler_running_reflects_wrapper_state(monkeypatch) -> None:
+    """The read-only health helper reports the underlying APScheduler state."""
+
+    class _Aps:
+        def __init__(self, running: bool) -> None:
+            self.running = running
+
+    class _Wrapper:
+        def __init__(self, aps: _Aps | None) -> None:
+            # Mirrors AkshareScheduler, whose .scheduler holds the APScheduler.
+            self.scheduler = aps
+
+    class _Service:
+        def __init__(self, aps: _Aps | None) -> None:
+            self.scheduler = _Wrapper(aps)
+
+    monkeypatch.setattr(lifecycle, "get_akshare_scheduler_service", lambda: _Service(_Aps(True)))
+    assert lifecycle.ported_akshare_scheduler_running() is True
+
+    monkeypatch.setattr(lifecycle, "get_akshare_scheduler_service", lambda: _Service(_Aps(False)))
+    assert lifecycle.ported_akshare_scheduler_running() is False
+
+    # Wrapper exists but no APScheduler has been started yet.
+    monkeypatch.setattr(lifecycle, "get_akshare_scheduler_service", lambda: _Service(None))
+    assert lifecycle.ported_akshare_scheduler_running() is False

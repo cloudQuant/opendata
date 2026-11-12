@@ -416,16 +416,23 @@ async def health_check() -> dict:
 
     Returns application health status.
     """
+    from opendata.afi_port.runtime.lifecycle import ported_akshare_scheduler_running
     from opendata.core.database import check_db_connection, data_engine, engine
 
     db_healthy = await check_db_connection()
-    scheduler_running = task_scheduler.is_running
+    native_scheduler_running = task_scheduler.is_running
+    # After the iteration-204 cutover the migrated collection jobs are owned by
+    # the ported AFI scheduler, not the native task_scheduler. Health must
+    # reflect whichever scheduler is enabled, or the endpoint reports a false
+    # "degraded" while collection is actually running.
+    ported_scheduler_running = ported_akshare_scheduler_running()
+    any_scheduler_running = native_scheduler_running or ported_scheduler_running
 
     # Determine overall status
-    if db_healthy and scheduler_running:
+    if db_healthy and any_scheduler_running:
         overall_status = "healthy"
     elif db_healthy:
-        overall_status = "degraded"  # Scheduler not running
+        overall_status = "degraded"  # No scheduler running
     else:
         overall_status = "unhealthy"
 
@@ -441,7 +448,9 @@ async def health_check() -> dict:
         "environment": settings.app_env,
         "checks": {
             "database": "connected" if db_healthy else "disconnected",
-            "scheduler": "running" if scheduler_running else "stopped",
+            "scheduler": "running" if any_scheduler_running else "stopped",
+            "native_scheduler": "running" if native_scheduler_running else "stopped",
+            "ported_scheduler": "running" if ported_scheduler_running else "stopped",
         },
         "pool": pool_status,
         "timestamp": datetime.now(timezone.utc).isoformat(),
