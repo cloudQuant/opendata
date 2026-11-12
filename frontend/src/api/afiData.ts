@@ -38,10 +38,27 @@ export interface GovernanceProvider {
 
 export interface GovernanceEndpoint {
   id: string
-  endpoint_id: string
-  endpoint_name: string
   provider_id: string
+  endpoint_name: string
+  display_name: string | null
+  category: string | null
+  function_path: string | null
+  params_schema: Record<string, unknown> | null
+  auth_type: string | null
+  api_key_env: string | null
+  rate_limit: number | null
+  cache_ttl_sec: number | null
+  target_database: string | null
+  target_table: string | null
+  normalization_profile: string | null
+  quality_profile: string | null
+  incremental_sync_key: string | null
   is_active: boolean
+}
+
+export interface GovernanceListResponse<T> {
+  items: T[]
+  total: number
 }
 
 export interface GovernanceJob {
@@ -217,10 +234,12 @@ export const afiDataApi = {
   bootstrapGovernance(): Promise<Record<string, unknown>> {
     return request({ url: `${BASE}/data-governance/bootstrap`, method: 'POST' })
   },
-  listGovernanceProviders(): Promise<GovernanceProvider[]> {
+  listGovernanceProviders(): Promise<GovernanceListResponse<GovernanceProvider>> {
     return request({ url: `${BASE}/data-governance/providers`, method: 'GET' })
   },
-  listGovernanceEndpoints(providerId?: string): Promise<GovernanceEndpoint[]> {
+  listGovernanceEndpoints(
+    providerId?: string
+  ): Promise<GovernanceListResponse<GovernanceEndpoint>> {
     return request({
       url: `${BASE}/data-governance/endpoints`,
       method: 'GET',

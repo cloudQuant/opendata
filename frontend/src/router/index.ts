@@ -110,6 +110,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '配额门禁', requiresAdmin: true },
       },
       {
+        path: 'admin/governance',
+        name: 'AdminGovernance',
+        component: () => import('@/views/admin/GovernanceView.vue'),
+        meta: { title: '数据治理注册表', requiresAdmin: true },
+      },
+      {
         path: 'settings',
         name: 'Settings',
         component: () => import('@/views/SettingsView.vue'),
