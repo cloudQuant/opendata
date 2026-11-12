@@ -6,7 +6,8 @@ import asyncio
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import select
+from loguru import logger
+from sqlalchemy import select, update
 
 from opendata.afi_port.runtime.clock import to_naive_utc, utcnow_naive
 from opendata.afi_port.services.script import AkshareScriptService
@@ -15,6 +16,8 @@ from opendata.core.database import async_session_maker
 from opendata.models.task import ScheduledTask, ScheduleType, TriggeredBy
 
 if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+
     from opendata.models.task import TaskExecution
 
 settings = get_settings()
@@ -76,8 +79,46 @@ class AkshareScheduler:
         """Start the APScheduler instance and load every armed task."""
         scheduler = self._ensure_scheduler()
         if not scheduler.running:
+            await self._reap_interrupted_executions()
             scheduler.start()
             await self.reload_active_tasks()
+
+    async def _reap_interrupted_executions(
+        self,
+        session_maker: async_sessionmaker[AsyncSession] | None = None,
+    ) -> None:
+        """Mark ledger rows left RUNNING by a previous process as failed.
+
+        A RUNNING execution only completes inside the process that opened it;
+        when the service restarts (deploy, crash, host reboot) its worker is
+        gone, so any row still RUNNING at startup can never finish. Leaving it
+        stale inflates the running-count metric forever and hides real work.
+        Reclassify those rows as FAILED with an explanatory message.
+
+        ``session_maker`` is injectable so tests can run against an isolated
+        engine; production callers leave it None to use the app session maker.
+        """
+        from opendata.models.task import TaskExecution, TaskStatus
+
+        maker = session_maker or async_session_maker
+        async with maker() as session:
+            result = await session.execute(
+                update(TaskExecution)
+                .where(TaskExecution.status == TaskStatus.RUNNING)
+                .values(
+                    status=TaskStatus.FAILED,
+                    error_message=(
+                        "Interrupted: the owning process restarted before this "
+                        "execution finished (reaped at scheduler startup)"
+                    ),
+                )
+            )
+            await session.commit()
+            if result.rowcount:
+                logger.info(
+                    "Reaped {} interrupted RUNNING execution(s) at scheduler startup",
+                    result.rowcount,
+                )
 
     async def shutdown(self) -> None:
         """Stop the scheduler and drop its in-memory job store."""
