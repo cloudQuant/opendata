@@ -8,7 +8,7 @@ Stock Sns Sseinfo
 
 import pandas as pd
 import requests
-from akshare.stock_feature.stock_sns_sseinfo import _fetch_stock_uid
+from opendata.data.providers.akshare._vendor.stock_feature.stock_sns_sseinfo import _fetch_stock_uid
 from bs4 import BeautifulSoup
 
 from opendata.data_fetch.configs.db_config import DB_CONFIG

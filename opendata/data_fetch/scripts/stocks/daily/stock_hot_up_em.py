@@ -8,7 +8,7 @@ Stock Hot Up Em
 
 import pandas as pd
 import requests
-from akshare.utils.request import request_with_retry as request_eastmoney
+from opendata.data.providers.akshare._vendor.utils.request import request_with_retry as request_eastmoney
 
 from opendata.data_fetch.configs.db_config import DB_CONFIG
 from opendata.data_fetch.providers.akshare_to_mysql import AkshareToMySql

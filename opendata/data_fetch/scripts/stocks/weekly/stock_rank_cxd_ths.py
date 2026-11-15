@@ -10,7 +10,7 @@ from io import StringIO
 
 import pandas as pd
 import requests
-from akshare.stock_feature.stock_technology_ths import _get_file_content_ths
+from opendata.data.providers.akshare._vendor.stock_feature.stock_technology_ths import _get_file_content_ths
 from bs4 import BeautifulSoup
 from py_mini_racer import MiniRacer
 

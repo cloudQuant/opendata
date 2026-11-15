@@ -2,7 +2,7 @@ import logging
 from datetime import date as _DateCls
 from datetime import datetime
 
-import akshare as ak
+import opendata.data.providers.akshare._vendor as ak
 import pandas as pd
 
 from opendata.data_fetch.configs.db_config import DB_CONFIG

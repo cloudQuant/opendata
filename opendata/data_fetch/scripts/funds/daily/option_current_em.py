@@ -9,8 +9,8 @@ Option Current Em
 import logging
 
 import pandas as pd
-from akshare.option.option_em import option_current_cffex_em
-from akshare.utils.request import request_with_retry as request_eastmoney
+from opendata.data.providers.akshare._vendor.option.option_em import option_current_cffex_em
+from opendata.data.providers.akshare._vendor.utils.request import request_with_retry as request_eastmoney
 
 from opendata.data_fetch.configs.db_config import DB_CONFIG
 from opendata.data_fetch.providers.akshare_to_mysql import AkshareToMySql

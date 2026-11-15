@@ -11,7 +11,7 @@ from datetime import date, datetime
 from threading import Thread
 from typing import Any, Literal
 
-import akshare as ak
+import opendata.data.providers.akshare._vendor as ak
 import pandas as pd
 import requests
 

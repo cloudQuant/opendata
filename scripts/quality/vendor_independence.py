@@ -34,8 +34,8 @@ NAMESPACE_ANCESTORS = (
     "opendata.data.providers.akshare",
 )
 LEGACY_ROOTS = ("opendata_http", "opendata_client", "opendata_fuyao", "akshare")
-EXPECTED_PYTHON_FILES = 325
-EXPECTED_RESOURCE_FILES = 2
+EXPECTED_PYTHON_FILES = 395
+EXPECTED_RESOURCE_FILES = 5
 UNMANIFESTED_METADATA_FILES = {"manifest.json", "upstream.lock", "LICENSE-AKSHARE"}
 ENTRY_IMPORTS = (
     f"{VENDOR_PREFIX}.datasets",

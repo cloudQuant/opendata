@@ -5,7 +5,7 @@ from typing import Any
 
 import pandas as pd
 import requests
-from akshare.utils import demjson
+from opendata.data.providers.akshare._vendor.utils import demjson
 
 
 def fetch_sina_macro_pages(

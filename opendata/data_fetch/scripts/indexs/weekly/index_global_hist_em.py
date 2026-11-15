@@ -3,8 +3,8 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from akshare.index.index_global_em import index_global_em_symbol_map
-from akshare.utils.request import request_with_retry as request_eastmoney
+from opendata.data.providers.akshare._vendor.index.index_global_em import index_global_em_symbol_map
+from opendata.data.providers.akshare._vendor.utils.request import request_with_retry as request_eastmoney
 
 from opendata.data_fetch.configs.db_config import DB_CONFIG
 from opendata.data_fetch.providers.akshare_to_mysql import AkshareToMySql

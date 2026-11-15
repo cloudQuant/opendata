@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pandas as pd
 import requests
-from akshare.utils import demjson
+from opendata.data.providers.akshare._vendor.utils import demjson
 
 from opendata.data_fetch.configs.db_config import DB_CONFIG
 from opendata.data_fetch.providers.akshare_to_mysql import AkshareToMySql

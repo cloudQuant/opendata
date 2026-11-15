@@ -1,6 +1,6 @@
 import logging
 
-import akshare as ak
+import opendata.data.providers.akshare._vendor as ak
 import pandas as pd
 
 from opendata.data_fetch.configs.db_config import DB_CONFIG

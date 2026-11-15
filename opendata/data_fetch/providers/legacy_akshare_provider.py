@@ -15,7 +15,7 @@ from datetime import datetime
 from typing import Any, Literal, Protocol, TypedDict, runtime_checkable
 from urllib.parse import urlparse
 
-import akshare as ak
+import opendata.data.providers.akshare._vendor as ak
 import pandas as pd
 import pymysql
 from loguru import logger as _default_logger
