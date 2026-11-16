@@ -67,6 +67,11 @@ db.sqlite3-journal
 # rotated files kept the worktree dirty and deferred the worktree-only acceptance faces.
 logs/
 
+# Python runtime caches written by collection scripts into the working directory
+# (e.g. fund_detail_info.py's lost_codes.pkl of failed symbols); not source code.
+*.pkl
+*.pickle
+
 # Flask stuff:
 instance/
 .webassets-cache
