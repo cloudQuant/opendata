@@ -105,12 +105,45 @@ def _run_in_child_loop(awaitable_factory: Callable[[], Any]) -> Any:  # noqa: AN
     return asyncio.run(_driver())
 
 
+def _accepted_kwargs(callable_obj: Any, params: dict[str, Any]) -> dict[str, Any]:  # noqa: ANN401
+    """Filter ``params`` to what ``callable_obj`` actually accepts.
+
+    Legacy scripts carry internal controls (``_call_timeout``, ``_ingest_mode``,
+    ``symbol`` defaults, ...) in the merged parameter set. They are meaningful
+    for the AkshareToMySql fetch helpers that pop them, but a script's own
+    ``run(**kwargs)`` often does not declare them, so passing them raises
+    ``TypeError: unexpected keyword argument``. When the target accepts a
+    ``**kwargs`` catch-all everything is forwarded; otherwise keep only its
+    declared, callable parameters and drop the rest rather than crash.
+    """
+    try:
+        signature = inspect.signature(callable_obj)
+    except (TypeError, ValueError):
+        # Built-ins/partials without introspectable signatures: forward as-is.
+        return dict(params)
+    parameters = signature.parameters
+    if any(param.kind is inspect.Parameter.VAR_KEYWORD for param in parameters.values()):
+        return dict(params)
+    accepted = {
+        name: value
+        for name, value in params.items()
+        if name in parameters
+        and parameters[name].kind
+        in (
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+            inspect.Parameter.KEYWORD_ONLY,
+        )
+    }
+    return accepted
+
+
 def _invoke(descriptor: dict[str, Any], params: dict[str, Any]) -> Any:  # noqa: ANN401
     callable_obj = _resolve_callable(descriptor)
     _install_write_recorder(callable_obj)
+    safe_params = _accepted_kwargs(callable_obj, params)
     if inspect.iscoroutinefunction(callable_obj):
-        return _run_in_child_loop(lambda: callable_obj(**params))
-    result = callable_obj(**params)
+        return _run_in_child_loop(lambda: callable_obj(**safe_params))
+    result = callable_obj(**safe_params)
     if inspect.isawaitable(result):
         return _run_in_child_loop(lambda: result)
     return result

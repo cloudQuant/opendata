@@ -72,6 +72,16 @@ def _awaitable_returning_entry(value: Any = None) -> Any:
     return _async_entry(value)
 
 
+def _strict_entry(fund_code: str | None = None, year: str | None = None) -> dict[str, Any]:
+    """A run()-style entrypoint that does NOT accept internal control kwargs."""
+    return {"fund_code": fund_code, "year": year}
+
+
+def _kwargs_catchall_entry(**kwargs: Any) -> dict[str, Any]:
+    """An entrypoint with a catch-all, which must receive every parameter."""
+    return dict(kwargs)
+
+
 @pytest.fixture
 def fenced() -> Any:
     """Hold a write fence with committed-write tracking for one test."""
@@ -314,6 +324,41 @@ def test_invoke_installs_the_recorder_before_calling(fenced: Any) -> None:
     assert committed_mysql_writes(cases.RECEIPT_TABLE) == [
         {"table_name": cases.RECEIPT_TABLE, "row_count": 4}
     ]
+
+
+# --------------------------------------------------------------------------
+# _accepted_kwargs: internal control params must not crash strict run() entrypoints.
+# --------------------------------------------------------------------------
+
+
+def test_accepted_kwargs_drops_undeclared_internal_controls() -> None:
+    # Mirrors fund_portfolio_hold_em.run(fund_code, year): _call_timeout and
+    # other injected controls are not declared, so they must be filtered out.
+    filtered = worker._accepted_kwargs(
+        _strict_entry,
+        {"fund_code": "000001", "year": "2024", "_call_timeout": 60, "_ingest_mode": "backfill"},
+    )
+    assert filtered == {"fund_code": "000001", "year": "2024"}
+
+
+def test_invoke_strips_unexpected_keyword_instead_of_raising() -> None:
+    descriptor = {"kind": "function", "module": THIS_MODULE, "qualname": "_strict_entry"}
+    result = worker._invoke(
+        descriptor,
+        {"fund_code": "000001", "year": "2024", "_call_timeout": 90},
+    )
+    assert result == {"fund_code": "000001", "year": "2024"}
+
+
+def test_accepted_kwargs_keeps_everything_for_var_kwargs_entrypoint() -> None:
+    params = {"symbol": "1.000001", "_call_timeout": 30, "extra": True}
+    assert worker._accepted_kwargs(_kwargs_catchall_entry, params) == params
+
+
+def test_invoke_forwards_all_params_to_catchall() -> None:
+    descriptor = {"kind": "function", "module": THIS_MODULE, "qualname": "_kwargs_catchall_entry"}
+    params = {"symbol": "1.000001", "_call_timeout": 30}
+    assert worker._invoke(descriptor, params) == params
 
 
 # --------------------------------------------------------------------------
